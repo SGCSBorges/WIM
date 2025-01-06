@@ -1,0 +1,31 @@
+# Node
+node_modules/
+npm-debug.log*
+pnpm-lock.yaml
+yarn.lock
+
+# Builds
+dist/
+build/
+coverage/
+
+# Env & secrets
+.env
+.env.*.local
+
+# Prisma
+apps/api/prisma/*.db
+apps/api/prisma/dev.db
+
+# Vite
+apps/web/.vite/
+apps/web/dist/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local
+commit.ps1
