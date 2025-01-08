@@ -1,0 +1,11 @@
+{
+  "name": "@wim/api",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch ./dist/index.js",
+    "build": "echo \"(to be added: tsc)\"",
+    "start": "node ./dist/index.js"
+  }
+}

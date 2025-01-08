@@ -9,10 +9,10 @@
 
 **FR**
 
-- Centraliser les articles (biens), leurs **factures** (PDF/JPG) et leurs **garanties** (date d'achat, durée, fin).
-- Envoyer des **notifications push** J-30 / J-7 / J-1 avant l'expiration.
+- Centraliser les articles (biens), leurs **factures** (PDF/JPG) et leurs **garanties** (date d’achat, durée, fin).
+- Envoyer des **notifications push** J-30 / J-7 / J-1 avant l’expiration.
 - **Import/Export CSV** pour faciliter la saisie et la sauvegarde.
-- **Partage d'inventaire** (option **Power User**).
+- **Partage d’inventaire** (option **Power User**).
 
 **EN**
 
@@ -64,3 +64,33 @@ V2 (out of scope MVP): OCR factures, scan code-barres/QR, email/SMS, iOS packagi
 ---
 
 ## 📦 Structure (prévue)
+
+wim/
+├─ apps/
+│ ├─ api/ # Node.js + Prisma
+│ └─ web/ # React PWA + Tailwind
+├─ .github/workflows/
+├─ .gitignore
+└─ README.md
+
+---
+
+## 🔐 Conformité & Sécurité
+
+- RGPD (export/suppression, hébergement UE)
+- OWASP Top 10 (validation entrées, JWT, rate limit)
+- HTTPS/TLS, URLs pré-signées pour uploads
+
+---
+
+## 🚀 Développement (bientôt)
+
+Les instructions d’installation détaillées seront ajoutées en Phase 3/4 (API + Web, env, migrations Prisma, scripts).
+
+---
+
+## 📄 Licence
+
+MIT © 2025 Sérgio Gama Correia Soares Borges
+
+---

@@ -1,0 +1,17 @@
+{
+  "name": "wim",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "postinstall": "echo \"Workspaces ready (install per app in next steps).\"",
+    "fmt": "echo \"(to be added)\"",
+    "lint": "echo \"(to be added)\""
+  }
+}
