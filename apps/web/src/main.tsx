@@ -1,7 +1,10 @@
-// placeholder — React e Tailwind entram no step de frontend
-document.getElementById("root")!.innerHTML = `
-  <main style="font-family: system-ui; padding: 24px">
-    <h1>WIM — Warranty & Inventory Manager</h1>
-    <p>Frontend placeholder. Setup comes next.</p>
-  </main>
-`;
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

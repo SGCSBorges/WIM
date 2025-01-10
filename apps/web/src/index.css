@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens básicos (poderemos trocar por CSS vars da tua charte) */
+:root {
+  --primary: #4f46e5; /* Indigo 600 */
+}
