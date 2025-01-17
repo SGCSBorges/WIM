@@ -2,9 +2,44 @@ name: ci
 on:
   push:
     branches: [main]
+  pull_request:
+
 jobs:
-  echo:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - run: echo "CI placeholder - to be completed later"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install (root workspace)
+        run: npm ci
+
+      # API build (placeholder until we add tsc)
+      - name: API - Lint placeholder
+        working-directory: apps/api
+        run: |
+          node -v
+          npm run lint || echo "lint to be configured"
+
+      # WEB build
+      - name: Web - Install workspace deps (if not hoisted)
+        working-directory: apps/web
+        run: npm i --no-audit --no-fund
+
+      - name: Web - Build
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Artifact Web Dist
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
