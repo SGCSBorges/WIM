@@ -1,0 +1,58 @@
+@startuml
+title WIM – Diagramme de cas d'utilisation (MVP)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #f9f9f9
+  BorderColor #555
+  ArrowColor #555
+}
+
+actor "Utilisateur" as User
+actor "Power User (option payante)" as PowerUser
+actor "Administrateur" as Admin
+
+rectangle "WIM (PWA)" {
+  (S'authentifier / Se déconnecter) as UC_Auth
+  (Gérer l'inventaire) as UC_Items
+  (Joindre une facture PDF/JPEG) as UC_Attach
+  (Gérer la garantie) as UC_Warranty
+  (Configurer des alertes J-30 / J-7 / J-1) as UC_Alerts
+  (Recevoir des notifications push) as UC_Push
+  (Importer / Exporter CSV) as UC_ImportExport
+  (Consulter des statistiques simples) as UC_Stats
+  (Partager l'inventaire) as UC_Sharing
+  (Gérer les utilisateurs & logs d’audit) as UC_Admin
+}
+
+User --> UC_Auth
+User --> UC_Items
+User --> UC_Attach
+User --> UC_Warranty
+User --> UC_Alerts
+User --> UC_Push
+User --> UC_ImportExport
+User --> UC_Stats
+
+PowerUser --|> User
+PowerUser --> UC_Sharing
+
+Admin --> UC_Admin
+
+UC_Items ..> UC_Attach : <<extend>> ajout de pièce jointe
+UC_Items ..> UC_Warranty : <<extend>> associer une garantie
+UC_Warranty ..> UC_Alerts : <<extend>> proposer des rappels
+UC_Alerts ..> UC_Push : <<include>> envoi de notification
+
+note bottom
+Portée MVP :
+- Inventaire, garanties (fin auto), alertes J-30/J-7/J-1
+- Pièces jointes (factures)
+- Import/Export CSV
+- Notifications push
+- Partage = option "Power User"
+- Admin = basique (sécurité, logs)
+Hors-scope V1 (V2) : OCR, scan code-barres, e-mail/SMS, iOS, stats avancées
+end note
+@enduml

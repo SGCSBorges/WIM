@@ -1,0 +1,57 @@
+@startuml
+title WIM – Diagramme d'activités (Ajout & rappels)
+
+skinparam activity {
+  BackgroundColor #ffffff
+  BorderColor #555
+  ArrowColor #555
+}
+skinparam noteBackgroundColor #F5F7FF
+skinparam noteBorderColor #6B7280
+
+start
+
+:Créer / sélectionner un inventaire;
+:Ajouter un article (nom, modèle, desc);
+if (Facture disponible ?) then (Oui)
+  :Joindre PDF/JPEG à l'article;
+else (Non)
+  :Poursuivre sans pièce jointe;
+endif
+
+if (Ajouter une garantie ?) then (Oui)
+  :Saisir date d'achat et durée (mois);
+  :Calculer date de fin = achat + durée;
+  :Enregistrer garantie liée à l'article;
+  if (Configurer alertes ?) then (Oui)
+    :Proposer J-30 / J-7 / J-1 (éditables);
+    :Créer alertes planifiées;
+  else (Non)
+    :Poursuivre sans alertes;
+  endif
+else (Non)
+  :Article sans garantie;
+endif
+
+:Sauvegarder en base (Article/Garantie/Alerte);
+
+' Boucle de contrôle des alertes (scheduler)
+repeat
+  :Tâche planifiée (BullMQ)\nParcourir alertes du jour;
+  if (Alerte à échéance ?) then (Oui)
+    :Envoyer notification push\n(au device abonné);
+  else (Non)
+    :Aucune action;
+  endif
+repeat while (Vérification périodique)
+
+stop
+
+note right
+Hypothèses MVP :
+- Notifications Web Push uniquement
+- Planification via jobs (BullMQ + Redis)
+- Fin de garantie calculée côté service
+- Import/Export CSV disponible hors du flux
+end note
+@enduml
