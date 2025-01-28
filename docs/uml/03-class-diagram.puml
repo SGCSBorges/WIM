@@ -1,0 +1,48 @@
+@startuml
+title WIM – Diagramme de classes (MVP)
+
+skinparam class {
+  BackgroundColor #ffffff
+  ArrowColor #555555
+  BorderColor #555555
+}
+skinparam noteBackgroundColor #F5F7FF
+skinparam noteBorderColor #6B7280
+
+class Article {
+  +articleId: int
+  +articleNom: varchar(30)
+  +articleModele: varchar(30)
+  +articleDescription: varchar(255)
+}
+
+class Garantie {
+  +garantieId: int
+  +garantieArticle: int
+  +garantieNom: varchar(30)
+  +garantieDateAchat: date
+  +garantieDuration: int  ' mois
+  +garantieFin: date
+  +garantieIsValide: boolean
+  +garantieImage: varchar(255)
+}
+
+class Alerte {
+  +alerteId: int
+  +alerteGarantie: int
+  +alerteNom: varchar(30)
+  +alerteDate: date
+  +alerteDescription: varchar(255)
+}
+
+' Relations (conformes au modèle relationnel)
+Article "1" o-- "0..1" Garantie : possede
+Garantie "1" o-- "0..3" Alerte : genere
+
+note bottom
+Hypotheses MVP :
+- Une Garantie appartient toujours a un Article
+- Les Alertes sont rattachees a la Garantie (J-30, J-7, J-1)
+- Types et tailles alignes avec le dictionnaire de donnees
+end note
+@enduml
