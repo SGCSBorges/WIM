@@ -1,0 +1,28 @@
+@startuml
+title WIM – Diagramme de sequence (ajout article + garantie + alertes)
+
+actor Utilisateur as User
+participant "PWA (Web)" as Web
+participant "API (Node)" as API
+database "PostgreSQL" as DB
+queue "BullMQ/Redis" as Jobs
+
+User -> Web : Ouvrir formulaire Ajout Article
+Web -> API : POST /items {nom, modele, description}
+API -> DB : INSERT Article
+DB --> API : articleId
+
+alt Garantie saisie
+  Web -> API : POST /warranties {articleId, dateAchat, duree}
+  API -> API : Calculer dateFin = dateAchat + duree(mois)
+  API -> DB : INSERT Garantie (avec dateFin)
+  API -> Jobs : Enqueue alertes J-30, J-7, J-1
+end
+
+API --> Web : 201 Created (article + garantie + alertes)
+
+== Execution differée ==
+Jobs -> API : Job echeance alerte
+API -> Web : Push Notification (via service worker)
+
+@enduml

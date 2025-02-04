@@ -1,0 +1,23 @@
+@startuml
+title WIM – Diagramme d'etats (Inventaire)
+
+skinparam state {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+[*] --> Cree
+
+Cree --> Modifie : ajouter/supprimer article
+Modifie --> Valide : confirmer l'inventaire
+Valide --> Modifie : mise a jour
+Cree --> Detruit : suppression
+Valide --> Detruit : suppression definitive
+
+Detruit --> [*]
+
+note bottom
+L'inventaire peut etre consulte a tout moment (etat transverse).
+Les modifications incluent l'ajout de garanties et d'alertes sur les articles.
+end note
+@enduml
+
