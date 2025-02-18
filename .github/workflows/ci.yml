@@ -43,3 +43,6 @@ jobs:
         with:
           name: web-dist
           path: apps/web/dist
+
+      - name: Install dependencies
+        run: npm install --workspaces
