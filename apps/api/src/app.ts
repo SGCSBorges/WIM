@@ -1,5 +1,6 @@
 import express from "express";
 import articleRoutes from "./modules/articles/article.routes";
+import warrantyRoutes from "./modules/warranties/warranty.routes";
 import { errorMiddleware } from "./modules/common/http";
 
 export function createApp() {
@@ -10,6 +11,7 @@ export function createApp() {
   );
 
   app.use("/api/articles", articleRoutes);
+  app.use("/api/warranties", warrantyRoutes);
 
   app.use(errorMiddleware);
   return app;
