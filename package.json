@@ -13,5 +13,8 @@
     "postinstall": "echo \"Workspaces ready (install per app in next steps).\"",
     "fmt": "echo \"(to be added)\"",
     "lint": "echo \"(to be added)\""
+  },
+  "dependencies": {
+    "ioredis": "^5.8.2"
   }
 }

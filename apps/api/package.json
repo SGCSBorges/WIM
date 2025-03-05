@@ -11,7 +11,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "lint": "eslint \"src/**/*.{js,ts}\""
+    "lint": "eslint \"src/**/*.{js,ts}\"",
+    "worker": "node dist/jobs/workers.js"
   },
   "main": "index.js",
   "keywords": [],
@@ -20,7 +21,10 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^5.20.0",
+    "bullmq": "^5.58.1",
+    "dotenv": "^17.2.3",
     "express": "^4.19.2",
+    "ioredis": "^5.7.0",
     "pino": "^9.9.0",
     "pino-pretty": "^11.3.0",
     "zod": "^4.1.1"
