@@ -2,6 +2,7 @@ import express from "express";
 import articleRoutes from "./modules/articles/article.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import { errorMiddleware } from "./modules/common/http";
+import authRoutes from "./modules/auth/auth.routes";
 
 export function createApp() {
   const app = express();
@@ -12,6 +13,7 @@ export function createApp() {
 
   app.use("/api/articles", articleRoutes);
   app.use("/api/warranties", warrantyRoutes);
+  app.use("/api/auth", authRoutes);
 
   app.use(errorMiddleware);
   return app;
