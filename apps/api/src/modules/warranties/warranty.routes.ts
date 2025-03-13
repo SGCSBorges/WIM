@@ -3,6 +3,8 @@ import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { WarrantyService } from "./warranty.service";
 import { WarrantyCreateSchema, WarrantyUpdateSchema } from "./warranty.schemas";
+import { auditAction } from "../common/audit";
+import { authGuard } from "../auth/auth.middleware";
 
 const router = Router();
 
@@ -25,9 +27,16 @@ router.get(
 
 router.post(
   "/",
-  asyncHandler(async (req, res) => {
+  authGuard,
+  asyncHandler(async (req: any, res) => {
     const data = WarrantyCreateSchema.parse(req.body);
     const created = await WarrantyService.create(data);
+    await auditAction(req, {
+      action: "CREATE",
+      entity: "Garantie",
+      entityId: created.garantieId,
+      metadata: { data },
+    });
     res.status(201).json(created);
   })
 );

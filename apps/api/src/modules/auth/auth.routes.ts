@@ -4,6 +4,7 @@ import { asyncHandler } from "../common/http";
 import { AuthService } from "./auth.service";
 import { RegisterSchema, LoginSchema } from "./auth.schemas";
 import { authGuard } from "./auth.middleware";
+import { auditAction } from "../common/audit";
 
 const router = Router();
 
@@ -18,9 +19,15 @@ router.post(
 
 router.post(
   "/login",
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req, res) => {
     const data = LoginSchema.parse(req.body);
     const result = await AuthService.login(data);
+    await auditAction(req, {
+      userId: result.user.userId,
+      action: "LOGIN",
+      entity: "User",
+      entityId: result.user.userId,
+    });
     res.json(result);
   })
 );

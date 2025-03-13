@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { asyncHandler } from "../common/http";
 import { ArticleService } from "./article.service";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
+import { auditAction } from "../common/audit";
 import { authGuard } from "../auth/auth.middleware";
 
 const router = Router();
@@ -27,35 +28,54 @@ router.get(
 );
 
 /** POST créer un article — 🔐 protégé */
+
 router.post(
   "/",
-  authGuard, // ✅ protection JWT
-  asyncHandler(async (req: Request, res: Response) => {
+  authGuard,
+  asyncHandler(async (req: any, res) => {
     const data = ArticleCreateSchema.parse(req.body);
-    const article = await ArticleService.create(data);
-    res.status(201).json(article);
+    const created = await ArticleService.create(data);
+    await auditAction(req, {
+      action: "CREATE",
+      entity: "Article",
+      entityId: created.articleId,
+      metadata: { data },
+    });
+    res.status(201).json(created);
   })
 );
 
 /** PUT modifier un article — 🔐 protégé */
+
 router.put(
   "/:id",
-  authGuard, // ✅ protection JWT
-  asyncHandler(async (req: Request, res: Response) => {
+  authGuard,
+  asyncHandler(async (req: any, res) => {
     const id = Number(req.params.id);
     const data = ArticleUpdateSchema.parse(req.body);
-    const article = await ArticleService.update(id, data);
-    res.json(article);
+    const updated = await ArticleService.update(id, data);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      entityId: id,
+      metadata: { data },
+    });
+    res.json(updated);
   })
 );
 
 /** DELETE supprimer un article — 🔐 protégé */
 router.delete(
   "/:id",
-  authGuard, // ✅ protection JWT
-  asyncHandler(async (req: Request, res: Response) => {
+  authGuard,
+  asyncHandler(async (req: any, res) => {
     const id = Number(req.params.id);
     await ArticleService.remove(id);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "Article",
+      entityId: id,
+    });
     res.status(204).send();
   })
 );

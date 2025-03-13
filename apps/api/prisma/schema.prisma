@@ -68,12 +68,14 @@ model Alerte {
 }
 
 model User {
-  userId     Int      @id @default(autoincrement())
-  email      String   @unique
-  password   String
-  role       Role     @default(USER)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  userId    Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  auditLogs AuditLog[]
 }
 
 enum Role {
@@ -82,3 +84,21 @@ enum Role {
   ADMIN
 }
 
+model AuditLog {
+  id     Int      @id @default(autoincrement())
+  at     DateTime @default(now())
+  userId Int?
+  user   User?    @relation(fields: [userId], references: [userId], onDelete: SetNull)
+
+  action   String @db.VarChar(40) // e.g. CREATE/UPDATE/DELETE/LOGIN/LOGOUT
+  entity   String @db.VarChar(40) // e.g. Article/Garantie/Alerte/User
+  entityId Int?
+  metadata Json?
+
+  ip String? @db.VarChar(64)
+  ua String? @db.VarChar(255)
+
+  @@index([at])
+  @@index([userId, at])
+  @@index([entity, entityId])
+}
