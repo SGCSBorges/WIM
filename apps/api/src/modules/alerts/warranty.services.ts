@@ -1,6 +1,9 @@
 import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";
-import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
+import {
+  WarrantyCreateInput,
+  WarrantyUpdateInput,
+} from "../warranties/warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
 
 export const WarrantyService = {

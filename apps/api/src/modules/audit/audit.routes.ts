@@ -19,7 +19,7 @@ router.get(
 
     const logs = await prisma.auditLog.findMany({
       where,
-      orderBy: { at: "desc" },
+      orderBy: { createdAt: "desc" },
       take: limit,
       include: { user: { select: { userId: true, email: true, role: true } } },
     });

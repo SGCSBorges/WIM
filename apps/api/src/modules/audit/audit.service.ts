@@ -21,7 +21,7 @@ export const AuditService = {
         entityId: entityId ?? null,
         metadata: metadata ? (metadata as any) : undefined,
         ip: ip ?? null,
-        ua: ua ?? null,
+        userAgent: ua ?? null,
       },
     });
   },
