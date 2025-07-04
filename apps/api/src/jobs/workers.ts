@@ -1,21 +1,20 @@
 import { Worker } from "bullmq";
-import { connection, ReminderJobData } from "./queues";
+import { reminderQueue, ReminderJobData } from "./queues";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+const redisUrl = process.env.REDIS_URL;
 
 export function startWorkers() {
-  const worker = new Worker<ReminderJobData>(
-    "wim-reminders",
-    async (job) => {
-      const { garantieId, label, when } = job.data;
-      const g = await prisma.garantie.findUnique({ where: { garantieId } });
-      console.log(
-        `[Reminder] ${label} garantie=${garantieId} at ${when} (fin=${g?.garantieFin.toISOString()})`
-      );
-    },
-    { connection }
-  );
+  const worker = new Worker<ReminderJobData>("wim-reminders", async (job) => {
+    const { garantieId, label, when } = job.data;
+    // Récup info garantie/article pour log (placeholder)
+    const g = await prisma.garantie.findUnique({ where: { garantieId } });
+    console.log(
+      `[Reminder] ${label} garanti=${garantieId} at ${when} (fin=${g?.garantieFin.toISOString()})`
+    );
+    // TODO: envoi push via Web Push (phase ultérieure)
+  });
 
   worker.on("failed", (job, err) => {
     console.error("[Reminder] Failed", job?.id, err);

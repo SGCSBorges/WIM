@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -77,16 +77,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations for ownership
+  // Relationships
   articlesOwned   Article[]        @relation("ArticlesOwned")
   warrantiesOwned Garantie[]       @relation("WarrantiesOwned")
-  
-  // Sharing relationships
+  auditLogs       AuditLog[]
   sharesOwned     InventoryShare[] @relation("SharesOwned")
   sharesReceived  InventoryShare[] @relation("SharesReceived")
-  invitesSent     ShareInvite[]
-  
-  auditLogs AuditLog[]
+  shareInvites    ShareInvite[]
 }
 
 enum Role {
@@ -101,16 +98,28 @@ model AuditLog {
   userId    Int?
   user      User?    @relation(fields: [userId], references: [userId], onDelete: SetNull)
 
-  action   String
-  entity   String
+  action   String @db.Text // Changed from VarChar(40) to match migration
+  entity   String @db.Text // Changed from VarChar(40) to match migration
   entityId Int?
   metadata Json?
 
-  ip        String?
-  userAgent String?
+  ip        String? @db.Text // Changed from VarChar(64) to match migration
+  userAgent String? @db.Text // Changed from 'ua' and VarChar(255) to match migration
 
   @@index([createdAt])
   @@index([userId])
+}
+
+enum SharePermission {
+  RO
+  RW
+}
+
+enum ShareInviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
 }
 
 model InventoryShare {
@@ -124,35 +133,23 @@ model InventoryShare {
   owner  User @relation("SharesOwned", fields: [ownerUserId], references: [userId], onDelete: Cascade)
   target User @relation("SharesReceived", fields: [targetUserId], references: [userId], onDelete: Cascade)
 
-  @@unique([ownerUserId, targetUserId], map: "uq_owner_target")
+  @@unique([ownerUserId, targetUserId])
   @@index([targetUserId])
 }
 
 model ShareInvite {
-  inviteId     Int               @id @default(autoincrement())
-  ownerUserId  Int
-  email        String
-  permission   SharePermission   @default(RO)
-  status       ShareInviteStatus @default(PENDING)
-  token        String            @unique
-  expiresAt    DateTime
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  inviteId    Int               @id @default(autoincrement())
+  ownerUserId Int
+  email       String
+  permission  SharePermission   @default(RO)
+  status      ShareInviteStatus @default(PENDING)
+  token       String            @unique
+  expiresAt   DateTime
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   owner User @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
 
   @@index([email, status])
   @@index([ownerUserId, status])
-}
-
-enum SharePermission {
-  RO
-  RW
-}
-
-enum ShareInviteStatus {
-  PENDING
-  ACCEPTED
-  REVOKED
-  EXPIRED
 }

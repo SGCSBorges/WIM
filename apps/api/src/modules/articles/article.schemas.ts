@@ -4,7 +4,6 @@ export const ArticleCreateSchema = z.object({
   articleNom: z.string().min(1).max(30),
   articleModele: z.string().min(1).max(30),
   articleDescription: z.string().max(255).optional().nullable(),
-  ownerUserId: z.number().int().positive(),
 });
 
 export const ArticleUpdateSchema = ArticleCreateSchema.partial();

@@ -6,6 +6,7 @@ import articleRoutes from "./modules/articles/article.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import auditRoutes from "./modules/audit/audit.routes";
+import shareRoutes from "./modules/shares/share.routes";
 
 export function createApp() {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp() {
   app.use("/api/warranties", warrantyRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/audit", auditRoutes);
+  app.use("/api/shares", shareRoutes);
 
   // Handler d’erreurs (toujours en dernier)
   app.use(errorHandler);

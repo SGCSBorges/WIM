@@ -1,29 +1,97 @@
-export default function App() {
-  return (
-    <main className="min-h-screen p-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">
-          WIM — Warranty & Inventory Manager
-        </h1>
-        <p className="text-gray-600">
-          Frontend baseline ready (React + Vite + Tailwind).
-        </p>
-      </header>
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import { LoginPage } from "./components/auth/LoginPage";
+import { RegisterPage } from "./components/auth/RegisterPage";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { Dashboard } from "./components/dashboard/Dashboard";
+import { Layout } from "./components/layout/Layout";
+import { ArticlesList } from "./components/articles/ArticlesList";
+import { WarrantiesList } from "./components/warranties/WarrantiesList";
+import { SharingManagement } from "./components/sharing/SharingManagement";
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow">
-          <h2 className="font-semibold">Inventaire</h2>
-          <p className="text-sm text-gray-600">Liste et détail des articles.</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow">
-          <h2 className="font-semibold">Garanties</h2>
-          <p className="text-sm text-gray-600">Dates d’achat, fin, statut.</p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow">
-          <h2 className="font-semibold">Alertes</h2>
-          <p className="text-sm text-gray-600">Rappels J-30 / J-7 / J-1.</p>
-        </div>
-      </section>
-    </main>
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/dashboard" replace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/articles"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ArticlesList />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/warranties"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WarrantiesList />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sharing"
+            element={
+              <ProtectedRoute requirePowerUser>
+                <Layout>
+                  <SharingManagement />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <div className="p-6">
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      Paramètres
+                    </h1>
+                    <p className="text-gray-600">
+                      Paramètres du compte - À implémenter
+                    </p>
+                  </div>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
+
+export default App;

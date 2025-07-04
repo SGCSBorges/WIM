@@ -29,10 +29,11 @@ router.post(
   "/",
   authGuard,
   asyncHandler(async (req: any, res) => {
-    const bodyData = req.body;
-    bodyData.ownerUserId = req.user.sub; // Add owner from auth context
-    const data = WarrantyCreateSchema.parse(bodyData);
-    const created = await WarrantyService.create(data);
+    const data = WarrantyCreateSchema.parse(req.body);
+    const created = await WarrantyService.create({
+      ...data,
+      ownerUserId: req.user.userId,
+    });
     await auditAction(req, {
       action: "CREATE",
       entity: "Garantie",

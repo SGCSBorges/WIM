@@ -28,7 +28,7 @@ export const ShareService = {
       });
       throw Object.assign(new Error("Invitation expirée"), { status: 410 });
     }
-    // Crée ou met à jour le partage
+    // Check if share already exists
     const existingShare = await prisma.inventoryShare.findFirst({
       where: {
         ownerUserId: invite.ownerUserId,
@@ -37,11 +37,13 @@ export const ShareService = {
     });
 
     if (existingShare) {
+      // Update existing share
       await prisma.inventoryShare.update({
         where: { shareId: existingShare.shareId },
         data: { permission: invite.permission },
       });
     } else {
+      // Create new share
       await prisma.inventoryShare.create({
         data: {
           ownerUserId: invite.ownerUserId,
@@ -87,7 +89,7 @@ export const ShareService = {
       where: { ownerUserId, targetUserId },
     });
     if (!share)
-      throw Object.assign(new Error("Partage non trouvé"), { status: 404 });
+      throw Object.assign(new Error("Partage introuvable"), { status: 404 });
 
     return prisma.inventoryShare.update({
       where: { shareId: share.shareId },
@@ -100,7 +102,7 @@ export const ShareService = {
       where: { ownerUserId, targetUserId },
     });
     if (!share)
-      throw Object.assign(new Error("Partage non trouvé"), { status: 404 });
+      throw Object.assign(new Error("Partage introuvable"), { status: 404 });
 
     await prisma.inventoryShare.delete({
       where: { shareId: share.shareId },

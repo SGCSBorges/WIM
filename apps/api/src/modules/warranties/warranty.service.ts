@@ -8,7 +8,7 @@ export const WarrantyService = {
   get: (id: number) =>
     prisma.garantie.findUnique({ where: { garantieId: id } }),
 
-  create: async (data: WarrantyCreateInput) => {
+  create: async (data: WarrantyCreateInput & { ownerUserId: number }) => {
     const fin = addMonths(
       new Date(data.garantieDateAchat),
       data.garantieDuration
@@ -29,12 +29,12 @@ export const WarrantyService = {
       data: { ...data, garantieFin: fin, garantieIsValide: true },
     });
 
-    // Planifier 3 rappels (J-30 / J-7 / J-1)
-    await AlertService.scheduleForWarranty(
-      created.garantieId,
-      new Date(data.garantieDateAchat),
-      data.garantieDuration
-    );
+    // Planifier 3 rappels (J-30 / J-7 / J-1) - Disabled until Redis is available
+    // await AlertService.scheduleForWarranty(
+    //   created.garantieId,
+    //   new Date(data.garantieDateAchat),
+    //   data.garantieDuration
+    // );
 
     return created;
   },

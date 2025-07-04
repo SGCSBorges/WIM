@@ -6,7 +6,6 @@ export const WarrantyCreateSchema = z.object({
   garantieDateAchat: z.coerce.date(),
   garantieDuration: z.number().int().min(1).max(120),
   garantieImage: z.string().url().max(255).optional().nullable(),
-  ownerUserId: z.number().int().positive(),
 });
 
 export const WarrantyUpdateSchema = WarrantyCreateSchema.partial();

@@ -6,10 +6,7 @@ export async function canReadInventory(
 ) {
   if (requesterUserId === ownerUserId) return true;
   const share = await prisma.inventoryShare.findFirst({
-    where: {
-      ownerUserId: ownerUserId,
-      targetUserId: requesterUserId,
-    },
+    where: { ownerUserId, targetUserId: requesterUserId },
     select: { permission: true },
   });
   return !!share; // RO ou RW
@@ -21,10 +18,7 @@ export async function canWriteInventory(
 ) {
   if (requesterUserId === ownerUserId) return true;
   const share = await prisma.inventoryShare.findFirst({
-    where: {
-      ownerUserId: ownerUserId,
-      targetUserId: requesterUserId,
-    },
+    where: { ownerUserId, targetUserId: requesterUserId },
     select: { permission: true },
   });
   return !!share && share.permission === "RW";

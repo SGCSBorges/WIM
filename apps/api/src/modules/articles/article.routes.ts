@@ -33,10 +33,11 @@ router.post(
   "/",
   authGuard,
   asyncHandler(async (req: any, res) => {
-    const bodyData = req.body;
-    bodyData.ownerUserId = req.user.sub; // Add owner from auth context
-    const data = ArticleCreateSchema.parse(bodyData);
-    const created = await ArticleService.create(data);
+    const data = ArticleCreateSchema.parse(req.body);
+    const created = await ArticleService.create({
+      ...data,
+      ownerUserId: req.user.userId,
+    });
     await auditAction(req, {
       action: "CREATE",
       entity: "Article",
