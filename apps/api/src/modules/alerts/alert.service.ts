@@ -1,6 +1,6 @@
 import { reminderQueue, ReminderJobData } from "../../jobs/queues";
 import { addMonths } from "../common/date";
-import { jobsEnabled } from "../../config/jobs";
+import { isRedisAvailable } from "../../jobs/redis";
 
 export const AlertService = {
   // planifie 3 jobs pour une garantie donnée
@@ -9,7 +9,7 @@ export const AlertService = {
     dateAchat: Date,
     durationMonths: number
   ) => {
-    if (!jobsEnabled || !reminderQueue) {
+    if (!isRedisAvailable() || !reminderQueue) {
       console.log(
         `[AlertService] Jobs disabled - skipping warranty alerts for garantie ${garantieId}`
       );

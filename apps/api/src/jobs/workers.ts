@@ -1,17 +1,17 @@
 import { Worker } from "bullmq";
-import { reminderQueue, connection, ReminderJobData } from "./queues";
-import { jobsEnabled } from "../config/jobs";
+import { reminderQueue, ReminderJobData } from "./queues";
+import { redisConnection, isRedisAvailable } from "./redis";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export function startWorkers() {
-  if (!jobsEnabled) {
+  if (!isRedisAvailable()) {
     console.log("[Jobs] Disabled - no workers started");
     return;
   }
 
-  if (!reminderQueue || !connection) {
+  if (!reminderQueue || !redisConnection) {
     console.warn("[Jobs] Queue or connection not initialized");
     return;
   }
@@ -26,7 +26,7 @@ export function startWorkers() {
       );
       // TODO: envoi push via Web Push (phase ultérieure)
     },
-    { connection }
+    { connection: redisConnection }
   );
 
   worker.on("failed", (job, err) => {

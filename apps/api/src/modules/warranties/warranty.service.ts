@@ -2,7 +2,7 @@ import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";
 import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
-import { jobsEnabled } from "../../config/jobs";
+import { isRedisAvailable } from "../../jobs/redis";
 
 export const WarrantyService = {
   list: () => prisma.garantie.findMany({ orderBy: { garantieId: "desc" } }),
@@ -31,7 +31,7 @@ export const WarrantyService = {
     });
 
     // Planifier 3 rappels (J-30 / J-7 / J-1) - only if jobs are enabled
-    if (jobsEnabled) {
+    if (isRedisAvailable()) {
       await AlertService.scheduleForWarranty(
         created.garantieId,
         new Date(data.garantieDateAchat),
