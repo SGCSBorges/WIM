@@ -1,267 +1,291 @@
-import React from "react";
-import { useAuth } from "../../contexts/AuthContext";
+/**
+ * Dashboard Component
+ * Main dashboard page showing inventory statistics and overview
+ */
 
-export function Dashboard() {
-  const { user } = useAuth();
+import React, { useState, useEffect } from "react";
+import { statisticsAPI } from "../../services/api";
 
-  return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Tableau de bord
-          </h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Bienvenue dans votre gestionnaire d'inventaire et de garanties.
+interface DashboardStatistics {
+  articles: {
+    total: number;
+    withWarranty: number;
+    withoutWarranty: number;
+  };
+  warranties: {
+    total: number;
+    active: number;
+    expired: number;
+    expiringSoon: number;
+  };
+  users: {
+    total: number;
+    byRole: {
+      USER: number;
+      POWER_USER: number;
+      ADMIN: number;
+    };
+  };
+  alerts: {
+    total: number;
+  };
+}
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  color: string;
+  subtitle?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  icon,
+  color,
+  subtitle,
+}) => (
+  <div className="bg-white rounded-lg shadow p-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600">{title}</p>
+        <p className="text-3xl font-semibold text-gray-900">{value}</p>
+        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+      </div>
+      <div
+        className={`p-3 rounded-full ${color} text-white text-2xl flex items-center justify-center w-12 h-12`}
+      >
+        {icon}
+      </div>
+    </div>
+  </div>
+);
+
+interface DetailCardProps {
+  title: string;
+  data: { label: string; value: number; color?: string }[];
+}
+
+const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
+  <div className="bg-white rounded-lg shadow p-6">
+    <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+    <div className="space-y-3">
+      {data.map((item, index) => (
+        <div key={index} className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">{item.label}</span>
+          <span
+            className={`text-sm font-medium ${item.color || "text-gray-900"}`}
+          >
+            {item.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const Dashboard: React.FC = () => {
+  const [statistics, setStatistics] = useState<DashboardStatistics | null>(
+    null,
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        setLoading(true);
+        const data = await statisticsAPI.getAll();
+        setStatistics(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error("Error fetching statistics:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatistics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <span className="text-red-400 mr-2">❌</span>
+          <p className="text-sm text-red-700">
+            Error loading dashboard: {error}
           </p>
         </div>
       </div>
+    );
+  }
 
-      {/* Stats Overview */}
-      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Total Articles
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">-</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Garanties actives
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">-</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Garanties expirant
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">-</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Inventaires partagés
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">-</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
+  if (!statistics) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="flex items-center">
+          <span className="text-yellow-400 mr-2">⚠️</span>
+          <p className="text-sm text-yellow-700">No statistics available</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Quick Actions */}
-      <div className="mt-8">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">
-          Actions rapides
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600">
+          Overview of your inventory management system
+        </p>
+      </div>
+
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Articles"
+          value={statistics.articles.total}
+          icon="📦"
+          color="bg-blue-500"
+          subtitle={`${statistics.articles.withWarranty} with warranty`}
+        />
+
+        <StatCard
+          title="Active Warranties"
+          value={statistics.warranties.active}
+          icon="🛡️"
+          color="bg-green-500"
+          subtitle={`${statistics.warranties.expiringSoon} expiring soon`}
+        />
+
+        <StatCard
+          title="Total Users"
+          value={statistics.users.total}
+          icon="👥"
+          color="bg-purple-500"
+          subtitle={`${statistics.users.byRole.ADMIN} admin(s)`}
+        />
+
+        <StatCard
+          title="Active Alerts"
+          value={statistics.alerts.total}
+          icon="🚨"
+          color="bg-orange-500"
+        />
+      </div>
+
+      {/* Detailed Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <DetailCard
+          title="Articles Overview"
+          data={[
+            { label: "Total Articles", value: statistics.articles.total },
+            {
+              label: "With Warranty",
+              value: statistics.articles.withWarranty,
+              color: "text-green-600",
+            },
+            {
+              label: "Without Warranty",
+              value: statistics.articles.withoutWarranty,
+              color: "text-orange-600",
+            },
+          ]}
+        />
+
+        <DetailCard
+          title="Warranties Status"
+          data={[
+            { label: "Total Warranties", value: statistics.warranties.total },
+            {
+              label: "Active",
+              value: statistics.warranties.active,
+              color: "text-green-600",
+            },
+            {
+              label: "Expired",
+              value: statistics.warranties.expired,
+              color: "text-red-600",
+            },
+            {
+              label: "Expiring Soon",
+              value: statistics.warranties.expiringSoon,
+              color: "text-orange-600",
+            },
+          ]}
+        />
+
+        <DetailCard
+          title="Users by Role"
+          data={[
+            { label: "Total Users", value: statistics.users.total },
+            {
+              label: "Admins",
+              value: statistics.users.byRole.ADMIN,
+              color: "text-purple-600",
+            },
+            {
+              label: "Power Users",
+              value: statistics.users.byRole.POWER_USER,
+              color: "text-blue-600",
+            },
+            {
+              label: "Regular Users",
+              value: statistics.users.byRole.USER,
+              color: "text-gray-600",
+            },
+          ]}
+        />
+      </div>
+
+      {/* Quick Actions or Additional Info */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          System Health
         </h3>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg shadow hover:shadow-md transition-shadow">
-            <div>
-              <span className="rounded-lg inline-flex p-3 bg-indigo-50 text-indigo-700 ring-4 ring-white">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-              </span>
-            </div>
-            <div className="mt-8">
-              <h3 className="text-lg font-medium">
-                <a href="/articles" className="focus:outline-none">
-                  <span className="absolute inset-0" aria-hidden="true" />
-                  Ajouter un article
-                </a>
-              </h3>
-              <p className="mt-2 text-sm text-gray-500">
-                Créer un nouvel article dans votre inventaire.
-              </p>
-            </div>
-            <span
-              className="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400"
-              aria-hidden="true"
-            >
-              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-              </svg>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center">
+            <span className="text-green-500 mr-2">✅</span>
+            <span className="text-sm text-gray-600">
+              {(
+                (statistics.warranties.active / statistics.warranties.total) *
+                100
+              ).toFixed(1)}
+              % warranties active
             </span>
           </div>
 
-          <div className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg shadow hover:shadow-md transition-shadow">
-            <div>
-              <span className="rounded-lg inline-flex p-3 bg-green-50 text-green-700 ring-4 ring-white">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </span>
-            </div>
-            <div className="mt-8">
-              <h3 className="text-lg font-medium">
-                <a href="/warranties" className="focus:outline-none">
-                  <span className="absolute inset-0" aria-hidden="true" />
-                  Gérer les garanties
-                </a>
-              </h3>
-              <p className="mt-2 text-sm text-gray-500">
-                Consulter et gérer les garanties de vos articles.
-              </p>
-            </div>
-            <span
-              className="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400"
-              aria-hidden="true"
-            >
-              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-              </svg>
+          <div className="flex items-center">
+            <span className="text-blue-500 mr-2">📈</span>
+            <span className="text-sm text-gray-600">
+              {(
+                (statistics.articles.withWarranty / statistics.articles.total) *
+                100
+              ).toFixed(1)}
+              % articles covered
             </span>
           </div>
 
-          {user && ["POWER_USER", "ADMIN"].includes(user.role) && (
-            <div className="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg shadow hover:shadow-md transition-shadow">
-              <div>
-                <span className="rounded-lg inline-flex p-3 bg-blue-50 text-blue-700 ring-4 ring-white">
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                </span>
-              </div>
-              <div className="mt-8">
-                <h3 className="text-lg font-medium">
-                  <a href="/sharing" className="focus:outline-none">
-                    <span className="absolute inset-0" aria-hidden="true" />
-                    Partager l'inventaire
-                  </a>
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  Partager et gérer l'accès à votre inventaire.
-                </p>
-              </div>
-              <span
-                className="pointer-events-none absolute top-6 right-6 text-gray-300 group-hover:text-gray-400"
-                aria-hidden="true"
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-                </svg>
-              </span>
-            </div>
-          )}
+          <div className="flex items-center">
+            <span className="text-orange-500 mr-2">⏰</span>
+            <span className="text-sm text-gray-600">
+              {statistics.warranties.expiringSoon} warranties need attention
+            </span>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

@@ -1,0 +1,46 @@
+/**
+ * Statistics Routes
+ * API endpoints for dashboard statistics and analytics
+ */
+
+import { Router } from "express";
+import { authGuard } from "../modules/auth/auth.middleware";
+import {
+  getDashboardStatistics,
+  getBasicStatistics,
+} from "../services/statistics.service";
+
+const router = Router();
+
+/**
+ * GET /api/statistics/dashboard
+ * Get comprehensive dashboard statistics
+ */
+router.get("/dashboard", authGuard, async (req, res) => {
+  try {
+    const statistics = await getDashboardStatistics();
+    res.json(statistics);
+  } catch (error) {
+    console.error(
+      "[Statistics API] Error fetching dashboard statistics:",
+      error
+    );
+    res.status(500).json({ error: "Failed to fetch dashboard statistics" });
+  }
+});
+
+/**
+ * GET /api/statistics/basic
+ * Get basic statistics for quick overview
+ */
+router.get("/basic", authGuard, async (req, res) => {
+  try {
+    const statistics = await getBasicStatistics();
+    res.json(statistics);
+  } catch (error) {
+    console.error("[Statistics API] Error fetching basic statistics:", error);
+    res.status(500).json({ error: "Failed to fetch basic statistics" });
+  }
+});
+
+export default router;

@@ -140,21 +140,25 @@ export async function getDashboardStatistics(): Promise<DashboardStatistics> {
  */
 export async function getBasicStatistics() {
   try {
-    const [articlesCount, warrantiesCount, usersCount, alertsCount] = await Promise.all([
-      prisma.article.count(),
-      prisma.garantie.count(),
-      prisma.user.count(),
-      prisma.alerte.count()
-    ]);
+    const [articlesCount, warrantiesCount, usersCount, alertsCount] =
+      await Promise.all([
+        prisma.article.count(),
+        prisma.garantie.count(),
+        prisma.user.count(),
+        prisma.alerte.count(),
+      ]);
 
     return {
       articles: articlesCount,
       warranties: warrantiesCount,
       users: usersCount,
-      alerts: alertsCount
+      alerts: alertsCount,
     };
   } catch (error) {
-    console.error("[Statistics Service] Error fetching basic statistics:", error);
+    console.error(
+      "[Statistics Service] Error fetching basic statistics:",
+      error
+    );
     throw new Error("Failed to fetch basic statistics");
   }
 }

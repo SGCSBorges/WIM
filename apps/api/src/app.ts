@@ -6,7 +6,9 @@ import articleRoutes from "./modules/articles/article.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import auditRoutes from "./modules/audit/audit.routes";
-import shareRoutes from "./modules/shares/share.routes";
+import adminRoutes from "./modules/admin/admin.routes";
+import attachmentRoutes from "./modules/attachments/attachment.routes";
+import statisticsRoutes from "./routes/statistics.routes";
 
 export function createApp() {
   const app = express();
@@ -32,7 +34,9 @@ export function createApp() {
   app.use("/api/warranties", warrantyRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/audit", auditRoutes);
-  app.use("/api/shares", shareRoutes);
+  app.use("/api/admin", adminRoutes);
+  app.use("/api/attachments", attachmentRoutes);
+  app.use("/api/statistics", statisticsRoutes);
 
   // Handler d’erreurs (toujours en dernier)
   app.use(errorHandler);

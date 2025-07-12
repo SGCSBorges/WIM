@@ -1,6 +1,5 @@
 import { reminderQueue, ReminderJobData } from "../../jobs/queues";
 import { addMonths } from "../common/date";
-import { isRedisAvailable } from "../../jobs/redis";
 
 export const AlertService = {
   // planifie 3 jobs pour une garantie donnée
@@ -9,13 +8,6 @@ export const AlertService = {
     dateAchat: Date,
     durationMonths: number
   ) => {
-    if (!isRedisAvailable() || !reminderQueue) {
-      console.log(
-        `[AlertService] Jobs disabled - skipping warranty alerts for garantie ${garantieId}`
-      );
-      return;
-    }
-
     const fin = addMonths(dateAchat, durationMonths);
     const j30 = new Date(fin);
     j30.setDate(j30.getDate() - 30);
@@ -35,9 +27,5 @@ export const AlertService = {
       const delay = new Date(job.when).getTime() - Date.now();
       await reminderQueue.add("reminder", job, { delay: Math.max(0, delay) });
     }
-
-    console.log(
-      `[AlertService] Scheduled ${jobs.length} warranty alerts for garantie ${garantieId}`
-    );
   },
 };

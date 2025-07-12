@@ -17,20 +17,16 @@ router.post(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: any, res) => {
-    const { email, permission, ttlDays } = ShareInviteCreateSchema.parse(
+    const bodyData = ShareInviteCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
-    const inv = await ShareService.createInvite(
-      req.user.sub,
-      email,
-      permission,
-      ttlDays
-    );
+    const data = { ...bodyData, ownerUserId: req.user.sub };
+    const inv = await ShareService.createInvite(data);
     await auditAction(req, {
       action: "CREATE",
       entity: "ShareInvite",
-      entityId: inv.inviteId,
-      metadata: { email, permission },
+      entityId: (inv as any).inviteId || (inv as any).shareInviteId, // Handle field name inconsistency
+      metadata: { email: data.email, permission: data.permission },
     });
     res.status(201).json(inv);
   })
@@ -87,7 +83,7 @@ router.put(
     await auditAction(req, {
       action: "UPDATE",
       entity: "InventoryShare",
-      entityId: updated.shareId,
+      entityId: (updated as any).shareId || (updated as any).inventoryShareId, // Handle field name inconsistency
       metadata: { permission },
     });
     res.json(updated);

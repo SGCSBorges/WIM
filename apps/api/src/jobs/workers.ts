@@ -1,20 +1,39 @@
 import { Worker } from "bullmq";
 import { reminderQueue, ReminderJobData } from "./queues";
-import { redisConnection, isRedisAvailable } from "./redis";
 import { PrismaClient } from "@prisma/client";
+import { RedisOptions } from "ioredis";
 
 const prisma = new PrismaClient();
 
-export function startWorkers() {
-  if (!isRedisAvailable()) {
-    console.log("[Jobs] Disabled - no workers started");
-    return;
+// Create Redis connection configuration for worker
+function createRedisConnection(): RedisOptions {
+  const redisUrl = process.env.REDIS_URL;
+
+  if (redisUrl) {
+    try {
+      const url = new URL(redisUrl);
+      return {
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+        host: url.hostname,
+        port: parseInt(url.port) || 6379,
+        username: url.username || undefined,
+        password: url.password || undefined,
+      };
+    } catch (error) {
+      console.error("[Redis] Invalid REDIS_URL format:", error);
+    }
   }
 
-  if (!reminderQueue || !redisConnection) {
-    console.warn("[Jobs] Queue or connection not initialized");
-    return;
-  }
+  return {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    host: process.env.REDIS_HOST || "localhost",
+    port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
+  };
+}
+
+export function startWorkers() {
   const worker = new Worker<ReminderJobData>(
     "wim-reminders",
     async (job) => {
@@ -26,7 +45,9 @@ export function startWorkers() {
       );
       // TODO: envoi push via Web Push (phase ultérieure)
     },
-    { connection: redisConnection }
+    {
+      connection: createRedisConnection(),
+    }
   );
 
   worker.on("failed", (job, err) => {

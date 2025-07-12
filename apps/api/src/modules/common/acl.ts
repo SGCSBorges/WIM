@@ -9,7 +9,7 @@ export async function canReadInventory(
     where: { ownerUserId, targetUserId: requesterUserId },
     select: { permission: true },
   });
-  return !!share; // RO ou RW
+  return !!share; // READ or WRITE
 }
 
 export async function canWriteInventory(
@@ -21,5 +21,5 @@ export async function canWriteInventory(
     where: { ownerUserId, targetUserId: requesterUserId },
     select: { permission: true },
   });
-  return !!share && share.permission === "RW";
+  return !!share && (share.permission as string) === "WRITE";
 }

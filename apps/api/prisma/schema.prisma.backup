@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  articleId          Int     @id @default(autoincrement())
+  articleNom         String  @db.VarChar(30)
+  articleModele      String  @db.VarChar(30)
+  articleDescription String? @db.VarChar(255)
+  ownerUserId        Int
+
+  // Relations
+  owner    User      @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  garantie Garantie?
+  alertes  Alerte[]
+
+  @@index([articleNom, articleModele])
+}
+
+model Garantie {
+  garantieId        Int      @id @default(autoincrement())
+  garantieArticleId Int      @unique // 1–1 : une garantie par article
+  garantieNom       String   @db.VarChar(30)
+  garantieDateAchat DateTime
+  garantieDuration  Int // mois
+  garantieFin       DateTime
+  garantieIsValide  Boolean  @default(true)
+  garantieImage     String?  @db.VarChar(255)
+  ownerUserId       Int
+
+  // Relations
+  article Article @relation(fields: [garantieArticleId], references: [articleId], onDelete: Cascade)
+  owner   User    @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  alertes Alerte[]
+
+  @@index([garantieFin])
+}
+
+model Alerte {
+  alerteId          Int      @id @default(autoincrement())
+  alerteGarantieId  Int?
+  alerteArticleId   Int?
+  alerteNom         String   @db.VarChar(30)
+  alerteDate        DateTime
+  alerteDescription String?  @db.VarChar(255)
+
+  // Relations (au moins une des deux au niveau métier)
+  garantie Garantie? @relation(fields: [alerteGarantieId], references: [garantieId], onDelete: Cascade)
+  article  Article?  @relation(fields: [alerteArticleId], references: [articleId], onDelete: Cascade)
+
+  @@unique([alerteGarantieId, alerteDate], map: "uq_alerte_garantie_date")
+  @@unique([alerteArticleId, alerteDate], map: "uq_alerte_article_date")
+  @@index([alerteDate])
+  @@index([alerteGarantieId])
+  @@index([alerteArticleId])
+}
+
+model User {
+  userId    Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  articles   Article[]
+  garanties  Garantie[]
+  auditLogs  AuditLog[]
+}
+
+enum Role {
+  USER
+  POWER_USER
+  ADMIN
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [userId], onDelete: SetNull)
+
+  action    String  // e.g. CREATE/UPDATE/DELETE/LOGIN/LOGOUT
+  entity    String  // e.g. Article/Garantie/Alerte/User
+  entityId  Int?
+  metadata  Json?
+
+  ip        String? // IP address
+  userAgent String? // User agent string
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+}

@@ -1,203 +1,218 @@
 import React, { useState } from "react";
-import { WarrantyCreateRequest, ArticleWithWarranties } from "../../types";
-import { apiClient } from "../../services/api";
-import { format, addMonths, parseISO } from "date-fns";
-import { fr } from "date-fns/locale";
 
-interface WarrantyFormProps {
-  article: ArticleWithWarranties;
-  onSave: () => void;
-  onCancel: () => void;
+interface Warranty {
+  garantieId?: number;
+  garantieNom: string;
+  garantieDateAchat: string;
+  garantieDuration: number;
+  garantieArticleId: number;
 }
 
-export function WarrantyForm({ article, onSave, onCancel }: WarrantyFormProps) {
-  const [formData, setFormData] = useState({
-    garantieNom: `Garantie ${article.articleNom}`,
-    garantieDateAchat: format(new Date(), "yyyy-MM-dd"),
-    garantieDuration: 24, // 2 years default
-    garantieImage: "",
+interface WarrantyFormProps {
+  warranty?: Warranty;
+  articleId?: number;
+  onSubmit: (warrantyData: Omit<Warranty, "garantieId">) => void;
+  onCancel?: () => void;
+  isLoading?: boolean;
+}
+
+const WarrantyForm: React.FC<WarrantyFormProps> = ({
+  warranty,
+  articleId,
+  onSubmit,
+  onCancel,
+  isLoading = false,
+}) => {
+  const [formData, setFormData] = useState<Omit<Warranty, "garantieId">>({
+    garantieNom: warranty?.garantieNom || "",
+    garantieDateAchat:
+      warranty?.garantieDateAchat || new Date().toISOString().split("T")[0],
+    garantieDuration: warranty?.garantieDuration || 12,
+    garantieArticleId: warranty?.garantieArticleId || articleId || 0,
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  // Calculate warranty end date
-  const warrantyEndDate = addMonths(
-    parseISO(formData.garantieDateAchat),
-    formData.garantieDuration,
-  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.garantieNom.trim()) {
+      newErrors.garantieNom = "Warranty name is required";
+    } else if (formData.garantieNom.length > 100) {
+      newErrors.garantieNom = "Warranty name must be 100 characters or less";
+    }
+
+    if (!formData.garantieDateAchat) {
+      newErrors.garantieDateAchat = "Purchase date is required";
+    }
+
+    if (!formData.garantieDuration || formData.garantieDuration < 1) {
+      newErrors.garantieDuration = "Duration must be at least 1 month";
+    } else if (formData.garantieDuration > 120) {
+      newErrors.garantieDuration = "Duration cannot exceed 120 months";
+    }
+
+    if (!formData.garantieArticleId) {
+      newErrors.garantieArticleId = "Article selection is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
 
-    try {
-      const warrantyData: WarrantyCreateRequest = {
-        ...formData,
-        garantieArticleId: article.articleId,
-      };
-
-      await apiClient.createWarranty(warrantyData);
-      onSave();
-    } catch (err: any) {
-      setError(err.error || "Erreur lors de la création de la garantie");
-    } finally {
-      setLoading(false);
+    if (validateForm()) {
+      onSubmit(formData);
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+  const handleInputChange = (
+    field: keyof typeof formData,
+    value: string | number,
   ) => {
-    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
-    if (name === "garantieDuration") {
-      setFormData({
-        ...formData,
-        [name]: parseInt(value) || 0,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  // Calculate warranty end date
+  const calculateEndDate = () => {
+    if (formData.garantieDateAchat && formData.garantieDuration) {
+      const purchaseDate = new Date(formData.garantieDateAchat);
+      const endDate = new Date(purchaseDate);
+      endDate.setMonth(endDate.getMonth() + formData.garantieDuration);
+      return endDate.toLocaleDateString();
+    }
+    return "";
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Ajouter une garantie
-          </h3>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        {warranty ? "Edit Warranty" : "Add New Warranty"}
+      </h2>
 
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900">Article concerné :</h4>
-            <p className="text-blue-700">
-              {article.articleNom} - {article.articleModele}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Warranty Name */}
+        <div>
+          <label
+            htmlFor="garantieNom"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Warranty Name *
+          </label>
+          <input
+            type="text"
+            id="garantieNom"
+            value={formData.garantieNom}
+            onChange={(e) => handleInputChange("garantieNom", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter warranty name"
+            maxLength={100}
+            disabled={isLoading}
+          />
+          {errors.garantieNom && (
+            <p className="mt-1 text-sm text-red-600">{errors.garantieNom}</p>
+          )}
+        </div>
+
+        {/* Purchase Date */}
+        <div>
+          <label
+            htmlFor="garantieDateAchat"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Purchase Date *
+          </label>
+          <input
+            type="date"
+            id="garantieDateAchat"
+            value={formData.garantieDateAchat}
+            onChange={(e) =>
+              handleInputChange("garantieDateAchat", e.target.value)
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            disabled={isLoading}
+          />
+          {errors.garantieDateAchat && (
+            <p className="mt-1 text-sm text-red-600">
+              {errors.garantieDateAchat}
+            </p>
+          )}
+        </div>
+
+        {/* Duration */}
+        <div>
+          <label
+            htmlFor="garantieDuration"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Duration (months) *
+          </label>
+          <input
+            type="number"
+            id="garantieDuration"
+            value={formData.garantieDuration}
+            onChange={(e) =>
+              handleInputChange(
+                "garantieDuration",
+                parseInt(e.target.value) || 0,
+              )
+            }
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter duration in months"
+            min={1}
+            max={120}
+            disabled={isLoading}
+          />
+          {errors.garantieDuration && (
+            <p className="mt-1 text-sm text-red-600">
+              {errors.garantieDuration}
+            </p>
+          )}
+        </div>
+
+        {/* Warranty End Date Display */}
+        {formData.garantieDateAchat && formData.garantieDuration && (
+          <div className="p-3 bg-blue-50 rounded-md">
+            <p className="text-sm text-blue-800">
+              <strong>Warranty expires on:</strong> {calculateEndDate()}
             </p>
           </div>
+        )}
 
-          {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
+        {/* Form Actions */}
+        <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLoading
+              ? "Saving..."
+              : warranty
+                ? "Update Warranty"
+                : "Create Warranty"}
+          </button>
+
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+            >
+              Cancel
+            </button>
           )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="garantieNom"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Nom de la garantie *
-              </label>
-              <input
-                type="text"
-                id="garantieNom"
-                name="garantieNom"
-                required
-                value={formData.garantieNom}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Ex: Garantie Apple Care"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="garantieDateAchat"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Date d'achat *
-              </label>
-              <input
-                type="date"
-                id="garantieDateAchat"
-                name="garantieDateAchat"
-                required
-                value={formData.garantieDateAchat}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="garantieDuration"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Durée de la garantie (en mois) *
-              </label>
-              <select
-                id="garantieDuration"
-                name="garantieDuration"
-                required
-                value={formData.garantieDuration}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value={6}>6 mois</option>
-                <option value={12}>1 an</option>
-                <option value={24}>2 ans</option>
-                <option value={36}>3 ans</option>
-                <option value={60}>5 ans</option>
-              </select>
-            </div>
-
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm">
-                <span className="font-medium text-gray-700">
-                  Date de fin de garantie :
-                </span>
-                <br />
-                <span className="text-indigo-600 font-medium">
-                  {format(warrantyEndDate, "dd MMMM yyyy", { locale: fr })}
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="garantieImage"
-                className="block text-sm font-medium text-gray-700"
-              >
-                URL de l'image (optionnel)
-              </label>
-              <input
-                type="url"
-                id="garantieImage"
-                name="garantieImage"
-                value={formData.garantieImage}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="https://exemple.com/image.jpg"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onCancel}
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {loading ? "Création..." : "Créer la garantie"}
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
+      </form>
     </div>
   );
-}
+};
+
+export default WarrantyForm;

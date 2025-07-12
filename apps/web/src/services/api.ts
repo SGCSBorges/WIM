@@ -1,250 +1,165 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import type {
-  User,
-  Article,
-  Warranty,
-  LoginRequest,
-  RegisterRequest,
-  AuthResponse,
-  ArticleCreateRequest,
-  WarrantyCreateRequest,
-  InventoryShare,
-  ApiError,
-} from "../types";
+const API_BASE_URL = "http://localhost:3000/api";
 
-class ApiClient {
-  private client: AxiosInstance;
+// Get JWT token from localStorage
+const getToken = (): string | null => {
+  return localStorage.getItem("token");
+};
 
-  constructor() {
-    this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+// Create headers with auth token
+const getHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
+// Auth API
+export const authAPI = {
+  async login(email: string, password: string) {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({ email, password }),
     });
 
-    // Request interceptor to add auth token
-    this.client.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem("wim_token");
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
+    if (!response.ok) {
+      let errorMessage = "Login failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+    return data;
+  },
+
+  async register(email: string, password: string, role: string = "USER") {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      (error) => Promise.reject(error),
-    );
+      body: JSON.stringify({ email, password, role }),
+    });
 
-    // Response interceptor to handle common errors
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          // Clear token and redirect to login
-          localStorage.removeItem("wim_token");
-          localStorage.removeItem("wim_user");
-          window.location.href = "/login";
-        }
-        return Promise.reject(error);
-      },
-    );
-  }
-
-  // Helper method to handle API responses
-  private handleResponse<T>(response: AxiosResponse<T>): T {
-    return response.data;
-  }
-
-  private handleError(error: any): never {
-    if (error.response?.data) {
-      throw error.response.data as ApiError;
+    if (!response.ok) {
+      let errorMessage = "Registration failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // If response is not JSON, use status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
-    throw { error: error.message || "Network error" } as ApiError;
-  }
 
-  // Auth endpoints
-  async login(data: LoginRequest): Promise<AuthResponse> {
-    try {
-      const response = await this.client.post<AuthResponse>(
-        "/auth/login",
-        data,
-      );
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
+    return response.json();
+  },
+
+  logout() {
+    localStorage.removeItem("token");
+  },
+
+  async getProfile() {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to get profile");
     }
-  }
 
-  async register(data: RegisterRequest): Promise<AuthResponse> {
-    try {
-      const response = await this.client.post<AuthResponse>(
-        "/auth/register",
-        data,
-      );
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
+    return response.json();
+  },
+
+  isAuthenticated(): boolean {
+    return !!getToken();
+  },
+};
+
+// Articles API
+export const articlesAPI = {
+  async getAll() {
+    const response = await fetch(`${API_BASE_URL}/articles`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch articles");
     }
-  }
 
-  async getProfile(): Promise<User> {
-    try {
-      const response = await this.client.get<User>("/auth/me");
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
+    return response.json();
+  },
+
+  async create(article: any) {
+    const response = await fetch(`${API_BASE_URL}/articles`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(article),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create article");
     }
-  }
 
-  // Articles endpoints
-  async getArticles(): Promise<Article[]> {
-    try {
-      const response = await this.client.get<Article[]>("/articles");
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
+    return response.json();
+  },
+
+  async update(id: number, article: any) {
+    const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(article),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update article");
     }
-  }
 
-  async getArticle(id: number): Promise<Article> {
-    try {
-      const response = await this.client.get<Article>(`/articles/${id}`);
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
+    return response.json();
+  },
+
+  async delete(id: number) {
+    const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete article");
     }
-  }
 
-  async createArticle(data: ArticleCreateRequest): Promise<Article> {
-    try {
-      const response = await this.client.post<Article>("/articles", data);
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
+    return response.json();
+  },
+};
+
+// Statistics API
+export const statisticsAPI = {
+  async getAll() {
+    const response = await fetch(`${API_BASE_URL}/statistics`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch statistics");
     }
-  }
 
-  async updateArticle(
-    id: number,
-    data: Partial<ArticleCreateRequest>,
-  ): Promise<Article> {
-    try {
-      const response = await this.client.put<Article>(`/articles/${id}`, data);
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async deleteArticle(id: number): Promise<void> {
-    try {
-      await this.client.delete(`/articles/${id}`);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  // Warranties endpoints
-  async getWarranties(): Promise<Warranty[]> {
-    try {
-      const response = await this.client.get<Warranty[]>("/warranties");
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async getWarranty(id: number): Promise<Warranty> {
-    try {
-      const response = await this.client.get<Warranty>(`/warranties/${id}`);
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async createWarranty(data: WarrantyCreateRequest): Promise<Warranty> {
-    try {
-      const response = await this.client.post<Warranty>("/warranties", data);
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async updateWarranty(
-    id: number,
-    data: Partial<WarrantyCreateRequest>,
-  ): Promise<Warranty> {
-    try {
-      const response = await this.client.put<Warranty>(
-        `/warranties/${id}`,
-        data,
-      );
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async deleteWarranty(id: number): Promise<void> {
-    try {
-      await this.client.delete(`/warranties/${id}`);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  // Sharing methods
-  async getShares(): Promise<InventoryShare[]> {
-    try {
-      const response = await this.client.get<InventoryShare[]>("/shares");
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async createShare(data: {
-    sharedWithUserId: number;
-    accessLevel: string;
-  }): Promise<InventoryShare> {
-    try {
-      const response = await this.client.post<InventoryShare>("/shares", data);
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async deleteShare(id: number): Promise<void> {
-    try {
-      await this.client.delete(`/shares/${id}`);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  // Users methods
-  async getUsers(): Promise<User[]> {
-    try {
-      const response = await this.client.get<User[]>("/users");
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  // Health check
-  async healthCheck(): Promise<{ status: string }> {
-    try {
-      const response = await this.client.get<{ status: string }>("/health");
-      return this.handleResponse(response);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-}
-
-export const apiClient = new ApiClient();
-export default apiClient;
+    return response.json();
+  },
+};

@@ -1,16 +1,38 @@
 import { Queue } from "bullmq";
-import { redisConnection, isRedisAvailable } from "./redis";
+import { RedisOptions } from "ioredis";
 
-let reminderQueue: Queue | undefined;
+const connection: RedisOptions = {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
+};
+// Create BullMQ connection configuration
+function createRedisConnection(): RedisOptions {
+  const redisUrl = process.env.REDIS_URL;
 
-// Only initialize Redis connection if jobs are enabled and Redis is available
-if (isRedisAvailable() && redisConnection) {
-  reminderQueue = new Queue("wim-reminders", {
-    connection: redisConnection,
-  });
+  if (redisUrl) {
+    try {
+      const url = new URL(redisUrl);
+      return {
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+        host: url.hostname,
+        port: parseInt(url.port) || 6379,
+        username: url.username || undefined,
+        password: url.password || undefined,
+      };
+    } catch (error) {
+      console.error("[Redis] Invalid REDIS_URL format:", error);
+    }
+  }
+
+  return connection;
 }
 
-export { reminderQueue };
+export const reminderQueue = new Queue("wim-reminders", {
+  connection: createRedisConnection(),
+});
 
 export type ReminderJobData = {
   garantieId: number;

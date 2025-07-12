@@ -2,14 +2,13 @@ import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";
 import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
-import { isRedisAvailable } from "../../jobs/redis";
 
 export const WarrantyService = {
   list: () => prisma.garantie.findMany({ orderBy: { garantieId: "desc" } }),
   get: (id: number) =>
     prisma.garantie.findUnique({ where: { garantieId: id } }),
 
-  create: async (data: WarrantyCreateInput & { ownerUserId: number }) => {
+  create: async (data: WarrantyCreateInput) => {
     const fin = addMonths(
       new Date(data.garantieDateAchat),
       data.garantieDuration
@@ -27,17 +26,23 @@ export const WarrantyService = {
 
     // Créer la garantie une seule fois
     const created = await prisma.garantie.create({
-      data: { ...data, garantieFin: fin, garantieIsValide: true },
+      data: {
+        garantieArticleId: data.garantieArticleId,
+        garantieNom: data.garantieNom,
+        garantieDateAchat: data.garantieDateAchat,
+        garantieDuration: data.garantieDuration,
+        garantieFin: fin,
+        garantieIsValide: true,
+        ownerUserId: data.ownerUserId,
+      },
     });
 
-    // Planifier 3 rappels (J-30 / J-7 / J-1) - only if jobs are enabled
-    if (isRedisAvailable()) {
-      await AlertService.scheduleForWarranty(
-        created.garantieId,
-        new Date(data.garantieDateAchat),
-        data.garantieDuration
-      );
-    }
+    // Planifier 3 rappels (J-30 / J-7 / J-1)
+    await AlertService.scheduleForWarranty(
+      created.garantieId,
+      new Date(data.garantieDateAchat),
+      data.garantieDuration
+    );
 
     return created;
   },

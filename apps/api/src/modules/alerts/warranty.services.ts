@@ -8,7 +8,7 @@ import { AlertService } from "../alerts/alert.service";
 
 export const WarrantyService = {
   // […]
-  create: async (data: WarrantyCreateInput, ownerUserId: number) => {
+  create: async (data: WarrantyCreateInput) => {
     const fin = addMonths(
       new Date(data.garantieDateAchat),
       data.garantieDuration
@@ -24,7 +24,7 @@ export const WarrantyService = {
     }
 
     const created = await prisma.garantie.create({
-      data: { ...data, garantieFin: fin, garantieIsValide: true, ownerUserId },
+      data: { ...data, garantieFin: fin, garantieIsValide: true },
     });
 
     await AlertService.scheduleForWarranty(
