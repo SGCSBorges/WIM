@@ -9,8 +9,8 @@ interface Article {
   articleId?: number;
   articleNom: string;
   articleModele: string;
-  articleDescription?: string;
-  productImageUrl?: string;
+  articleDescription?: string | null;
+  productImageUrl?: string | null;
 }
 
 interface ArticleFormProps {
@@ -33,7 +33,15 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    // Convert empty strings to null for optional fields
+    const submitData = {
+      ...formData,
+      articleDescription: formData.articleDescription?.trim() || null,
+      productImageUrl: formData.productImageUrl?.trim() || null,
+    };
+
+    onSubmit(submitData);
   };
 
   const handleChange = (
@@ -103,7 +111,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           <textarea
             id="articleDescription"
             name="articleDescription"
-            value={formData.articleDescription}
+            value={formData.articleDescription || ""}
             onChange={handleChange}
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -123,7 +131,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             type="url"
             id="productImageUrl"
             name="productImageUrl"
-            value={formData.productImageUrl}
+            value={formData.productImageUrl || ""}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="https://example.com/image.jpg (optional)"

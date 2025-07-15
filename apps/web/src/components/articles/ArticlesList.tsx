@@ -11,7 +11,8 @@ interface Article {
   articleId: number;
   articleNom: string;
   articleModele: string;
-  articleDescription?: string;
+  articleDescription?: string | null;
+  productImageUrl?: string | null;
 }
 
 const ArticlesList: React.FC = () => {

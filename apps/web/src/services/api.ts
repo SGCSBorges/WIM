@@ -115,7 +115,14 @@ export const articlesAPI = {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to create article");
+      let errorMessage = `Failed to create article (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // Keep default error message
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -142,10 +149,18 @@ export const articlesAPI = {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to delete article");
+      let errorMessage = `Failed to delete article (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // Keep default error message
+      }
+      throw new Error(errorMessage);
     }
 
-    return response.json();
+    // DELETE returns 204 No Content, so no JSON to parse
+    return null;
   },
 };
 

@@ -36,6 +36,9 @@
     "pino-pretty": "^11.3.0",
     "zod": "^4.1.1"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",

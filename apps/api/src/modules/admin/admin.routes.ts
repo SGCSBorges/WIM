@@ -75,4 +75,92 @@ router.get(
   })
 );
 
+/** DELETE /api/admin/users/:id - Delete user and all their data (Admin only) */
+router.delete(
+  "/users/:id",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    const userId = Number(req.params.id);
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Prevent deleting the last admin
+    if (user.role === "ADMIN") {
+      const adminCount = await prisma.user.count({
+        where: { role: "ADMIN" },
+      });
+      if (adminCount <= 1) {
+        return res
+          .status(400)
+          .json({ error: "Cannot delete the last admin user" });
+      }
+    }
+
+    // Delete user (cascade will handle related data)
+    await prisma.user.delete({
+      where: { userId },
+    });
+
+    res.status(204).send();
+  })
+);
+
+/** GET /api/admin/users/:id/inventory - Get user's inventory details (Admin only) */
+router.get(
+  "/users/:id/inventory",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    const userId = Number(req.params.id);
+
+    // Prisma client naming for the warranties relation appears inconsistent across generated types.
+    // Use a typed escape hatch here to keep a stable API response.
+    const user = (await (prisma.user as any).findUnique({
+      where: { userId },
+      include: {
+        articlesOwned: {
+          include: {
+            garantie: {
+              select: {
+                garantieId: true,
+                garantieNom: true,
+                garantieIsValide: true,
+              },
+            },
+          },
+        },
+        warrantiesOwned: {
+          include: {
+            article: {
+              select: {
+                articleNom: true,
+                articleModele: true,
+              },
+            },
+          },
+        },
+      },
+    })) as any;
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      userId: user.userId,
+      email: user.email,
+      articlesOwned: user.articlesOwned,
+      warrantiesOwned: user.warrantiesOwned,
+    });
+  })
+);
+
 export default router;
