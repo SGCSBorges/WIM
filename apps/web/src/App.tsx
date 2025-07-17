@@ -3,10 +3,11 @@ import ArticlesList from "./components/articles/ArticlesList";
 import Dashboard from "./components/dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
 import { authAPI } from "./services/api";
+import AdminUsers from "./components/admin/AdminUsers";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<
-    "dashboard" | "articles" | "home"
+    "dashboard" | "articles" | "home" | "admin"
   >("home");
 
   // Real authentication state
@@ -14,13 +15,17 @@ export default function App() {
     return authAPI.isAuthenticated();
   });
 
+  const [role, setRole] = useState(() => authAPI.getRole());
+
   const handleLogin = () => {
     setIsAuthenticated(true);
+    setRole(authAPI.getRole());
   };
 
   const handleLogout = () => {
     authAPI.logout();
     setIsAuthenticated(false);
+    setRole(null);
     setCurrentView("home");
   };
 
@@ -67,6 +72,18 @@ export default function App() {
                 >
                   Articles
                 </button>
+                {role === "ADMIN" && (
+                  <button
+                    onClick={() => setCurrentView("admin")}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      currentView === "admin"
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    Admin
+                  </button>
+                )}
               </div>
             </div>
 
@@ -138,6 +155,7 @@ export default function App() {
 
         {currentView === "dashboard" && <Dashboard />}
         {currentView === "articles" && <ArticlesList />}
+        {currentView === "admin" && <AdminUsers />}
       </main>
     </div>
   );

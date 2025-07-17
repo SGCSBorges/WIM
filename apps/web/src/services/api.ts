@@ -5,6 +5,10 @@ const getToken = (): string | null => {
   return localStorage.getItem("token");
 };
 
+const getRole = (): string | null => {
+  return localStorage.getItem("role");
+};
+
 // Create headers with auth token
 const getHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
@@ -45,6 +49,9 @@ export const authAPI = {
     if (data.token) {
       localStorage.setItem("token", data.token);
     }
+    if (data.user?.role) {
+      localStorage.setItem("role", data.user.role);
+    }
     return data;
   },
 
@@ -69,11 +76,19 @@ export const authAPI = {
       throw new Error(errorMessage);
     }
 
-    return response.json();
+    const data = await response.json();
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+    if (data.user?.role) {
+      localStorage.setItem("role", data.user.role);
+    }
+    return data;
   },
 
   logout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
   },
 
   async getProfile() {
@@ -90,6 +105,10 @@ export const authAPI = {
 
   isAuthenticated(): boolean {
     return !!getToken();
+  },
+
+  getRole(): string | null {
+    return getRole();
   },
 };
 

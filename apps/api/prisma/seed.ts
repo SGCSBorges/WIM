@@ -10,7 +10,7 @@ async function main() {
 
   let adminUser;
   if (!adminExists) {
-    const hashedPassword = await bcrypt.hash("admin", 10);
+    const hashedPassword = await bcrypt.hash("adminadmin", 10);
     adminUser = await prisma.user.create({
       data: {
         email: "admin@admin.com",
@@ -18,10 +18,15 @@ async function main() {
         role: "ADMIN",
       },
     });
-    console.log("Admin user created: admin@admin.com / admin");
+    console.log("Admin user created: admin@admin.com / adminadmin");
   } else {
     adminUser = adminExists;
-    console.log("Admin user already exists");
+    const hashedPassword = await bcrypt.hash("adminadmin", 10);
+    await prisma.user.update({
+      where: { userId: adminUser.userId },
+      data: { password: hashedPassword },
+    });
+    console.log("Admin password updated: admin@admin.com / adminadmin");
   }
 
   // Create a test user for sample data
