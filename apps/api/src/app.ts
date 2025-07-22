@@ -8,10 +8,18 @@ import authRoutes from "./modules/auth/auth.routes";
 import auditRoutes from "./modules/audit/audit.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import attachmentRoutes from "./modules/attachments/attachment.routes";
+import billingRoutes from "./modules/billing/billing.routes";
+import billingWebhookRoutes from "./modules/billing/billing.webhook.routes";
+import billingMeRoutes from "./modules/billing/billing.me.routes";
+import shareRoutes from "./modules/shares/share.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 
 export function createApp() {
   const app = express();
+
+  // Stripe webhook requires raw body for signature verification.
+  // Mount BEFORE express.json().
+  app.use("/api/billing", billingWebhookRoutes);
 
   // Sécurité / CORS / Rate limit
   app.use(security.helmet);
@@ -36,6 +44,9 @@ export function createApp() {
   app.use("/api/audit", auditRoutes);
   app.use("/api/admin", adminRoutes);
   app.use("/api/attachments", attachmentRoutes);
+  app.use("/api/billing", billingRoutes);
+  app.use("/api/billing", billingMeRoutes);
+  app.use("/api/shares", shareRoutes);
   app.use("/api/statistics", statisticsRoutes);
 
   // Handler d’erreurs (toujours en dernier)

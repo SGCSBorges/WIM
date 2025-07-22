@@ -89,20 +89,6 @@ router.delete(
   })
 );
 
-/** GET attachments for article */
-router.get(
-  "/article/:articleId",
-  authGuard,
-  asyncHandler(async (req: any, res) => {
-    const articleId = Number(req.params.articleId);
-    const attachments = await AttachmentService.getForArticle(
-      articleId,
-      req.user.sub
-    );
-    res.json(attachments);
-  })
-);
-
 /** GET attachments for warranty */
 router.get(
   "/warranty/:garantieId",

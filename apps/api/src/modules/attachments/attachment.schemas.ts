@@ -6,8 +6,6 @@ export const AttachmentCreateSchema = z.object({
   mimeType: z.string().max(100),
   fileSize: z.number().int().positive(),
   fileUrl: z.string().url().max(500),
-  articleId: z.number().int().positive().optional(),
-  garantieId: z.number().int().positive().optional(),
   ownerUserId: z.number().int().positive(),
 });
 

@@ -197,3 +197,49 @@ export const statisticsAPI = {
     return response.json();
   },
 };
+
+// Billing / Stripe
+export const billingAPI = {
+  async createPowerUserCheckoutSession(
+    plan: "monthly" | "yearly",
+  ): Promise<{ url: string }> {
+    const response = await fetch(
+      `${API_BASE_URL}/billing/upgrade/power-user/checkout`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ plan }),
+      },
+    );
+
+    if (!response.ok) {
+      let errorMessage = `Failed to start checkout (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  async refreshRoleFromServer(): Promise<string | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/billing/me`, {
+        headers: getHeaders(),
+      });
+      if (!response.ok) return getRole();
+      const data = await response.json();
+      if (data?.role) {
+        localStorage.setItem("role", data.role);
+        return data.role;
+      }
+      return getRole();
+    } catch {
+      return getRole();
+    }
+  },
+};

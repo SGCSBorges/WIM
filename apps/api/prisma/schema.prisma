@@ -32,6 +32,22 @@ enum AttachmentType {
   OTHER
 }
 
+model Location {
+  locationId  Int      @id @default(autoincrement())
+  ownerUserId Int
+  name        String   @db.VarChar(120)
+  description String?  @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner    User              @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  articles ArticleLocation[]
+
+  @@index([ownerUserId])
+  @@unique([ownerUserId, name], map: "uq_location_owner_name")
+}
+
 model User {
   userId    Int      @id @default(autoincrement())
   email     String   @unique
@@ -53,6 +69,7 @@ model User {
   // Audit (optionnel)
   auditLogs AuditLog[]
   attachments Attachment[]
+  locations   Location[]
 }
 
 model Article {
@@ -66,32 +83,49 @@ model Article {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner    User    @relation("UserArticles", fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  owner    User     @relation("UserArticles", fields: [ownerUserId], references: [userId], onDelete: Cascade)
   garantie Garantie?
   alertes  Alerte[]
-  pieces   Attachment[]
+  locations ArticleLocation[]
 
   @@index([ownerUserId])
   @@index([articleNom, articleModele])
 }
 
+model ArticleLocation {
+  articleId   Int
+  locationId  Int
+  assignedAt  DateTime @default(now())
+
+  article   Article   @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+  location  Location  @relation(fields: [locationId], references: [locationId], onDelete: Cascade)
+
+  @@id([articleId, locationId])
+  @@index([locationId])
+}
+
 model Garantie {
   garantieId        Int      @id @default(autoincrement())
   ownerUserId       Int
-  garantieArticleId Int      @unique // 1 garantie par article (MVP)
+  // Optional link to an article (0..1). Enforced unique so an article
+  // cannot have multiple warranties.
+  garantieArticleId Int?     @unique
   garantieNom       String   @db.VarChar(100)
   garantieDateAchat DateTime
   garantieDuration  Int      // en mois
   garantieFin       DateTime
   garantieIsValide  Boolean  @default(true)
 
+  // Optional linked image/proof attachment
+  garantieImageAttachmentId Int? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner   User    @relation("UserWarranties", fields: [ownerUserId], references: [userId], onDelete: Cascade)
-  article Article @relation(fields: [garantieArticleId], references: [articleId], onDelete: Cascade)
-  alertes Alerte[]
-  pieces  Attachment[]
+  owner      User      @relation("UserWarranties", fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  article    Article?  @relation(fields: [garantieArticleId], references: [articleId], onDelete: Cascade)
+  garantieImageAttachment Attachment? @relation("GarantieImageAttachment", fields: [garantieImageAttachmentId], references: [attachmentId], onDelete: SetNull)
+  alertes    Alerte[]
 
   @@index([ownerUserId])
   @@index([garantieFin])
@@ -132,19 +166,12 @@ model Attachment {
   fileSize     Int
   fileUrl      String         @db.VarChar(500)
 
-  // Lien optionnel vers article/garantie
-  articleId   Int?
-  garantieId  Int?
-
   createdAt DateTime @default(now())
 
   owner    User     @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
-  article  Article? @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
-  garantie Garantie? @relation(fields: [garantieId], references: [garantieId], onDelete: Cascade)
+  garantieImageFor Garantie? @relation("GarantieImageAttachment")
 
   @@index([ownerUserId])
-  @@index([articleId])
-  @@index([garantieId])
 }
 
 model InventoryShare {

@@ -53,7 +53,7 @@ const SharesList: React.FC<SharesListProps> = ({
 
   const fetchShares = async () => {
     try {
-      const response = await fetch("/api/shares", {
+      const response = await fetch("/api/shares/owned", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -70,7 +70,14 @@ const SharesList: React.FC<SharesListProps> = ({
 
   const fetchInvites = async () => {
     try {
-      const response = await fetch("/api/share-invites", {
+      // The backend exposes invite routes under /api/shares/invites (create/accept),
+      // but doesn't currently provide a "list invites" endpoint.
+      // Keep the UI stable by showing none until list support is added.
+      setInvites([]);
+      return;
+
+      // eslint-disable-next-line no-unreachable
+      const response = await fetch("/api/shares/invites", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -96,7 +103,9 @@ const SharesList: React.FC<SharesListProps> = ({
       }
 
       try {
-        const response = await fetch(`/api/shares/${shareId}`, {
+        const share = shares.find((s) => s.inventoryShareId === shareId);
+        if (!share) return;
+        const response = await fetch(`/api/shares/${share.target.userId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -113,32 +122,8 @@ const SharesList: React.FC<SharesListProps> = ({
   };
 
   const handleRevokeInvite = async (inviteId: number) => {
-    if (window.confirm("Are you sure you want to revoke this invitation?")) {
-      if (onInviteRevoke) {
-        onInviteRevoke(inviteId);
-      }
-
-      try {
-        const response = await fetch(`/api/share-invites/${inviteId}/revoke`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (response.ok) {
-          setInvites(
-            invites.map((invite) =>
-              invite.shareInviteId === inviteId
-                ? { ...invite, status: "REVOKED" as const }
-                : invite,
-            ),
-          );
-        }
-      } catch (error) {
-        console.error("Failed to revoke invite:", error);
-      }
-    }
+    // Backend doesn't expose invite revoke endpoint in this MVP.
+    console.warn("Invite revoke not implemented", inviteId);
   };
 
   const getPermissionColor = (permission: string) => {
