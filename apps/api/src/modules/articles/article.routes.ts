@@ -10,8 +10,11 @@ const router = Router();
 /** GET tous les articles */
 router.get(
   "/",
-  asyncHandler(async (_req: Request, res: Response) => {
-    const articles = await ArticleService.list();
+  authGuard,
+  asyncHandler(async (req: any, res: Response) => {
+    const locationIdRaw = req.query.locationId;
+    const locationId = locationIdRaw ? Number(locationIdRaw) : undefined;
+    const articles = await ArticleService.list(req.user.sub, locationId);
     res.json(articles);
   })
 );
@@ -19,9 +22,10 @@ router.get(
 /** GET un article par ID */
 router.get(
   "/:id",
-  asyncHandler(async (req: Request, res: Response) => {
+  authGuard,
+  asyncHandler(async (req: any, res: Response) => {
     const id = Number(req.params.id);
-    const article = await ArticleService.get(id);
+    const article = await ArticleService.get(id, req.user.sub);
     if (!article) return res.status(404).json({ error: "Article non trouvé" });
     res.json(article);
   })
@@ -56,7 +60,7 @@ router.put(
   asyncHandler(async (req: any, res) => {
     const id = Number(req.params.id);
     const data = ArticleUpdateSchema.parse(req.body);
-    const updated = await ArticleService.update(id, data);
+    const updated = await ArticleService.update(id, req.user.sub, data);
     await auditAction(req, {
       action: "UPDATE",
       entity: "Article",
@@ -73,7 +77,7 @@ router.delete(
   authGuard,
   asyncHandler(async (req: any, res) => {
     const id = Number(req.params.id);
-    await ArticleService.remove(id);
+    await ArticleService.remove(id, req.user.sub);
     await auditAction(req, {
       action: "DELETE",
       entity: "Article",

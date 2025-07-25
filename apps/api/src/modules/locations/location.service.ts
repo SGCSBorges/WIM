@@ -125,6 +125,6 @@ export const LocationService = {
       },
     });
 
-    return rows.map((r) => ({ ...r.article, assignedAt: r.assignedAt }));
+    return rows.map((r: any) => ({ ...r.article, assignedAt: r.assignedAt }));
   },
 };

@@ -12,6 +12,7 @@ import billingRoutes from "./modules/billing/billing.routes";
 import billingWebhookRoutes from "./modules/billing/billing.webhook.routes";
 import billingMeRoutes from "./modules/billing/billing.me.routes";
 import shareRoutes from "./modules/shares/share.routes";
+import locationRoutes from "./modules/locations/location.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 
 export function createApp() {
@@ -44,6 +45,7 @@ export function createApp() {
   app.use("/api/audit", auditRoutes);
   app.use("/api/admin", adminRoutes);
   app.use("/api/attachments", attachmentRoutes);
+  app.use("/api/locations", locationRoutes);
   app.use("/api/billing", billingRoutes);
   app.use("/api/billing", billingMeRoutes);
   app.use("/api/shares", shareRoutes);

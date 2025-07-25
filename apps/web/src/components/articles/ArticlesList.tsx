@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import ArticleForm from "./ArticleForm";
-import { articlesAPI } from "../../services/api";
+import { articlesAPI, locationsAPI } from "../../services/api";
 
 interface Article {
   articleId: number;
@@ -13,6 +13,22 @@ interface Article {
   articleModele: string;
   articleDescription?: string | null;
   productImageUrl?: string | null;
+  garantie?: {
+    garantieId: number;
+    garantieNom: string;
+    garantieDateAchat?: string;
+    garantieDuration?: number;
+    garantieImageAttachmentId?: number | null;
+  } | null;
+  locations?: Array<{
+    locationId: number;
+    location: { name: string };
+  }>;
+}
+
+interface Location {
+  locationId: number;
+  name: string;
 }
 
 const ArticlesList: React.FC = () => {
@@ -22,11 +38,16 @@ const ArticlesList: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
+    undefined,
+  );
+
   // Fetch articles from API
   const fetchArticles = async () => {
     try {
       setLoading(true);
-      const data = await articlesAPI.getAll();
+      const data = await articlesAPI.getAll(locationFilterId);
       setArticles(data);
       setError(null);
     } catch (err) {
@@ -34,6 +55,19 @@ const ArticlesList: React.FC = () => {
       console.error("Error fetching articles:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLocations = async () => {
+    try {
+      const data = await locationsAPI.getAll();
+      const mapped: Location[] = (data || []).map((l: any) => ({
+        locationId: l.locationId,
+        name: l.name,
+      }));
+      setLocations(mapped);
+    } catch {
+      // non-blocking
     }
   };
 
@@ -76,8 +110,12 @@ const ArticlesList: React.FC = () => {
 
   // Load articles on component mount
   useEffect(() => {
-    fetchArticles();
+    fetchLocations();
   }, []);
+
+  useEffect(() => {
+    fetchArticles();
+  }, [locationFilterId]);
 
   if (loading) {
     return (
@@ -95,12 +133,31 @@ const ArticlesList: React.FC = () => {
           <p className="text-gray-600">Manage your inventory articles</p>
         </div>
 
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-        >
-          Create Article
-        </button>
+        <div className="flex items-center gap-3">
+          <select
+            value={locationFilterId ?? ""}
+            onChange={(e) =>
+              setLocationFilterId(
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
+            className="px-3 py-2 border border-gray-300 rounded-md"
+          >
+            <option value="">All locations</option>
+            {locations.map((l) => (
+              <option key={l.locationId} value={l.locationId}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={() => setShowForm(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          >
+            Create Article
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -154,6 +211,12 @@ const ArticlesList: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Description
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Warranty
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Proof
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -170,6 +233,28 @@ const ArticlesList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {article.articleDescription || "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {article.garantie ? (
+                        <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
+                          No
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {article.garantie?.garantieImageAttachmentId ? (
+                        <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
+                          No
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button

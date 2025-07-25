@@ -114,8 +114,11 @@ export const authAPI = {
 
 // Articles API
 export const articlesAPI = {
-  async getAll() {
-    const response = await fetch(`${API_BASE_URL}/articles`, {
+  async getAll(locationId?: number) {
+    const url = new URL(`${API_BASE_URL}/articles`);
+    if (locationId) url.searchParams.set("locationId", String(locationId));
+
+    const response = await fetch(url.toString(), {
       headers: getHeaders(),
     });
 
@@ -179,6 +182,61 @@ export const articlesAPI = {
     }
 
     // DELETE returns 204 No Content, so no JSON to parse
+    return null;
+  },
+};
+
+// Locations API
+export const locationsAPI = {
+  async getAll() {
+    const response = await fetch(`${API_BASE_URL}/locations`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch locations");
+    return response.json();
+  },
+
+  async create(data: { name: string; description?: string | null }) {
+    const response = await fetch(`${API_BASE_URL}/locations`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      let errorMessage = `Failed to create location (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  async addArticle(locationId: number, articleId: number) {
+    const response = await fetch(
+      `${API_BASE_URL}/locations/${locationId}/articles`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ articleId }),
+      },
+    );
+    if (!response.ok) throw new Error("Failed to add article to location");
+    return response.json();
+  },
+
+  async removeArticle(locationId: number, articleId: number) {
+    const response = await fetch(
+      `${API_BASE_URL}/locations/${locationId}/articles/${articleId}`,
+      {
+        method: "DELETE",
+        headers: getHeaders(),
+      },
+    );
+    if (!response.ok) throw new Error("Failed to remove article from location");
     return null;
   },
 };

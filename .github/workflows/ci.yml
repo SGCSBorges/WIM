@@ -18,6 +18,21 @@ jobs:
           node-version: "18"
           cache: "npm"
 
+      - name: Install dependencies (workspaces)
+        run: npm ci --workspaces
+
+      - name: API - Prisma generate
+        working-directory: apps/api
+        run: npm run prisma:generate
+
+      - name: API - Build
+        working-directory: apps/api
+        run: npm run build
+
+      - name: Web - Build
+        working-directory: apps/web
+        run: npm run build
+
       - name: Install (root workspace)
         run: npm ci
 
@@ -43,6 +58,3 @@ jobs:
         with:
           name: web-dist
           path: apps/web/dist
-
-      - name: Install dependencies
-        run: npm install --workspaces
