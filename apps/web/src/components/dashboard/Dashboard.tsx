@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { statisticsAPI } from "../../services/api";
+import { useI18n } from "../../i18n/i18n";
 
 interface DashboardStatistics {
   articles: {
@@ -86,6 +87,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
 );
 
 const Dashboard: React.FC = () => {
+  const { t } = useI18n();
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(
     null,
   );
@@ -99,7 +101,9 @@ const Dashboard: React.FC = () => {
         const data = await statisticsAPI.getAll();
         setStatistics(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setError(
+          err instanceof Error ? err.message : t("common.errorOccurred"),
+        );
         console.error("Error fetching statistics:", err);
       } finally {
         setLoading(false);
@@ -123,7 +127,7 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center">
           <span className="text-red-400 mr-2">❌</span>
           <p className="text-sm text-red-700">
-            Error loading dashboard: {error}
+            {t("dashboard.errorLoading")} {error}
           </p>
         </div>
       </div>
@@ -135,7 +139,7 @@ const Dashboard: React.FC = () => {
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div className="flex items-center">
           <span className="text-yellow-400 mr-2">⚠️</span>
-          <p className="text-sm text-yellow-700">No statistics available</p>
+          <p className="text-sm text-yellow-700">{t("dashboard.noStats")}</p>
         </div>
       </div>
     );
@@ -144,40 +148,40 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">
-          Overview of your inventory management system
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {t("dashboard.title")}
+        </h1>
+        <p className="text-gray-600">{t("dashboard.subtitle")}</p>
       </div>
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Articles"
+          title={t("dashboard.totalArticles")}
           value={statistics.articles.total}
           icon="📦"
           color="bg-blue-500"
-          subtitle={`${statistics.articles.withWarranty} with warranty`}
+          subtitle={`${statistics.articles.withWarranty} ${t("dashboard.withWarranty")}`}
         />
 
         <StatCard
-          title="Active Warranties"
+          title={t("dashboard.activeWarranties")}
           value={statistics.warranties.active}
           icon="🛡️"
           color="bg-green-500"
-          subtitle={`${statistics.warranties.expiringSoon} expiring soon`}
+          subtitle={`${statistics.warranties.expiringSoon} ${t("dashboard.expiringSoon")}`}
         />
 
         <StatCard
-          title="Total Users"
+          title={t("dashboard.totalUsers")}
           value={statistics.users.total}
           icon="👥"
           color="bg-purple-500"
-          subtitle={`${statistics.users.byRole.ADMIN} admin(s)`}
+          subtitle={`${statistics.users.byRole.ADMIN} ${t("dashboard.adminCount")}`}
         />
 
         <StatCard
-          title="Active Alerts"
+          title={t("dashboard.activeAlerts")}
           value={statistics.alerts.total}
           icon="🚨"
           color="bg-orange-500"
@@ -187,16 +191,19 @@ const Dashboard: React.FC = () => {
       {/* Detailed Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <DetailCard
-          title="Articles Overview"
+          title={t("dashboard.articlesOverview")}
           data={[
-            { label: "Total Articles", value: statistics.articles.total },
             {
-              label: "With Warranty",
+              label: t("dashboard.totalArticles"),
+              value: statistics.articles.total,
+            },
+            {
+              label: t("dashboard.withWarranty"),
               value: statistics.articles.withWarranty,
               color: "text-green-600",
             },
             {
-              label: "Without Warranty",
+              label: t("dashboard.withoutWarranty"),
               value: statistics.articles.withoutWarranty,
               color: "text-orange-600",
             },
@@ -204,21 +211,24 @@ const Dashboard: React.FC = () => {
         />
 
         <DetailCard
-          title="Warranties Status"
+          title={t("dashboard.warrantiesStatus")}
           data={[
-            { label: "Total Warranties", value: statistics.warranties.total },
             {
-              label: "Active",
+              label: t("dashboard.totalWarranties"),
+              value: statistics.warranties.total,
+            },
+            {
+              label: t("dashboard.active"),
               value: statistics.warranties.active,
               color: "text-green-600",
             },
             {
-              label: "Expired",
+              label: t("dashboard.expired"),
               value: statistics.warranties.expired,
               color: "text-red-600",
             },
             {
-              label: "Expiring Soon",
+              label: t("dashboard.expiringSoon"),
               value: statistics.warranties.expiringSoon,
               color: "text-orange-600",
             },
@@ -226,21 +236,21 @@ const Dashboard: React.FC = () => {
         />
 
         <DetailCard
-          title="Users by Role"
+          title={t("dashboard.usersByRole")}
           data={[
-            { label: "Total Users", value: statistics.users.total },
+            { label: t("dashboard.totalUsers"), value: statistics.users.total },
             {
-              label: "Admins",
+              label: t("dashboard.admins"),
               value: statistics.users.byRole.ADMIN,
               color: "text-purple-600",
             },
             {
-              label: "Power Users",
+              label: t("dashboard.powerUsers"),
               value: statistics.users.byRole.POWER_USER,
               color: "text-blue-600",
             },
             {
-              label: "Regular Users",
+              label: t("dashboard.regularUsers"),
               value: statistics.users.byRole.USER,
               color: "text-gray-600",
             },
@@ -251,7 +261,7 @@ const Dashboard: React.FC = () => {
       {/* Quick Actions or Additional Info */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          System Health
+          {t("dashboard.systemHealth")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center">
@@ -261,7 +271,7 @@ const Dashboard: React.FC = () => {
                 (statistics.warranties.active / statistics.warranties.total) *
                 100
               ).toFixed(1)}
-              % warranties active
+              {t("dashboard.warrantiesActivePct")}
             </span>
           </div>
 
@@ -272,14 +282,15 @@ const Dashboard: React.FC = () => {
                 (statistics.articles.withWarranty / statistics.articles.total) *
                 100
               ).toFixed(1)}
-              % articles covered
+              {t("dashboard.articlesCoveredPct")}
             </span>
           </div>
 
           <div className="flex items-center">
             <span className="text-orange-500 mr-2">⏰</span>
             <span className="text-sm text-gray-600">
-              {statistics.warranties.expiringSoon} warranties need attention
+              {statistics.warranties.expiringSoon}{" "}
+              {t("dashboard.warrantiesNeedAttention")}
             </span>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { authAPI } from "../../services/api";
+import { useI18n } from "../../i18n/i18n";
 
 const API_BASE_URL = "http://localhost:3000/api";
 
@@ -46,6 +47,7 @@ function headers() {
 }
 
 export default function AdminUsers() {
+  const { t } = useI18n();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [inventory, setInventory] = useState<UserInventory | null>(null);
@@ -71,7 +73,7 @@ export default function AdminUsers() {
       const data = (await res.json()) as UserRow[];
       setUsers(data);
     } catch (e: any) {
-      setError(e.message || "Failed to fetch users");
+      setError(e.message || t("admin.error.fetchUsers"));
     } finally {
       setLoadingUsers(false);
     }
@@ -96,14 +98,14 @@ export default function AdminUsers() {
       const data = (await res.json()) as UserInventory;
       setInventory(data);
     } catch (e: any) {
-      setError(e.message || "Failed to fetch inventory");
+      setError(e.message || t("admin.error.fetchInventory"));
     } finally {
       setLoadingInventory(false);
     }
   };
 
   const deleteUser = async (userId: number) => {
-    if (!confirm("Delete this user? This will delete their inventory too.")) {
+    if (!confirm(t("admin.confirmDeleteUser"))) {
       return;
     }
     setActionLoading(`user:${userId}`);
@@ -124,14 +126,14 @@ export default function AdminUsers() {
       }
       await fetchUsers();
     } catch (e: any) {
-      setError(e.message || "Failed to delete user");
+      setError(e.message || t("admin.error.deleteUser"));
     } finally {
       setActionLoading(null);
     }
   };
 
   const deleteArticle = async (articleId: number) => {
-    if (!confirm("Delete this article?")) return;
+    if (!confirm(t("admin.confirmDeleteArticle"))) return;
     setActionLoading(`article:${articleId}`);
     setError(null);
     try {
@@ -150,7 +152,7 @@ export default function AdminUsers() {
         await fetchInventory(selectedUser.userId);
       }
     } catch (e: any) {
-      setError(e.message || "Failed to delete article");
+      setError(e.message || t("admin.error.deleteArticle"));
     } finally {
       setActionLoading(null);
     }
@@ -163,8 +165,10 @@ export default function AdminUsers() {
   if (role !== "ADMIN") {
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">Admin</h1>
-        <p className="text-sm text-gray-600">Access denied.</p>
+        <h1 className="text-xl font-semibold text-gray-900 mb-2">
+          {t("admin.title")}
+        </h1>
+        <p className="text-sm text-gray-600">{t("admin.accessDenied")}</p>
       </div>
     );
   }
@@ -173,15 +177,17 @@ export default function AdminUsers() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin</h1>
-          <p className="text-gray-600">Users and inventories</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("admin.title")}
+          </h1>
+          <p className="text-gray-600">{t("admin.subtitle")}</p>
         </div>
         <button
           onClick={fetchUsers}
           className="px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
           disabled={loadingUsers}
         >
-          Refresh
+          {t("common.refresh")}
         </button>
       </div>
 
@@ -194,9 +200,11 @@ export default function AdminUsers() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="font-semibold">Users</h2>
+            <h2 className="font-semibold">{t("admin.users")}</h2>
             {loadingUsers && (
-              <span className="text-xs text-gray-500">Loading…</span>
+              <span className="text-xs text-gray-500">
+                {t("common.loading")}
+              </span>
             )}
           </div>
           <div className="divide-y">
@@ -215,7 +223,9 @@ export default function AdminUsers() {
                   className="text-left flex-1 mr-4"
                 >
                   <div className="font-medium text-gray-900">{u.email}</div>
-                  <div className="text-xs text-gray-500">Role: {u.role}</div>
+                  <div className="text-xs text-gray-500">
+                    {t("admin.roleLabel")}: {u.role}
+                  </div>
                 </button>
                 <button
                   onClick={() => deleteUser(u.userId)}
@@ -223,20 +233,22 @@ export default function AdminUsers() {
                   disabled={actionLoading === `user:${u.userId}`}
                 >
                   {actionLoading === `user:${u.userId}`
-                    ? "Deleting…"
-                    : "Delete"}
+                    ? t("admin.deleting")
+                    : t("admin.delete")}
                 </button>
               </div>
             ))}
             {!loadingUsers && users.length === 0 && (
-              <div className="p-4 text-sm text-gray-500">No users found.</div>
+              <div className="p-4 text-sm text-gray-500">
+                {t("admin.noUsers")}
+              </div>
             )}
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="font-semibold">Inventory</h2>
+            <h2 className="font-semibold">{t("admin.inventory")}</h2>
             {selectedUser && (
               <p className="text-xs text-gray-500">{selectedUser.email}</p>
             )}
@@ -244,18 +256,20 @@ export default function AdminUsers() {
 
           {!selectedUser && (
             <div className="p-4 text-sm text-gray-500">
-              Select a user to view inventory.
+              {t("admin.selectUser")}
             </div>
           )}
 
           {selectedUser && loadingInventory && (
-            <div className="p-4 text-sm text-gray-500">Loading inventory…</div>
+            <div className="p-4 text-sm text-gray-500">
+              {t("admin.loadingInventory")}
+            </div>
           )}
 
           {selectedUser && inventory && !loadingInventory && (
             <div className="p-4 space-y-6">
               <div>
-                <h3 className="font-medium mb-2">Articles</h3>
+                <h3 className="font-medium mb-2">{t("admin.articles")}</h3>
                 <div className="space-y-2">
                   {inventory.articlesOwned?.map((a) => (
                     <div
@@ -267,12 +281,16 @@ export default function AdminUsers() {
                           {a.articleNom} — {a.articleModele}
                         </div>
                         <div className="text-xs text-gray-600">
-                          {a.articleDescription || "(no description)"}
+                          {a.articleDescription || t("admin.noDescription")}
                         </div>
                         {a.garantie && (
                           <div className="text-xs text-gray-600 mt-1">
-                            Warranty: {a.garantie.garantieNom} (
-                            {a.garantie.garantieIsValide ? "valid" : "expired"})
+                            {t("admin.warrantyLabel")}: {a.garantie.garantieNom}{" "}
+                            (
+                            {a.garantie.garantieIsValide
+                              ? t("admin.status.valid")
+                              : t("admin.status.expired")}
+                            )
                           </div>
                         )}
                       </div>
@@ -282,36 +300,43 @@ export default function AdminUsers() {
                         disabled={actionLoading === `article:${a.articleId}`}
                       >
                         {actionLoading === `article:${a.articleId}`
-                          ? "Deleting…"
-                          : "Delete"}
+                          ? t("admin.deleting")
+                          : t("admin.delete")}
                       </button>
                     </div>
                   ))}
                   {inventory.articlesOwned?.length === 0 && (
-                    <div className="text-sm text-gray-500">No articles.</div>
+                    <div className="text-sm text-gray-500">
+                      {t("admin.noArticles")}
+                    </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <h3 className="font-medium mb-2">Warranties</h3>
+                <h3 className="font-medium mb-2">{t("admin.warranties")}</h3>
                 <div className="space-y-2">
                   {inventory.warrantiesOwned?.map((w) => (
                     <div key={w.garantieId} className="border rounded p-3">
                       <div className="font-medium">{w.garantieNom}</div>
                       <div className="text-xs text-gray-600">
-                        Status: {w.garantieIsValide ? "valid" : "expired"}
+                        {t("admin.statusLabel")}:{" "}
+                        {w.garantieIsValide
+                          ? t("admin.status.valid")
+                          : t("admin.status.expired")}
                       </div>
                       {w.article && (
                         <div className="text-xs text-gray-600 mt-1">
-                          Article: {w.article.articleNom} —{" "}
+                          {t("articles.title")}: {w.article.articleNom} —{" "}
                           {w.article.articleModele}
                         </div>
                       )}
                     </div>
                   ))}
                   {inventory.warrantiesOwned?.length === 0 && (
-                    <div className="text-sm text-gray-500">No warranties.</div>
+                    <div className="text-sm text-gray-500">
+                      {t("admin.noWarranties")}
+                    </div>
                   )}
                 </div>
               </div>

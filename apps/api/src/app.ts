@@ -14,6 +14,7 @@ import billingMeRoutes from "./modules/billing/billing.me.routes";
 import shareRoutes from "./modules/shares/share.routes";
 import locationRoutes from "./modules/locations/location.routes";
 import statisticsRoutes from "./routes/statistics.routes";
+import path from "path";
 
 export function createApp() {
   const app = express();
@@ -37,6 +38,9 @@ export function createApp() {
 
   // Santé
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+  // Static hosting for uploaded files (local dev)
+  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
   // Routes
   app.use("/api/articles", articleRoutes);

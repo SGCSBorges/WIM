@@ -4,5 +4,51 @@
 
 /* Tokens básicos (poderemos trocar por CSS vars da tua charte) */
 :root {
-  --primary: #4f46e5; /* Indigo 600 */
+  /* Default theme: light */
+  --bg: #f9fafb; /* gray-50 */
+  --surface: #ffffff;
+  --border: #e5e7eb; /* gray-200 */
+  --text: #111827; /* gray-900 */
+  --muted: #6b7280; /* gray-500 */
+  --primary: #2563eb; /* blue-600 */
+  --primary-contrast: #ffffff;
+}
+
+/* Light */
+:root[data-theme="light"] {
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --primary: #2563eb;
+  --primary-contrast: #ffffff;
+}
+
+/* Dark */
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --surface: #0f172a;
+  --border: #24304a;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --primary: #60a5fa;
+  --primary-contrast: #0b1220;
+}
+
+/* Ocean */
+:root[data-theme="ocean"] {
+  --bg: #071a2b;
+  --surface: #0b2b3f;
+  --border: #12435d;
+  --text: #e6f6ff;
+  --muted: #8fd3f4;
+  --primary: #14b8a6; /* teal-500 */
+  --primary-contrast: #05202c;
+}
+
+/* Apply global page background/text via variables (keeps Tailwind layout intact). */
+body {
+  background: var(--bg);
+  color: var(--text);
 }

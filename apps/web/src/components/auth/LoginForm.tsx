@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { authAPI } from "../../services/api";
+import { useI18n } from "../../i18n/i18n";
 
 interface LoginFormProps {
   onLogin: () => void;
 }
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
+  const { t } = useI18n();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: "",
@@ -35,7 +37,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         onLogin();
       }
     } catch (err: any) {
-      setError(err.message || "Authentication failed");
+      setError(err.message || t("auth.error.default"));
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       <div className="max-w-md w-full bg-white rounded-lg shadow p-8">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">WIM</h1>
-          <p className="text-gray-600">Warranty & Inventory Manager</p>
+          <p className="text-gray-600">{t("auth.subtitle")}</p>
         </div>
 
         <div className="mb-4">
@@ -67,7 +69,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              Login
+              {t("auth.login")}
             </button>
             <button
               type="button"
@@ -78,7 +80,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              Register
+              {t("auth.register")}
             </button>
           </div>
         </div>
@@ -89,7 +91,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Email
+              {t("auth.email")}
             </label>
             <input
               type="email"
@@ -108,7 +110,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Password
+              {t("auth.password")}
             </label>
             <input
               type="password"
@@ -138,7 +140,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
-            {loading ? "Please wait..." : isLogin ? "Login" : "Register"}
+            {loading
+              ? t("auth.loading")
+              : isLogin
+                ? t("auth.login")
+                : t("auth.register")}
           </button>
         </form>
       </div>

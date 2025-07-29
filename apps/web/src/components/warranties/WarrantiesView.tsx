@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import WarrantyForm from "./WarrantyForm";
+import { useI18n } from "../../i18n/i18n";
 
 const API_BASE_URL = "http://localhost:3000/api";
 
@@ -22,6 +23,7 @@ function headers() {
 }
 
 export default function WarrantiesView() {
+  const { t } = useI18n();
   const [items, setItems] = useState<Warranty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export default function WarrantiesView() {
       const data = (await res.json()) as Warranty[];
       setItems(data);
     } catch (e: any) {
-      setError(e?.message || "Failed to fetch warranties");
+      setError(e?.message || t("warranties.error.fetch"));
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,7 @@ export default function WarrantiesView() {
       setShowForm(false);
       await fetchAll();
     } catch (e: any) {
-      setError(e?.message || "Failed to create warranty");
+      setError(e?.message || t("warranties.error.create"));
     }
   };
 
@@ -86,14 +88,16 @@ export default function WarrantiesView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Warranties</h1>
-          <p className="text-gray-600">Create and review warranties</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("warranties.title")}
+          </h1>
+          <p className="text-gray-600">{t("warranties.subtitle")}</p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
           className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
-          {showForm ? "Close" : "Add Warranty"}
+          {showForm ? t("warranties.close") : t("warranties.add")}
         </button>
       </div>
 
@@ -112,21 +116,23 @@ export default function WarrantiesView() {
 
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="font-semibold">All warranties</h2>
-          {loading && <span className="text-xs text-gray-500">Loading…</span>}
+          <h2 className="font-semibold">{t("warranties.all")}</h2>
+          {loading && (
+            <span className="text-xs text-gray-500">{t("common.loading")}</span>
+          )}
           {!loading && (
             <button
               onClick={fetchAll}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              Refresh
+              {t("common.refresh")}
             </button>
           )}
         </div>
         <div className="divide-y">
           {!loading && sorted.length === 0 && (
             <div className="p-4 text-sm text-gray-500">
-              No warranties found.
+              {t("warranties.none")}
             </div>
           )}
           {sorted.map((w) => (
@@ -137,12 +143,13 @@ export default function WarrantiesView() {
                     {w.garantieNom}
                   </div>
                   <div className="text-xs text-gray-600">
-                    Purchase:{" "}
+                    {t("warranties.purchase")}:{" "}
                     {new Date(w.garantieDateAchat).toLocaleDateString()} —
-                    Duration: {w.garantieDuration} months
+                    {t("warranties.duration")}: {w.garantieDuration}{" "}
+                    {t("warranties.months")}
                   </div>
                   <div className="text-xs text-gray-600">
-                    Article ID: {w.garantieArticleId}
+                    {t("warranties.articleId")}: {w.garantieArticleId}
                   </div>
                 </div>
               </div>
@@ -151,9 +158,7 @@ export default function WarrantiesView() {
         </div>
       </div>
 
-      <div className="text-xs text-gray-500">
-        Note: to create a warranty you need an existing Article ID (for now).
-      </div>
+      <div className="text-xs text-gray-500">{t("warranties.note")}</div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useI18n } from "../../i18n/i18n";
 
 interface Attachment {
   attachmentId?: number;
@@ -28,6 +29,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({
     type: attachment?.type || ("OTHER" as const),
     articleId: attachment?.articleId || articleId || undefined,
@@ -43,13 +45,13 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!attachment && !selectedFile) {
-      newErrors.file = "Please select a file to upload";
+      newErrors.file = t("attachments.form.error.fileRequired");
     }
 
     if (selectedFile) {
       // Check file size (10MB limit)
       if (selectedFile.size > 10 * 1024 * 1024) {
-        newErrors.file = "File size must be less than 10MB";
+        newErrors.file = t("attachments.form.error.fileTooLarge");
       }
 
       // Check file type (basic validation)
@@ -65,8 +67,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
       ];
 
       if (!allowedTypes.includes(selectedFile.type)) {
-        newErrors.file =
-          "File type not supported. Please use PDF, images, or text documents";
+        newErrors.file = t("attachments.form.error.fileTypeNotSupported");
       }
     }
 
@@ -139,7 +140,9 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        {attachment ? "Edit Attachment" : "Add New Attachment"}
+        {attachment
+          ? t("attachments.form.editTitle")
+          : t("attachments.form.addTitle")}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -147,7 +150,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
         {!attachment && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              File Upload *
+              {t("attachments.form.fileUpload")} *
             </label>
 
             <div
@@ -202,7 +205,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                       onClick={() => setSelectedFile(null)}
                       className="text-xs text-red-600 hover:text-red-800"
                     >
-                      Remove file
+                      {t("attachments.form.fileRemove")}
                     </button>
                   </div>
                 ) : (
@@ -223,12 +226,12 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                     <div>
                       <p className="text-sm text-gray-600">
                         <span className="font-medium text-blue-600 hover:text-blue-500">
-                          Click to upload
+                          {t("attachments.form.drop.clickToUpload")}
                         </span>{" "}
-                        or drag and drop
+                        {t("attachments.form.drop.orDrag")}
                       </p>
                       <p className="text-xs text-gray-500">
-                        PDF, images, or documents up to 10MB
+                        {t("attachments.form.drop.help")}
                       </p>
                     </div>
                   </div>
@@ -246,7 +249,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
         {attachment && (
           <div className="p-4 bg-gray-50 rounded-lg">
             <h3 className="text-sm font-medium text-gray-900 mb-2">
-              Current File
+              {t("attachments.form.currentFile")}
             </h3>
             <div className="flex items-center space-x-3">
               <svg
@@ -280,7 +283,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             htmlFor="type"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Attachment Type *
+            {t("attachments.form.type")} *
           </label>
           <select
             id="type"
@@ -294,9 +297,9 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isLoading}
           >
-            <option value="OTHER">Other</option>
-            <option value="INVOICE">Invoice</option>
-            <option value="WARRANTY">Warranty Document</option>
+            <option value="OTHER">{t("attachments.type.other")}</option>
+            <option value="INVOICE">{t("attachments.type.invoice")}</option>
+            <option value="WARRANTY">{t("attachments.type.warranty")}</option>
           </select>
         </div>
 
@@ -304,9 +307,11 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
         {(formData.articleId || formData.garantieId) && (
           <div className="p-3 bg-blue-50 rounded-md">
             <p className="text-sm text-blue-800">
-              <strong>Linked to:</strong>{" "}
-              {formData.articleId ? "Article" : "Warranty"} ID:{" "}
-              {formData.articleId || formData.garantieId}
+              <strong>{t("attachments.form.linkedTo")}</strong>{" "}
+              {formData.articleId
+                ? t("attachments.for.article")
+                : t("attachments.for.warranty")}{" "}
+              ID: {formData.articleId || formData.garantieId}
             </p>
           </div>
         )}
@@ -319,10 +324,10 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading
-              ? "Uploading..."
+              ? t("attachments.form.uploading")
               : attachment
-                ? "Update Attachment"
-                : "Upload File"}
+                ? t("attachments.form.update")
+                : t("attachments.form.upload")}
           </button>
 
           {onCancel && (
@@ -331,7 +336,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>

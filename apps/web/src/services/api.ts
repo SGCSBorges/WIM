@@ -241,6 +241,38 @@ export const locationsAPI = {
   },
 };
 
+// Attachments API
+export const attachmentsAPI = {
+  async uploadFile(
+    file: File,
+    type: "INVOICE" | "WARRANTY" | "OTHER" = "OTHER",
+  ) {
+    const token = getToken();
+    const form = new FormData();
+    form.append("file", file);
+    form.append("type", type);
+
+    const response = await fetch(`${API_BASE_URL}/attachments/upload`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: form,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to upload file (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+};
+
 // Statistics API
 export const statisticsAPI = {
   async getAll() {

@@ -54,6 +54,12 @@ export const ArticleService = {
                   garantieNom: garantie.garantieNom,
                   garantieDateAchat: garantie.garantieDateAchat,
                   garantieDuration: garantie.garantieDuration,
+                  ...(garantie.garantieImageAttachmentId !== undefined
+                    ? {
+                        garantieImageAttachmentId:
+                          garantie.garantieImageAttachmentId,
+                      }
+                    : {}),
                   garantieFin: addMonths(
                     new Date(garantie.garantieDateAchat),
                     garantie.garantieDuration
@@ -145,6 +151,12 @@ export const ArticleService = {
               garantieNom: garantie.garantieNom,
               garantieDateAchat: garantie.garantieDateAchat,
               garantieDuration: garantie.garantieDuration,
+              ...(garantie.garantieImageAttachmentId !== undefined
+                ? {
+                    garantieImageAttachmentId:
+                      garantie.garantieImageAttachmentId,
+                  }
+                : {}),
               garantieFin: addMonths(
                 new Date(garantie.garantieDateAchat),
                 garantie.garantieDuration

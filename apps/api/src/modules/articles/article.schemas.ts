@@ -13,6 +13,13 @@ export const ArticleCreateSchema = z.object({
       garantieNom: z.string().min(1).max(100),
       garantieDateAchat: z.coerce.date(),
       garantieDuration: z.number().int().min(1).max(120),
+      // Optional proof attachment linked to the warranty
+      garantieImageAttachmentId: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .nullable(),
     })
     .optional(),
   ownerUserId: z.number().int().positive(),
@@ -27,6 +34,13 @@ export const ArticleUpdateSchema = ArticleCreateSchema.partial().extend({
       garantieNom: z.string().min(1).max(100).optional(),
       garantieDateAchat: z.coerce.date().optional(),
       garantieDuration: z.number().int().min(1).max(120).optional(),
+      // Allow setting/replacing/removing proof attachment
+      garantieImageAttachmentId: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .nullable(),
     })
     .optional(),
   removeGarantie: z.boolean().optional(),

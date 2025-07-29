@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from "react";
 import ArticleForm from "./ArticleForm";
 import { articlesAPI, locationsAPI } from "../../services/api";
+import { useI18n } from "../../i18n/i18n";
 
 interface Article {
   articleId: number;
@@ -32,6 +33,7 @@ interface Location {
 }
 
 const ArticlesList: React.FC = () => {
+  const { t } = useI18n();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ const ArticlesList: React.FC = () => {
       setArticles(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
       console.error("Error fetching articles:", err);
     } finally {
       setLoading(false);
@@ -87,14 +89,14 @@ const ArticlesList: React.FC = () => {
       setShowForm(false);
       setEditingArticle(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
       console.error("Error submitting article:", err);
     }
   };
 
   // Delete article
   const handleDelete = async (articleId: number) => {
-    if (!confirm("Are you sure you want to delete this article?")) {
+    if (!confirm(t("articles.delete.confirm"))) {
       return;
     }
 
@@ -103,7 +105,7 @@ const ArticlesList: React.FC = () => {
       // Refresh articles list
       await fetchArticles();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
       console.error("Error deleting article:", err);
     }
   };
@@ -129,8 +131,10 @@ const ArticlesList: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Articles</h1>
-          <p className="text-gray-600">Manage your inventory articles</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("articles.title")}
+          </h1>
+          <p className="text-gray-600">{t("articles.subtitle")}</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -143,7 +147,7 @@ const ArticlesList: React.FC = () => {
             }
             className="px-3 py-2 border border-gray-300 rounded-md"
           >
-            <option value="">All locations</option>
+            <option value="">{t("common.allLocations")}</option>
             {locations.map((l) => (
               <option key={l.locationId} value={l.locationId}>
                 {l.name}
@@ -155,7 +159,7 @@ const ArticlesList: React.FC = () => {
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
-            Create Article
+            {t("articles.create")}
           </button>
         </div>
       </div>
@@ -185,16 +189,14 @@ const ArticlesList: React.FC = () => {
           <div className="p-8 text-center">
             <div className="text-gray-400 text-6xl mb-4">📦</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No articles found
+              {t("articles.none.title")}
             </h3>
-            <p className="text-gray-600 mb-4">
-              Create your first article to get started
-            </p>
+            <p className="text-gray-600 mb-4">{t("articles.none.subtitle")}</p>
             <button
               onClick={() => setShowForm(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
-              Create Article
+              {t("articles.create")}
             </button>
           </div>
         ) : (
@@ -203,22 +205,22 @@ const ArticlesList: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
+                    {t("articles.table.name")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Model
+                    {t("articles.table.model")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
+                    {t("articles.table.description")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Warranty
+                    {t("articles.table.warranty")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Proof
+                    {t("articles.table.proof")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t("articles.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -237,22 +239,22 @@ const ArticlesList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {article.garantie ? (
                         <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
-                          Yes
+                          {t("common.yes")}
                         </span>
                       ) : (
                         <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
-                          No
+                          {t("common.no")}
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {article.garantie?.garantieImageAttachmentId ? (
                         <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
-                          Yes
+                          {t("common.yes")}
                         </span>
                       ) : (
                         <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
-                          No
+                          {t("common.no")}
                         </span>
                       )}
                     </td>
@@ -264,13 +266,13 @@ const ArticlesList: React.FC = () => {
                         }}
                         className="text-blue-600 hover:text-blue-900 mr-3"
                       >
-                        Edit
+                        {t("common.edit")}
                       </button>
                       <button
                         onClick={() => handleDelete(article.articleId)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {t("common.delete")}
                       </button>
                     </td>
                   </tr>

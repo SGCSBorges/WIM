@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useI18n } from "../../i18n/i18n";
 
 interface ShareFormProps {
   onSubmit: (shareData: {
@@ -14,6 +15,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({
     email: "",
     permission: "READ" as "READ" | "WRITE",
@@ -25,9 +27,9 @@ const ShareForm: React.FC<ShareFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = t("shareForm.error.emailRequired");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = t("shareForm.error.emailInvalid");
     }
 
     setErrors(newErrors);
@@ -53,7 +55,9 @@ const ShareForm: React.FC<ShareFormProps> = ({
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Share Inventory</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        {t("shareForm.title")}
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Email Input */}
@@ -62,7 +66,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
             htmlFor="email"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Email Address *
+            {t("shareForm.email")} *
           </label>
           <input
             type="email"
@@ -70,7 +74,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter email address"
+            placeholder={t("shareForm.email.placeholder")}
             disabled={isLoading}
           />
           {errors.email && (
@@ -81,7 +85,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
         {/* Permission Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Permission Level *
+            {t("shareForm.permission")} *
           </label>
           <div className="space-y-3">
             <div className="flex items-start">
@@ -99,10 +103,10 @@ const ShareForm: React.FC<ShareFormProps> = ({
               />
               <label htmlFor="read" className="ml-3 flex-1">
                 <span className="block text-sm font-medium text-gray-900">
-                  Read Only
+                  {t("shareForm.permission.read")}
                 </span>
                 <span className="block text-sm text-gray-500">
-                  Can view your inventory items and warranties
+                  {t("shareForm.permission.read.help")}
                 </span>
               </label>
             </div>
@@ -122,10 +126,10 @@ const ShareForm: React.FC<ShareFormProps> = ({
               />
               <label htmlFor="write" className="ml-3 flex-1">
                 <span className="block text-sm font-medium text-gray-900">
-                  Read & Write
+                  {t("shareForm.permission.write")}
                 </span>
                 <span className="block text-sm text-gray-500">
-                  Can view and modify your inventory items and warranties
+                  {t("shareForm.permission.write.help")}
                 </span>
               </label>
             </div>
@@ -149,11 +153,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
               />
             </svg>
             <div className="ml-3">
-              <p className="text-sm text-blue-800">
-                An invitation will be sent to the specified email address. The
-                recipient will need to accept the invitation to access your
-                inventory.
-              </p>
+              <p className="text-sm text-blue-800">{t("shareForm.info")}</p>
             </div>
           </div>
         </div>
@@ -165,7 +165,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
             disabled={isLoading}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? "Sending..." : "Send Invitation"}
+            {isLoading ? t("shareForm.sending") : t("shareForm.send")}
           </button>
 
           {onCancel && (
@@ -174,7 +174,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>

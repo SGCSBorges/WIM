@@ -4,7 +4,8 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { locationsAPI } from "../../services/api";
+import { attachmentsAPI, locationsAPI } from "../../services/api";
+import { useI18n } from "../../i18n/i18n";
 
 interface Article {
   articleId?: number;
@@ -40,6 +41,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { t } = useI18n();
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [locationsError, setLocationsError] = useState<string | null>(null);
@@ -73,6 +75,30 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     Number((article as any)?.garantie?.garantieDuration) || 24,
   );
 
+  const [warrantyProofAttachment, setWarrantyProofAttachment] = useState<
+    | {
+        attachmentId: number;
+        fileName: string;
+        mimeType: string;
+        fileUrl: string;
+      }
+    | null
+  >(() => {
+    const g: any = (article as any)?.garantie;
+    if (!g?.garantieImageAttachmentId) return null;
+    // We might not have attachment details on the article payload; we at least keep the ID.
+    return {
+      attachmentId: Number(g.garantieImageAttachmentId),
+      fileName: g?.garantieImageAttachment?.fileName || "",
+      mimeType: g?.garantieImageAttachment?.mimeType || "",
+      fileUrl: g?.garantieImageAttachment?.fileUrl || "",
+    };
+  });
+  const [warrantyProofUploading, setWarrantyProofUploading] = useState(false);
+  const [warrantyProofError, setWarrantyProofError] = useState<string | null>(
+    null,
+  );
+
   useEffect(() => {
     // When switching between create/edit, keep warranty state in sync.
     setWarrantyEnabled(Boolean((article as any)?.garantie));
@@ -82,8 +108,46 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setWarrantyDuration(
       Number((article as any)?.garantie?.garantieDuration) || 24,
     );
+
+    const g: any = (article as any)?.garantie;
+    if (g?.garantieImageAttachmentId) {
+      setWarrantyProofAttachment({
+        attachmentId: Number(g.garantieImageAttachmentId),
+        fileName: g?.garantieImageAttachment?.fileName || "",
+        mimeType: g?.garantieImageAttachment?.mimeType || "",
+        fileUrl: g?.garantieImageAttachment?.fileUrl || "",
+      });
+    } else {
+      setWarrantyProofAttachment(null);
+    }
+    setWarrantyProofError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article?.articleId]);
+
+  const handleWarrantyProofSelected = async (file: File) => {
+    try {
+      setWarrantyProofError(null);
+      setWarrantyProofUploading(true);
+      const created = await attachmentsAPI.uploadFile(file, "WARRANTY");
+      setWarrantyProofAttachment({
+        attachmentId: Number(created.attachmentId),
+        fileName: created.fileName,
+        mimeType: created.mimeType,
+        fileUrl: created.fileUrl,
+      });
+    } catch (e) {
+      setWarrantyProofError(
+        e instanceof Error ? e.message : t("common.errorOccurred"),
+      );
+    } finally {
+      setWarrantyProofUploading(false);
+    }
+  };
+
+  const clearWarrantyProof = () => {
+    setWarrantyProofAttachment(null);
+    setWarrantyProofError(null);
+  };
 
   const selectedSet = useMemo(
     () => new Set(selectedLocationIds),
@@ -108,7 +172,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       } catch (e) {
         if (mounted)
           setLocationsError(
-            e instanceof Error ? e.message : "Failed to load locations",
+            e instanceof Error ? e.message : t("common.errorOccurred"),
           );
       } finally {
         if (mounted) setLocationsLoading(false);
@@ -123,7 +187,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     e.preventDefault();
 
     if (selectedLocationIds.length === 0) {
-      alert("Please select at least one location.");
+      alert(t("articleForm.locations.required"));
       return;
     }
 
@@ -139,6 +203,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               garantieNom: warrantyNom.trim(),
               garantieDateAchat: warrantyDateAchat,
               garantieDuration: warrantyDuration,
+              // Pass through the proof attachment id (or null to clear)
+              garantieImageAttachmentId: warrantyProofAttachment
+                ? warrantyProofAttachment.attachmentId
+                : null,
             },
           }
         : article?.articleId
@@ -148,15 +216,15 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
     if (warrantyEnabled) {
       if (!warrantyNom.trim()) {
-        alert("Please enter a warranty name.");
+        alert(t("articleForm.warranty.requiredName"));
         return;
       }
       if (!warrantyDateAchat) {
-        alert("Please select a warranty purchase date.");
+        alert(t("articleForm.warranty.requiredDate"));
         return;
       }
       if (!warrantyDuration || warrantyDuration < 1) {
-        alert("Please enter a valid warranty duration.");
+        alert(t("articleForm.warranty.requiredDuration"));
         return;
       }
     }
@@ -186,7 +254,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       );
       setNewLocationName("");
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Failed to create location");
+      alert(e instanceof Error ? e.message : t("locations.error.create"));
     } finally {
       setCreatingLocation(false);
     }
@@ -205,7 +273,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">
-        {article ? "Edit Article" : "Create New Article"}
+        {article ? t("articleForm.editTitle") : t("articleForm.createTitle")}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -214,7 +282,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             htmlFor="articleNom"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Article Name *
+            {t("articleForm.name")} *
           </label>
           <input
             type="text"
@@ -224,7 +292,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             value={formData.articleNom}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter article name"
+            placeholder={t("articleForm.placeholder.name")}
             maxLength={100}
           />
         </div>
@@ -234,7 +302,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             htmlFor="articleModele"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Model *
+            {t("articleForm.model")} *
           </label>
           <input
             type="text"
@@ -244,7 +312,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             value={formData.articleModele}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter model"
+            placeholder={t("articleForm.placeholder.model")}
             maxLength={100}
           />
         </div>
@@ -254,7 +322,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             htmlFor="articleDescription"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Description
+            {t("articleForm.description")}
           </label>
           <textarea
             id="articleDescription"
@@ -263,7 +331,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             onChange={handleChange}
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter description (optional)"
+            placeholder={t("articleForm.placeholder.description")}
             maxLength={255}
           />
         </div>
@@ -273,7 +341,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             htmlFor="productImageUrl"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Product Image URL
+            {t("articleForm.productImageUrl")}
           </label>
           <input
             type="url"
@@ -282,7 +350,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             value={formData.productImageUrl || ""}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://example.com/image.jpg (optional)"
+            placeholder={t("articleForm.placeholder.imageUrl")}
             maxLength={255}
           />
         </div>
@@ -299,29 +367,30 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               htmlFor="warrantyEnabled"
               className="text-sm font-medium text-gray-700"
             >
-              Add warranty (optional)
+              {t("articleForm.warranty.toggle")}
             </label>
           </div>
 
           {warrantyEnabled && (
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="mt-3 space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Warranty Name
+                  {t("articleForm.warranty.name")}
                 </label>
                 <input
                   type="text"
                   value={warrantyNom}
                   onChange={(e) => setWarrantyNom(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="e.g. Manufacturer warranty"
+                  placeholder={t("articleForm.warranty.placeholder.name")}
                   maxLength={100}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Purchase Date
+                  {t("articleForm.warranty.purchaseDate")}
                 </label>
                 <input
                   type="date"
@@ -333,7 +402,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Duration (months)
+                  {t("articleForm.warranty.durationMonths")}
                 </label>
                 <input
                   type="number"
@@ -344,22 +413,82 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("attachments.form.fileUpload")}
+                </label>
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    disabled={warrantyProofUploading}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void handleWarrantyProofSelected(f);
+                      // allow selecting same file again
+                      e.currentTarget.value = "";
+                    }}
+                    className="w-full"
+                  />
+
+                  {warrantyProofUploading && (
+                    <p className="text-sm text-gray-500">
+                      {t("attachments.loading")}
+                    </p>
+                  )}
+
+                  {warrantyProofError && (
+                    <p className="text-sm text-red-600">{warrantyProofError}</p>
+                  )}
+
+                  {warrantyProofAttachment && (
+                    <div className="text-sm text-gray-700 flex items-center justify-between gap-3 border border-gray-200 rounded-md px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">
+                          {warrantyProofAttachment.fileName ||
+                            `#${warrantyProofAttachment.attachmentId}`}
+                        </p>
+                        {warrantyProofAttachment.fileUrl && (
+                          <a
+                            className="text-blue-600 hover:underline"
+                            href={warrantyProofAttachment.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {t("common.view")}
+                          </a>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={clearWarrantyProof}
+                        className="text-red-600 hover:underline whitespace-nowrap"
+                      >
+                        {t("common.remove")}
+                      </button>
+                    </div>
+                  )}
+              </div>
             </div>
           )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Locations *
+            {t("articleForm.locations")} *
           </label>
 
           {locationsLoading ? (
-            <p className="text-sm text-gray-500">Loading locations…</p>
+            <p className="text-sm text-gray-500">
+              {t("articleForm.locations.loading")}
+            </p>
           ) : locationsError ? (
             <p className="text-sm text-red-600">{locationsError}</p>
           ) : locations.length === 0 ? (
             <p className="text-sm text-gray-500">
-              No locations yet — create one below.
+              {t("articleForm.locations.none")}
             </p>
           ) : (
             <div className="border border-gray-200 rounded-md p-3 space-y-2 max-h-40 overflow-auto">
@@ -381,7 +510,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               type="text"
               value={newLocationName}
               onChange={(e) => setNewLocationName(e.target.value)}
-              placeholder="New location name"
+              placeholder={t("articleForm.location.new.placeholder")}
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
               maxLength={120}
             />
@@ -391,7 +520,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               disabled={creatingLocation || !newLocationName.trim()}
               className="px-3 py-2 bg-gray-900 text-white rounded-md disabled:opacity-50"
             >
-              {creatingLocation ? "Creating…" : "Create"}
+              {creatingLocation
+                ? t("articleForm.location.create.loading")
+                : t("articleForm.location.create")}
             </button>
           </div>
         </div>
@@ -401,7 +532,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
-            {article ? "Update Article" : "Create Article"}
+            {article
+              ? t("articleForm.submit.update")
+              : t("articleForm.submit.create")}
           </button>
 
           {onCancel && (
@@ -410,7 +543,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>

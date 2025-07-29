@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useI18n } from "../../i18n/i18n";
 
 interface Share {
   inventoryShareId: number;
@@ -38,6 +39,7 @@ const SharesList: React.FC<SharesListProps> = ({
   onAdd,
   isLoading = false,
 }) => {
+  const { t } = useI18n();
   const [shares, setShares] = useState<Share[]>([]);
   const [invites, setInvites] = useState<ShareInvite[]>([]);
   const [activeTab, setActiveTab] = useState<"shares" | "invites">("shares");
@@ -93,11 +95,7 @@ const SharesList: React.FC<SharesListProps> = ({
   };
 
   const handleRevokeShare = async (shareId: number) => {
-    if (
-      window.confirm(
-        "Are you sure you want to revoke this share? The user will lose access to your inventory.",
-      )
-    ) {
+    if (window.confirm(t("shares.confirmRevoke"))) {
       if (onRevoke) {
         onRevoke(shareId);
       }
@@ -123,7 +121,7 @@ const SharesList: React.FC<SharesListProps> = ({
 
   const handleRevokeInvite = async (inviteId: number) => {
     // Backend doesn't expose invite revoke endpoint in this MVP.
-    console.warn("Invite revoke not implemented", inviteId);
+    console.warn(t("shares.invite.revokeNotImplemented"), inviteId);
   };
 
   const getPermissionColor = (permission: string) => {
@@ -185,13 +183,15 @@ const SharesList: React.FC<SharesListProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Shared Access</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {t("shares.title")}
+        </h2>
         {onAdd && (
           <button
             onClick={onAdd}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
-            Share Inventory
+            {t("shares.add")}
           </button>
         )}
       </div>
@@ -207,7 +207,7 @@ const SharesList: React.FC<SharesListProps> = ({
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
-            Active Shares ({shares.filter((s) => s.active).length})
+            {t("shares.tab.active")} ({shares.filter((s) => s.active).length})
           </button>
           <button
             onClick={() => setActiveTab("invites")}
@@ -217,7 +217,7 @@ const SharesList: React.FC<SharesListProps> = ({
                 : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
-            Pending Invites (
+            {t("shares.tab.pending")} (
             {invites.filter((i) => i.status === "PENDING").length})
           </button>
         </nav>
@@ -228,7 +228,7 @@ const SharesList: React.FC<SharesListProps> = ({
         <div className="flex-1">
           <input
             type="text"
-            placeholder={`Search ${activeTab}...`}
+            placeholder={`${t("shares.search.placeholder")} ${activeTab}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -242,9 +242,9 @@ const SharesList: React.FC<SharesListProps> = ({
           }
           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
-          <option value="all">All Status</option>
-          <option value="active">Active Only</option>
-          <option value="inactive">Inactive Only</option>
+          <option value="all">{t("shares.filter.all")}</option>
+          <option value="active">{t("shares.filter.active")}</option>
+          <option value="inactive">{t("shares.filter.inactive")}</option>
         </select>
       </div>
 
@@ -269,12 +269,12 @@ const SharesList: React.FC<SharesListProps> = ({
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No active shares
+                {t("shares.none.activeTitle")}
               </h3>
               <p className="text-gray-500">
                 {searchTerm || filterStatus !== "all"
-                  ? "Try adjusting your search or filter criteria."
-                  : "Share your inventory with others to collaborate."}
+                  ? t("shares.none.filtered")
+                  : t("shares.none.activeEmpty")}
               </p>
             </div>
           ) : (
@@ -301,15 +301,18 @@ const SharesList: React.FC<SharesListProps> = ({
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {share.active ? "Active" : "Inactive"}
+                        {share.active
+                          ? t("shares.status.active")
+                          : t("shares.status.inactive")}
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">
-                      Shared on {new Date(share.createdAt).toLocaleDateString()}
+                      {t("shares.label.sharedOn")}{" "}
+                      {new Date(share.createdAt).toLocaleDateString()}
                     </p>
                     {share.updatedAt !== share.createdAt && (
                       <p className="text-sm text-gray-500">
-                        Updated on{" "}
+                        {t("shares.label.updatedOn")}{" "}
                         {new Date(share.updatedAt).toLocaleDateString()}
                       </p>
                     )}
@@ -321,7 +324,7 @@ const SharesList: React.FC<SharesListProps> = ({
                         onClick={() => onEdit(share)}
                         className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
                       >
-                        Edit
+                        {t("shares.action.edit")}
                       </button>
                     )}
                     {share.active && (
@@ -331,7 +334,7 @@ const SharesList: React.FC<SharesListProps> = ({
                         }
                         className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
                       >
-                        Revoke
+                        {t("shares.action.revoke")}
                       </button>
                     )}
                   </div>
@@ -360,12 +363,12 @@ const SharesList: React.FC<SharesListProps> = ({
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No pending invites
+                {t("shares.none.pendingTitle")}
               </h3>
               <p className="text-gray-500">
                 {searchTerm || filterStatus !== "all"
-                  ? "Try adjusting your search or filter criteria."
-                  : "Send invitations to share your inventory with others."}
+                  ? t("shares.none.filtered")
+                  : t("shares.none.pendingEmpty")}
               </p>
             </div>
           ) : (
@@ -400,16 +403,16 @@ const SharesList: React.FC<SharesListProps> = ({
                       </div>
                       <div className="text-sm text-gray-500 space-y-1">
                         <p>
-                          Sent on{" "}
+                          {t("shares.label.sentOn")}{" "}
                           {new Date(invite.createdAt).toLocaleDateString()}
                         </p>
                         <p>
-                          Expires on{" "}
+                          {t("shares.label.expiresOn")}{" "}
                           {new Date(invite.expiresAt).toLocaleDateString()}
                         </p>
                         {invite.usedAt && (
                           <p>
-                            Accepted on{" "}
+                            {t("shares.label.acceptedOn")}{" "}
                             {new Date(invite.usedAt).toLocaleDateString()}
                           </p>
                         )}
@@ -424,7 +427,7 @@ const SharesList: React.FC<SharesListProps> = ({
                           }
                           className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
                         >
-                          Revoke
+                          {t("shares.action.revoke")}
                         </button>
                       )}
                     </div>

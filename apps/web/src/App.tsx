@@ -7,8 +7,13 @@ import AdminUsers from "./components/admin/AdminUsers";
 import WarrantiesView from "./components/warranties/WarrantiesView";
 import AttachmentsList from "./components/attachments/AttachmentsList";
 import SharesList from "./components/sharing/SharesList";
+import { useI18n } from "./i18n/i18n";
+import { useTheme } from "./theme/theme";
 
 export default function App() {
+  const { t, language, setLanguage } = useI18n();
+  const { theme, setTheme } = useTheme();
+
   const [currentView, setCurrentView] = useState<
     | "dashboard"
     | "articles"
@@ -71,7 +76,7 @@ export default function App() {
       const { url } = await billingAPI.createPowerUserCheckoutSession(plan);
       window.location.href = url;
     } catch (e: any) {
-      alert(e?.message || "Failed to start upgrade");
+      alert(e?.message || t("billing.upgradeStartError"));
     }
   };
 
@@ -82,7 +87,9 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-gray-900">WIM</h1>
+              <h1 className="text-xl font-semibold text-gray-900">
+                {t("app.title")}
+              </h1>
               <div className="flex space-x-4">
                 <button
                   onClick={() => setCurrentView("home")}
@@ -92,7 +99,7 @@ export default function App() {
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  Home
+                  {t("nav.home")}
                 </button>
                 <button
                   onClick={() => setCurrentView("dashboard")}
@@ -102,7 +109,7 @@ export default function App() {
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  Dashboard
+                  {t("nav.dashboard")}
                 </button>
                 <button
                   onClick={() => setCurrentView("articles")}
@@ -112,20 +119,8 @@ export default function App() {
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  Articles
+                  {t("nav.articles")}
                 </button>
-                {role === "ADMIN" && (
-                  <button
-                    onClick={() => setCurrentView("admin")}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      currentView === "admin"
-                        ? "bg-blue-100 text-blue-700"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    Admin
-                  </button>
-                )}
                 <button
                   onClick={() => setCurrentView("warranties")}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -134,7 +129,7 @@ export default function App() {
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  Warranties
+                  {t("nav.warranties")}
                 </button>
                 <button
                   onClick={() => setCurrentView("attachments")}
@@ -144,7 +139,7 @@ export default function App() {
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  Attachments
+                  {t("nav.attachments")}
                 </button>
                 {role === "POWER_USER" && (
                   <button
@@ -155,18 +150,57 @@ export default function App() {
                         : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                     }`}
                   >
-                    Sharing
+                    {t("nav.sharing")}
                   </button>
                 )}
               </div>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-3">
+              <label className="text-xs text-gray-500">
+                {t("nav.language")}
+              </label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="pt">Português</option>
+              </select>
+
+              <label className="text-xs text-gray-500">{t("nav.theme")}</label>
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as any)}
+                className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="light">{t("theme.light")}</option>
+                <option value="dark">{t("theme.dark")}</option>
+                <option value="ocean">{t("theme.ocean")}</option>
+              </select>
+
+              {role === "ADMIN" && (
+                <button
+                  onClick={() => setCurrentView("admin")}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentView === "admin"
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {t("nav.admin")}
+                </button>
+              )}
+
+              <button
+                onClick={handleLogout}
+                className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+              >
+                {t("nav.logout")}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -176,12 +210,9 @@ export default function App() {
           <div>
             <header className="mb-8">
               <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                Welcome to WIM
+                {t("home.welcomeTitle")}
               </h1>
-              <p className="text-gray-600">
-                Warranty & Inventory Manager - Manage your articles, warranties,
-                and more.
-              </p>
+              <p className="text-gray-600">{t("home.welcomeSubtitle")}</p>
             </header>
 
             {role === "USER" && (
@@ -190,10 +221,10 @@ export default function App() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                       <h2 className="font-semibold text-blue-900">
-                        Upgrade to Power User
+                        {t("home.upgrade.title")}
                       </h2>
                       <p className="text-sm text-blue-800">
-                        Power Users can share their inventory with other users.
+                        {t("home.upgrade.subtitle")}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -201,13 +232,13 @@ export default function App() {
                         onClick={() => startUpgrade("monthly")}
                         className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                       >
-                        Buy €2.99/mo
+                        {t("home.upgrade.buyMonthly")}
                       </button>
                       <button
                         onClick={() => startUpgrade("yearly")}
                         className="px-4 py-2 bg-blue-800 text-white text-sm rounded hover:bg-blue-900"
                       >
-                        Buy €29/yr
+                        {t("home.upgrade.buyYearly")}
                       </button>
                     </div>
                   </div>
@@ -220,12 +251,14 @@ export default function App() {
                 className="rounded-xl border border-gray-200 bg-white p-4 shadow cursor-pointer hover:bg-gray-50"
                 onClick={() => setCurrentView("articles")}
               >
-                <h2 className="font-semibold">Inventaire</h2>
+                <h2 className="font-semibold">
+                  {t("home.card.inventory.title")}
+                </h2>
                 <p className="text-sm text-gray-600">
-                  Liste et détail des articles.
+                  {t("home.card.inventory.subtitle")}
                 </p>
                 <button className="mt-2 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                  Manage Articles
+                  {t("home.card.inventory.cta")}
                 </button>
               </div>
               <div
@@ -233,28 +266,28 @@ export default function App() {
                 onClick={() => setCurrentView("dashboard")}
               >
                 <h2 className="font-semibold text-lg text-gray-900 mb-2">
-                  📊 Dashboard
+                  📊 {t("home.card.dashboard.title")}
                 </h2>
                 <p className="text-sm text-gray-600 mb-3">
-                  Statistics and overview.
+                  {t("home.card.dashboard.subtitle")}
                 </p>
                 <button className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
-                  View Dashboard
+                  {t("home.card.dashboard.cta")}
                 </button>
               </div>
 
               <div className="rounded-xl border border-gray-200 bg-white p-4 shadow">
                 <h2 className="font-semibold text-lg text-gray-900 mb-2">
-                  🛡️ Garanties
+                  🛡️ {t("home.card.warranties.title")}
                 </h2>
                 <p className="text-sm text-gray-600 mb-3">
-                  Dates d'achat, fin, statut.
+                  {t("home.card.warranties.subtitle")}
                 </p>
                 <button
                   onClick={() => setCurrentView("warranties")}
                   className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                 >
-                  Manage Warranties
+                  {t("home.card.warranties.cta")}
                 </button>
               </div>
 
@@ -263,13 +296,13 @@ export default function App() {
                 onClick={() => setCurrentView("attachments")}
               >
                 <h2 className="font-semibold text-lg text-gray-900 mb-2">
-                  📎 Attachments
+                  📎 {t("home.card.attachments.title")}
                 </h2>
                 <p className="text-sm text-gray-600 mb-3">
-                  Factures, preuves d'achat, documents.
+                  {t("home.card.attachments.subtitle")}
                 </p>
                 <button className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
-                  View Attachments
+                  {t("home.card.attachments.cta")}
                 </button>
               </div>
 
@@ -279,13 +312,13 @@ export default function App() {
                   onClick={() => setCurrentView("sharing")}
                 >
                   <h2 className="font-semibold text-lg text-gray-900 mb-2">
-                    🤝 Partage
+                    🤝 {t("home.card.sharing.title")}
                   </h2>
                   <p className="text-sm text-gray-600 mb-3">
-                    Partager votre inventaire (Power User).
+                    {t("home.card.sharing.subtitle")}
                   </p>
                   <button className="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors">
-                    Manage Sharing
+                    {t("home.card.sharing.cta")}
                   </button>
                 </div>
               )}

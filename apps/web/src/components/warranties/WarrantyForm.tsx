@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useI18n } from "../../i18n/i18n";
 
 interface Warranty {
   garantieId?: number;
@@ -23,6 +24,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState<Omit<Warranty, "garantieId">>({
     garantieNom: warranty?.garantieNom || "",
     garantieDateAchat:
@@ -37,23 +39,25 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.garantieNom.trim()) {
-      newErrors.garantieNom = "Warranty name is required";
+      newErrors.garantieNom = t("warrantyForm.error.nameRequired");
     } else if (formData.garantieNom.length > 100) {
-      newErrors.garantieNom = "Warranty name must be 100 characters or less";
+      newErrors.garantieNom = t("warrantyForm.error.nameMax");
     }
 
     if (!formData.garantieDateAchat) {
-      newErrors.garantieDateAchat = "Purchase date is required";
+      newErrors.garantieDateAchat = t(
+        "warrantyForm.error.purchaseDateRequired",
+      );
     }
 
     if (!formData.garantieDuration || formData.garantieDuration < 1) {
-      newErrors.garantieDuration = "Duration must be at least 1 month";
+      newErrors.garantieDuration = t("warrantyForm.error.durationMin");
     } else if (formData.garantieDuration > 120) {
-      newErrors.garantieDuration = "Duration cannot exceed 120 months";
+      newErrors.garantieDuration = t("warrantyForm.error.durationMax");
     }
 
     if (!formData.garantieArticleId) {
-      newErrors.garantieArticleId = "Article selection is required";
+      newErrors.garantieArticleId = t("warrantyForm.error.articleRequired");
     }
 
     setErrors(newErrors);
@@ -94,7 +98,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        {warranty ? "Edit Warranty" : "Add New Warranty"}
+        {warranty ? t("warrantyForm.editTitle") : t("warrantyForm.addTitle")}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -104,7 +108,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             htmlFor="garantieNom"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Warranty Name *
+            {t("warrantyForm.name")} *
           </label>
           <input
             type="text"
@@ -112,7 +116,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             value={formData.garantieNom}
             onChange={(e) => handleInputChange("garantieNom", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter warranty name"
+            placeholder={t("warrantyForm.name.placeholder")}
             maxLength={100}
             disabled={isLoading}
           />
@@ -127,7 +131,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             htmlFor="garantieDateAchat"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Purchase Date *
+            {t("warrantyForm.purchaseDate")} *
           </label>
           <input
             type="date"
@@ -152,7 +156,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             htmlFor="garantieDuration"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Duration (months) *
+            {t("warrantyForm.durationMonths")} *
           </label>
           <input
             type="number"
@@ -165,7 +169,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
               )
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter duration in months"
+            placeholder={t("warrantyForm.duration.placeholder")}
             min={1}
             max={120}
             disabled={isLoading}
@@ -181,7 +185,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         {formData.garantieDateAchat && formData.garantieDuration && (
           <div className="p-3 bg-blue-50 rounded-md">
             <p className="text-sm text-blue-800">
-              <strong>Warranty expires on:</strong> {calculateEndDate()}
+              <strong>{t("warrantyForm.expiresOn")}</strong>{" "}
+              {calculateEndDate()}
             </p>
           </div>
         )}
@@ -194,10 +199,10 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading
-              ? "Saving..."
+              ? t("warrantyForm.saving")
               : warranty
-                ? "Update Warranty"
-                : "Create Warranty"}
+                ? t("warrantyForm.update")
+                : t("warrantyForm.create")}
           </button>
 
           {onCancel && (
@@ -206,7 +211,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
         </div>
