@@ -271,6 +271,31 @@ export const attachmentsAPI = {
 
     return response.json();
   },
+
+  async deleteAttachment(id: number, options?: { removeFile?: boolean }) {
+    const token = getToken();
+    const removeFile = options?.removeFile === true;
+    const url = new URL(`${API_BASE_URL}/attachments/${id}`);
+    if (removeFile) url.searchParams.set("removeFile", "true");
+
+    const response = await fetch(url.toString(), {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to delete attachment (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
 };
 
 // Statistics API

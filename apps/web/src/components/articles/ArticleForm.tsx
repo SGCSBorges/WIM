@@ -75,15 +75,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     Number((article as any)?.garantie?.garantieDuration) || 24,
   );
 
-  const [warrantyProofAttachment, setWarrantyProofAttachment] = useState<
-    | {
-        attachmentId: number;
-        fileName: string;
-        mimeType: string;
-        fileUrl: string;
-      }
-    | null
-  >(() => {
+  const [warrantyProofAttachment, setWarrantyProofAttachment] = useState<{
+    attachmentId: number;
+    fileName: string;
+    mimeType: string;
+    fileUrl: string;
+  } | null>(() => {
     const g: any = (article as any)?.garantie;
     if (!g?.garantieImageAttachmentId) return null;
     // We might not have attachment details on the article payload; we at least keep the ID.
@@ -98,6 +95,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [warrantyProofError, setWarrantyProofError] = useState<string | null>(
     null,
   );
+  const [deleteProofFromServer, setDeleteProofFromServer] = useState(false);
 
   useEffect(() => {
     // When switching between create/edit, keep warranty state in sync.
@@ -121,6 +119,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       setWarrantyProofAttachment(null);
     }
     setWarrantyProofError(null);
+    setDeleteProofFromServer(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article?.articleId]);
 
@@ -144,9 +143,27 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     }
   };
 
-  const clearWarrantyProof = () => {
+  const clearWarrantyProof = async () => {
+    try {
+      setWarrantyProofError(null);
+
+      // Optional cleanup, OFF by default.
+      if (deleteProofFromServer && warrantyProofAttachment?.attachmentId) {
+        await attachmentsAPI.deleteAttachment(
+          warrantyProofAttachment.attachmentId,
+          {
+            removeFile: true,
+          },
+        );
+      }
+    } catch (e) {
+      setWarrantyProofError(
+        e instanceof Error ? e.message : t("common.errorOccurred"),
+      );
+      return;
+    }
+
     setWarrantyProofAttachment(null);
-    setWarrantyProofError(null);
   };
 
   const selectedSet = useMemo(
@@ -374,45 +391,47 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           {warrantyEnabled && (
             <div className="mt-3 space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("articleForm.warranty.name")}
-                </label>
-                <input
-                  type="text"
-                  value={warrantyNom}
-                  onChange={(e) => setWarrantyNom(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder={t("articleForm.warranty.placeholder.name")}
-                  maxLength={100}
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("articleForm.warranty.name")}
+                  </label>
+                  <input
+                    type="text"
+                    value={warrantyNom}
+                    onChange={(e) => setWarrantyNom(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder={t("articleForm.warranty.placeholder.name")}
+                    maxLength={100}
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("articleForm.warranty.purchaseDate")}
-                </label>
-                <input
-                  type="date"
-                  value={warrantyDateAchat}
-                  onChange={(e) => setWarrantyDateAchat(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("articleForm.warranty.purchaseDate")}
+                  </label>
+                  <input
+                    type="date"
+                    value={warrantyDateAchat}
+                    onChange={(e) => setWarrantyDateAchat(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("articleForm.warranty.durationMonths")}
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={120}
-                  value={warrantyDuration}
-                  onChange={(e) => setWarrantyDuration(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t("articleForm.warranty.durationMonths")}
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={120}
+                    value={warrantyDuration}
+                    onChange={(e) =>
+                      setWarrantyDuration(Number(e.target.value))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
               </div>
 
               <div>
@@ -435,7 +454,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
                   {warrantyProofUploading && (
                     <p className="text-sm text-gray-500">
-                      {t("attachments.loading")}
+                      {t("common.loading")}
                     </p>
                   )}
 
@@ -450,26 +469,41 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                           {warrantyProofAttachment.fileName ||
                             `#${warrantyProofAttachment.attachmentId}`}
                         </p>
-                        {warrantyProofAttachment.fileUrl && (
-                          <a
-                            className="text-blue-600 hover:underline"
-                            href={warrantyProofAttachment.fileUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {t("common.view")}
-                          </a>
-                        )}
+                        <a
+                          className="text-blue-600 hover:underline"
+                          href={
+                            warrantyProofAttachment.fileUrl ||
+                            `http://localhost:3000/api/attachments/${warrantyProofAttachment.attachmentId}`
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {t("attachments.action.view")}
+                        </a>
                       </div>
                       <button
                         type="button"
                         onClick={clearWarrantyProof}
                         className="text-red-600 hover:underline whitespace-nowrap"
                       >
-                        {t("common.remove")}
+                        {t("common.delete")}
                       </button>
                     </div>
                   )}
+
+                  {warrantyProofAttachment && (
+                    <label className="flex items-center gap-2 text-xs text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={deleteProofFromServer}
+                        onChange={(e) =>
+                          setDeleteProofFromServer(e.target.checked)
+                        }
+                      />
+                      <span>Delete uploaded proof from server (optional)</span>
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
           )}

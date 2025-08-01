@@ -147,11 +147,33 @@ router.delete(
   authGuard,
   asyncHandler(async (req: any, res) => {
     const id = Number(req.params.id);
+    const removeFile =
+      String(req.query?.removeFile || "false").toLowerCase() === "true";
+
+    // If requested, attempt to remove the local file from disk (best-effort).
+    if (removeFile) {
+      const attachment = await AttachmentService.get(id, req.user.sub);
+      if (attachment?.fileUrl) {
+        try {
+          const url = new URL(attachment.fileUrl);
+          const pathname = decodeURIComponent(url.pathname);
+          if (pathname.startsWith("/uploads/")) {
+            const storedName = pathname.replace("/uploads/", "");
+            const fullPath = path.join(UPLOAD_DIR, storedName);
+            await fs.promises.unlink(fullPath);
+          }
+        } catch {
+          // ignore parse/unlink errors (file may already be gone)
+        }
+      }
+    }
+
     await AttachmentService.remove(id, req.user.sub);
     await auditAction(req, {
       action: "DELETE",
       entity: "Attachment",
       entityId: id,
+      metadata: removeFile ? { removeFile: true } : undefined,
     });
     res.json({ message: "Attachment deleted successfully" });
   })
