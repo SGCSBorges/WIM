@@ -1,42 +1,15 @@
 import { Queue } from "bullmq";
-import { RedisOptions } from "ioredis";
 
-const connection: RedisOptions = {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
-};
-// Create BullMQ connection configuration
-function createRedisConnection(): RedisOptions {
-  const redisUrl = process.env.REDIS_URL;
+import { createRedisConnection } from "./redis";
+import { WarrantyReminderJobPayload } from "../modules/alerts/alert.types";
 
-  if (redisUrl) {
-    try {
-      const url = new URL(redisUrl);
-      return {
-        maxRetriesPerRequest: null,
-        enableReadyCheck: false,
-        host: url.hostname,
-        port: parseInt(url.port) || 6379,
-        username: url.username || undefined,
-        password: url.password || undefined,
-      };
-    } catch (error) {
-      console.error("[Redis] Invalid REDIS_URL format:", error);
-    }
+// BullMQ queue names cannot contain ':'; we keep the logical name "wim:alerts"
+// as a namespace in logs/metrics, but use a BullMQ-valid queue name.
+export const ALERT_QUEUE_NAME = "wim-alerts";
+
+export const alertQueue = new Queue<WarrantyReminderJobPayload>(
+  ALERT_QUEUE_NAME,
+  {
+    connection: createRedisConnection(),
   }
-
-  return connection;
-}
-
-export const reminderQueue = new Queue("wim-reminders", {
-  connection: createRedisConnection(),
-});
-
-export type ReminderJobData = {
-  garantieId: number;
-  alerteId?: number;
-  label: "J-30" | "J-7" | "J-1";
-  when: string; // ISO
-};
+);

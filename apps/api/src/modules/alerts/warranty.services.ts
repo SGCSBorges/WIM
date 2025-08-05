@@ -1,39 +1,11 @@
-import { prisma } from "../../libs/prisma";
-import { addMonths } from "../common/date";
-import {
-  WarrantyCreateInput,
-  WarrantyUpdateInput,
-} from "../warranties/warranty.schemas";
-import { AlertService } from "../alerts/alert.service";
+/**
+ * Deprecated module.
+ *
+ * This file previously contained a duplicate WarrantyService.
+ * The canonical service is now `src/modules/warranties/warranty.service.ts`.
+ *
+ * Keeping this as a re-export avoids breaking any older imports while ensuring
+ * scheduling logic remains centralized.
+ */
 
-export const WarrantyService = {
-  // […]
-  create: async (data: WarrantyCreateInput) => {
-    const fin = addMonths(
-      new Date(data.garantieDateAchat),
-      data.garantieDuration
-    );
-
-    const existing = await prisma.garantie.findUnique({
-      where: { garantieArticleId: data.garantieArticleId },
-    });
-    if (existing) {
-      const err: any = new Error("Une garantie existe déjà pour cet article");
-      err.status = 409;
-      throw err;
-    }
-
-    const created = await prisma.garantie.create({
-      data: { ...data, garantieFin: fin, garantieIsValide: true },
-    });
-
-    await AlertService.scheduleForWarranty(
-      created.garantieId,
-      new Date(data.garantieDateAchat),
-      data.garantieDuration
-    );
-
-    return created;
-  },
-  // […]
-};
+export { WarrantyService } from "../warranties/warranty.service";

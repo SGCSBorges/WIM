@@ -69,6 +69,10 @@ export const translations = {
     "articleForm.warranty.requiredDuration":
       "Please enter a valid warranty duration.",
 
+    "articleForm.warranty.proof.deleteFromServer":
+      "Delete uploaded proof from server (optional)",
+    "articleForm.warranty.proof.open": "Open proof",
+
     "articles.table.name": "Name",
     "articles.table.model": "Model",
     "articles.table.description": "Description",
@@ -243,6 +247,9 @@ export const translations = {
     "warranties.error.fetch": "Failed to fetch warranties",
     "warranties.error.create": "Failed to create warranty",
 
+    "warranties.createDisabled.message":
+      "Warranties can’t be created from this page. Create or edit an Article to add a warranty.",
+
     "warrantyForm.addTitle": "Add New Warranty",
     "warrantyForm.editTitle": "Edit Warranty",
     "warrantyForm.name": "Warranty Name",
@@ -370,6 +377,10 @@ export const translations = {
       "Veuillez sélectionner la date d'achat.",
     "articleForm.warranty.requiredDuration":
       "Veuillez saisir une durée valide.",
+
+    "articleForm.warranty.proof.deleteFromServer":
+      "Supprimer la preuve téléversée du serveur (optionnel)",
+    "articleForm.warranty.proof.open": "Ouvrir la preuve",
 
     "articles.table.name": "Nom",
     "articles.table.model": "Modèle",
@@ -549,6 +560,9 @@ export const translations = {
     "warranties.error.fetch": "Impossible de charger les garanties",
     "warranties.error.create": "Impossible de créer la garantie",
 
+    "warranties.createDisabled.message":
+      "Les garanties ne peuvent pas être créées depuis cette page. Créez ou modifiez un article pour ajouter une garantie.",
+
     "warrantyForm.addTitle": "Ajouter une garantie",
     "warrantyForm.editTitle": "Modifier la garantie",
     "warrantyForm.name": "Nom de la garantie",
@@ -674,6 +688,10 @@ export const translations = {
     "articleForm.warranty.requiredName": "Introduza o nome da garantia.",
     "articleForm.warranty.requiredDate": "Selecione a data de compra.",
     "articleForm.warranty.requiredDuration": "Introduza uma duração válida.",
+
+    "articleForm.warranty.proof.deleteFromServer":
+      "Apagar o comprovativo enviado do servidor (opcional)",
+    "articleForm.warranty.proof.open": "Abrir comprovativo",
 
     "articles.table.name": "Nome",
     "articles.table.model": "Modelo",
@@ -848,6 +866,9 @@ export const translations = {
       "Nota: para criar uma garantia precisa de um ID de Artigo existente (por agora).",
     "warranties.error.fetch": "Falha ao obter garantias",
     "warranties.error.create": "Falha ao criar garantia",
+
+    "warranties.createDisabled.message":
+      "As garantias não podem ser criadas nesta página. Crie ou edite um artigo para adicionar uma garantia.",
 
     "warrantyForm.addTitle": "Adicionar Nova Garantia",
     "warrantyForm.editTitle": "Editar Garantia",

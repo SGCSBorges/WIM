@@ -9,6 +9,7 @@ export const WarrantyService = {
     prisma.garantie.findUnique({ where: { garantieId: id } }),
 
   create: async (data: WarrantyCreateInput) => {
+    // ownerUserId is injected by route middleware (auth)
     const fin = addMonths(
       new Date(data.garantieDateAchat),
       data.garantieDuration
@@ -38,25 +39,67 @@ export const WarrantyService = {
     });
 
     // Planifier 3 rappels (J-30 / J-7 / J-1)
-    await AlertService.scheduleForWarranty(
-      created.garantieId,
-      new Date(data.garantieDateAchat),
-      data.garantieDuration
-    );
+    await AlertService.scheduleForWarranty({
+      ownerUserId: created.ownerUserId,
+      garantieId: created.garantieId,
+      articleId: created.garantieArticleId,
+      garantieFin: created.garantieFin,
+    });
 
     return created;
   },
 
-  update: (id: number, data: WarrantyUpdateInput) => {
-    let patch: any = { ...data };
-    if (data.garantieDateAchat && data.garantieDuration) {
-      patch.garantieFin = addMonths(
-        new Date(data.garantieDateAchat),
-        data.garantieDuration
-      );
+  update: async (id: number, data: WarrantyUpdateInput) => {
+    const current = await prisma.garantie.findUnique({
+      where: { garantieId: id },
+    });
+    if (!current) {
+      const err: any = new Error("Garantie non trouvée");
+      err.status = 404;
+      throw err;
     }
-    return prisma.garantie.update({ where: { garantieId: id }, data: patch });
+
+    const patch: any = { ...data };
+    // Recalculate fin if either dateAchat or duration changes (use current for missing)
+    if (data.garantieDateAchat || data.garantieDuration) {
+      const dateAchat = data.garantieDateAchat
+        ? new Date(data.garantieDateAchat)
+        : new Date(current.garantieDateAchat);
+      const duration =
+        data.garantieDuration != null
+          ? data.garantieDuration
+          : current.garantieDuration;
+      patch.garantieFin = addMonths(dateAchat, duration);
+    }
+
+    const updated = await prisma.garantie.update({
+      where: { garantieId: id },
+      data: patch,
+    });
+
+    // Reschedule reminders if fin changed (or if update could affect fin)
+    if (patch.garantieFin) {
+      await AlertService.rescheduleForWarranty({
+        ownerUserId: updated.ownerUserId,
+        garantieId: updated.garantieId,
+        articleId: updated.garantieArticleId,
+        garantieFin: updated.garantieFin,
+      });
+    }
+
+    return updated;
   },
 
-  remove: (id: number) => prisma.garantie.delete({ where: { garantieId: id } }),
+  remove: async (id: number) => {
+    const current = await prisma.garantie.findUnique({
+      where: { garantieId: id },
+    });
+    if (current) {
+      await AlertService.cancelForWarranty({
+        ownerUserId: current.ownerUserId,
+        garantieId: current.garantieId,
+      });
+    }
+    return prisma.garantie.delete({ where: { garantieId: id } });
+  },
 };

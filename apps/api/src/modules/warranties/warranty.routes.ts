@@ -29,7 +29,8 @@ router.post(
   "/",
   authGuard,
   asyncHandler(async (req: any, res) => {
-    const data = WarrantyCreateSchema.parse(req.body);
+    const body = WarrantyCreateSchema.parse(req.body);
+    const data = { ...body, ownerUserId: req.user.userId };
     const created = await WarrantyService.create(data);
     await auditAction(req, {
       action: "CREATE",
@@ -43,6 +44,7 @@ router.post(
 
 router.put(
   "/:id",
+  authGuard,
   asyncHandler(async (req, res) => {
     const id = z.coerce.number().int().parse(req.params.id);
     const data = WarrantyUpdateSchema.parse(req.body);
@@ -53,6 +55,7 @@ router.put(
 
 router.delete(
   "/:id",
+  authGuard,
   asyncHandler(async (req, res) => {
     const id = z.coerce.number().int().parse(req.params.id);
     await WarrantyService.remove(id);

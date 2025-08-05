@@ -32,6 +32,13 @@ enum AttachmentType {
   OTHER
 }
 
+enum AlerteStatus {
+  SCHEDULED
+  SENT
+  CANCELLED
+  FAILED
+}
+
 model Location {
   locationId  Int      @id @default(autoincrement())
   ownerUserId Int
@@ -138,6 +145,12 @@ model Alerte {
   alerteDate        DateTime
   alerteDescription String?  @db.VarChar(255)
 
+  status            AlerteStatus @default(SCHEDULED)
+  sentAt            DateTime?
+  failedAt          DateTime?
+  errorMessage      String?  @db.VarChar(500)
+  errorStack        String?  @db.VarChar(2000)
+
   // Liens (au moins un des deux)
   alerteGarantieId Int?
   alerteArticleId  Int?
@@ -151,8 +164,11 @@ model Alerte {
 
   @@index([ownerUserId])
   @@index([alerteDate])
+  @@index([ownerUserId, alerteDate])
   @@index([alerteGarantieId])
   @@index([alerteArticleId])
+
+  @@unique([alerteGarantieId, alerteDate], map: "uq_alerte_garantie_date")
 }
 
 model Attachment {

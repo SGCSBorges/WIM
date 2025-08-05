@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useI18n } from "../../i18n/i18n";
+import AttachmentForm from "./AttachmentForm";
+import { attachmentsAPI } from "../../services/api";
 
 interface Attachment {
   attachmentId: number;
@@ -51,6 +53,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     "date",
   );
 
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     fetchAttachments();
   }, [articleId, garantieId]);
@@ -79,6 +84,30 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       }
     } catch (error) {
       console.error("Failed to fetch attachments:", error);
+    }
+  };
+
+  const handleAdd = async (formData: FormData) => {
+    const file = formData.get("file");
+    const type = String(formData.get("type") || "OTHER") as
+      | "INVOICE"
+      | "WARRANTY"
+      | "OTHER";
+
+    if (!(file instanceof File)) {
+      alert(t("attachments.form.error.fileRequired"));
+      return;
+    }
+
+    try {
+      setUploading(true);
+      await attachmentsAPI.uploadFile(file, type);
+      setShowAddForm(false);
+      await fetchAttachments();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : t("common.errorOccurred"));
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -258,15 +287,24 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             </span>
           )}
         </h2>
-        {onAdd && (
-          <button
-            onClick={onAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            {t("attachments.add")}
-          </button>
-        )}
+        <button
+          onClick={() => {
+            if (onAdd) onAdd();
+            setShowAddForm((v) => !v);
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+        >
+          {showAddForm ? t("common.cancel") : t("attachments.add")}
+        </button>
       </div>
+
+      {showAddForm && (
+        <AttachmentForm
+          onSubmit={handleAdd}
+          onCancel={() => setShowAddForm(false)}
+          isLoading={uploading}
+        />
+      )}
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-4">

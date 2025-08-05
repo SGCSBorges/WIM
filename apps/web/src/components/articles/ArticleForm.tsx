@@ -14,6 +14,8 @@ interface Article {
   articleDescription?: string | null;
   productImageUrl?: string | null;
   locationIds?: number[];
+  // Edit payload from API includes join rows like { locationId, location: { name } }
+  locations?: Array<{ locationId: number; location?: { name: string } }>;
   // For create/update we submit a simplified nested warranty payload.
   // For editing, ArticlesList sends `garantie` which can include extra fields.
   garantie?:
@@ -45,8 +47,25 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [locationsError, setLocationsError] = useState<string | null>(null);
-  const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>(
-    article?.locationIds || [],
+  const deriveInitialLocationIds = (a?: Article): number[] => {
+    const anyA: any = a as any;
+    const fromJoin = Array.isArray(anyA?.locations)
+      ? anyA.locations
+          .map((x: any) => Number(x?.locationId))
+          .filter((n: number) => Number.isFinite(n) && n > 0)
+      : [];
+    const fromLegacy = Array.isArray(anyA?.locationIds)
+      ? anyA.locationIds
+          .map((x: any) => Number(x))
+          .filter((n: number) => Number.isFinite(n) && n > 0)
+      : [];
+
+    // Prefer join data if present, fallback to legacy.
+    return fromJoin.length > 0 ? fromJoin : fromLegacy;
+  };
+
+  const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>(() =>
+    deriveInitialLocationIds(article),
   );
 
   const [newLocationName, setNewLocationName] = useState("");
@@ -99,6 +118,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
   useEffect(() => {
     // When switching between create/edit, keep warranty state in sync.
+    setSelectedLocationIds(deriveInitialLocationIds(article));
     setWarrantyEnabled(Boolean((article as any)?.garantie));
     setWarrantyNom(((article as any)?.garantie?.garantieNom as string) || "");
     const raw = (article as any)?.garantie?.garantieDateAchat;
@@ -478,7 +498,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                           target="_blank"
                           rel="noreferrer"
                         >
-                          {t("attachments.action.view")}
+                          {t("articleForm.warranty.proof.open")}
                         </a>
                       </div>
                       <button
@@ -500,7 +520,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                           setDeleteProofFromServer(e.target.checked)
                         }
                       />
-                      <span>Delete uploaded proof from server (optional)</span>
+                      {t("articleForm.warranty.proof.deleteFromServer")}
                     </label>
                   )}
                 </div>

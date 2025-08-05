@@ -13,11 +13,16 @@ import billingWebhookRoutes from "./modules/billing/billing.webhook.routes";
 import billingMeRoutes from "./modules/billing/billing.me.routes";
 import shareRoutes from "./modules/shares/share.routes";
 import locationRoutes from "./modules/locations/location.routes";
+import alertRoutes from "./modules/alerts/alert.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 import path from "path";
+import { startWorkersOnce } from "./config/jobs";
 
 export function createApp() {
   const app = express();
+
+  // Run BullMQ workers in the same process (as requested)
+  startWorkersOnce();
 
   // Stripe webhook requires raw body for signature verification.
   // Mount BEFORE express.json().
@@ -53,6 +58,7 @@ export function createApp() {
   app.use("/api/billing", billingRoutes);
   app.use("/api/billing", billingMeRoutes);
   app.use("/api/shares", shareRoutes);
+  app.use("/api/alerts", alertRoutes);
   app.use("/api/statistics", statisticsRoutes);
 
   // Handler d’erreurs (toujours en dernier)
