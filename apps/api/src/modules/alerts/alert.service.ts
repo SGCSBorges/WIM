@@ -1,6 +1,7 @@
 import { prisma } from "../../libs/prisma";
 import { alertQueue } from "../../jobs/queues";
 import { logger } from "../../config/logger";
+import { computeWarrantyReminderSchedule } from "./alert.scheduler";
 
 import {
   reminderKindLabel,
@@ -23,21 +24,6 @@ function buildJobId(
   return `warranty:${garantieId}:${reminderKind}:${formatYYYYMMDD(executeAt)}`;
 }
 
-function reminderDates(garantieFin: Date) {
-  const j30 = new Date(garantieFin);
-  j30.setDate(j30.getDate() - 30);
-  const j7 = new Date(garantieFin);
-  j7.setDate(j7.getDate() - 7);
-  const j1 = new Date(garantieFin);
-  j1.setDate(j1.getDate() - 1);
-
-  return [
-    { reminderKind: "J30" as const, executeAt: j30 },
-    { reminderKind: "J7" as const, executeAt: j7 },
-    { reminderKind: "J1" as const, executeAt: j1 },
-  ];
-}
-
 export const AlertService = {
   list: (ownerUserId?: number, status?: string) => {
     return prisma.alerte.findMany({
@@ -55,12 +41,15 @@ export const AlertService = {
     articleId?: number | null;
     garantieFin: Date;
   }) => {
-    const now = Date.now();
-    for (const { reminderKind, executeAt } of reminderDates(
-      input.garantieFin
-    )) {
+    const now = new Date();
+    const schedule = computeWarrantyReminderSchedule({
+      garantieFin: input.garantieFin,
+      now,
+      includePast: false,
+    });
+
+    for (const { reminderKind, executeAt } of schedule) {
       const executeMs = executeAt.getTime();
-      if (executeMs <= now) continue; // do not schedule in the past
 
       // NOTE: we can't rely on regenerated Prisma Client in Windows right now (prisma generate EPERM).
       // So we use createMany (skipDuplicates) + findFirst to get an alerteId deterministically.
@@ -89,7 +78,7 @@ export const AlertService = {
 
       if (!alerte) continue;
 
-      const delay = executeMs - now;
+      const delay = executeMs - now.getTime();
       const jobId = buildJobId(input.garantieId, reminderKind, executeAt);
 
       const payload: WarrantyReminderJobPayload = {
