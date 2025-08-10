@@ -298,6 +298,31 @@ export const attachmentsAPI = {
   },
 };
 
+// Alerts API
+export const alertsAPI = {
+  async getAll(status?: string) {
+    const url = new URL(`${API_BASE_URL}/alerts`);
+    if (status) url.searchParams.set("status", status);
+
+    const response = await fetch(url.toString(), {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to fetch alerts (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+};
+
 // Statistics API
 export const statisticsAPI = {
   async getAll() {

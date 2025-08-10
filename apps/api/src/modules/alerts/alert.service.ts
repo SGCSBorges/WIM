@@ -32,6 +32,21 @@ export const AlertService = {
         ...(status ? ({ status } as any) : {}),
       } as any,
       orderBy: { alerteDate: "asc" },
+      include: {
+        garantie: {
+          select: {
+            garantieId: true,
+            garantieNom: true,
+          },
+        },
+        article: {
+          select: {
+            articleId: true,
+            articleNom: true,
+            articleModele: true,
+          },
+        },
+      },
     });
   },
 
