@@ -5,50 +5,203 @@
 /* Tokens básicos (poderemos trocar por CSS vars da tua charte) */
 :root {
   /* Default theme: light */
-  --bg: #f9fafb; /* gray-50 */
-  --surface: #ffffff;
-  --border: #e5e7eb; /* gray-200 */
-  --text: #111827; /* gray-900 */
-  --muted: #6b7280; /* gray-500 */
-  --primary: #2563eb; /* blue-600 */
+  --bg: #f9fafb; /* page background */
+  --surface: #ffffff; /* cards/inputs */
+  --surface-muted: #f3f4f6; /* subtle panels */
+  --border: #e5e7eb; /* default border */
+  --text: #111827; /* main text */
+  --muted: #6b7280; /* secondary text */
+
+  /* Brand */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --primary-contrast: #ffffff;
+  --focus-ring: rgba(37, 99, 235, 0.45);
+
+  /* Navigation */
+  --nav-bg: #ffffff;
+  --nav-border: #e5e7eb;
+  --nav-text: #111827;
+  --nav-muted: #6b7280;
+  --nav-hover-bg: #f3f4f6;
+  --nav-active-bg: rgba(37, 99, 235, 0.12);
+  --nav-active-text: #1d4ed8;
+
+  /* Cards */
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  /* Buttons (secondary/ghost) */
+  --btn-ghost-text: var(--nav-muted);
+  --btn-ghost-hover-text: var(--text);
+  --btn-ghost-hover-bg: var(--nav-hover-bg);
 }
 
 /* Light */
 :root[data-theme="light"] {
   --bg: #f9fafb;
   --surface: #ffffff;
+  --surface-muted: #f3f4f6;
   --border: #e5e7eb;
   --text: #111827;
   --muted: #6b7280;
   --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --primary-contrast: #ffffff;
+  --focus-ring: rgba(37, 99, 235, 0.45);
+
+  --nav-bg: #ffffff;
+  --nav-border: #e5e7eb;
+  --nav-text: #111827;
+  --nav-muted: #6b7280;
+  --nav-hover-bg: #f3f4f6;
+  --nav-active-bg: rgba(37, 99, 235, 0.12);
+  --nav-active-text: #1d4ed8;
+
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  --btn-ghost-text: var(--nav-muted);
+  --btn-ghost-hover-text: var(--text);
+  --btn-ghost-hover-bg: var(--nav-hover-bg);
 }
 
 /* Dark */
 :root[data-theme="dark"] {
   --bg: #0b1220;
   --surface: #0f172a;
+  --surface-muted: #111c33;
   --border: #24304a;
   --text: #e5e7eb;
   --muted: #94a3b8;
   --primary: #60a5fa;
+  --primary-hover: #3b82f6;
   --primary-contrast: #0b1220;
+  --focus-ring: rgba(96, 165, 250, 0.45);
+
+  --nav-bg: #0f172a;
+  --nav-border: #24304a;
+  --nav-text: #e5e7eb;
+  --nav-muted: #94a3b8;
+  --nav-hover-bg: rgba(148, 163, 184, 0.14);
+  --nav-active-bg: rgba(96, 165, 250, 0.18);
+  --nav-active-text: #bfdbfe;
+
+  --card-bg: #0f172a;
+  --card-border: #24304a;
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+  --btn-ghost-text: var(--nav-muted);
+  --btn-ghost-hover-text: var(--nav-text);
+  --btn-ghost-hover-bg: var(--nav-hover-bg);
 }
 
 /* Ocean */
 :root[data-theme="ocean"] {
   --bg: #071a2b;
   --surface: #0b2b3f;
+  --surface-muted: #0d324a;
   --border: #12435d;
   --text: #e6f6ff;
   --muted: #8fd3f4;
   --primary: #14b8a6; /* teal-500 */
+  --primary-hover: #0d9488; /* teal-600 */
   --primary-contrast: #05202c;
+  --focus-ring: rgba(20, 184, 166, 0.45);
+
+  --nav-bg: #0b2b3f;
+  --nav-border: #12435d;
+  --nav-text: #e6f6ff;
+  --nav-muted: #8fd3f4;
+  --nav-hover-bg: rgba(143, 211, 244, 0.14);
+  --nav-active-bg: rgba(20, 184, 166, 0.18);
+  --nav-active-text: #99f6e4;
+
+  --card-bg: #0b2b3f;
+  --card-border: #12435d;
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+  --btn-ghost-text: var(--nav-muted);
+  --btn-ghost-hover-text: var(--nav-text);
+  --btn-ghost-hover-bg: var(--nav-hover-bg);
 }
 
 /* Apply global page background/text via variables (keeps Tailwind layout intact). */
 body {
   background: var(--bg);
   color: var(--text);
+}
+
+/* Reusable theme-aware utilities (keeps JSX readable, avoids hardcoded Tailwind colors). */
+.ui-nav {
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  color: var(--nav-text);
+}
+
+.ui-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+.ui-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.ui-divider {
+  border-color: var(--border);
+}
+
+.ui-text-muted {
+  color: var(--muted);
+}
+
+.ui-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.ui-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.ui-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+  border-color: transparent;
+}
+
+.ui-spinner {
+  border-bottom-color: var(--primary);
+}
+
+.ui-btn-primary {
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+.ui-btn-primary:hover {
+  background: var(--primary-hover);
+}
+.ui-btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.ui-btn-ghost {
+  color: var(--btn-ghost-text);
+}
+.ui-btn-ghost:hover {
+  color: var(--btn-ghost-hover-text);
+  background: var(--btn-ghost-hover-bg);
+}
+
+.ui-nav-item-active {
+  background: var(--nav-active-bg);
+  color: var(--nav-active-text);
 }

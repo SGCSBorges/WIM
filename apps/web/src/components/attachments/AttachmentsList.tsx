@@ -267,7 +267,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="ui-spinner animate-spin rounded-full h-32 w-32 border-b-2"></div>
       </div>
     );
   }
@@ -276,10 +276,10 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold">
           {t("attachments.title")}
           {(articleId || garantieId) && (
-            <span className="text-lg font-normal text-gray-600 ml-2">
+            <span className="text-lg font-normal ui-text-muted ml-2">
               {t("attachments.for")}{" "}
               {articleId
                 ? t("attachments.for.article")
@@ -292,7 +292,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             if (onAdd) onAdd();
             setShowAddForm((v) => !v);
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
         >
           {showAddForm ? t("common.cancel") : t("attachments.add")}
         </button>
@@ -314,7 +314,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             placeholder={t("attachments.search.placeholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="ui-input w-full px-3 py-2 rounded-md"
           />
         </div>
 
@@ -322,7 +322,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="ui-select px-3 py-2 rounded-md"
           >
             <option value="date">{t("attachments.sort.date")}</option>
             <option value="name">{t("attachments.sort.name")}</option>
@@ -333,7 +333,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as typeof filterType)}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="ui-select px-3 py-2 rounded-md"
           >
             <option value="ALL">{t("attachments.filter.all")}</option>
             <option value="INVOICE">{t("attachments.filter.invoices")}</option>
@@ -348,9 +348,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       {/* Attachments Grid */}
       {filteredAndSortedAttachments.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-500 mb-4">
+          <div className="ui-text-muted mb-4">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="mx-auto h-12 w-12"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -363,10 +363,10 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
               />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium mb-2">
             {t("attachments.none.title")}
           </h3>
-          <p className="text-gray-500">
+          <p className="ui-text-muted">
             {searchTerm || filterType !== "ALL"
               ? t("attachments.none.filtered")
               : t("attachments.none.empty")}
@@ -377,7 +377,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
           {filteredAndSortedAttachments.map((attachment) => (
             <div
               key={attachment.attachmentId}
-              className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+              className="ui-card rounded-lg transition-shadow hover:shadow-md"
             >
               <div className="p-4">
                 <div className="flex items-start space-x-3">
@@ -385,7 +385,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                      <h3 className="text-sm font-medium truncate">
                         {attachment.fileName}
                       </h3>
                       <span
@@ -395,17 +395,17 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                       </span>
                     </div>
 
-                    <p className="text-xs text-gray-500 mb-2">
+                    <p className="text-xs ui-text-muted mb-2">
                       {formatFileSize(attachment.fileSize)}
                     </p>
 
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs ui-text-muted">
                       {new Date(attachment.createdAt).toLocaleDateString()}
                     </p>
 
                     {/* Linked entities */}
                     {(attachment.article || attachment.garantie) && (
-                      <div className="mt-2 text-xs text-gray-600">
+                      <div className="mt-2 text-xs ui-text-muted">
                         {attachment.article && (
                           <p>
                             {t("attachments.linked.article")}:{" "}
@@ -423,11 +423,11 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+                <div className="flex justify-between items-center mt-4 pt-3 border-t ui-divider">
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleDownload(attachment)}
-                      className="text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                      className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
                       title={t("attachments.action.download")}
                     >
                       {t("attachments.action.download")}
@@ -436,7 +436,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     {onView && (
                       <button
                         onClick={() => onView(attachment)}
-                        className="text-xs text-green-600 hover:text-green-800 hover:bg-green-50 px-2 py-1 rounded transition-colors"
+                        className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
                         title={t("attachments.action.view")}
                       >
                         {t("attachments.action.view")}
@@ -448,7 +448,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     {onEdit && (
                       <button
                         onClick={() => onEdit(attachment)}
-                        className="text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 px-2 py-1 rounded transition-colors"
+                        className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
                       >
                         {t("attachments.action.edit")}
                       </button>

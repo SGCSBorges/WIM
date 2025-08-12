@@ -164,11 +164,9 @@ export default function AdminUsers() {
 
   if (role !== "ADMIN") {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">
-          {t("admin.title")}
-        </h1>
-        <p className="text-sm text-gray-600">{t("admin.accessDenied")}</p>
+      <div className="ui-card rounded-lg p-6">
+        <h1 className="text-xl font-semibold mb-2">{t("admin.title")}</h1>
+        <p className="text-sm ui-text-muted">{t("admin.accessDenied")}</p>
       </div>
     );
   }
@@ -177,14 +175,12 @@ export default function AdminUsers() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {t("admin.title")}
-          </h1>
-          <p className="text-gray-600">{t("admin.subtitle")}</p>
+          <h1 className="text-2xl font-bold">{t("admin.title")}</h1>
+          <p className="ui-text-muted">{t("admin.subtitle")}</p>
         </div>
         <button
           onClick={fetchUsers}
-          className="px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+          className="ui-btn-ghost px-3 py-2 rounded border ui-divider"
           disabled={loadingUsers}
         >
           {t("common.refresh")}
@@ -198,11 +194,11 @@ export default function AdminUsers() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="ui-card rounded-lg">
+          <div className="p-4 border-b ui-divider flex items-center justify-between">
             <h2 className="font-semibold">{t("admin.users")}</h2>
             {loadingUsers && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs ui-text-muted">
                 {t("common.loading")}
               </span>
             )}
@@ -212,7 +208,7 @@ export default function AdminUsers() {
               <div
                 key={u.userId}
                 className={`p-4 flex items-center justify-between ${
-                  selectedUser?.userId === u.userId ? "bg-blue-50" : ""
+                  selectedUser?.userId === u.userId ? "ui-panel" : ""
                 }`}
               >
                 <button
@@ -222,8 +218,8 @@ export default function AdminUsers() {
                   }}
                   className="text-left flex-1 mr-4"
                 >
-                  <div className="font-medium text-gray-900">{u.email}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="font-medium">{u.email}</div>
+                  <div className="text-xs ui-text-muted">
                     {t("admin.roleLabel")}: {u.role}
                   </div>
                 </button>
@@ -239,29 +235,29 @@ export default function AdminUsers() {
               </div>
             ))}
             {!loadingUsers && users.length === 0 && (
-              <div className="p-4 text-sm text-gray-500">
+              <div className="p-4 text-sm ui-text-muted">
                 {t("admin.noUsers")}
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-4 border-b border-gray-200">
+        <div className="ui-card rounded-lg">
+          <div className="p-4 border-b ui-divider">
             <h2 className="font-semibold">{t("admin.inventory")}</h2>
             {selectedUser && (
-              <p className="text-xs text-gray-500">{selectedUser.email}</p>
+              <p className="text-xs ui-text-muted">{selectedUser.email}</p>
             )}
           </div>
 
           {!selectedUser && (
-            <div className="p-4 text-sm text-gray-500">
+            <div className="p-4 text-sm ui-text-muted">
               {t("admin.selectUser")}
             </div>
           )}
 
           {selectedUser && loadingInventory && (
-            <div className="p-4 text-sm text-gray-500">
+            <div className="p-4 text-sm ui-text-muted">
               {t("admin.loadingInventory")}
             </div>
           )}
@@ -274,17 +270,17 @@ export default function AdminUsers() {
                   {inventory.articlesOwned?.map((a) => (
                     <div
                       key={a.articleId}
-                      className="border rounded p-3 flex items-start justify-between"
+                      className="ui-panel rounded p-3 flex items-start justify-between"
                     >
                       <div>
                         <div className="font-medium">
                           {a.articleNom} — {a.articleModele}
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs ui-text-muted">
                           {a.articleDescription || t("admin.noDescription")}
                         </div>
                         {a.garantie && (
-                          <div className="text-xs text-gray-600 mt-1">
+                          <div className="text-xs ui-text-muted mt-1">
                             {t("admin.warrantyLabel")}: {a.garantie.garantieNom}{" "}
                             (
                             {a.garantie.garantieIsValide
@@ -306,7 +302,7 @@ export default function AdminUsers() {
                     </div>
                   ))}
                   {inventory.articlesOwned?.length === 0 && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm ui-text-muted">
                       {t("admin.noArticles")}
                     </div>
                   )}
@@ -317,16 +313,16 @@ export default function AdminUsers() {
                 <h3 className="font-medium mb-2">{t("admin.warranties")}</h3>
                 <div className="space-y-2">
                   {inventory.warrantiesOwned?.map((w) => (
-                    <div key={w.garantieId} className="border rounded p-3">
+                    <div key={w.garantieId} className="ui-panel rounded p-3">
                       <div className="font-medium">{w.garantieNom}</div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs ui-text-muted">
                         {t("admin.statusLabel")}:{" "}
                         {w.garantieIsValide
                           ? t("admin.status.valid")
                           : t("admin.status.expired")}
                       </div>
                       {w.article && (
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="text-xs ui-text-muted mt-1">
                           {t("articles.title")}: {w.article.articleNom} —{" "}
                           {w.article.articleModele}
                         </div>
@@ -334,7 +330,7 @@ export default function AdminUsers() {
                     </div>
                   ))}
                   {inventory.warrantiesOwned?.length === 0 && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm ui-text-muted">
                       {t("admin.noWarranties")}
                     </div>
                   )}

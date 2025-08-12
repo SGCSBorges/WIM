@@ -96,8 +96,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+    <div className="ui-card max-w-2xl mx-auto p-6 rounded-lg">
+      <h2 className="text-2xl font-bold mb-6">
         {warranty ? t("warrantyForm.editTitle") : t("warrantyForm.addTitle")}
       </h2>
 
@@ -106,7 +106,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         <div>
           <label
             htmlFor="garantieNom"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium mb-2"
           >
             {t("warrantyForm.name")} *
           </label>
@@ -115,7 +115,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             id="garantieNom"
             value={formData.garantieNom}
             onChange={(e) => handleInputChange("garantieNom", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="ui-input w-full px-3 py-2 rounded-md"
             placeholder={t("warrantyForm.name.placeholder")}
             maxLength={100}
             disabled={isLoading}
@@ -129,7 +129,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         <div>
           <label
             htmlFor="garantieDateAchat"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium mb-2"
           >
             {t("warrantyForm.purchaseDate")} *
           </label>
@@ -140,7 +140,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             onChange={(e) =>
               handleInputChange("garantieDateAchat", e.target.value)
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="ui-input w-full px-3 py-2 rounded-md"
             disabled={isLoading}
           />
           {errors.garantieDateAchat && (
@@ -154,7 +154,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         <div>
           <label
             htmlFor="garantieDuration"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium mb-2"
           >
             {t("warrantyForm.durationMonths")} *
           </label>
@@ -168,7 +168,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
                 parseInt(e.target.value) || 0,
               )
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="ui-input w-full px-3 py-2 rounded-md"
             placeholder={t("warrantyForm.duration.placeholder")}
             min={1}
             max={120}
@@ -183,8 +183,8 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
         {/* Warranty End Date Display */}
         {formData.garantieDateAchat && formData.garantieDuration && (
-          <div className="p-3 bg-blue-50 rounded-md">
-            <p className="text-sm text-blue-800">
+          <div className="ui-panel p-3 rounded-md">
+            <p className="text-sm">
               <strong>{t("warrantyForm.expiresOn")}</strong>{" "}
               {calculateEndDate()}
             </p>
@@ -192,11 +192,11 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         )}
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+        <div className="flex justify-end space-x-4 pt-4 border-t ui-divider">
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="ui-btn-primary px-6 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading
               ? t("warrantyForm.saving")
@@ -209,7 +209,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider transition-colors"
             >
               {t("common.cancel")}
             </button>

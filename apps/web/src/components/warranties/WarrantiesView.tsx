@@ -64,13 +64,11 @@ export default function WarrantiesView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t("warranties.title")}
-        </h1>
-        <p className="text-gray-600">{t("warranties.subtitle")}</p>
+        <h1 className="text-2xl font-bold">{t("warranties.title")}</h1>
+        <p className="ui-text-muted">{t("warranties.subtitle")}</p>
       </div>
 
-      <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+      <div className="ui-panel rounded-md p-4 text-sm">
         {t("warranties.createDisabled.message")}
       </div>
 
@@ -80,15 +78,15 @@ export default function WarrantiesView() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className="ui-card rounded-lg">
+        <div className="p-4 border-b ui-divider flex items-center justify-between">
           <h2 className="font-semibold">{t("warranties.all")}</h2>
           {loading ? (
-            <span className="text-xs text-gray-500">{t("common.loading")}</span>
+            <span className="text-xs ui-text-muted">{t("common.loading")}</span>
           ) : (
             <button
               onClick={fetchAll}
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm ui-btn-ghost rounded px-2 py-1"
             >
               {t("common.refresh")}
             </button>
@@ -97,21 +95,21 @@ export default function WarrantiesView() {
 
         <div className="divide-y">
           {!loading && sorted.length === 0 && (
-            <div className="p-4 text-sm text-gray-500">
+            <div className="p-4 text-sm ui-text-muted">
               {t("warranties.none")}
             </div>
           )}
 
           {sorted.map((w) => (
             <div key={w.garantieId} className="p-4">
-              <div className="font-medium text-gray-900">{w.garantieNom}</div>
-              <div className="text-xs text-gray-600">
+              <div className="font-medium">{w.garantieNom}</div>
+              <div className="text-xs ui-text-muted">
                 {t("warranties.purchase")}:{" "}
                 {new Date(w.garantieDateAchat).toLocaleDateString()} —{" "}
                 {t("warranties.duration")}: {w.garantieDuration}{" "}
                 {t("warranties.months")}
               </div>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs ui-text-muted">
                 {t("warranties.articleId")}: {w.garantieArticleId}
               </div>
             </div>
@@ -119,7 +117,7 @@ export default function WarrantiesView() {
         </div>
       </div>
 
-      <div className="text-xs text-gray-500">{t("warranties.note")}</div>
+      <div className="text-xs ui-text-muted">{t("warranties.note")}</div>
     </div>
   );
 }

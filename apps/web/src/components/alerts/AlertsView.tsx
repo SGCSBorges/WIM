@@ -29,15 +29,15 @@ type Alert = {
 function statusBadge(status: AlertStatus) {
   switch (status) {
     case "SCHEDULED":
-      return "bg-blue-100 text-blue-800";
+      return "ui-panel";
     case "SENT":
-      return "bg-green-100 text-green-800";
+      return "ui-panel";
     case "CANCELLED":
-      return "bg-gray-100 text-gray-800";
+      return "ui-panel";
     case "FAILED":
-      return "bg-red-100 text-red-800";
+      return "ui-panel";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "ui-panel";
   }
 }
 
@@ -98,20 +98,18 @@ export default function AlertsView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t("alerts.title")}
-        </h1>
-        <p className="text-gray-600">{t("alerts.subtitle")}</p>
+        <h1 className="text-2xl font-bold">{t("alerts.title")}</h1>
+        <p className="ui-text-muted">{t("alerts.subtitle")}</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between gap-4">
+      <div className="ui-card rounded-lg">
+        <div className="p-4 border-b ui-divider flex items-center justify-between gap-4">
           <h2 className="font-semibold">{t("alerts.all")}</h2>
           <div className="flex items-center gap-3">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+              className="ui-select px-2 py-1 rounded-md text-sm"
               title={t("alerts.sortBy")}
             >
               <option value="date">{t("alerts.sort.date")}</option>
@@ -121,7 +119,7 @@ export default function AlertsView() {
 
             <button
               onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-              className="px-2 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+              className="ui-btn-ghost px-2 py-1 rounded-md text-sm border ui-divider"
               title={t("alerts.sortDirection")}
             >
               {sortDir === "asc" ? t("alerts.sort.asc") : t("alerts.sort.desc")}
@@ -130,7 +128,7 @@ export default function AlertsView() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+              className="ui-select px-2 py-1 rounded-md text-sm"
             >
               <option value="ALL">{t("alerts.filters.all")}</option>
               <option value="SCHEDULED">{t("alerts.status.scheduled")}</option>
@@ -140,13 +138,13 @@ export default function AlertsView() {
             </select>
 
             {loading ? (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs ui-text-muted">
                 {t("common.loading")}
               </span>
             ) : (
               <button
                 onClick={fetchAll}
-                className="text-sm text-gray-600 hover:text-gray-900"
+                className="text-sm ui-btn-ghost rounded px-2 py-1"
               >
                 {t("common.refresh")}
               </button>
@@ -164,15 +162,15 @@ export default function AlertsView() {
 
         <div className="divide-y">
           {!loading && sorted.length === 0 && (
-            <div className="p-4 text-sm text-gray-500">{t("alerts.none")}</div>
+            <div className="p-4 text-sm ui-text-muted">{t("alerts.none")}</div>
           )}
 
           {sorted.map((a) => (
             <div key={a.alerteId} className="p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="font-medium text-gray-900">{a.alerteNom}</div>
-                  <div className="text-xs text-gray-600">
+                  <div className="font-medium">{a.alerteNom}</div>
+                  <div className="text-xs ui-text-muted">
                     {t("alerts.date")}:{" "}
                     {new Date(a.alerteDate).toLocaleString()}
                   </div>
@@ -181,7 +179,7 @@ export default function AlertsView() {
                     a.article ||
                     a.alerteGarantieId ||
                     a.alerteArticleId) && (
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs ui-text-muted">
                       {(a.garantie || a.alerteGarantieId) && (
                         <button
                           type="button"
@@ -192,7 +190,7 @@ export default function AlertsView() {
                               ),
                             )
                           }
-                          className="hover:text-gray-900 underline"
+                          className="underline hover:opacity-90"
                           title={t("alerts.copyId")}
                         >
                           {t("alerts.warranty")}:{" "}
@@ -208,7 +206,7 @@ export default function AlertsView() {
                               String(a.article?.articleId ?? a.alerteArticleId),
                             )
                           }
-                          className="hover:text-gray-900 underline"
+                          className="underline hover:opacity-90"
                           title={t("alerts.copyId")}
                         >
                           {t("alerts.article")}:{" "}
@@ -240,7 +238,7 @@ export default function AlertsView() {
         </div>
       </div>
 
-      <div className="text-xs text-gray-500">{t("alerts.note")}</div>
+      <div className="text-xs ui-text-muted">{t("alerts.note")}</div>
     </div>
   );
 }
