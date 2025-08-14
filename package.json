@@ -13,7 +13,7 @@
     "postinstall": "echo \"Workspaces ready (install per app in next steps).\"",
     "build:web": "npm --workspace apps/web run build",
     "build:api": "npm --workspace apps/api run build",
-    "render-build:web": "npm ci --include=optional --workspaces && npm run build:web",
+    "render-build:web": "npm install --include=optional --workspaces && npm run build:web",
     "render-build:api": "npm ci --include=optional --workspaces && npm --workspace apps/api run render-build",
     "fmt": "echo \"(to be added)\"",
     "lint": "echo \"(to be added)\""
