@@ -1,4 +1,18 @@
-const API_BASE_URL = "http://localhost:3000/api";
+// API base URL strategy:
+// - In production (Render static site), use same-origin "/api" by default.
+//   This avoids mixed-content + CORS issues that commonly surface as "Failed to fetch".
+// - In development, default to the local API.
+// - You can override with VITE_API_BASE_URL (e.g. https://<your-api-service>.onrender.com/api)
+const API_BASE_URL: string = (() => {
+  const env = (import.meta as any).env as Record<string, string | undefined>;
+  const fromEnv = env?.VITE_API_BASE_URL?.trim();
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+
+  // Vite sets PROD/DEV booleans.
+  if (env?.PROD) return "/api";
+
+  return "http://localhost:3000/api";
+})();
 
 // Get JWT token from localStorage
 const getToken = (): string | null => {
