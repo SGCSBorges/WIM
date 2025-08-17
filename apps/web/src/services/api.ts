@@ -1,12 +1,28 @@
 // API base URL strategy:
-// - In production (Render static site), use same-origin "/api" by default.
-//   This avoids mixed-content + CORS issues that commonly surface as "Failed to fetch".
 // - In development, default to the local API.
-// - You can override with VITE_API_BASE_URL (e.g. https://<your-api-service>.onrender.com/api)
-const API_BASE_URL: string = (() => {
+// - In production, prefer setting VITE_API_BASE_URL (e.g. https://wimapi.onrender.com/api).
+//   If you *do* have a reverse proxy that serves the web app and forwards /api to the API service,
+//   you can omit VITE_API_BASE_URL and same-origin "/api" will work.
+export const API_BASE_URL: string = (() => {
   const env = (import.meta as any).env as Record<string, string | undefined>;
   const fromEnv = env?.VITE_API_BASE_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  if (fromEnv) {
+    // Allow setting either:
+    //  - https://wimapi.onrender.com/api  (full)
+    //  - https://wimapi.onrender.com      (origin only)
+    // If it's just an origin (no pathname or just "/"), append "/api".
+    const trimmed = fromEnv.replace(/\/$/, "");
+    try {
+      const u = new URL(trimmed);
+      if (!u.pathname || u.pathname === "/") {
+        u.pathname = "/api";
+        return u.toString().replace(/\/$/, "");
+      }
+    } catch {
+      // If it's a relative path like "/api", just keep it.
+    }
+    return trimmed;
+  }
 
   // Vite sets PROD/DEV booleans.
   if (env?.PROD) return "/api";
@@ -37,10 +53,24 @@ const getHeaders = (): Record<string, string> => {
   return headers;
 };
 
+const fetchWithTimeout = async (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  timeoutMs: number = 15000,
+): Promise<Response> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, { ...(init ?? {}), signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 // Auth API
 export const authAPI = {
   async login(email: string, password: string) {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -70,7 +100,7 @@ export const authAPI = {
   },
 
   async register(email: string, password: string, role: string = "USER") {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

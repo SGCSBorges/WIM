@@ -42,7 +42,7 @@ async function main() {
   console.log({
     createdLocationId: location.locationId,
     createdArticleId: article.articleId,
-    locations: rows.map((r) => r.location.name),
+    locations: rows.map((r: (typeof rows)[number]) => r.location.name),
   });
 
   // cleanup

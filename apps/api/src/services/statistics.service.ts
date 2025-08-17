@@ -4,7 +4,8 @@
  */
 
 import { prisma } from "../libs/prisma";
-import { Role } from "@prisma/client";
+
+type UserRole = "USER" | "POWER_USER" | "ADMIN";
 
 export interface DashboardStatistics {
   articles: {
@@ -21,9 +22,9 @@ export interface DashboardStatistics {
   users: {
     total: number;
     byRole: {
-      [Role.USER]: number;
-      [Role.POWER_USER]: number;
-      [Role.ADMIN]: number;
+      USER: number;
+      POWER_USER: number;
+      ADMIN: number;
     };
   };
   alerts: {
@@ -90,13 +91,13 @@ export async function getDashboardStatistics(): Promise<DashboardStatistics> {
     // Get users statistics
     const usersTotal = await prisma.user.count();
     const usersUser = await prisma.user.count({
-      where: { role: Role.USER },
+      where: { role: "USER" as UserRole },
     });
     const usersPowerUser = await prisma.user.count({
-      where: { role: Role.POWER_USER },
+      where: { role: "POWER_USER" as UserRole },
     });
     const usersAdmin = await prisma.user.count({
-      where: { role: Role.ADMIN },
+      where: { role: "ADMIN" as UserRole },
     });
 
     // Get alerts statistics
@@ -117,9 +118,9 @@ export async function getDashboardStatistics(): Promise<DashboardStatistics> {
       users: {
         total: usersTotal,
         byRole: {
-          [Role.USER]: usersUser,
-          [Role.POWER_USER]: usersPowerUser,
-          [Role.ADMIN]: usersAdmin,
+          USER: usersUser,
+          POWER_USER: usersPowerUser,
+          ADMIN: usersAdmin,
         },
       },
       alerts: {

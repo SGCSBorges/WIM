@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { authAPI } from "../../services/api";
+import { API_BASE_URL, authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-
-const API_BASE_URL = "http://localhost:3000/api";
 
 type UserRow = {
   userId: number;
@@ -59,6 +57,17 @@ export default function AdminUsers() {
 
   const role = useMemo(() => authAPI.getRole(), []);
 
+  const getErrorMessage = async (res: Response, fallback: string) => {
+    try {
+      const data = await res.json();
+      return data?.error || `${fallback} (${res.status})`;
+    } catch {
+      const text = await res.text().catch(() => "");
+      const snippet = text ? `: ${text.slice(0, 200)}` : "";
+      return `${fallback} (${res.status})${snippet}`;
+    }
+  };
+
   const fetchUsers = async () => {
     setLoadingUsers(true);
     setError(null);
@@ -67,8 +76,7 @@ export default function AdminUsers() {
         headers: headers(),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || `Failed to fetch users (${res.status})`);
+        throw new Error(await getErrorMessage(res, "Failed to fetch users"));
       }
       const data = (await res.json()) as UserRow[];
       setUsers(data);
@@ -90,9 +98,8 @@ export default function AdminUsers() {
         },
       );
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
         throw new Error(
-          data?.error || `Failed to fetch inventory (${res.status})`,
+          await getErrorMessage(res, "Failed to fetch inventory"),
         );
       }
       const data = (await res.json()) as UserInventory;
@@ -116,8 +123,7 @@ export default function AdminUsers() {
         headers: headers(),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || `Failed to delete user (${res.status})`);
+        throw new Error(await getErrorMessage(res, "Failed to delete user"));
       }
       // refresh
       if (selectedUser?.userId === userId) {
@@ -143,10 +149,7 @@ export default function AdminUsers() {
         headers: headers(),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(
-          data?.error || `Failed to delete article (${res.status})`,
-        );
+        throw new Error(await getErrorMessage(res, "Failed to delete article"));
       }
       if (selectedUser) {
         await fetchInventory(selectedUser.userId);

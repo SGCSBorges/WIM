@@ -6,6 +6,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { attachmentsAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { API_BASE_URL } from "../../services/api";
 
 interface Article {
   articleId?: number;
@@ -493,7 +494,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                           className="text-blue-600 hover:underline"
                           href={
                             warrantyProofAttachment.fileUrl ||
-                            `http://localhost:3000/api/attachments/${warrantyProofAttachment.attachmentId}`
+                            `${API_BASE_URL}/attachments/${warrantyProofAttachment.attachmentId}`
                           }
                           target="_blank"
                           rel="noreferrer"

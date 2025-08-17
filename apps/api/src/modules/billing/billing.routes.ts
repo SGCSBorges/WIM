@@ -15,7 +15,14 @@ function getStripe() {
 
 router.post("/upgrade/power-user/checkout", authGuard, async (req, res) => {
   try {
-    const appUrl = process.env.APP_URL || "http://localhost:5173";
+    // URL of the frontend app for Stripe redirects.
+    // On Render, set APP_URL to your static site origin (e.g. https://wimweb.onrender.com)
+    // Never leave it as localhost in production, otherwise Stripe redirects to localhost.
+    const appUrlRaw =
+      process.env.APP_URL ||
+      process.env.RENDER_EXTERNAL_URL ||
+      "http://localhost:5173";
+    const appUrl = String(appUrlRaw).replace(/\/$/, "");
 
     const plan = String((req.body as any)?.plan || "monthly");
     if (plan !== "monthly" && plan !== "yearly") {

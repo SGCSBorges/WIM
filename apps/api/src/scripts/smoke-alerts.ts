@@ -81,7 +81,7 @@ async function main() {
 
   console.log(
     "Alerts:",
-    alerts.map((a) => ({
+    alerts.map((a: (typeof alerts)[number]) => ({
       id: a.alerteId,
       date: a.alerteDate,
       status: (a as any).status,
