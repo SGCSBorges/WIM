@@ -4,9 +4,13 @@ import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
 
 export const WarrantyService = {
-  list: () => prisma.garantie.findMany({ orderBy: { garantieId: "desc" } }),
-  get: (id: number) =>
-    prisma.garantie.findUnique({ where: { garantieId: id } }),
+  list: (ownerUserId: number) =>
+    prisma.garantie.findMany({
+      where: { ownerUserId },
+      orderBy: { garantieId: "desc" },
+    }),
+  get: (id: number, ownerUserId: number) =>
+    prisma.garantie.findFirst({ where: { garantieId: id, ownerUserId } }),
 
   create: async (data: WarrantyCreateInput) => {
     // ownerUserId is injected by route middleware (auth)
@@ -49,9 +53,13 @@ export const WarrantyService = {
     return created;
   },
 
-  update: async (id: number, data: WarrantyUpdateInput) => {
-    const current = await prisma.garantie.findUnique({
-      where: { garantieId: id },
+  update: async (
+    id: number,
+    ownerUserId: number,
+    data: WarrantyUpdateInput
+  ) => {
+    const current = await prisma.garantie.findFirst({
+      where: { garantieId: id, ownerUserId },
     });
     if (!current) {
       const err: any = new Error("Garantie non trouvée");
@@ -90,10 +98,15 @@ export const WarrantyService = {
     return updated;
   },
 
-  remove: async (id: number) => {
-    const current = await prisma.garantie.findUnique({
-      where: { garantieId: id },
+  remove: async (id: number, ownerUserId: number) => {
+    const current = await prisma.garantie.findFirst({
+      where: { garantieId: id, ownerUserId },
     });
+    if (!current) {
+      const err: any = new Error("Garantie non trouvée");
+      err.status = 404;
+      throw err;
+    }
     if (current) {
       await AlertService.cancelForWarranty({
         ownerUserId: current.ownerUserId,

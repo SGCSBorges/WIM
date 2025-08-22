@@ -10,16 +10,18 @@ const router = Router();
 
 router.get(
   "/",
-  asyncHandler(async (_req, res) => {
-    res.json(await WarrantyService.list());
+  authGuard,
+  asyncHandler(async (req: any, res) => {
+    res.json(await WarrantyService.list(req.user.sub));
   })
 );
 
 router.get(
   "/:id",
-  asyncHandler(async (req, res) => {
+  authGuard,
+  asyncHandler(async (req: any, res) => {
     const id = z.coerce.number().int().parse(req.params.id);
-    const g = await WarrantyService.get(id);
+    const g = await WarrantyService.get(id, req.user.sub);
     if (!g) return res.status(404).json({ error: "Garantie non trouvée" });
     res.json(g);
   })
@@ -30,7 +32,7 @@ router.post(
   authGuard,
   asyncHandler(async (req: any, res) => {
     const body = WarrantyCreateSchema.parse(req.body);
-    const data = { ...body, ownerUserId: req.user.userId };
+    const data = { ...body, ownerUserId: req.user.sub };
     const created = await WarrantyService.create(data);
     await auditAction(req, {
       action: "CREATE",
@@ -45,10 +47,10 @@ router.post(
 router.put(
   "/:id",
   authGuard,
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: any, res) => {
     const id = z.coerce.number().int().parse(req.params.id);
     const data = WarrantyUpdateSchema.parse(req.body);
-    const updated = await WarrantyService.update(id, data);
+    const updated = await WarrantyService.update(id, req.user.sub, data);
     res.json(updated);
   })
 );
@@ -56,9 +58,9 @@ router.put(
 router.delete(
   "/:id",
   authGuard,
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: any, res) => {
     const id = z.coerce.number().int().parse(req.params.id);
-    await WarrantyService.remove(id);
+    await WarrantyService.remove(id, req.user.sub);
     res.status(204).end();
   })
 );

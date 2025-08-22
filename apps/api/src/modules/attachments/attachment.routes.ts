@@ -130,7 +130,12 @@ router.put(
     const bodyData = AttachmentUpdateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
-    const updated = await AttachmentService.update(id, req.user.sub, bodyData);
+    const result = await AttachmentService.update(id, req.user.sub, bodyData);
+    const count = (result as any)?.count ?? 0;
+    if (!count) {
+      return res.status(404).json({ error: "Attachment not found" });
+    }
+    const updated = await AttachmentService.get(id, req.user.sub);
     await auditAction(req, {
       action: "UPDATE",
       entity: "Attachment",

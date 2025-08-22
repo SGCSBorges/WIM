@@ -7,6 +7,7 @@ import AdminUsers from "./components/admin/AdminUsers";
 import WarrantiesView from "./components/warranties/WarrantiesView";
 import AttachmentsList from "./components/attachments/AttachmentsList";
 import SharesList from "./components/sharing/SharesList";
+import SharedArticlesView from "./components/sharing/SharedArticlesView";
 import AlertsView from "./components/alerts/AlertsView";
 import { useI18n } from "./i18n/i18n";
 import { useTheme } from "./theme/theme";
@@ -342,7 +343,12 @@ export default function App() {
         {currentView === "admin" && <AdminUsers />}
         {currentView === "warranties" && <WarrantiesView />}
         {currentView === "attachments" && <AttachmentsList />}
-        {currentView === "sharing" && <SharesList />}
+        {currentView === "sharing" && (
+          <div className="space-y-6">
+            <SharesList />
+            <SharedArticlesView />
+          </div>
+        )}
       </main>
     </div>
   );

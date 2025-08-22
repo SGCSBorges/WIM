@@ -5,8 +5,18 @@
 
 import React, { useState, useEffect } from "react";
 import ArticleForm from "./ArticleForm";
-import { articlesAPI, locationsAPI } from "../../services/api";
+import ShareArticleButton from "./ShareArticleButton";
+import { API_BASE_URL, articlesAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+
+type ArticleShareInfo = {
+  articleShareId: number;
+  targetUserId: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  target: { userId: number; email: string; role: string };
+};
 
 interface Article {
   articleId: number;
@@ -23,7 +33,7 @@ interface Article {
   } | null;
   locations?: Array<{
     locationId: number;
-    location: { name: string };
+    location?: { name: string };
   }>;
 }
 
@@ -39,6 +49,20 @@ const ArticlesList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+
+  const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(
+    null,
+  );
+
+  const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(
+    null,
+  );
+  const [sharesByArticleId, setSharesByArticleId] = useState<
+    Record<number, ArticleShareInfo[]>
+  >({});
+  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<
+    number | null
+  >(null);
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
@@ -70,6 +94,60 @@ const ArticlesList: React.FC = () => {
       setLocations(mapped);
     } catch {
       // non-blocking
+    }
+  };
+
+  const loadShares = async (articleId: number) => {
+    const token = localStorage.getItem("token");
+    setSharesLoadingArticleId(articleId);
+    try {
+      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/shares`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Failed to load shares (${res.status})`);
+      }
+
+      const data = (await res.json()) as ArticleShareInfo[];
+      setSharesByArticleId((prev) => ({ ...prev, [articleId]: data }));
+    } catch (e: any) {
+      alert(e?.message || "Failed to load shares");
+    } finally {
+      setSharesLoadingArticleId(null);
+    }
+  };
+
+  const handleUnshare = async (articleId: number, targetUserId: number) => {
+    if (!confirm("Unshare this article from that user?")) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    setShareBusyArticleId(articleId);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/articles/${articleId}/share/${targetUserId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        },
+      );
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Unshare failed (${res.status})`);
+      }
+
+      await loadShares(articleId);
+    } catch (e: any) {
+      alert(e?.message || "Unshare failed");
+    } finally {
+      setShareBusyArticleId(null);
     }
   };
 
@@ -226,56 +304,171 @@ const ArticlesList: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {articles.map((article) => (
-                  <tr key={article.articleId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {article.articleNom}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {article.articleModele}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {article.articleDescription || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {article.garantie ? (
-                        <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
-                          {t("common.yes")}
+                  <React.Fragment key={article.articleId}>
+                    <tr className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {article.articleNom}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {article.articleModele}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {article.articleDescription || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {article.garantie ? (
+                          <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
+                            {t("common.yes")}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
+                            {t("common.no")}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {article.garantie?.garantieImageAttachmentId ? (
+                          <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
+                            {t("common.yes")}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
+                            {t("common.no")}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => {
+                            setEditingArticle(article);
+                            setShowForm(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                        >
+                          {t("common.edit")}
+                        </button>
+
+                        <span className="inline-block mr-3 align-middle">
+                          <ShareArticleButton
+                            articleId={article.articleId}
+                            onShared={() => {
+                              if (openSharesArticleId === article.articleId) {
+                                loadShares(article.articleId);
+                              }
+                            }}
+                          />
                         </span>
-                      ) : (
-                        <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
-                          {t("common.no")}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {article.garantie?.garantieImageAttachmentId ? (
-                        <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
-                          {t("common.yes")}
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
-                          {t("common.no")}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => {
-                          setEditingArticle(article);
-                          setShowForm(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 mr-3"
-                      >
-                        {t("common.edit")}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(article.articleId)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        {t("common.delete")}
-                      </button>
-                    </td>
-                  </tr>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next =
+                              openSharesArticleId === article.articleId
+                                ? null
+                                : article.articleId;
+                            setOpenSharesArticleId(next);
+                            if (next != null) {
+                              loadShares(article.articleId);
+                            }
+                          }}
+                          disabled={
+                            sharesLoadingArticleId === article.articleId
+                          }
+                          className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider mr-3"
+                          title="Manage shares (owner-only)"
+                        >
+                          {sharesLoadingArticleId === article.articleId
+                            ? t("common.loading")
+                            : openSharesArticleId === article.articleId
+                              ? "Hide shares"
+                              : "Shares"}
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(article.articleId)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          {t("common.delete")}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {openSharesArticleId === article.articleId && (
+                      <tr className="bg-gray-50">
+                        <td colSpan={6} className="px-6 py-4 text-sm">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <div className="font-medium">Shared with</div>
+                              <div className="text-xs ui-text-muted">
+                                Owner-only. Unsharing removes access
+                                immediately.
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
+                              onClick={() => loadShares(article.articleId)}
+                              disabled={
+                                sharesLoadingArticleId === article.articleId
+                              }
+                            >
+                              {sharesLoadingArticleId === article.articleId
+                                ? t("common.loading")
+                                : t("common.refresh")}
+                            </button>
+                          </div>
+
+                          <div className="mt-3 space-y-2">
+                            {(sharesByArticleId[article.articleId] || [])
+                              .length === 0 ? (
+                              <div className="text-sm ui-text-muted">
+                                No active shares.
+                              </div>
+                            ) : (
+                              (sharesByArticleId[article.articleId] || []).map(
+                                (s) => (
+                                  <div
+                                    key={s.articleShareId}
+                                    className="flex items-center justify-between gap-3"
+                                  >
+                                    <div className="min-w-0">
+                                      <div className="truncate">
+                                        {s.target?.email ||
+                                          `User #${s.targetUserId}`}
+                                      </div>
+                                      <div className="text-xs ui-text-muted">
+                                        userId: {s.targetUserId}
+                                        {s.target?.role
+                                          ? ` • ${s.target.role}`
+                                          : ""}
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      className="text-red-600 hover:text-red-900"
+                                      disabled={
+                                        shareBusyArticleId === article.articleId
+                                      }
+                                      onClick={() =>
+                                        handleUnshare(
+                                          article.articleId,
+                                          s.targetUserId,
+                                        )
+                                      }
+                                    >
+                                      {shareBusyArticleId === article.articleId
+                                        ? t("common.loading")
+                                        : "Unshare"}
+                                    </button>
+                                  </div>
+                                ),
+                              )
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

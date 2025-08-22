@@ -22,9 +22,9 @@ export const AttachmentService = {
     }),
 
   update: (id: number, ownerUserId: number, data: AttachmentUpdateInput) =>
-    prisma.attachment.update({
-      where: { attachmentId: id },
-      data: { ...data, ownerUserId }, // Ensure ownership
+    prisma.attachment.updateMany({
+      where: { attachmentId: id, ownerUserId },
+      data: { ...data },
     }),
 
   remove: (id: number, ownerUserId: number) =>

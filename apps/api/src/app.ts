@@ -3,6 +3,7 @@ import pinoHttp from "pino-http";
 import { security } from "./config/security";
 import { errorHandler } from "./middlewares/error";
 import articleRoutes from "./modules/articles/article.routes";
+import articleShareRoutes from "./modules/articles/article.share.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import auditRoutes from "./modules/audit/audit.routes";
@@ -14,6 +15,7 @@ import billingMeRoutes from "./modules/billing/billing.me.routes";
 import shareRoutes from "./modules/shares/share.routes";
 import locationRoutes from "./modules/locations/location.routes";
 import alertRoutes from "./modules/alerts/alert.routes";
+import sharedRoutes from "./modules/shared/shared.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 import path from "path";
 import { startWorkersOnce } from "./config/jobs";
@@ -49,6 +51,7 @@ export function createApp() {
 
   // Routes
   app.use("/api/articles", articleRoutes);
+  app.use("/api/articles", articleShareRoutes);
   app.use("/api/warranties", warrantyRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/audit", auditRoutes);
@@ -59,6 +62,7 @@ export function createApp() {
   app.use("/api/billing", billingMeRoutes);
   app.use("/api/shares", shareRoutes);
   app.use("/api/alerts", alertRoutes);
+  app.use("/api/shared", sharedRoutes);
   app.use("/api/statistics", statisticsRoutes);
 
   // Handler d’erreurs (toujours en dernier)

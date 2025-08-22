@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useI18n } from "../../i18n/i18n";
+import { API_BASE_URL } from "../../services/api";
 
 interface Share {
   inventoryShareId: number;
@@ -55,7 +56,7 @@ const SharesList: React.FC<SharesListProps> = ({
 
   const fetchShares = async () => {
     try {
-      const response = await fetch("/api/shares/owned", {
+      const response = await fetch(`${API_BASE_URL}/shares/owned`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -79,7 +80,7 @@ const SharesList: React.FC<SharesListProps> = ({
       return;
 
       // eslint-disable-next-line no-unreachable
-      const response = await fetch("/api/shares/invites", {
+      const response = await fetch(`${API_BASE_URL}/shares/invites`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -103,12 +104,15 @@ const SharesList: React.FC<SharesListProps> = ({
       try {
         const share = shares.find((s) => s.inventoryShareId === shareId);
         if (!share) return;
-        const response = await fetch(`/api/shares/${share.target.userId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        const response = await fetch(
+          `${API_BASE_URL}/shares/${share.target.userId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           },
-        });
+        );
 
         if (response.ok) {
           setShares(shares.filter((s) => s.inventoryShareId !== shareId));
