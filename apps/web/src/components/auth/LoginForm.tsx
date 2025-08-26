@@ -55,30 +55,6 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full ui-card rounded-lg shadow p-8">
-        <div className="flex items-center justify-end gap-3 mb-4">
-          <label className="text-xs ui-text-muted">{t("nav.language")}</label>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as any)}
-            className="ui-select px-2 py-1 rounded-md text-sm"
-          >
-            <option value="en">English</option>
-            <option value="fr">Français</option>
-            <option value="pt">Português</option>
-          </select>
-
-          <label className="text-xs ui-text-muted">{t("nav.theme")}</label>
-          <select
-            value={theme}
-            onChange={(e) => setTheme(e.target.value as any)}
-            className="ui-select px-2 py-1 rounded-md text-sm"
-          >
-            <option value="light">{t("theme.light")}</option>
-            <option value="dark">{t("theme.dark")}</option>
-            <option value="ocean">{t("theme.ocean")}</option>
-          </select>
-        </div>
-
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold">WIM</h1>
           <p className="ui-text-muted">{t("auth.subtitle")}</p>
@@ -167,6 +143,38 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 : t("auth.register")}
           </button>
         </form>
+
+        <div className="mt-6 pt-4 border-t ui-divider">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
+            <div className="flex items-center justify-center gap-2">
+              <label className="text-xs ui-text-muted">
+                {t("nav.language")}
+              </label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="ui-select px-2 py-1 rounded-md text-sm"
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+                <option value="pt">Português</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-center gap-2">
+              <label className="text-xs ui-text-muted">{t("nav.theme")}</label>
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as any)}
+                className="ui-select px-2 py-1 rounded-md text-sm"
+              >
+                <option value="light">{t("theme.light")}</option>
+                <option value="dark">{t("theme.dark")}</option>
+                <option value="ocean">{t("theme.ocean")}</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

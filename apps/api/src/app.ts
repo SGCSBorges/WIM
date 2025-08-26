@@ -16,6 +16,7 @@ import shareRoutes from "./modules/shares/share.routes";
 import locationRoutes from "./modules/locations/location.routes";
 import alertRoutes from "./modules/alerts/alert.routes";
 import sharedRoutes from "./modules/shared/shared.routes";
+import profileRoutes from "./modules/profile/profile.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 import path from "path";
 import { startWorkersOnce } from "./config/jobs";
@@ -63,6 +64,7 @@ export function createApp() {
   app.use("/api/shares", shareRoutes);
   app.use("/api/alerts", alertRoutes);
   app.use("/api/shared", sharedRoutes);
+  app.use("/api/profile", profileRoutes);
   app.use("/api/statistics", statisticsRoutes);
 
   // Handler d’erreurs (toujours en dernier)

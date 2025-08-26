@@ -160,6 +160,10 @@ body {
   color: var(--muted);
 }
 
+.ui-title {
+  color: var(--text);
+}
+
 .ui-select {
   background: var(--surface);
   border: 1px solid var(--border);

@@ -9,6 +9,7 @@ import AttachmentsList from "./components/attachments/AttachmentsList";
 import SharesList from "./components/sharing/SharesList";
 import SharedArticlesView from "./components/sharing/SharedArticlesView";
 import AlertsView from "./components/alerts/AlertsView";
+import ProfileView from "./components/profile/ProfileView";
 import { useI18n } from "./i18n/i18n";
 import { useTheme } from "./theme/theme";
 
@@ -25,6 +26,7 @@ export default function App() {
     | "attachments"
     | "alerts"
     | "sharing"
+    | "profile"
   >("home");
 
   // Real authentication state
@@ -152,6 +154,17 @@ export default function App() {
                 >
                   {t("nav.alerts")}
                 </button>
+
+                <button
+                  onClick={() => setCurrentView("profile")}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentView === "profile"
+                      ? "ui-nav-item-active"
+                      : "ui-btn-ghost"
+                  }`}
+                >
+                  {t("nav.profile")}
+                </button>
                 {role === "POWER_USER" && (
                   <button
                     onClick={() => setCurrentView("sharing")}
@@ -218,6 +231,7 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {currentView === "alerts" && <AlertsView />}
+        {currentView === "profile" && <ProfileView />}
         {currentView === "home" && (
           <div>
             <header className="mb-8">
@@ -263,13 +277,13 @@ export default function App() {
                 className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
                 onClick={() => setCurrentView("articles")}
               >
-                <h2 className="font-semibold">
-                  {t("home.card.inventory.title")}
+                <h2 className="font-semibold text-lg mb-2 ui-title">
+                  📦 {t("home.card.inventory.title")}
                 </h2>
-                <p className="text-sm ui-text-muted">
+                <p className="text-sm ui-text-muted mb-3">
                   {t("home.card.inventory.subtitle")}
                 </p>
-                <button className="ui-btn-primary mt-2 px-3 py-1 text-sm rounded">
+                <button className="ui-btn-primary px-3 py-1 text-sm rounded">
                   {t("home.card.inventory.cta")}
                 </button>
               </div>
@@ -277,7 +291,7 @@ export default function App() {
                 className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
                 onClick={() => setCurrentView("dashboard")}
               >
-                <h2 className="font-semibold text-lg mb-2">
+                <h2 className="font-semibold text-lg mb-2 ui-title">
                   📊 {t("home.card.dashboard.title")}
                 </h2>
                 <p className="text-sm ui-text-muted mb-3">
@@ -289,7 +303,7 @@ export default function App() {
               </div>
 
               <div className="ui-card rounded-xl p-4">
-                <h2 className="font-semibold text-lg mb-2">
+                <h2 className="font-semibold text-lg mb-2 ui-title">
                   🛡️ {t("home.card.warranties.title")}
                 </h2>
                 <p className="text-sm ui-text-muted mb-3">
@@ -307,7 +321,7 @@ export default function App() {
                 className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
                 onClick={() => setCurrentView("attachments")}
               >
-                <h2 className="font-semibold text-lg mb-2">
+                <h2 className="font-semibold text-lg mb-2 ui-title">
                   📎 {t("home.card.attachments.title")}
                 </h2>
                 <p className="text-sm ui-text-muted mb-3">
@@ -323,7 +337,7 @@ export default function App() {
                   className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
                   onClick={() => setCurrentView("sharing")}
                 >
-                  <h2 className="font-semibold text-lg mb-2">
+                  <h2 className="font-semibold text-lg mb-2 ui-title">
                     🤝 {t("home.card.sharing.title")}
                   </h2>
                   <p className="text-sm ui-text-muted mb-3">
