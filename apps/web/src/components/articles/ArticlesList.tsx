@@ -9,14 +9,11 @@ import ShareArticleButton from "./ShareArticleButton";
 import { API_BASE_URL, articlesAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 
-type ArticleShareInfo = {
-  articleShareId: number;
-  targetUserId: number;
-  active: boolean;
-  createdAt: string;
+type ArticleShareStatus = {
+  articleId: number;
+  sharedWithPowerUsers: boolean;
   updatedAt: string;
-  target: { userId: number; email: string; role: string };
-};
+} | null;
 
 interface Article {
   articleId: number;
@@ -24,6 +21,7 @@ interface Article {
   articleModele: string;
   articleDescription?: string | null;
   productImageUrl?: string | null;
+  sharedWithPowerUsers?: boolean;
   garantie?: {
     garantieId: number;
     garantieNom: string;
@@ -57,8 +55,8 @@ const ArticlesList: React.FC = () => {
   const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(
     null,
   );
-  const [sharesByArticleId, setSharesByArticleId] = useState<
-    Record<number, ArticleShareInfo[]>
+  const [shareStatusByArticleId, setShareStatusByArticleId] = useState<
+    Record<number, ArticleShareStatus>
   >({});
   const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<
     number | null
@@ -97,7 +95,7 @@ const ArticlesList: React.FC = () => {
     }
   };
 
-  const loadShares = async (articleId: number) => {
+  const loadShareStatus = async (articleId: number) => {
     const token = localStorage.getItem("token");
     setSharesLoadingArticleId(articleId);
     try {
@@ -111,8 +109,8 @@ const ArticlesList: React.FC = () => {
         throw new Error(text || `Failed to load shares (${res.status})`);
       }
 
-      const data = (await res.json()) as ArticleShareInfo[];
-      setSharesByArticleId((prev) => ({ ...prev, [articleId]: data }));
+      const data = (await res.json()) as ArticleShareStatus;
+      setShareStatusByArticleId((prev) => ({ ...prev, [articleId]: data }));
     } catch (e: any) {
       alert(e?.message || "Failed to load shares");
     } finally {
@@ -120,30 +118,27 @@ const ArticlesList: React.FC = () => {
     }
   };
 
-  const handleUnshare = async (articleId: number, targetUserId: number) => {
-    if (!confirm("Unshare this article from that user?")) {
+  const handleUnshareAll = async (articleId: number) => {
+    if (!confirm("Unshare this article from all POWER_USERs?")) {
       return;
     }
 
     const token = localStorage.getItem("token");
     setShareBusyArticleId(articleId);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/articles/${articleId}/share/${targetUserId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
+      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/share/0`, {
+        method: "DELETE",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
         },
-      );
+      });
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error(text || `Unshare failed (${res.status})`);
       }
 
-      await loadShares(articleId);
+      await loadShareStatus(articleId);
     } catch (e: any) {
       alert(e?.message || "Unshare failed");
     } finally {
@@ -353,7 +348,7 @@ const ArticlesList: React.FC = () => {
                             articleId={article.articleId}
                             onShared={() => {
                               if (openSharesArticleId === article.articleId) {
-                                loadShares(article.articleId);
+                                loadShareStatus(article.articleId);
                               }
                             }}
                           />
@@ -368,14 +363,14 @@ const ArticlesList: React.FC = () => {
                                 : article.articleId;
                             setOpenSharesArticleId(next);
                             if (next != null) {
-                              loadShares(article.articleId);
+                              loadShareStatus(article.articleId);
                             }
                           }}
                           disabled={
                             sharesLoadingArticleId === article.articleId
                           }
                           className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider mr-3"
-                          title="Manage shares (owner-only)"
+                          title="Manage sharing (owner-only)"
                         >
                           {sharesLoadingArticleId === article.articleId
                             ? t("common.loading")
@@ -398,16 +393,16 @@ const ArticlesList: React.FC = () => {
                         <td colSpan={6} className="px-6 py-4 text-sm">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                              <div className="font-medium">Shared with</div>
+                              <div className="font-medium">Sharing</div>
                               <div className="text-xs ui-text-muted">
-                                Owner-only. Unsharing removes access
-                                immediately.
+                                Owner-only. Sharing makes this article visible
+                                to all POWER_USER accounts (read-only).
                               </div>
                             </div>
                             <button
                               type="button"
                               className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-                              onClick={() => loadShares(article.articleId)}
+                              onClick={() => loadShareStatus(article.articleId)}
                               disabled={
                                 sharesLoadingArticleId === article.articleId
                               }
@@ -419,50 +414,31 @@ const ArticlesList: React.FC = () => {
                           </div>
 
                           <div className="mt-3 space-y-2">
-                            {(sharesByArticleId[article.articleId] || [])
-                              .length === 0 ? (
-                              <div className="text-sm ui-text-muted">
-                                No active shares.
+                            {shareStatusByArticleId[article.articleId]
+                              ?.sharedWithPowerUsers ? (
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="text-sm ui-text-muted">
+                                  Shared with all POWER_USERs.
+                                </div>
+                                <button
+                                  type="button"
+                                  className="text-red-600 hover:text-red-900"
+                                  disabled={
+                                    shareBusyArticleId === article.articleId
+                                  }
+                                  onClick={() =>
+                                    handleUnshareAll(article.articleId)
+                                  }
+                                >
+                                  {shareBusyArticleId === article.articleId
+                                    ? t("common.loading")
+                                    : "Unshare"}
+                                </button>
                               </div>
                             ) : (
-                              (sharesByArticleId[article.articleId] || []).map(
-                                (s) => (
-                                  <div
-                                    key={s.articleShareId}
-                                    className="flex items-center justify-between gap-3"
-                                  >
-                                    <div className="min-w-0">
-                                      <div className="truncate">
-                                        {s.target?.email ||
-                                          `User #${s.targetUserId}`}
-                                      </div>
-                                      <div className="text-xs ui-text-muted">
-                                        userId: {s.targetUserId}
-                                        {s.target?.role
-                                          ? ` • ${s.target.role}`
-                                          : ""}
-                                      </div>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      className="text-red-600 hover:text-red-900"
-                                      disabled={
-                                        shareBusyArticleId === article.articleId
-                                      }
-                                      onClick={() =>
-                                        handleUnshare(
-                                          article.articleId,
-                                          s.targetUserId,
-                                        )
-                                      }
-                                    >
-                                      {shareBusyArticleId === article.articleId
-                                        ? t("common.loading")
-                                        : "Unshare"}
-                                    </button>
-                                  </div>
-                                ),
-                              )
+                              <div className="text-sm ui-text-muted">
+                                Not shared.
+                              </div>
                             )}
                           </div>
                         </td>

@@ -60,6 +60,11 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(USER)
+
+  // Billing (Stripe)
+  // Used to manage subscription lifecycle (cancel at period end, etc.)
+  stripeCustomerId     String? @unique @db.VarChar(80)
+  stripeSubscriptionId String? @db.VarChar(80)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -72,9 +77,6 @@ model User {
   shareInvites ShareInvite[] @relation("UserShareInvites") // owner (créateur)
   sharesGiven  InventoryShare[] @relation("SharesGiven")   // owner -> target
   sharesReceived InventoryShare[] @relation("SharesReceived") // target -> owner
-
-  articleSharesGiven ArticleShare[] @relation("ArticleSharesGiven")
-  articleSharesReceived ArticleShare[] @relation("ArticleSharesReceived")
 
   // Audit (optionnel)
   auditLogs AuditLog[]
@@ -90,13 +92,16 @@ model Article {
   articleDescription String?  @db.VarChar(255)
   productImageUrl    String?  @db.VarChar(255)
 
+  // Sharing v2 (simplest): when true, this article is visible in the shared view
+  // to all POWER_USER accounts (read-only; owner-only edit/unshare).
+  sharedWithPowerUsers Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   owner    User     @relation("UserArticles", fields: [ownerUserId], references: [userId], onDelete: Cascade)
   garantie Garantie?
   alertes  Alerte[]
-  shares   ArticleShare[]
   locations ArticleLocation[]
 
   @@index([ownerUserId])
@@ -210,27 +215,6 @@ model InventoryShare {
   @@unique([ownerUserId, targetUserId], map: "uq_share_owner_target")
   @@index([ownerUserId])
   @@index([targetUserId])
-}
-
-model ArticleShare {
-  articleShareId Int @id @default(autoincrement())
-
-  articleId     Int
-  ownerUserId   Int
-  targetUserId  Int
-  active        Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  article Article @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
-  owner   User    @relation("ArticleSharesGiven", fields: [ownerUserId], references: [userId], onDelete: Cascade)
-  target  User    @relation("ArticleSharesReceived", fields: [targetUserId], references: [userId], onDelete: Cascade)
-
-  @@unique([articleId, targetUserId], map: "uq_article_share_article_target")
-  @@index([ownerUserId])
-  @@index([targetUserId])
-  @@index([articleId])
 }
 
 model ShareInvite {

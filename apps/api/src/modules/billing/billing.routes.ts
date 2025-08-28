@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Stripe from "stripe";
 import { authGuard } from "../auth/auth.middleware";
+import { prisma } from "../../libs/prisma";
 
 const router = Router();
 
@@ -49,13 +50,42 @@ router.post("/upgrade/power-user/checkout", authGuard, async (req, res) => {
 
     const stripe = getStripe();
 
+    const userId = Number((req as any).user?.sub);
+    if (!Number.isFinite(userId)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: { userId: true, email: true, stripeCustomerId: true },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Ensure we have a Stripe Customer to attach the subscription to.
+    // This is required to support cancellation at period end later.
+    let stripeCustomerId = user.stripeCustomerId;
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { userId: String(user.userId) },
+      });
+      stripeCustomerId = customer.id;
+      await prisma.user.update({
+        where: { userId: user.userId },
+        data: { stripeCustomerId },
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      customer: stripeCustomerId,
       line_items: [{ price: String(priceId), quantity: 1 }],
       success_url: `${appUrl}/?stripe=success`,
       cancel_url: `${appUrl}/?stripe=cancel`,
       metadata: {
-        userId: String((req as any).user?.sub ?? ""),
+        userId: String(userId),
         role: String((req as any).user?.role ?? ""),
         targetRole: "POWER_USER",
         plan,
@@ -66,6 +96,108 @@ router.post("/upgrade/power-user/checkout", authGuard, async (req, res) => {
   } catch (e: any) {
     const message = e?.message || "Failed to create checkout session";
     return res.status(500).json({ error: message });
+  }
+});
+
+// Cancel/downgrade: revert POWER_USER back to USER.
+// NOTE: This currently only updates the local role.
+// To actually cancel a Stripe subscription, we need to store and look up the Stripe
+// customer/subscription id (or implement Stripe customer portal and let Stripe manage it).
+router.post("/cancel/power-user", authGuard, async (req: any, res) => {
+  try {
+    const userId = Number(req.user?.sub);
+    if (!Number.isFinite(userId)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Stripe-backed cancel at period end.
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: { userId: true, role: true, stripeSubscriptionId: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.role !== "POWER_USER") {
+      return res.status(400).json({ error: "You are not a POWER_USER" });
+    }
+
+    if (!user.stripeSubscriptionId) {
+      return res.status(400).json({
+        error:
+          "No Stripe subscription found for your account. If you upgraded recently, try again in a moment after the webhook processes your payment.",
+      });
+    }
+
+    const stripe = getStripe();
+    const updatedSub = await stripe.subscriptions.update(
+      user.stripeSubscriptionId,
+      { cancel_at_period_end: true }
+    );
+
+    // Do NOT downgrade role immediately. We'll downgrade via webhook when the subscription ends.
+    return res.json({
+      subscriptionId: updatedSub.id,
+      cancelAtPeriodEnd: updatedSub.cancel_at_period_end,
+      currentPeriodEnd: updatedSub.current_period_end,
+    });
+  } catch (e: any) {
+    return res
+      .status(500)
+      .json({ error: e?.message || "Failed to cancel subscription" });
+  }
+});
+
+// Optional: Stripe Customer Portal session (lets users manage/cancel themselves).
+// This endpoint is safe to add even if the UI doesn't use it yet.
+router.post("/portal", authGuard, async (req: any, res) => {
+  try {
+    const userId = Number(req.user?.sub);
+    if (!Number.isFinite(userId)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const appUrlRaw =
+      process.env.APP_URL ||
+      process.env.RENDER_EXTERNAL_URL ||
+      "http://localhost:5173";
+    const appUrl = String(appUrlRaw).replace(/\/$/, "");
+
+    const stripe = getStripe();
+
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: { stripeCustomerId: true, email: true, userId: true },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { userId: String(user.userId) },
+      });
+      customerId = customer.id;
+      await prisma.user.update({
+        where: { userId: user.userId },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${appUrl}/?billing=return`,
+    });
+
+    return res.json({ url: session.url });
+  } catch (e: any) {
+    return res
+      .status(500)
+      .json({ error: e?.message || "Failed to open portal" });
   }
 });
 

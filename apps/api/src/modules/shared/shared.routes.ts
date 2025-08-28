@@ -16,36 +16,37 @@ router.get(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: any, res) => {
-    const targetUserId = Number(req.user.sub);
+    const viewerUserId = Number(req.user.sub);
 
-    const rows = await prisma.articleShare.findMany({
-      where: { targetUserId, active: true },
+    const articles = await prisma.article.findMany({
+      where: {
+        sharedWithPowerUsers: true,
+        // Keep the view useful by not listing the viewer's own articles.
+        // (Owner can still see/manage sharing from their own list.)
+        ownerUserId: { not: viewerUserId },
+      },
       orderBy: { updatedAt: "desc" },
       include: {
         owner: { select: { userId: true, email: true } },
-        article: {
-          include: {
-            garantie: true,
-            locations: {
-              select: {
-                locationId: true,
-                location: { select: { name: true } },
-              },
-            } as any,
-          } as any,
-        },
-      },
+        garantie: true,
+        locations: {
+          select: {
+            locationId: true,
+            location: { select: { name: true } },
+          },
+        } as any,
+      } as any,
     });
 
-    // Flatten for the web UI.
+    // Keep response shape close to previous UI expectations.
     res.json(
-      rows.map((r: any) => ({
-        articleShareId: r.articleShareId,
-        active: r.active,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
-        owner: r.owner,
-        article: r.article,
+      articles.map((a: any) => ({
+        articleShareId: a.articleId,
+        active: true,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+        owner: a.owner,
+        article: a,
       }))
     );
   })

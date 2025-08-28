@@ -24,88 +24,18 @@ type SharedArticleRow = {
   updatedAt: string;
 };
 
-type OwnerShareInfo = {
-  articleShareId: number;
-  targetUserId: number;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  target: { userId: number; email: string; role: string };
-};
-
 export default function SharedArticlesView() {
   const { t } = useI18n();
   const [rows, setRows] = useState<SharedArticleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [busyShareId, setBusyShareId] = useState<number | null>(null);
 
-  const [ownerSharesByArticleId, setOwnerSharesByArticleId] = useState<
-    Record<number, OwnerShareInfo[]>
-  >({});
-  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<
-    number | null
-  >(null);
-
-  const myUserId = useMemo(() => {
-    const raw = localStorage.getItem("userId");
-    const n = raw ? Number(raw) : NaN;
-    return Number.isFinite(n) ? n : null;
+  useMemo(() => {
+    // Keep hook order stable in case future UI wants user context.
+    return null;
   }, []);
 
   const token = localStorage.getItem("token");
-
-  const loadOwnerShares = async (articleId: number) => {
-    setSharesLoadingArticleId(articleId);
-    try {
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/shares`, {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Failed to load shares (${res.status})`);
-      }
-      const data = (await res.json()) as OwnerShareInfo[];
-      setOwnerSharesByArticleId((prev) => ({ ...prev, [articleId]: data }));
-    } catch (e: any) {
-      alert(e?.message || "Failed to load shares");
-    } finally {
-      setSharesLoadingArticleId(null);
-    }
-  };
-
-  const unshare = async (
-    articleId: number,
-    rowId: number,
-    targetUserId: number,
-  ) => {
-    if (!confirm("Unshare this article from that user?")) {
-      return;
-    }
-
-    setBusyShareId(rowId);
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/articles/${articleId}/share/${targetUserId}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: token ? `Bearer ${token}` : "" },
-        },
-      );
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Unshare failed (${res.status})`);
-      }
-
-      await loadOwnerShares(articleId);
-      await fetchRows();
-    } catch (e: any) {
-      alert(e?.message || "Unshare failed");
-    } finally {
-      setBusyShareId(null);
-    }
-  };
 
   const fetchRows = async () => {
     setLoading(true);
@@ -170,12 +100,6 @@ export default function SharedArticlesView() {
         <div className="ui-card rounded-lg">
           <div className="divide-y">
             {rows.map((r) => {
-              const isOwner =
-                myUserId != null && r.article.ownerUserId === myUserId;
-              const ownerShares = ownerSharesByArticleId[r.article.articleId];
-              const myShare = ownerShares?.find(
-                (s) => s.targetUserId === myUserId,
-              );
               return (
                 <div key={r.articleShareId} className="p-4">
                   <div className="flex items-start justify-between gap-4">
@@ -196,50 +120,17 @@ export default function SharedArticlesView() {
                     <div className="flex items-center gap-2">
                       <button
                         className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-                        disabled={!isOwner}
-                        title={
-                          isOwner
-                            ? "Owner-only (handled elsewhere)"
-                            : "Only the owner can edit"
-                        }
+                        disabled
+                        title="Read-only"
                       >
                         Edit
                       </button>
                       <button
                         className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-                        disabled={!isOwner}
-                        onClick={async () => {
-                          if (!isOwner) return;
-                          if (!ownerShares) {
-                            await loadOwnerShares(r.article.articleId);
-                            return;
-                          }
-                          const targetUserId =
-                            myShare?.targetUserId ?? myUserId;
-                          if (!targetUserId) {
-                            alert("Missing target user id");
-                            return;
-                          }
-                          await unshare(
-                            r.article.articleId,
-                            r.articleShareId,
-                            targetUserId,
-                          );
-                        }}
-                        title={
-                          isOwner
-                            ? ownerShares
-                              ? "Unshare from the selected user"
-                              : "Load shares for this article"
-                            : "Only the owner can unshare"
-                        }
+                        disabled
+                        title="Only the owner can unshare (from their Articles view)"
                       >
-                        {busyShareId === r.articleShareId ||
-                        sharesLoadingArticleId === r.article.articleId
-                          ? t("common.loading")
-                          : ownerShares
-                            ? "Unshare me"
-                            : "Load shares"}
+                        Unshare
                       </button>
                     </div>
                   </div>

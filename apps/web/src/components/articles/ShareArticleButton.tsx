@@ -17,14 +17,6 @@ export default function ShareArticleButton({
   const [loading, setLoading] = useState(false);
 
   const share = async () => {
-    const raw = prompt("Target user ID to share with:");
-    if (!raw) return;
-    const targetUserId = Number(raw);
-    if (!Number.isFinite(targetUserId) || targetUserId <= 0) {
-      alert("Invalid user id");
-      return;
-    }
-
     const token = localStorage.getItem("token");
     setLoading(true);
     try {
@@ -34,7 +26,6 @@ export default function ShareArticleButton({
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({ targetUserId }),
       });
 
       if (!res.ok) {
@@ -57,7 +48,7 @@ export default function ShareArticleButton({
       onClick={share}
       disabled={disabled || loading}
       className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-      title="Share this article with another POWER_USER by user id"
+      title="Share this article with all POWER_USER accounts"
     >
       {loading ? t("common.loading") : "Share"}
     </button>

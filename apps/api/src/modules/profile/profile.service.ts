@@ -81,13 +81,6 @@ export const ProfileService = {
       throw err;
     }
 
-    // NOTE: This may fail if there are required relations.
-    // If cascade is not configured in Prisma, we handle cleanup here.
-    await prisma.articleShare.updateMany({
-      where: { OR: [{ ownerUserId: userId }, { targetUserId: userId }] },
-      data: { active: false },
-    });
-
     await prisma.article.deleteMany({ where: { ownerUserId: userId } });
     await prisma.garantie.deleteMany({ where: { ownerUserId: userId } });
     await prisma.attachment.deleteMany({ where: { ownerUserId: userId } });
