@@ -41,7 +41,7 @@ router.get(
     // Keep response shape close to previous UI expectations.
     res.json(
       articles.map((a: any) => ({
-        articleShareId: a.articleId,
+        rowId: a.articleId,
         active: true,
         createdAt: a.createdAt,
         updatedAt: a.updatedAt,

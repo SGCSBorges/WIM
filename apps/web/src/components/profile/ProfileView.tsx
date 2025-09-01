@@ -24,6 +24,8 @@ export default function ProfileView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [billingBusy, setBillingBusy] = useState(false);
+
   const [email, setEmail] = useState("");
   const [currentPasswordForEmail, setCurrentPasswordForEmail] = useState("");
 
@@ -132,6 +134,64 @@ export default function ProfileView() {
     }
   };
 
+  const openBillingPortal = async () => {
+    setError(null);
+    setBillingBusy(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/billing/portal`, {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(await getErrorMessage(res, "Failed to open portal"));
+      }
+
+      const data = (await res.json()) as { url?: string };
+      if (!data?.url) {
+        throw new Error("Portal URL missing");
+      }
+      window.location.href = data.url;
+    } catch (e: any) {
+      setError(e?.message || "Failed to open billing portal");
+    } finally {
+      setBillingBusy(false);
+    }
+  };
+
+  const cancelAtPeriodEnd = async () => {
+    if (!confirm("Cancel your subscription at period end?")) return;
+
+    setError(null);
+    setBillingBusy(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/billing/cancel/power-user`, {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(
+          await getErrorMessage(res, "Failed to cancel subscription"),
+        );
+      }
+
+      await res.json().catch(() => null);
+      alert(
+        "Cancellation scheduled. You'll be downgraded when the period ends.",
+      );
+      await loadMe();
+    } catch (e: any) {
+      setError(e?.message || "Failed to cancel subscription");
+    } finally {
+      setBillingBusy(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="ui-card rounded-lg p-6">
@@ -158,6 +218,32 @@ export default function ProfileView() {
         <div className="font-medium">{me?.email}</div>
         <div className="text-xs ui-text-muted">Role: {me?.role}</div>
       </div>
+
+      {me?.role === "POWER_USER" && (
+        <div className="ui-card rounded-xl p-6 space-y-3">
+          <h2 className="font-semibold ui-title">Subscription</h2>
+          <p className="text-sm ui-text-muted">
+            Manage your subscription, payment method, or cancel at period end.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              className="ui-btn-primary px-4 py-2 rounded"
+              onClick={openBillingPortal}
+              disabled={billingBusy}
+            >
+              {billingBusy ? t("common.loading") : "Manage billing"}
+            </button>
+            <button
+              className="ui-btn-ghost px-4 py-2 rounded border ui-divider"
+              onClick={cancelAtPeriodEnd}
+              disabled={billingBusy}
+              title="Cancels at period end (keeps access until then)"
+            >
+              {billingBusy ? t("common.loading") : "Cancel at period end"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="ui-card rounded-xl p-6 space-y-4">
         <h2 className="font-semibold ui-title">Change email</h2>

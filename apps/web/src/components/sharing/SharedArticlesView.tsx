@@ -17,7 +17,7 @@ type SharedArticle = {
 };
 
 type SharedArticleRow = {
-  articleShareId: number;
+  rowId: number;
   owner: SharedOwner;
   article: SharedArticle;
   createdAt: string;
@@ -101,7 +101,7 @@ export default function SharedArticlesView() {
           <div className="divide-y">
             {rows.map((r) => {
               return (
-                <div key={r.articleShareId} className="p-4">
+                <div key={r.rowId} className="p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="font-medium truncate">
