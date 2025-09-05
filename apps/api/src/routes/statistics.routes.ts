@@ -18,7 +18,9 @@ const router = Router();
  */
 router.get("/dashboard", authGuard, async (req, res) => {
   try {
-    const statistics = await getDashboardStatistics();
+    const userId = Number((req as any).user?.sub);
+    const role = String((req as any).user?.role || "USER");
+    const statistics = await getDashboardStatistics({ userId, role });
     res.json(statistics);
   } catch (error) {
     console.error(
@@ -35,7 +37,8 @@ router.get("/dashboard", authGuard, async (req, res) => {
  */
 router.get("/basic", authGuard, async (req, res) => {
   try {
-    const statistics = await getBasicStatistics();
+    const userId = Number((req as any).user?.sub);
+    const statistics = await getBasicStatistics({ userId });
     res.json(statistics);
   } catch (error) {
     console.error("[Statistics API] Error fetching basic statistics:", error);

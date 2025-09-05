@@ -369,13 +369,25 @@ export const alertsAPI = {
 
 // Statistics API
 export const statisticsAPI = {
-  async getAll() {
-    const response = await fetch(`${API_BASE_URL}/statistics`, {
+  async getDashboard() {
+    const response = await fetch(`${API_BASE_URL}/statistics/dashboard`, {
       headers: getHeaders(),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch statistics");
+      throw new Error("Failed to fetch dashboard statistics");
+    }
+
+    return response.json();
+  },
+
+  async getBasic() {
+    const response = await fetch(`${API_BASE_URL}/statistics/basic`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch basic statistics");
     }
 
     return response.json();

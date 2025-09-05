@@ -13,22 +13,27 @@ interface DashboardStatistics {
     withWarranty: number;
     withoutWarranty: number;
   };
+  locations: {
+    byLocation: Array<{
+      locationId: number;
+      name: string;
+      articlesCount: number;
+    }>;
+    unassigned: number;
+  };
   warranties: {
     total: number;
     active: number;
     expired: number;
     expiringSoon: number;
-  };
-  users: {
-    total: number;
-    byRole: {
-      USER: number;
-      POWER_USER: number;
-      ADMIN: number;
-    };
+    withAttachment: number;
   };
   alerts: {
     total: number;
+  };
+  sharing: {
+    ownedSharedArticles: number;
+    totalSharedArticles: number;
   };
 }
 
@@ -98,7 +103,7 @@ const Dashboard: React.FC = () => {
     const fetchStatistics = async () => {
       try {
         setLoading(true);
-        const data = await statisticsAPI.getAll();
+        const data = await statisticsAPI.getDashboard();
         setStatistics(data);
       } catch (err) {
         setError(
@@ -173,18 +178,19 @@ const Dashboard: React.FC = () => {
         />
 
         <StatCard
-          title={t("dashboard.totalUsers")}
-          value={statistics.users.total}
-          icon="👥"
+          title={t("dashboard.sharedByMe")}
+          value={statistics.sharing.ownedSharedArticles}
+          icon="📤"
           color="bg-purple-500"
-          subtitle={`${statistics.users.byRole.ADMIN} ${t("dashboard.adminCount")}`}
+          subtitle={t("dashboard.ownedArticlesShared")}
         />
 
         <StatCard
-          title={t("dashboard.activeAlerts")}
-          value={statistics.alerts.total}
-          icon="🚨"
+          title={t("dashboard.sharedWithMe")}
+          value={statistics.sharing.totalSharedArticles}
+          icon="�"
           color="bg-orange-500"
+          subtitle={t("dashboard.availableInSharedView")}
         />
       </div>
 
@@ -211,6 +217,37 @@ const Dashboard: React.FC = () => {
         />
 
         <DetailCard
+          title={t("dashboard.sharing")}
+          data={[
+            {
+              label: t("dashboard.ownedSharedArticles"),
+              value: statistics.sharing.ownedSharedArticles,
+              color: "text-purple-600",
+            },
+            {
+              label: t("dashboard.totalSharedArticles"),
+              value: statistics.sharing.totalSharedArticles,
+              color: "text-blue-600",
+            },
+          ]}
+        />
+
+        <DetailCard
+          title={t("dashboard.articlesByLocation")}
+          data={[
+            ...statistics.locations.byLocation.map((l) => ({
+              label: l.name,
+              value: l.articlesCount,
+            })),
+            {
+              label: t("dashboard.unassigned"),
+              value: statistics.locations.unassigned,
+              color: "text-gray-600",
+            },
+          ]}
+        />
+
+        <DetailCard
           title={t("dashboard.warrantiesStatus")}
           data={[
             {
@@ -232,27 +269,10 @@ const Dashboard: React.FC = () => {
               value: statistics.warranties.expiringSoon,
               color: "text-orange-600",
             },
-          ]}
-        />
-
-        <DetailCard
-          title={t("dashboard.usersByRole")}
-          data={[
-            { label: t("dashboard.totalUsers"), value: statistics.users.total },
             {
-              label: t("dashboard.admins"),
-              value: statistics.users.byRole.ADMIN,
-              color: "text-purple-600",
-            },
-            {
-              label: t("dashboard.powerUsers"),
-              value: statistics.users.byRole.POWER_USER,
-              color: "text-blue-600",
-            },
-            {
-              label: t("dashboard.regularUsers"),
-              value: statistics.users.byRole.USER,
-              color: "text-gray-600",
+              label: t("dashboard.withAttachment"),
+              value: statistics.warranties.withAttachment,
+              color: "text-green-600",
             },
           ]}
         />
@@ -267,9 +287,10 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center">
             <span className="text-green-500 mr-2">✅</span>
             <span className="text-sm text-gray-600">
-              {(
-                (statistics.warranties.active / statistics.warranties.total) *
-                100
+              {(statistics.warranties.total
+                ? (statistics.warranties.active / statistics.warranties.total) *
+                  100
+                : 0
               ).toFixed(1)}
               {t("dashboard.warrantiesActivePct")}
             </span>
@@ -278,9 +299,11 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center">
             <span className="text-blue-500 mr-2">📈</span>
             <span className="text-sm text-gray-600">
-              {(
-                (statistics.articles.withWarranty / statistics.articles.total) *
-                100
+              {(statistics.articles.total
+                ? (statistics.articles.withWarranty /
+                    statistics.articles.total) *
+                  100
+                : 0
               ).toFixed(1)}
               {t("dashboard.articlesCoveredPct")}
             </span>
