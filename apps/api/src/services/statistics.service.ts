@@ -37,6 +37,32 @@ export interface DashboardStatistics {
   };
 }
 
+export interface AdminStatistics {
+  users: {
+    total: number;
+    byRole: {
+      USER: number;
+      POWER_USER: number;
+      ADMIN: number;
+    };
+  };
+  articles: {
+    total: number;
+  };
+  warranties: {
+    total: number;
+    active: number;
+    expired: number;
+    withAttachment: number;
+  };
+  alerts: {
+    total: number;
+  };
+  sharing: {
+    totalSharedArticles: number;
+  };
+}
+
 type DashboardStatisticsParams = {
   userId: number;
   role: UserRole | string;
@@ -201,8 +227,94 @@ export async function getDashboardStatistics(
 }
 
 /**
- * Get basic statistics for quick overview
+ * Get admin dashboard statistics (global totals)
  */
+export async function getAdminStatistics(): Promise<AdminStatistics> {
+  try {
+    // Users
+    const totalUsers = await prisma.user.count();
+    const usersByRole = await prisma.user.groupBy({
+      by: ["role"],
+      _count: { userId: true },
+    });
+    const roleCounts = {
+      USER: 0,
+      POWER_USER: 0,
+      ADMIN: 0,
+    };
+    for (const row of usersByRole) {
+      roleCounts[row.role as keyof typeof roleCounts] = row._count.userId;
+    }
+
+    // Articles (global)
+    const totalArticles = await prisma.article.count();
+
+    // Warranties (global)
+    const totalWarranties = await prisma.garantie.count();
+    const currentDate = new Date();
+    const warrantiesActive = await prisma.garantie.count({
+      where: {
+        garantieFin: {
+          gte: currentDate,
+        },
+        garantieIsValide: true,
+      },
+    });
+    const warrantiesExpired = await prisma.garantie.count({
+      where: {
+        OR: [
+          {
+            garantieFin: {
+              lt: currentDate,
+            },
+          },
+          {
+            garantieIsValide: false,
+          },
+        ],
+      },
+    });
+    const warrantiesWithAttachment = await prisma.garantie.count({
+      where: { garantieImageAttachmentId: { not: null } },
+    });
+
+    // Alerts (global)
+    const totalAlerts = await prisma.alerte.count();
+
+    // Sharing (global)
+    const totalSharedArticles = await prisma.article.count({
+      where: { sharedWithPowerUsers: true },
+    });
+
+    return {
+      users: {
+        total: totalUsers,
+        byRole: roleCounts,
+      },
+      articles: {
+        total: totalArticles,
+      },
+      warranties: {
+        total: totalWarranties,
+        active: warrantiesActive,
+        expired: warrantiesExpired,
+        withAttachment: warrantiesWithAttachment,
+      },
+      alerts: {
+        total: totalAlerts,
+      },
+      sharing: {
+        totalSharedArticles,
+      },
+    };
+  } catch (error) {
+    console.error(
+      "[Statistics Service] Error fetching admin statistics:",
+      error
+    );
+    throw new Error("Failed to fetch admin statistics");
+  }
+}
 export async function getBasicStatistics(params: { userId: number }) {
   try {
     const ownerUserId = Number(params.userId);

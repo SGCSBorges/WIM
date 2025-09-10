@@ -346,6 +346,12 @@ export const translations = {
     "admin.error.fetchInventory": "Failed to fetch inventory",
     "admin.error.deleteUser": "Failed to delete user",
     "admin.error.deleteArticle": "Failed to delete article",
+    "admin.error.fetchStatistics": "Failed to fetch admin statistics",
+    "admin.totalUsers": "Total Users",
+    "admin.totalArticles": "Total Articles",
+    "admin.activeWarranties": "Active Warranties",
+    "admin.sharedArticles": "Shared Articles",
+    "admin.dashboard": "Dashboard",
   },
 
   fr: {
@@ -695,6 +701,13 @@ export const translations = {
     "admin.error.fetchInventory": "Impossible de charger l'inventaire",
     "admin.error.deleteUser": "Impossible de supprimer l'utilisateur",
     "admin.error.deleteArticle": "Impossible de supprimer l'article",
+    "admin.error.fetchStatistics":
+      "Impossible de charger les statistiques d'administration",
+    "admin.totalUsers": "Total des utilisateurs",
+    "admin.totalArticles": "Total des articles",
+    "admin.activeWarranties": "Garanties actives",
+    "admin.sharedArticles": "Articles partagés",
+    "admin.dashboard": "Tableau de bord",
   },
 
   pt: {
@@ -1037,6 +1050,13 @@ export const translations = {
     "admin.error.fetchInventory": "Falha ao obter inventário",
     "admin.error.deleteUser": "Falha ao eliminar utilizador",
     "admin.error.deleteArticle": "Falha ao eliminar artigo",
+    "admin.error.fetchStatistics":
+      "Falha ao obter estatísticas de administração",
+    "admin.totalUsers": "Total de utilizadores",
+    "admin.totalArticles": "Total de artigos",
+    "admin.activeWarranties": "Garantias ativas",
+    "admin.sharedArticles": "Artigos partilhados",
+    "admin.dashboard": "Dashboard",
   },
 } as const;
 

@@ -392,6 +392,18 @@ export const statisticsAPI = {
 
     return response.json();
   },
+
+  async getAdmin() {
+    const response = await fetch(`${API_BASE_URL}/statistics/admin`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch admin statistics");
+    }
+
+    return response.json();
+  },
 };
 
 // Billing / Stripe

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL, authAPI } from "../../services/api";
+import { API_BASE_URL, authAPI, statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 
 type UserRow = {
@@ -36,6 +36,32 @@ type UserInventory = {
   warrantiesOwned: InventoryWarranty[];
 };
 
+type AdminStatistics = {
+  users: {
+    total: number;
+    byRole: {
+      USER: number;
+      POWER_USER: number;
+      ADMIN: number;
+    };
+  };
+  articles: {
+    total: number;
+  };
+  warranties: {
+    total: number;
+    active: number;
+    expired: number;
+    withAttachment: number;
+  };
+  alerts: {
+    total: number;
+  };
+  sharing: {
+    totalSharedArticles: number;
+  };
+};
+
 function headers() {
   const token = localStorage.getItem("token");
   return {
@@ -55,6 +81,12 @@ export default function AdminUsers() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [activeTab, setActiveTab] = useState<"dashboard" | "users">(
+    "dashboard",
+  );
+  const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
   const role = useMemo(() => authAPI.getRole(), []);
 
   const getErrorMessage = async (res: Response, fallback: string) => {
@@ -65,6 +97,19 @@ export default function AdminUsers() {
       const text = await res.text().catch(() => "");
       const snippet = text ? `: ${text.slice(0, 200)}` : "";
       return `${fallback} (${res.status})${snippet}`;
+    }
+  };
+
+  const fetchStatistics = async () => {
+    setLoadingStats(true);
+    setError(null);
+    try {
+      const data = await statisticsAPI.getAdmin();
+      setStatistics(data);
+    } catch (e: any) {
+      setError(e.message || t("admin.error.fetchStatistics"));
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -163,6 +208,7 @@ export default function AdminUsers() {
 
   useEffect(() => {
     fetchUsers();
+    fetchStatistics();
   }, []);
 
   if (role !== "ADMIN") {
@@ -182,12 +228,38 @@ export default function AdminUsers() {
           <p className="ui-text-muted">{t("admin.subtitle")}</p>
         </div>
         <button
-          onClick={fetchUsers}
+          onClick={activeTab === "users" ? fetchUsers : fetchStatistics}
           className="ui-btn-ghost px-3 py-2 rounded border ui-divider"
-          disabled={loadingUsers}
+          disabled={activeTab === "users" ? loadingUsers : loadingStats}
         >
           {t("common.refresh")}
         </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab("dashboard")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "dashboard"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            {t("admin.dashboard")}
+          </button>
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "users"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            {t("admin.users")}
+          </button>
+        </nav>
       </div>
 
       {error && (
@@ -196,153 +268,235 @@ export default function AdminUsers() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="ui-card rounded-lg">
-          <div className="p-4 border-b ui-divider flex items-center justify-between">
-            <h2 className="font-semibold">{t("admin.users")}</h2>
-            {loadingUsers && (
-              <span className="text-xs ui-text-muted">
-                {t("common.loading")}
-              </span>
-            )}
-          </div>
-          <div className="divide-y">
-            {users.map((u) => (
-              <div
-                key={u.userId}
-                className={`p-4 flex items-center justify-between ${
-                  selectedUser?.userId === u.userId ? "ui-panel" : ""
-                }`}
-              >
-                <button
-                  onClick={() => {
-                    setSelectedUser(u);
-                    fetchInventory(u.userId);
-                  }}
-                  className="text-left flex-1 mr-4"
-                >
-                  <div className="font-medium">{u.email}</div>
-                  <div className="text-xs ui-text-muted">
-                    {t("admin.roleLabel")}: {u.role}
+      {activeTab === "dashboard" && (
+        <div>
+          {loadingStats ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : statistics ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("admin.totalUsers")}
+                    </p>
+                    <p className="text-3xl font-semibold text-gray-900">
+                      {statistics.users.total}
+                    </p>
                   </div>
-                </button>
-                <button
-                  onClick={() => deleteUser(u.userId)}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                  disabled={actionLoading === `user:${u.userId}`}
-                >
-                  {actionLoading === `user:${u.userId}`
-                    ? t("admin.deleting")
-                    : t("admin.delete")}
-                </button>
+                  <div className="p-3 rounded-full bg-blue-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                    👥
+                  </div>
+                </div>
               </div>
-            ))}
-            {!loadingUsers && users.length === 0 && (
-              <div className="p-4 text-sm ui-text-muted">
-                {t("admin.noUsers")}
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("admin.totalArticles")}
+                    </p>
+                    <p className="text-3xl font-semibold text-gray-900">
+                      {statistics.articles.total}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-full bg-green-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                    📦
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("admin.activeWarranties")}
+                    </p>
+                    <p className="text-3xl font-semibold text-gray-900">
+                      {statistics.warranties.active}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-full bg-purple-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                    🛡️
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("admin.sharedArticles")}
+                    </p>
+                    <p className="text-3xl font-semibold text-gray-900">
+                      {statistics.sharing.totalSharedArticles}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-full bg-orange-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                    🤝
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-sm text-yellow-700">No statistics available</p>
+            </div>
+          )}
         </div>
+      )}
 
-        <div className="ui-card rounded-lg">
-          <div className="p-4 border-b ui-divider">
-            <h2 className="font-semibold">{t("admin.inventory")}</h2>
-            {selectedUser && (
-              <p className="text-xs ui-text-muted">{selectedUser.email}</p>
-            )}
+      {activeTab === "users" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="ui-card rounded-lg">
+            <div className="p-4 border-b ui-divider flex items-center justify-between">
+              <h2 className="font-semibold">{t("admin.users")}</h2>
+              {loadingUsers && (
+                <span className="text-xs ui-text-muted">
+                  {t("common.loading")}
+                </span>
+              )}
+            </div>
+            <div className="divide-y">
+              {users.map((u) => (
+                <div
+                  key={u.userId}
+                  className={`p-4 flex items-center justify-between ${
+                    selectedUser?.userId === u.userId ? "ui-panel" : ""
+                  }`}
+                >
+                  <button
+                    onClick={() => {
+                      setSelectedUser(u);
+                      fetchInventory(u.userId);
+                    }}
+                    className="text-left flex-1 mr-4"
+                  >
+                    <div className="font-medium">{u.email}</div>
+                    <div className="text-xs ui-text-muted">
+                      {t("admin.roleLabel")}: {u.role}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => deleteUser(u.userId)}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                    disabled={actionLoading === `user:${u.userId}`}
+                  >
+                    {actionLoading === `user:${u.userId}`
+                      ? t("admin.deleting")
+                      : t("admin.delete")}
+                  </button>
+                </div>
+              ))}
+              {!loadingUsers && users.length === 0 && (
+                <div className="p-4 text-sm ui-text-muted">
+                  {t("admin.noUsers")}
+                </div>
+              )}
+            </div>
           </div>
 
-          {!selectedUser && (
-            <div className="p-4 text-sm ui-text-muted">
-              {t("admin.selectUser")}
+          <div className="ui-card rounded-lg">
+            <div className="p-4 border-b ui-divider">
+              <h2 className="font-semibold">{t("admin.inventory")}</h2>
+              {selectedUser && (
+                <p className="text-xs ui-text-muted">{selectedUser.email}</p>
+              )}
             </div>
-          )}
 
-          {selectedUser && loadingInventory && (
-            <div className="p-4 text-sm ui-text-muted">
-              {t("admin.loadingInventory")}
-            </div>
-          )}
+            {!selectedUser && (
+              <div className="p-4 text-sm ui-text-muted">
+                {t("admin.selectUser")}
+              </div>
+            )}
 
-          {selectedUser && inventory && !loadingInventory && (
-            <div className="p-4 space-y-6">
-              <div>
-                <h3 className="font-medium mb-2">{t("admin.articles")}</h3>
-                <div className="space-y-2">
-                  {inventory.articlesOwned?.map((a) => (
-                    <div
-                      key={a.articleId}
-                      className="ui-panel rounded p-3 flex items-start justify-between"
-                    >
-                      <div>
-                        <div className="font-medium">
-                          {a.articleNom} — {a.articleModele}
+            {selectedUser && loadingInventory && (
+              <div className="p-4 text-sm ui-text-muted">
+                {t("admin.loadingInventory")}
+              </div>
+            )}
+
+            {selectedUser && inventory && !loadingInventory && (
+              <div className="p-4 space-y-6">
+                <div>
+                  <h3 className="font-medium mb-2">{t("admin.articles")}</h3>
+                  <div className="space-y-2">
+                    {inventory.articlesOwned?.map((a) => (
+                      <div
+                        key={a.articleId}
+                        className="ui-panel rounded p-3 flex items-start justify-between"
+                      >
+                        <div>
+                          <div className="font-medium">
+                            {a.articleNom} — {a.articleModele}
+                          </div>
+                          <div className="text-xs ui-text-muted">
+                            {a.articleDescription || t("admin.noDescription")}
+                          </div>
+                          {a.garantie && (
+                            <div className="text-xs ui-text-muted mt-1">
+                              {t("admin.warrantyLabel")}:{" "}
+                              {a.garantie.garantieNom} (
+                              {a.garantie.garantieIsValide
+                                ? t("admin.status.valid")
+                                : t("admin.status.expired")}
+                              )
+                            </div>
+                          )}
                         </div>
+                        <button
+                          onClick={() => deleteArticle(a.articleId)}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                          disabled={actionLoading === `article:${a.articleId}`}
+                        >
+                          {actionLoading === `article:${a.articleId}`
+                            ? t("admin.deleting")
+                            : t("admin.delete")}
+                        </button>
+                      </div>
+                    ))}
+                    {inventory.articlesOwned?.length === 0 && (
+                      <div className="text-sm ui-text-muted">
+                        {t("admin.noArticles")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-medium mb-2">{t("admin.warranties")}</h3>
+                  <div className="space-y-2">
+                    {inventory.warrantiesOwned?.map((w) => (
+                      <div key={w.garantieId} className="ui-panel rounded p-3">
+                        <div className="font-medium">{w.garantieNom}</div>
                         <div className="text-xs ui-text-muted">
-                          {a.articleDescription || t("admin.noDescription")}
+                          {t("admin.statusLabel")}:{" "}
+                          {w.garantieIsValide
+                            ? t("admin.status.valid")
+                            : t("admin.status.expired")}
                         </div>
-                        {a.garantie && (
+                        {w.article && (
                           <div className="text-xs ui-text-muted mt-1">
-                            {t("admin.warrantyLabel")}: {a.garantie.garantieNom}{" "}
-                            (
-                            {a.garantie.garantieIsValide
-                              ? t("admin.status.valid")
-                              : t("admin.status.expired")}
-                            )
+                            {t("articles.title")}: {w.article.articleNom} —{" "}
+                            {w.article.articleModele}
                           </div>
                         )}
                       </div>
-                      <button
-                        onClick={() => deleteArticle(a.articleId)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                        disabled={actionLoading === `article:${a.articleId}`}
-                      >
-                        {actionLoading === `article:${a.articleId}`
-                          ? t("admin.deleting")
-                          : t("admin.delete")}
-                      </button>
-                    </div>
-                  ))}
-                  {inventory.articlesOwned?.length === 0 && (
-                    <div className="text-sm ui-text-muted">
-                      {t("admin.noArticles")}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-medium mb-2">{t("admin.warranties")}</h3>
-                <div className="space-y-2">
-                  {inventory.warrantiesOwned?.map((w) => (
-                    <div key={w.garantieId} className="ui-panel rounded p-3">
-                      <div className="font-medium">{w.garantieNom}</div>
-                      <div className="text-xs ui-text-muted">
-                        {t("admin.statusLabel")}:{" "}
-                        {w.garantieIsValide
-                          ? t("admin.status.valid")
-                          : t("admin.status.expired")}
+                    ))}
+                    {inventory.warrantiesOwned?.length === 0 && (
+                      <div className="text-sm ui-text-muted">
+                        {t("admin.noWarranties")}
                       </div>
-                      {w.article && (
-                        <div className="text-xs ui-text-muted mt-1">
-                          {t("articles.title")}: {w.article.articleNom} —{" "}
-                          {w.article.articleModele}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {inventory.warrantiesOwned?.length === 0 && (
-                    <div className="text-sm ui-text-muted">
-                      {t("admin.noWarranties")}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

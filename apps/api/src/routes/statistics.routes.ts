@@ -4,10 +4,11 @@
  */
 
 import { Router } from "express";
-import { authGuard } from "../modules/auth/auth.middleware";
+import { authGuard, requireRole } from "../modules/auth/auth.middleware";
 import {
   getDashboardStatistics,
   getBasicStatistics,
+  getAdminStatistics,
 } from "../services/statistics.service";
 
 const router = Router();
@@ -43,6 +44,20 @@ router.get("/basic", authGuard, async (req, res) => {
   } catch (error) {
     console.error("[Statistics API] Error fetching basic statistics:", error);
     res.status(500).json({ error: "Failed to fetch basic statistics" });
+  }
+});
+
+/**
+ * GET /api/statistics/admin
+ * Get admin dashboard statistics (global totals, Admin only)
+ */
+router.get("/admin", authGuard, requireRole("ADMIN"), async (req, res) => {
+  try {
+    const statistics = await getAdminStatistics();
+    res.json(statistics);
+  } catch (error) {
+    console.error("[Statistics API] Error fetching admin statistics:", error);
+    res.status(500).json({ error: "Failed to fetch admin statistics" });
   }
 });
 
