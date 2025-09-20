@@ -87,6 +87,9 @@ export const translations = {
     "articles.error.submit": "Error submitting article:",
     "articles.error.delete": "Error deleting article:",
     "articles.filter.location": "Location",
+    "articles.warranty.expired": "Expired",
+    "articles.warranty.expiringSoon": "Expires Soon",
+    "articles.warranty.valid": "Valid",
 
     "articleForm.placeholder.name": "Enter article name",
     "articleForm.placeholder.model": "Enter model",
@@ -439,6 +442,9 @@ export const translations = {
     "articles.error.submit": "Erreur lors de l'envoi de l'article :",
     "articles.error.delete": "Erreur lors de la suppression de l'article :",
     "articles.filter.location": "Lieu",
+    "articles.warranty.expired": "Expirée",
+    "articles.warranty.expiringSoon": "Expire bientôt",
+    "articles.warranty.valid": "Valide",
 
     "articleForm.placeholder.name": "Saisissez le nom de l'article",
     "articleForm.placeholder.model": "Saisissez le modèle",
@@ -792,6 +798,9 @@ export const translations = {
     "articles.error.submit": "Erro ao submeter artigo:",
     "articles.error.delete": "Erro ao eliminar artigo:",
     "articles.filter.location": "Local",
+    "articles.warranty.expired": "Expirada",
+    "articles.warranty.expiringSoon": "Expira em breve",
+    "articles.warranty.valid": "Válida",
 
     "articleForm.placeholder.name": "Introduza o nome do artigo",
     "articleForm.placeholder.model": "Introduza o modelo",

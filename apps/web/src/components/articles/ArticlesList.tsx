@@ -27,6 +27,8 @@ interface Article {
     garantieNom: string;
     garantieDateAchat?: string;
     garantieDuration?: number;
+    garantieFin?: string;
+    garantieIsValide?: boolean;
     garantieImageAttachmentId?: number | null;
   } | null;
   locations?: Array<{
@@ -42,6 +44,38 @@ interface Location {
 
 const ArticlesList: React.FC = () => {
   const { t } = useI18n();
+
+  // Helper function to determine warranty status
+  const getWarrantyStatus = (garantie: Article["garantie"]) => {
+    if (!garantie || !garantie.garantieFin) {
+      return { status: "none", label: t("common.no"), color: "gray" };
+    }
+
+    const endDate = new Date(garantie.garantieFin);
+    const now = new Date();
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(now.getDate() + 30);
+
+    if (endDate < now) {
+      return {
+        status: "expired",
+        label: t("articles.warranty.expired"),
+        color: "red",
+      };
+    } else if (endDate <= thirtyDaysFromNow) {
+      return {
+        status: "expiring-soon",
+        label: t("articles.warranty.expiringSoon"),
+        color: "yellow",
+      };
+    } else {
+      return {
+        status: "valid",
+        label: t("articles.warranty.valid"),
+        color: "green",
+      };
+    }
+  };
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -311,15 +345,26 @@ const ArticlesList: React.FC = () => {
                         {article.articleDescription || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {article.garantie ? (
-                          <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
-                            {t("common.yes")}
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
-                            {t("common.no")}
-                          </span>
-                        )}
+                        {(() => {
+                          const warrantyStatus = getWarrantyStatus(
+                            article.garantie,
+                          );
+                          const colorClasses = {
+                            gray: "bg-gray-50 text-gray-600 border-gray-200",
+                            green:
+                              "bg-green-50 text-green-700 border-green-200",
+                            yellow:
+                              "bg-yellow-50 text-yellow-700 border-yellow-200",
+                            red: "bg-red-50 text-red-700 border-red-200",
+                          };
+                          return (
+                            <span
+                              className={`px-2 py-1 rounded border ${colorClasses[warrantyStatus.color as keyof typeof colorClasses]}`}
+                            >
+                              {warrantyStatus.label}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {article.garantie?.garantieImageAttachmentId ? (
