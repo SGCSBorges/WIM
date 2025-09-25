@@ -38,7 +38,11 @@ router.get(
   "/",
   authGuard,
   asyncHandler(async (req: any, res) => {
-    const attachments = await AttachmentService.list(req.user.sub);
+    const filters: { articleId?: number; garantieId?: number } = {};
+    if (req.query.articleId) filters.articleId = Number(req.query.articleId);
+    if (req.query.garantieId) filters.garantieId = Number(req.query.garantieId);
+
+    const attachments = await AttachmentService.list(req.user.sub, filters);
     res.json(attachments);
   })
 );

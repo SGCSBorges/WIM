@@ -287,6 +287,31 @@ export const locationsAPI = {
 
 // Attachments API
 export const attachmentsAPI = {
+  async getAll(options?: { articleId?: number; garantieId?: number }) {
+    const url = new URL(`${API_BASE_URL}/attachments`);
+    if (options?.articleId)
+      url.searchParams.set("articleId", options.articleId.toString());
+    if (options?.garantieId)
+      url.searchParams.set("garantieId", options.garantieId.toString());
+
+    const response = await fetch(url.toString(), {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Failed to fetch attachments (${response.status})`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        // ignore
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
   async uploadFile(
     file: File,
     type: "INVOICE" | "WARRANTY" | "OTHER" = "OTHER",

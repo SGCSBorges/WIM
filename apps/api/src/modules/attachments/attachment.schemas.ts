@@ -7,6 +7,8 @@ export const AttachmentCreateSchema = z.object({
   fileSize: z.number().int().positive(),
   fileUrl: z.string().url().max(500),
   ownerUserId: z.number().int().positive(),
+  articleId: z.number().int().positive().optional(),
+  garantieId: z.number().int().positive().optional(),
 });
 
 export const AttachmentUpdateSchema = AttachmentCreateSchema.partial();

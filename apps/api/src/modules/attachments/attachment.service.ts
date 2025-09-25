@@ -5,10 +5,32 @@ import {
 } from "./attachment.schemas";
 
 export const AttachmentService = {
-  list: (ownerUserId: number) =>
+  list: (
+    ownerUserId: number,
+    filters?: { articleId?: number; garantieId?: number }
+  ) =>
     prisma.attachment.findMany({
-      where: { ownerUserId },
+      where: {
+        ownerUserId,
+        ...(filters?.articleId && { articleId: filters.articleId }),
+        ...(filters?.garantieId && { garantieId: filters.garantieId }),
+      },
       orderBy: { createdAt: "desc" },
+      include: {
+        article: {
+          select: {
+            articleId: true,
+            articleNom: true,
+            articleModele: true,
+          },
+        },
+        garantie: {
+          select: {
+            garantieId: true,
+            garantieNom: true,
+          },
+        },
+      },
     }),
 
   get: (id: number, ownerUserId: number) =>

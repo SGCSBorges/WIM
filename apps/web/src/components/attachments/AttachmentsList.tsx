@@ -62,26 +62,11 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
   const fetchAttachments = async () => {
     try {
-      let url = "/api/attachments";
-      const params = new URLSearchParams();
-
-      if (articleId) params.append("articleId", articleId.toString());
-      if (garantieId) params.append("garantieId", garantieId.toString());
-
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const data = await attachmentsAPI.getAll({
+        articleId: articleId || undefined,
+        garantieId: garantieId || undefined,
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAttachments(data);
-      }
+      setAttachments(data);
     } catch (error) {
       console.error("Failed to fetch attachments:", error);
     }

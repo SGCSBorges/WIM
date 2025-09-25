@@ -101,6 +101,7 @@ model Article {
 
   owner    User     @relation("UserArticles", fields: [ownerUserId], references: [userId], onDelete: Cascade)
   garantie Garantie?
+  attachments Attachment[]
   alertes  Alerte[]
   locations ArticleLocation[]
 
@@ -141,6 +142,7 @@ model Garantie {
   owner      User      @relation("UserWarranties", fields: [ownerUserId], references: [userId], onDelete: Cascade)
   article    Article?  @relation(fields: [garantieArticleId], references: [articleId], onDelete: Cascade)
   garantieImageAttachment Attachment? @relation("GarantieImageAttachment", fields: [garantieImageAttachmentId], references: [attachmentId], onDelete: SetNull)
+  attachments Attachment[] @relation("AttachmentGarantie")
   alertes    Alerte[]
 
   @@index([ownerUserId])
@@ -185,6 +187,10 @@ model Attachment {
   ownerUserId  Int
   type         AttachmentType @default(INVOICE)
 
+  // Optional links to related entities
+  articleId  Int?
+  garantieId Int?
+
   // Stockage (S3/Cloud) -> URL, ou stockage DB -> base64 (déconseillé)
   fileName     String         @db.VarChar(255)
   mimeType     String         @db.VarChar(100)
@@ -194,9 +200,13 @@ model Attachment {
   createdAt DateTime @default(now())
 
   owner    User     @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  article  Article? @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+  garantie Garantie? @relation("AttachmentGarantie", fields: [garantieId], references: [garantieId], onDelete: Cascade)
   garantieImageFor Garantie? @relation("GarantieImageAttachment")
 
   @@index([ownerUserId])
+  @@index([articleId])
+  @@index([garantieId])
 }
 
 model InventoryShare {
