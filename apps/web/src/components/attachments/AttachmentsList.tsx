@@ -103,18 +103,10 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       }
 
       try {
-        const response = await fetch(`/api/attachments/${attachmentId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (response.ok) {
-          setAttachments(
-            attachments.filter((a) => a.attachmentId !== attachmentId),
-          );
-        }
+        await attachmentsAPI.deleteAttachment(attachmentId);
+        setAttachments(
+          attachments.filter((a) => a.attachmentId !== attachmentId),
+        );
       } catch (error) {
         console.error("Failed to delete attachment:", error);
       }
@@ -123,26 +115,15 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
   const handleDownload = async (attachment: Attachment) => {
     try {
-      const response = await fetch(
-        `/api/attachments/${attachment.attachmentId}/download`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = attachment.fileName;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }
+      // If it's a remote URL (S3/Cloud/etc.), prefer direct download.
+      // (The API may not implement a /download endpoint in all deployments.)
+      const a = document.createElement("a");
+      a.href = attachment.fileUrl;
+      a.download = attachment.fileName;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } catch (error) {
       console.error("Failed to download attachment:", error);
     }
@@ -418,15 +399,23 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                       {t("attachments.action.download")}
                     </button>
 
-                    {onView && (
-                      <button
-                        onClick={() => onView(attachment)}
-                        className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
-                        title={t("attachments.action.view")}
-                      >
-                        {t("attachments.action.view")}
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        if (onView) return onView(attachment);
+                        // Default behavior: open the attachment URL.
+                        // Navigating directly to /api/attachments/:id would fail because the browser
+                        // won't send the Authorization header (Token manquant).
+                        window.open(
+                          attachment.fileUrl,
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                      }}
+                      className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
+                      title={t("attachments.action.view")}
+                    >
+                      {t("attachments.action.view")}
+                    </button>
                   </div>
 
                   <div className="flex space-x-2">

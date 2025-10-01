@@ -1,6 +1,8 @@
 import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
 
+type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 export const ProfileService = {
   async get(userId: number) {
     return prisma.user.findUnique({
@@ -81,11 +83,31 @@ export const ProfileService = {
       throw err;
     }
 
-    await prisma.article.deleteMany({ where: { ownerUserId: userId } });
-    await prisma.garantie.deleteMany({ where: { ownerUserId: userId } });
-    await prisma.attachment.deleteMany({ where: { ownerUserId: userId } });
+    // Delete in a safe order to avoid FK constraint issues.
+    // Note: Many relations are configured with onDelete: Cascade, but explicit deletions
+    // make the behavior predictable and work even if some cascades are missing in DB.
+    await prisma.$transaction(async (tx: TxClient) => {
+      // 1) Alerts must go before warranties/articles because they reference them.
+      await tx.alerte.deleteMany({ where: { ownerUserId: userId } });
 
-    await prisma.user.delete({ where: { userId } });
+      // 2) Shares/invites/audit logs can reference the user.
+      await tx.inventoryShare.deleteMany({ where: { ownerUserId: userId } });
+      await tx.inventoryShare.deleteMany({ where: { targetUserId: userId } });
+      await tx.shareInvite.deleteMany({ where: { ownerUserId: userId } });
+      await tx.auditLog.deleteMany({ where: { userId } });
+
+      // 3) Attachments can reference articles/warranties.
+      await tx.attachment.deleteMany({ where: { ownerUserId: userId } });
+
+      // 4) Warranties can reference attachments (garantieImageAttachmentId) and articles.
+      await tx.garantie.deleteMany({ where: { ownerUserId: userId } });
+
+      // 5) Articles are last.
+      await tx.article.deleteMany({ where: { ownerUserId: userId } });
+
+      // 6) Finally delete the user.
+      await tx.user.delete({ where: { userId } });
+    });
 
     return { ok: true };
   },
