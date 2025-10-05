@@ -115,10 +115,30 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
   const handleDownload = async (attachment: Attachment) => {
     try {
-      // If it's a remote URL (S3/Cloud/etc.), prefer direct download.
-      // (The API may not implement a /download endpoint in all deployments.)
+      // For public URLs (S3/Cloud/etc.), a direct navigation is enough.
+      // For API-hosted uploads, historical data may contain localhost or http URLs.
+      // We normalize those to the active API origin (and https) so downloads work on Render.
+      let href = attachment.fileUrl;
+
+      try {
+        const u = new URL(attachment.fileUrl);
+        if (u.pathname.startsWith("/uploads/")) {
+          // Keep the /uploads/<file> path but force it to the current API origin.
+          const apiOrigin = new URL(
+            // API_BASE_URL is an absolute URL in dev or can be relative in prod; URL() needs absolute.
+            // Using window.location.origin covers deployed web; for Render API we want its host.
+            // Since attachment URLs are API-hosted, we can safely reuse pathname and force https.
+            `https://${u.host}`,
+          );
+          apiOrigin.pathname = u.pathname;
+          href = apiOrigin.toString();
+        }
+      } catch {
+        // ignore URL parse errors; keep original href
+      }
+
       const a = document.createElement("a");
-      a.href = attachment.fileUrl;
+      a.href = href;
       a.download = attachment.fileName;
       a.target = "_blank";
       document.body.appendChild(a);
