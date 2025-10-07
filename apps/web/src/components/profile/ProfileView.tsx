@@ -125,10 +125,16 @@ export default function ProfileView() {
       });
       if (!res.ok)
         throw new Error(await getErrorMessage(res, "Failed to delete account"));
-      // Log out locally and refresh.
+
+      // Success: API returns 204 No Content.
+      // Disconnect locally regardless of body.
       localStorage.removeItem("token");
       localStorage.removeItem("role");
-      window.location.reload();
+      // Also clear any other per-user cached values we might add later.
+      localStorage.removeItem("userId");
+
+      // Hard redirect to reset app state.
+      window.location.href = "/";
     } catch (e: any) {
       setError(e?.message || "Failed to delete account");
     }
