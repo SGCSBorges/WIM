@@ -18,6 +18,14 @@ async function getErrorMessage(res: Response, fallback: string) {
   }
 }
 
+function disconnectAndRedirect() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("userId");
+  // Hard redirect to reset app state.
+  window.location.href = "/";
+}
+
 export default function ProfileView() {
   const { t } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
@@ -123,18 +131,21 @@ export default function ProfileView() {
         },
         body: JSON.stringify({ currentPassword: deletePassword }),
       });
-      if (!res.ok)
-        throw new Error(await getErrorMessage(res, "Failed to delete account"));
+      if (res.ok) {
+        // Success: API returns 204 No Content.
+        disconnectAndRedirect();
+        return;
+      }
 
-      // Success: API returns 204 No Content.
-      // Disconnect locally regardless of body.
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      // Also clear any other per-user cached values we might add later.
-      localStorage.removeItem("userId");
-
-      // Hard redirect to reset app state.
-      window.location.href = "/";
+      const msg = await getErrorMessage(res, "Failed to delete account");
+      // If the user was deleted but the API returned an error (e.g. partial delete then 500),
+      // the next auth-protected calls will fail anyway. In that case, we prefer to
+      // disconnect to avoid trapping the user on a broken session.
+      if (res.status === 401 || res.status === 404) {
+        disconnectAndRedirect();
+        return;
+      }
+      throw new Error(msg);
     } catch (e: any) {
       setError(e?.message || "Failed to delete account");
     }
