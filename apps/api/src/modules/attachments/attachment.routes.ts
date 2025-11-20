@@ -33,7 +33,25 @@ const upload = multer({
   },
 });
 
-/** GET all user attachments */
+/**
+ * Attachments API
+ * Base path: /api/attachments
+ *
+ * Important distinction:
+ * - /api/attachments/* endpoints are protected and require JWT.
+ * - Uploaded files are served from /uploads/* (see app.ts) and are public.
+ *   This allows the frontend to open/download the file directly via `fileUrl`
+ *   without sending an Authorization header.
+ */
+
+/**
+ * GET /api/attachments
+ * Lists attachments owned by the authenticated user.
+ *
+ * Optional filters:
+ * - articleId: number
+ * - garantieId: number
+ */
 router.get(
   "/",
   authGuard,
@@ -47,7 +65,10 @@ router.get(
   })
 );
 
-/** GET attachment by ID */
+/**
+ * GET /api/attachments/:id
+ * Returns attachment metadata (NOT the file content).
+ */
 router.get(
   "/:id",
   authGuard,
@@ -60,7 +81,10 @@ router.get(
   })
 );
 
-/** POST create attachment */
+/**
+ * POST /api/attachments
+ * Creates an attachment metadata record (no file upload).
+ */
 router.post(
   "/",
   authGuard,
@@ -80,7 +104,14 @@ router.post(
   })
 );
 
-/** POST upload attachment file (multipart/form-data) */
+/**
+ * POST /api/attachments/upload
+ * Uploads a file (multipart/form-data) and creates the corresponding attachment record.
+ *
+ * Form fields:
+ * - file (required)
+ * - type (optional): INVOICE | WARRANTY | OTHER
+ */
 router.post(
   "/upload",
   authGuard,
@@ -150,7 +181,13 @@ router.put(
   })
 );
 
-/** DELETE attachment */
+/**
+ * DELETE /api/attachments/:id
+ * Deletes attachment metadata.
+ *
+ * Query:
+ * - removeFile=true (optional): best-effort unlink from local disk.
+ */
 router.delete(
   "/:id",
   authGuard,

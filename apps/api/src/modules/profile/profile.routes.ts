@@ -11,6 +11,13 @@ import { ProfileService } from "./profile.service";
 
 const router = Router();
 
+/**
+ * Profile API
+ *
+ * All routes in this file require a valid JWT (see authGuard).
+ * Base path: /api/profile
+ */
+
 router.get(
   "/me",
   authGuard,
@@ -70,6 +77,16 @@ router.delete(
   "/me",
   authGuard,
   asyncHandler(async (req: any, res: Response) => {
+    /**
+     * DELETE /api/profile/me
+     *
+     * Deletes the current account.
+     * - Requires `currentPassword` to confirm the operation.
+     * - Returns 204 on success.
+     *
+     * NOTE:
+     * The service deletes dependent records owned by the user first to avoid FK issues.
+     */
     const { currentPassword } = DeleteAccountSchema.parse(req.body);
     await ProfileService.deleteAccount(Number(req.user.sub), currentPassword);
 
