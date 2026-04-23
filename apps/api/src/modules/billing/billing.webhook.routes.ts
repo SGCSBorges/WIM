@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Stripe from "stripe";
 import { prisma } from "../../libs/prisma";
+import { logger } from "../../config/logger";
 
 const router = Router();
 
@@ -106,10 +107,10 @@ router.post(
       }
 
       return res.status(200).json({ received: true });
-    } catch (e: any) {
-      // Return 200 to prevent event retry storms in dev; log server-side.
-      // In prod you might want 500 + idempotency.
-      return res.status(200).json({ received: true, error: e?.message });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      logger.error({ err: e, eventType: event.type }, "[stripe-webhook] handler error");
+      return res.status(500).json({ error: message });
     }
   }
 );

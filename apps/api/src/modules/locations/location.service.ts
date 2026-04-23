@@ -1,5 +1,6 @@
 import { prisma } from "../../libs/prisma";
 import { LocationCreateInput, LocationUpdateInput } from "./location.schemas";
+import { createHttpError } from "../../utils/http-error";
 
 export const LocationService = {
   list: (ownerUserId: number) =>
@@ -62,16 +63,8 @@ export const LocationService = {
       prisma.article.findFirst({ where: { articleId, ownerUserId } }),
     ]);
 
-    if (!location) {
-      const err: any = new Error("Location not found");
-      err.status = 404;
-      throw err;
-    }
-    if (!article) {
-      const err: any = new Error("Article not found");
-      err.status = 404;
-      throw err;
-    }
+    if (!location) throw createHttpError(404, "Location not found");
+    if (!article) throw createHttpError(404, "Article not found");
 
     return prisma.articleLocation.upsert({
       where: { articleId_locationId: { articleId, locationId } },
@@ -88,11 +81,7 @@ export const LocationService = {
     const location = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
     });
-    if (!location) {
-      const err: any = new Error("Location not found");
-      err.status = 404;
-      throw err;
-    }
+    if (!location) throw createHttpError(404, "Location not found");
     await prisma.articleLocation.delete({
       where: { articleId_locationId: { articleId, locationId } },
     });
@@ -103,11 +92,7 @@ export const LocationService = {
     const location = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
     });
-    if (!location) {
-      const err: any = new Error("Location not found");
-      err.status = 404;
-      throw err;
-    }
+    if (!location) throw createHttpError(404, "Location not found");
 
     const rows = await prisma.articleLocation.findMany({
       where: { locationId },

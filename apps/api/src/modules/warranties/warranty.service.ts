@@ -2,6 +2,7 @@ import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";
 import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
+import { createHttpError } from "../../utils/http-error";
 
 export const WarrantyService = {
   list: (ownerUserId: number) =>
@@ -23,11 +24,8 @@ export const WarrantyService = {
     const existing = await prisma.garantie.findUnique({
       where: { garantieArticleId: data.garantieArticleId },
     });
-    if (existing) {
-      const err: any = new Error("Une garantie existe déjà pour cet article");
-      err.status = 409;
-      throw err;
-    }
+    if (existing)
+      throw createHttpError(409, "Une garantie existe déjà pour cet article");
 
     // Créer la garantie une seule fois
     const created = await prisma.garantie.create({
@@ -61,11 +59,7 @@ export const WarrantyService = {
     const current = await prisma.garantie.findFirst({
       where: { garantieId: id, ownerUserId },
     });
-    if (!current) {
-      const err: any = new Error("Garantie non trouvée");
-      err.status = 404;
-      throw err;
-    }
+    if (!current) throw createHttpError(404, "Garantie non trouvée");
 
     const patch: any = { ...data };
     // Recalculate fin if either dateAchat or duration changes (use current for missing)
@@ -102,11 +96,7 @@ export const WarrantyService = {
     const current = await prisma.garantie.findFirst({
       where: { garantieId: id, ownerUserId },
     });
-    if (!current) {
-      const err: any = new Error("Garantie non trouvée");
-      err.status = 404;
-      throw err;
-    }
+    if (!current) throw createHttpError(404, "Garantie non trouvée");
     if (current) {
       await AlertService.cancelForWarranty({
         ownerUserId: current.ownerUserId,

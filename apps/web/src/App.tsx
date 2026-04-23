@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import ArticlesList from "./components/articles/ArticlesList";
 import Dashboard from "./components/dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
@@ -16,28 +17,18 @@ import { useTheme } from "./theme/theme";
 export default function App() {
   const { t, language, setLanguage } = useI18n();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [currentView, setCurrentView] = useState<
-    | "dashboard"
-    | "articles"
-    | "home"
-    | "admin"
-    | "warranties"
-    | "attachments"
-    | "alerts"
-    | "sharing"
-    | "profile"
-  >("home");
-
-  // Real authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return authAPI.isAuthenticated();
   });
 
   const [role, setRole] = useState(() => authAPI.getRole());
 
-  // If user returns from Stripe, refresh role from backend.
+  // On mount, verify role from server to prevent localStorage spoofing.
   useEffect(() => {
+    if (!authAPI.isAuthenticated()) return;
     const url = new URL(window.location.href);
     const stripeResult = url.searchParams.get("stripe");
     if (stripeResult === "success") {
@@ -46,32 +37,26 @@ export default function App() {
         url.searchParams.delete("stripe");
         window.history.replaceState({}, document.title, url.toString());
       });
+    } else {
+      billingAPI.refreshRoleFromServer().then((verifiedRole) => {
+        setRole(verifiedRole);
+      });
     }
   }, []);
-
-  // Prevent manual access to gated views.
-  useEffect(() => {
-    if (currentView === "admin" && role !== "ADMIN") {
-      setCurrentView("home");
-    }
-    if (currentView === "sharing" && role !== "POWER_USER") {
-      setCurrentView("home");
-    }
-  }, [currentView, role]);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
     setRole(authAPI.getRole());
+    navigate("/");
   };
 
   const handleLogout = () => {
     authAPI.logout();
     setIsAuthenticated(false);
     setRole(null);
-    setCurrentView("home");
+    navigate("/");
   };
 
-  // Login screen
   if (!isAuthenticated) {
     return <LoginForm onLogin={handleLogin} />;
   }
@@ -85,6 +70,17 @@ export default function App() {
     }
   };
 
+  const navLink = (path: string, label: string) => (
+    <button
+      onClick={() => navigate(path)}
+      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+        location.pathname === path ? "ui-nav-item-active" : "ui-btn-ghost"
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -94,89 +90,14 @@ export default function App() {
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-semibold">{t("app.title")}</h1>
               <div className="flex space-x-4">
-                <button
-                  onClick={() => setCurrentView("home")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "home"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.home")}
-                </button>
-                <button
-                  onClick={() => setCurrentView("dashboard")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "dashboard"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.dashboard")}
-                </button>
-                <button
-                  onClick={() => setCurrentView("articles")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "articles"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.articles")}
-                </button>
-                <button
-                  onClick={() => setCurrentView("warranties")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "warranties"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.warranties")}
-                </button>
-                <button
-                  onClick={() => setCurrentView("attachments")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "attachments"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.attachments")}
-                </button>
-                <button
-                  onClick={() => setCurrentView("alerts")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "alerts"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.alerts")}
-                </button>
-
-                <button
-                  onClick={() => setCurrentView("profile")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "profile"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.profile")}
-                </button>
-                {role === "POWER_USER" && (
-                  <button
-                    onClick={() => setCurrentView("sharing")}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      currentView === "sharing"
-                        ? "ui-nav-item-active"
-                        : "ui-btn-ghost"
-                    }`}
-                  >
-                    {t("nav.sharing")}
-                  </button>
-                )}
+                {navLink("/", t("nav.home"))}
+                {navLink("/dashboard", t("nav.dashboard"))}
+                {navLink("/articles", t("nav.articles"))}
+                {navLink("/warranties", t("nav.warranties"))}
+                {navLink("/attachments", t("nav.attachments"))}
+                {navLink("/alerts", t("nav.alerts"))}
+                {navLink("/profile", t("nav.profile"))}
+                {role === "POWER_USER" && navLink("/sharing", t("nav.sharing"))}
               </div>
             </div>
 
@@ -205,18 +126,7 @@ export default function App() {
                 <option value="ocean">{t("theme.ocean")}</option>
               </select>
 
-              {role === "ADMIN" && (
-                <button
-                  onClick={() => setCurrentView("admin")}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === "admin"
-                      ? "ui-nav-item-active"
-                      : "ui-btn-ghost"
-                  }`}
-                >
-                  {t("nav.admin")}
-                </button>
-              )}
+              {role === "ADMIN" && navLink("/admin", t("nav.admin"))}
 
               <button
                 onClick={handleLogout}
@@ -230,139 +140,161 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {currentView === "alerts" && <AlertsView />}
-        {currentView === "profile" && <ProfileView />}
-        {currentView === "home" && (
-          <div>
-            <header className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight">
-                {t("home.welcomeTitle")}
-              </h1>
-              <p className="ui-text-muted">{t("home.welcomeSubtitle")}</p>
-            </header>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div>
+                <header className="mb-8">
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    {t("home.welcomeTitle")}
+                  </h1>
+                  <p className="ui-text-muted">{t("home.welcomeSubtitle")}</p>
+                </header>
 
-            {role === "USER" && (
-              <section className="mb-8">
-                <div className="ui-card rounded-xl p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <h2 className="font-semibold">
-                        {t("home.upgrade.title")}
-                      </h2>
-                      <p className="text-sm ui-text-muted">
-                        {t("home.upgrade.subtitle")}
-                      </p>
+                {role === "USER" && (
+                  <section className="mb-8">
+                    <div className="ui-card rounded-xl p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <h2 className="font-semibold">
+                            {t("home.upgrade.title")}
+                          </h2>
+                          <p className="text-sm ui-text-muted">
+                            {t("home.upgrade.subtitle")}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => startUpgrade("monthly")}
+                            className="ui-btn-primary px-4 py-2 text-sm rounded"
+                          >
+                            {t("home.upgrade.buyMonthly")}
+                          </button>
+                          <button
+                            onClick={() => startUpgrade("yearly")}
+                            className="ui-btn-primary px-4 py-2 text-sm rounded"
+                          >
+                            {t("home.upgrade.buyYearly")}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => startUpgrade("monthly")}
-                        className="ui-btn-primary px-4 py-2 text-sm rounded"
-                      >
-                        {t("home.upgrade.buyMonthly")}
-                      </button>
-                      <button
-                        onClick={() => startUpgrade("yearly")}
-                        className="ui-btn-primary px-4 py-2 text-sm rounded"
-                      >
-                        {t("home.upgrade.buyYearly")}
-                      </button>
-                    </div>
+                  </section>
+                )}
+
+                <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div
+                    className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                    onClick={() => navigate("/articles")}
+                  >
+                    <h2 className="font-semibold text-lg mb-2 ui-title">
+                      📦 {t("home.card.inventory.title")}
+                    </h2>
+                    <p className="text-sm ui-text-muted mb-3">
+                      {t("home.card.inventory.subtitle")}
+                    </p>
+                    <button className="ui-btn-primary px-3 py-1 text-sm rounded">
+                      {t("home.card.inventory.cta")}
+                    </button>
                   </div>
+                  <div
+                    className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                    onClick={() => navigate("/dashboard")}
+                  >
+                    <h2 className="font-semibold text-lg mb-2 ui-title">
+                      📊 {t("home.card.dashboard.title")}
+                    </h2>
+                    <p className="text-sm ui-text-muted mb-3">
+                      {t("home.card.dashboard.subtitle")}
+                    </p>
+                    <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
+                      {t("home.card.dashboard.cta")}
+                    </button>
+                  </div>
+
+                  <div className="ui-card rounded-xl p-4">
+                    <h2 className="font-semibold text-lg mb-2 ui-title">
+                      🛡️ {t("home.card.warranties.title")}
+                    </h2>
+                    <p className="text-sm ui-text-muted mb-3">
+                      {t("home.card.warranties.subtitle")}
+                    </p>
+                    <button
+                      onClick={() => navigate("/warranties")}
+                      className="ui-btn-primary px-3 py-1 text-sm rounded"
+                    >
+                      {t("home.card.warranties.cta")}
+                    </button>
+                  </div>
+
+                  <div
+                    className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                    onClick={() => navigate("/attachments")}
+                  >
+                    <h2 className="font-semibold text-lg mb-2 ui-title">
+                      📎 {t("home.card.attachments.title")}
+                    </h2>
+                    <p className="text-sm ui-text-muted mb-3">
+                      {t("home.card.attachments.subtitle")}
+                    </p>
+                    <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
+                      {t("home.card.attachments.cta")}
+                    </button>
+                  </div>
+
+                  {role === "POWER_USER" && (
+                    <div
+                      className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                      onClick={() => navigate("/sharing")}
+                    >
+                      <h2 className="font-semibold text-lg mb-2 ui-title">
+                        🤝 {t("home.card.sharing.title")}
+                      </h2>
+                      <p className="text-sm ui-text-muted mb-3">
+                        {t("home.card.sharing.subtitle")}
+                      </p>
+                      <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
+                        {t("home.card.sharing.cta")}
+                      </button>
+                    </div>
+                  )}
+                </section>
+              </div>
+            }
+          />
+
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/articles" element={<ArticlesList />} />
+          <Route path="/warranties" element={<WarrantiesView />} />
+          <Route path="/attachments" element={<AttachmentsList />} />
+          <Route path="/alerts" element={<AlertsView />} />
+          <Route path="/profile" element={<ProfileView />} />
+          <Route
+            path="/sharing"
+            element={
+              role === "POWER_USER" ? (
+                <div className="space-y-6">
+                  <SharesList />
+                  <SharedArticlesView />
                 </div>
-              </section>
-            )}
-
-            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div
-                className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
-                onClick={() => setCurrentView("articles")}
-              >
-                <h2 className="font-semibold text-lg mb-2 ui-title">
-                  📦 {t("home.card.inventory.title")}
-                </h2>
-                <p className="text-sm ui-text-muted mb-3">
-                  {t("home.card.inventory.subtitle")}
-                </p>
-                <button className="ui-btn-primary px-3 py-1 text-sm rounded">
-                  {t("home.card.inventory.cta")}
-                </button>
-              </div>
-              <div
-                className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
-                onClick={() => setCurrentView("dashboard")}
-              >
-                <h2 className="font-semibold text-lg mb-2 ui-title">
-                  📊 {t("home.card.dashboard.title")}
-                </h2>
-                <p className="text-sm ui-text-muted mb-3">
-                  {t("home.card.dashboard.subtitle")}
-                </p>
-                <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
-                  {t("home.card.dashboard.cta")}
-                </button>
-              </div>
-
-              <div className="ui-card rounded-xl p-4">
-                <h2 className="font-semibold text-lg mb-2 ui-title">
-                  🛡️ {t("home.card.warranties.title")}
-                </h2>
-                <p className="text-sm ui-text-muted mb-3">
-                  {t("home.card.warranties.subtitle")}
-                </p>
-                <button
-                  onClick={() => setCurrentView("warranties")}
-                  className="ui-btn-primary px-3 py-1 text-sm rounded"
-                >
-                  {t("home.card.warranties.cta")}
-                </button>
-              </div>
-
-              <div
-                className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
-                onClick={() => setCurrentView("attachments")}
-              >
-                <h2 className="font-semibold text-lg mb-2 ui-title">
-                  📎 {t("home.card.attachments.title")}
-                </h2>
-                <p className="text-sm ui-text-muted mb-3">
-                  {t("home.card.attachments.subtitle")}
-                </p>
-                <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
-                  {t("home.card.attachments.cta")}
-                </button>
-              </div>
-
-              {role === "POWER_USER" && (
-                <div
-                  className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
-                  onClick={() => setCurrentView("sharing")}
-                >
-                  <h2 className="font-semibold text-lg mb-2 ui-title">
-                    🤝 {t("home.card.sharing.title")}
-                  </h2>
-                  <p className="text-sm ui-text-muted mb-3">
-                    {t("home.card.sharing.subtitle")}
-                  </p>
-                  <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
-                    {t("home.card.sharing.cta")}
-                  </button>
-                </div>
-              )}
-            </section>
-          </div>
-        )}
-
-        {currentView === "dashboard" && <Dashboard />}
-        {currentView === "articles" && <ArticlesList />}
-        {currentView === "admin" && <AdminUsers />}
-        {currentView === "warranties" && <WarrantiesView />}
-        {currentView === "attachments" && <AttachmentsList />}
-        {currentView === "sharing" && (
-          <div className="space-y-6">
-            <SharesList />
-            <SharedArticlesView />
-          </div>
-        )}
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              role === "ADMIN" ? (
+                <AdminUsers />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
     </div>
   );

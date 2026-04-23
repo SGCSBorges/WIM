@@ -2,14 +2,20 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 
-const origin = process.env.CORS_ORIGIN?.split(",").map((s) => s.trim());
+const rawOrigin = process.env.CORS_ORIGIN?.split(",").map((s) => s.trim());
+const allowedOrigins =
+  rawOrigin && rawOrigin.length > 0
+    ? rawOrigin
+    : process.env.NODE_ENV !== "production"
+      ? true // dev convenience: allow all origins when CORS_ORIGIN not set
+      : [];  // production: block all cross-origin requests if not configured
 
 export const security = {
   helmet: helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
   }),
   cors: cors({
-    origin: origin && origin.length > 0 ? origin : true, // true = tout (à restreindre en prod)
+    origin: allowedOrigins,
     credentials: true,
   }),
   rateLimiter: rateLimit({

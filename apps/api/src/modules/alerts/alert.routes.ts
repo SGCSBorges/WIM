@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { AlerteStatus } from "@prisma/client";
 import { asyncHandler } from "../common/http";
 import { authGuard, requireRole } from "../auth/auth.middleware";
 import { AlertService } from "./alert.service";
@@ -24,7 +25,7 @@ router.get(
       ownerUserId = q.ownerUserId;
     }
 
-    res.json(await AlertService.list(ownerUserId, q.status));
+    res.json(await AlertService.list(ownerUserId, q.status as AlerteStatus | undefined));
   })
 );
 
