@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../../services/api";
 
 interface Warranty {
   garantieId: number;
@@ -31,12 +32,9 @@ const WarrantiesList: React.FC<WarrantiesListProps> = ({
 }) => {
   const [warranties, setWarranties] = useState<Warranty[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "expiration" | "article">(
-    "expiration",
-  );
-  const [filterStatus, setFilterStatus] = useState<"all" | "valid" | "expired">(
-    "all",
-  );
+  const [sortBy, setSortBy] = useState<"name" | "expiration" | "article">("expiration");
+  const [filterStatus, setFilterStatus] = useState<"all" | "valid" | "expired">("all");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchWarranties();
@@ -44,8 +42,7 @@ const WarrantiesList: React.FC<WarrantiesListProps> = ({
 
   const fetchWarranties = async () => {
     try {
-      // This would be replaced with actual API call
-      const response = await fetch("/api/warranties", {
+      const response = await fetch(`${API_BASE_URL}/warranties`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -61,25 +58,18 @@ const WarrantiesList: React.FC<WarrantiesListProps> = ({
   };
 
   const handleDelete = async (warrantyId: number) => {
-    if (window.confirm("Are you sure you want to delete this warranty?")) {
-      if (onDelete) {
-        onDelete(warrantyId);
+    setConfirmDeleteId(null);
+    if (onDelete) onDelete(warrantyId);
+    try {
+      const response = await fetch(`${API_BASE_URL}/warranties/${warrantyId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (response.ok) {
+        setWarranties(warranties.filter((w) => w.garantieId !== warrantyId));
       }
-
-      try {
-        const response = await fetch(`/api/warranties/${warrantyId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (response.ok) {
-          setWarranties(warranties.filter((w) => w.garantieId !== warrantyId));
-        }
-      } catch (error) {
-        console.error("Failed to delete warranty:", error);
-      }
+    } catch (error) {
+      console.error("Failed to delete warranty:", error);
     }
   };
 
@@ -295,12 +285,29 @@ const WarrantiesList: React.FC<WarrantiesListProps> = ({
                         Edit
                       </button>
                     )}
-                    <button
-                      onClick={() => handleDelete(warranty.garantieId)}
-                      className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                    >
-                      Delete
-                    </button>
+                    {confirmDeleteId === warranty.garantieId ? (
+                      <>
+                        <button
+                          onClick={() => handleDelete(warranty.garantieId)}
+                          className="px-2 py-1 text-xs bg-red-600 text-white rounded"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-2 py-1 text-xs border border-gray-300 rounded"
+                        >
+                          No
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(warranty.garantieId)}
+                        className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

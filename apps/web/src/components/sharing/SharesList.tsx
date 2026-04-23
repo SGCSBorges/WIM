@@ -45,9 +45,8 @@ const SharesList: React.FC<SharesListProps> = ({
   const [invites, setInvites] = useState<ShareInvite[]>([]);
   const [activeTab, setActiveTab] = useState<"shares" | "invites">("shares");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<
-    "all" | "active" | "inactive"
-  >("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [confirmRevokeId, setConfirmRevokeId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchShares();
@@ -96,30 +95,23 @@ const SharesList: React.FC<SharesListProps> = ({
   };
 
   const handleRevokeShare = async (shareId: number) => {
-    if (window.confirm(t("shares.confirmRevoke"))) {
-      if (onRevoke) {
-        onRevoke(shareId);
+    setConfirmRevokeId(null);
+    if (onRevoke) onRevoke(shareId);
+    try {
+      const share = shares.find((s) => s.inventoryShareId === shareId);
+      if (!share) return;
+      const response = await fetch(
+        `${API_BASE_URL}/shares/${share.target.userId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        },
+      );
+      if (response.ok) {
+        setShares(shares.filter((s) => s.inventoryShareId !== shareId));
       }
-
-      try {
-        const share = shares.find((s) => s.inventoryShareId === shareId);
-        if (!share) return;
-        const response = await fetch(
-          `${API_BASE_URL}/shares/${share.target.userId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          },
-        );
-
-        if (response.ok) {
-          setShares(shares.filter((s) => s.inventoryShareId !== shareId));
-        }
-      } catch (error) {
-        console.error("Failed to revoke share:", error);
-      }
+    } catch (error) {
+      console.error("Failed to revoke share:", error);
     }
   };
 
@@ -322,7 +314,7 @@ const SharesList: React.FC<SharesListProps> = ({
                     )}
                   </div>
 
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 items-center">
                     {onEdit && share.active && (
                       <button
                         onClick={() => onEdit(share)}
@@ -332,14 +324,30 @@ const SharesList: React.FC<SharesListProps> = ({
                       </button>
                     )}
                     {share.active && (
-                      <button
-                        onClick={() =>
-                          handleRevokeShare(share.inventoryShareId)
-                        }
-                        className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                      >
-                        {t("shares.action.revoke")}
-                      </button>
+                      confirmRevokeId === share.inventoryShareId ? (
+                        <>
+                          <span className="text-xs text-red-700">{t("shares.confirmRevoke")}</span>
+                          <button
+                            onClick={() => handleRevokeShare(share.inventoryShareId)}
+                            className="px-2 py-1 text-xs bg-red-600 text-white rounded"
+                          >
+                            {t("common.yes")}
+                          </button>
+                          <button
+                            onClick={() => setConfirmRevokeId(null)}
+                            className="px-2 py-1 text-xs border border-gray-300 rounded"
+                          >
+                            {t("common.no")}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmRevokeId(share.inventoryShareId)}
+                          className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                        >
+                          {t("shares.action.revoke")}
+                        </button>
+                      )
                     )}
                   </div>
                 </div>
