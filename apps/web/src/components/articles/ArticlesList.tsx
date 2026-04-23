@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from "react";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
-import { API_BASE_URL, articlesAPI, locationsAPI } from "../../services/api";
+import { articlesAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 
 type ArticleShareStatus = {
@@ -45,7 +45,6 @@ interface Location {
 const ArticlesList: React.FC = () => {
   const { t } = useI18n();
 
-  // Helper function to determine warranty status
   const getWarrantyStatus = (garantie: Article["garantie"]) => {
     if (!garantie || !garantie.garantieFin) {
       return { status: "none", label: t("common.no"), color: "gray" };
@@ -57,51 +56,30 @@ const ArticlesList: React.FC = () => {
     thirtyDaysFromNow.setDate(now.getDate() + 30);
 
     if (endDate < now) {
-      return {
-        status: "expired",
-        label: t("articles.warranty.expired"),
-        color: "red",
-      };
+      return { status: "expired", label: t("articles.warranty.expired"), color: "red" };
     } else if (endDate <= thirtyDaysFromNow) {
-      return {
-        status: "expiring-soon",
-        label: t("articles.warranty.expiringSoon"),
-        color: "yellow",
-      };
+      return { status: "expiring-soon", label: t("articles.warranty.expiringSoon"), color: "yellow" };
     } else {
-      return {
-        status: "valid",
-        label: t("articles.warranty.valid"),
-        color: "green",
-      };
+      return { status: "valid", label: t("articles.warranty.valid"), color: "green" };
     }
   };
+
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
-  const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(
-    null,
-  );
-
-  const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(
-    null,
-  );
-  const [shareStatusByArticleId, setShareStatusByArticleId] = useState<
-    Record<number, ArticleShareStatus>
-  >({});
-  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<
-    number | null
-  >(null);
+  const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(null);
+  const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(null);
+  const [shareStatusByArticleId, setShareStatusByArticleId] = useState<Record<number, ArticleShareStatus>>({});
+  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<number | null>(null);
+  const [confirmUnshareArticleId, setConfirmUnshareArticleId] = useState<number | null>(null);
+  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<number | null>(null);
 
   const [locations, setLocations] = useState<Location[]>([]);
-  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
-    undefined,
-  );
+  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(undefined);
 
-  // Fetch articles from API
   const fetchArticles = async () => {
     try {
       setLoading(true);
@@ -110,7 +88,6 @@ const ArticlesList: React.FC = () => {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.errorOccurred"));
-      console.error("Error fetching articles:", err);
     } finally {
       setLoading(false);
     }
@@ -130,57 +107,30 @@ const ArticlesList: React.FC = () => {
   };
 
   const loadShareStatus = async (articleId: number) => {
-    const token = localStorage.getItem("token");
     setSharesLoadingArticleId(articleId);
     try {
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/shares`, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Failed to load shares (${res.status})`);
-      }
-
-      const data = (await res.json()) as ArticleShareStatus;
+      const data = await articlesAPI.getShares(articleId) as ArticleShareStatus;
       setShareStatusByArticleId((prev) => ({ ...prev, [articleId]: data }));
     } catch (e: any) {
-      alert(e?.message || "Failed to load shares");
+      setError(e?.message || t("common.errorOccurred"));
     } finally {
       setSharesLoadingArticleId(null);
     }
   };
 
   const handleUnshareAll = async (articleId: number) => {
-    if (!confirm("Unshare this article from all POWER_USERs?")) {
-      return;
-    }
-
-    const token = localStorage.getItem("token");
+    setConfirmUnshareArticleId(null);
     setShareBusyArticleId(articleId);
     try {
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/share/0`, {
-        method: "DELETE",
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Unshare failed (${res.status})`);
-      }
-
+      await articlesAPI.setSharedWithPowerUsers(articleId, false);
       await loadShareStatus(articleId);
     } catch (e: any) {
-      alert(e?.message || "Unshare failed");
+      setError(e?.message || t("common.errorOccurred"));
     } finally {
       setShareBusyArticleId(null);
     }
   };
 
-  // Create or update article
   const handleSubmit = async (articleData: Omit<Article, "articleId">) => {
     try {
       if (editingArticle) {
@@ -188,36 +138,24 @@ const ArticlesList: React.FC = () => {
       } else {
         await articlesAPI.create(articleData);
       }
-
-      // Refresh articles list
       await fetchArticles();
-
-      // Reset form
       setShowForm(false);
       setEditingArticle(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.errorOccurred"));
-      console.error("Error submitting article:", err);
     }
   };
 
-  // Delete article
   const handleDelete = async (articleId: number) => {
-    if (!confirm(t("articles.delete.confirm"))) {
-      return;
-    }
-
+    setConfirmDeleteArticleId(null);
     try {
       await articlesAPI.delete(articleId);
-      // Refresh articles list
       await fetchArticles();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("common.errorOccurred"));
-      console.error("Error deleting article:", err);
     }
   };
 
-  // Load articles on component mount
   useEffect(() => {
     fetchLocations();
   }, []);
@@ -238,9 +176,7 @@ const ArticlesList: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {t("articles.title")}
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("articles.title")}</h1>
           <p className="text-gray-600">{t("articles.subtitle")}</p>
         </div>
 
@@ -248,9 +184,7 @@ const ArticlesList: React.FC = () => {
           <select
             value={locationFilterId ?? ""}
             onChange={(e) =>
-              setLocationFilterId(
-                e.target.value ? Number(e.target.value) : undefined,
-              )
+              setLocationFilterId(e.target.value ? Number(e.target.value) : undefined)
             }
             className="px-3 py-2 border border-gray-300 rounded-md"
           >
@@ -346,22 +280,16 @@ const ArticlesList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {(() => {
-                          const warrantyStatus = getWarrantyStatus(
-                            article.garantie,
-                          );
+                          const ws = getWarrantyStatus(article.garantie);
                           const colorClasses = {
                             gray: "bg-gray-50 text-gray-600 border-gray-200",
-                            green:
-                              "bg-green-50 text-green-700 border-green-200",
-                            yellow:
-                              "bg-yellow-50 text-yellow-700 border-yellow-200",
+                            green: "bg-green-50 text-green-700 border-green-200",
+                            yellow: "bg-yellow-50 text-yellow-700 border-yellow-200",
                             red: "bg-red-50 text-red-700 border-red-200",
                           };
                           return (
-                            <span
-                              className={`px-2 py-1 rounded border ${colorClasses[warrantyStatus.color as keyof typeof colorClasses]}`}
-                            >
-                              {warrantyStatus.label}
+                            <span className={`px-2 py-1 rounded border ${colorClasses[ws.color as keyof typeof colorClasses]}`}>
+                              {ws.label}
                             </span>
                           );
                         })()}
@@ -411,25 +339,40 @@ const ArticlesList: React.FC = () => {
                               loadShareStatus(article.articleId);
                             }
                           }}
-                          disabled={
-                            sharesLoadingArticleId === article.articleId
-                          }
+                          disabled={sharesLoadingArticleId === article.articleId}
                           className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider mr-3"
-                          title="Manage sharing (owner-only)"
                         >
                           {sharesLoadingArticleId === article.articleId
                             ? t("common.loading")
                             : openSharesArticleId === article.articleId
-                              ? "Hide shares"
-                              : "Shares"}
+                              ? t("articles.shares.hideButton")
+                              : t("articles.shares.button")}
                         </button>
 
-                        <button
-                          onClick={() => handleDelete(article.articleId)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          {t("common.delete")}
-                        </button>
+                        {confirmDeleteArticleId === article.articleId ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span className="text-xs text-red-700">{t("articles.delete.confirm")}</span>
+                            <button
+                              onClick={() => handleDelete(article.articleId)}
+                              className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                            >
+                              {t("common.yes")}
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteArticleId(null)}
+                              className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                            >
+                              {t("common.no")}
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteArticleId(article.articleId)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            {t("common.delete")}
+                          </button>
+                        )}
                       </td>
                     </tr>
 
@@ -438,19 +381,16 @@ const ArticlesList: React.FC = () => {
                         <td colSpan={6} className="px-6 py-4 text-sm">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                              <div className="font-medium">Sharing</div>
+                              <div className="font-medium">{t("articles.shares.title")}</div>
                               <div className="text-xs ui-text-muted">
-                                Owner-only. Sharing makes this article visible
-                                to all POWER_USER accounts (read-only).
+                                {t("articles.shares.description")}
                               </div>
                             </div>
                             <button
                               type="button"
                               className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
                               onClick={() => loadShareStatus(article.articleId)}
-                              disabled={
-                                sharesLoadingArticleId === article.articleId
-                              }
+                              disabled={sharesLoadingArticleId === article.articleId}
                             >
                               {sharesLoadingArticleId === article.articleId
                                 ? t("common.loading")
@@ -459,30 +399,46 @@ const ArticlesList: React.FC = () => {
                           </div>
 
                           <div className="mt-3 space-y-2">
-                            {shareStatusByArticleId[article.articleId]
-                              ?.sharedWithPowerUsers ? (
+                            {shareStatusByArticleId[article.articleId]?.sharedWithPowerUsers ? (
                               <div className="flex items-center justify-between gap-3">
                                 <div className="text-sm ui-text-muted">
-                                  Shared with all POWER_USERs.
+                                  {t("articles.shares.sharedStatus")}
                                 </div>
-                                <button
-                                  type="button"
-                                  className="text-red-600 hover:text-red-900"
-                                  disabled={
-                                    shareBusyArticleId === article.articleId
-                                  }
-                                  onClick={() =>
-                                    handleUnshareAll(article.articleId)
-                                  }
-                                >
-                                  {shareBusyArticleId === article.articleId
-                                    ? t("common.loading")
-                                    : "Unshare"}
-                                </button>
+                                {confirmUnshareArticleId === article.articleId ? (
+                                  <span className="inline-flex items-center gap-2">
+                                    <span className="text-xs text-red-700">{t("articles.shares.unshareConfirm")}</span>
+                                    <button
+                                      type="button"
+                                      className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                                      disabled={shareBusyArticleId === article.articleId}
+                                      onClick={() => handleUnshareAll(article.articleId)}
+                                    >
+                                      {t("common.yes")}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                                      onClick={() => setConfirmUnshareArticleId(null)}
+                                    >
+                                      {t("common.no")}
+                                    </button>
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="text-red-600 hover:text-red-900"
+                                    disabled={shareBusyArticleId === article.articleId}
+                                    onClick={() => setConfirmUnshareArticleId(article.articleId)}
+                                  >
+                                    {shareBusyArticleId === article.articleId
+                                      ? t("common.loading")
+                                      : t("articles.shares.unshareButton")}
+                                  </button>
+                                )}
                               </div>
                             ) : (
                               <div className="text-sm ui-text-muted">
-                                Not shared.
+                                {t("articles.shares.notSharedStatus")}
                               </div>
                             )}
                           </div>

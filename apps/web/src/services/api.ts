@@ -208,6 +208,35 @@ export const articlesAPI = {
     return response.json();
   },
 
+  async getShares(articleId: number) {
+    const response = await fetch(`${API_BASE_URL}/articles/${articleId}/shares`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch article shares");
+    return response.json();
+  },
+
+  async removeShare(articleId: number, shareId: number) {
+    const response = await fetch(
+      `${API_BASE_URL}/articles/${articleId}/share/${shareId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok) throw new Error("Failed to remove share");
+  },
+
+  async setSharedWithPowerUsers(articleId: number, shared: boolean) {
+    const response = await fetch(`${API_BASE_URL}/articles/${articleId}/share`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ shared }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to update sharing");
+    }
+    return response.json();
+  },
+
   async delete(id: number) {
     const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
       method: "DELETE",
@@ -431,6 +460,95 @@ export const statisticsAPI = {
   },
 };
 
+// Profile API
+export const profileAPI = {
+  async getMe(): Promise<{ userId: number; email: string; role: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to load profile");
+    }
+    return response.json();
+  },
+
+  async updateEmail(email: string, currentPassword: string) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me/email`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ email, currentPassword }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to update email");
+    }
+    return response.json();
+  },
+
+  async updatePassword(currentPassword: string, newPassword: string) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me/password`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to update password");
+    }
+    return response.json().catch(() => null);
+  },
+
+  async deleteAccount(currentPassword: string) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
+      method: "DELETE",
+      headers: getHeaders(),
+      body: JSON.stringify({ currentPassword }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to delete account");
+    }
+  },
+};
+
+// Admin API
+export const adminAPI = {
+  async listUsers() {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/users`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch users");
+    }
+    return response.json();
+  },
+
+  async getUserInventory(userId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/users/${userId}/inventory`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch inventory");
+    }
+    return response.json();
+  },
+
+  async deleteUser(userId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/users/${userId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to delete user");
+    }
+  },
+};
+
 // Billing / Stripe
 export const billingAPI = {
   async createPowerUserCheckoutSession(
@@ -457,6 +575,30 @@ export const billingAPI = {
     }
 
     return response.json();
+  },
+
+  async openPortal(): Promise<{ url: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/billing/portal`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to open billing portal");
+    }
+    return response.json();
+  },
+
+  async cancelAtPeriodEnd() {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/billing/cancel/power-user`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to cancel subscription");
+    }
+    return response.json().catch(() => null);
   },
 
   async refreshRoleFromServer(): Promise<string | null> {

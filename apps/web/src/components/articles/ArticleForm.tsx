@@ -71,6 +71,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
   const [newLocationName, setNewLocationName] = useState("");
   const [creatingLocation, setCreatingLocation] = useState(false);
+  const [locCreateError, setLocCreateError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<Omit<Article, "articleId">>({
     articleNom: article?.articleNom || "",
@@ -223,10 +225,26 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
 
     if (selectedLocationIds.length === 0) {
-      alert(t("articleForm.locations.required"));
+      setFormError(t("articleForm.locations.required"));
       return;
+    }
+
+    if (warrantyEnabled) {
+      if (!warrantyNom.trim()) {
+        setFormError(t("articleForm.warranty.requiredName"));
+        return;
+      }
+      if (!warrantyDateAchat) {
+        setFormError(t("articleForm.warranty.requiredDate"));
+        return;
+      }
+      if (!warrantyDuration || warrantyDuration < 1) {
+        setFormError(t("articleForm.warranty.requiredDuration"));
+        return;
+      }
     }
 
     // Convert empty strings to null for optional fields
@@ -252,21 +270,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           : {}),
     };
 
-    if (warrantyEnabled) {
-      if (!warrantyNom.trim()) {
-        alert(t("articleForm.warranty.requiredName"));
-        return;
-      }
-      if (!warrantyDateAchat) {
-        alert(t("articleForm.warranty.requiredDate"));
-        return;
-      }
-      if (!warrantyDuration || warrantyDuration < 1) {
-        alert(t("articleForm.warranty.requiredDuration"));
-        return;
-      }
-    }
-
     void onSubmit(submitData);
   };
 
@@ -281,6 +284,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     if (!name) return;
     try {
       setCreatingLocation(true);
+      setLocCreateError(null);
       const created = await locationsAPI.create({ name });
       const loc: Location = {
         locationId: created.locationId,
@@ -292,7 +296,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       );
       setNewLocationName("");
     } catch (e) {
-      alert(e instanceof Error ? e.message : t("locations.error.create"));
+      setLocCreateError(e instanceof Error ? e.message : t("locations.error.create"));
     } finally {
       setCreatingLocation(false);
     }
@@ -580,7 +584,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                 : t("articleForm.location.create")}
             </button>
           </div>
+          {locCreateError && (
+            <p className="mt-1 text-sm text-red-600">{locCreateError}</p>
+          )}
         </div>
+
+        {formError && (
+          <p className="text-sm text-red-600">{formError}</p>
+        )}
 
         <div className="flex gap-3 pt-4">
           <button

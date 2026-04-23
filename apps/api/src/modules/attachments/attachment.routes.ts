@@ -9,7 +9,7 @@ import {
   AttachmentUpdateSchema,
 } from "./attachment.schemas";
 import { auditAction } from "../common/audit";
-import { authGuard } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
 
 const router = Router();
 
@@ -18,8 +18,8 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (_req: any, _file: any, cb: any) => cb(null, UPLOAD_DIR),
-    filename: (_req: any, file: any, cb: any) => {
+    destination: (_req: AuthRequest, _file: any, cb: any) => cb(null, UPLOAD_DIR),
+    filename: (_req: AuthRequest, file: any, cb: any) => {
       const safeBase = path
         .basename(file.originalname)
         .replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -55,7 +55,7 @@ const upload = multer({
 router.get(
   "/",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const filters: { articleId?: number; garantieId?: number } = {};
     if (req.query.articleId) filters.articleId = Number(req.query.articleId);
     if (req.query.garantieId) filters.garantieId = Number(req.query.garantieId);
@@ -72,7 +72,7 @@ router.get(
 router.get(
   "/:id",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
     const attachment = await AttachmentService.get(id, req.user.sub);
     if (!attachment)
@@ -88,7 +88,7 @@ router.get(
 router.post(
   "/",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = AttachmentCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
@@ -116,7 +116,7 @@ router.post(
   "/upload",
   authGuard,
   upload.single("file"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const file = req.file as any;
     if (!file) return res.status(400).json({ error: "Missing file" });
 
@@ -160,7 +160,7 @@ router.post(
 router.put(
   "/:id",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
     const bodyData = AttachmentUpdateSchema.omit({ ownerUserId: true }).parse(
       req.body
@@ -191,7 +191,7 @@ router.put(
 router.delete(
   "/:id",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
     const removeFile =
       String(req.query?.removeFile || "false").toLowerCase() === "true";
@@ -229,7 +229,7 @@ router.delete(
 router.get(
   "/warranty/:garantieId",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const garantieId = Number(req.params.garantieId);
     const attachments = await AttachmentService.getForWarranty(
       garantieId,

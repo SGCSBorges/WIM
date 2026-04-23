@@ -1,5 +1,6 @@
 import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
+import Stripe from "stripe";
 import { createHttpError } from "../../utils/http-error";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
@@ -56,6 +57,17 @@ export const ProfileService = {
 
     const valid = await bcrypt.compare(currentPassword, user.password);
     if (!valid) throw createHttpError(401, "Mot de passe invalide");
+
+    // Cancel active Stripe subscription before deleting so the user is not
+    // charged again after account removal.
+    if (user.stripeSubscriptionId && process.env.STRIPE_SECRET_KEY) {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+      } catch {
+        // Log but don't block deletion — subscription may already be cancelled.
+      }
+    }
 
     // Delete in a safe order to avoid FK constraint issues.
     // Note: Many relations are configured with onDelete: Cascade, but explicit deletions

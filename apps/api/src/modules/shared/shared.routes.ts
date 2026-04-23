@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../../libs/prisma";
-import { authGuard, requireRole } from "../auth/auth.middleware";
+import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 
 const router = Router();
@@ -15,7 +15,7 @@ router.get(
   "/articles",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const viewerUserId = Number(req.user.sub);
 
     const articles = await prisma.article.findMany({
