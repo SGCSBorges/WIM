@@ -75,6 +75,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [creatingLocation, setCreatingLocation] = useState(false);
   const [locCreateError, setLocCreateError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<Omit<Article, "articleId">>({
     articleNom: article?.articleNom || "",
@@ -268,7 +269,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           : {}),
     };
 
-    void onSubmit(submitData);
+    setSubmitting(true);
+    try {
+      await onSubmit(submitData);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : t("common.errorOccurred"));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const toggleLocation = (id: number) => {
@@ -594,11 +602,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            disabled={submitting}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {article
-              ? t("articleForm.submit.update")
-              : t("articleForm.submit.create")}
+            {submitting
+              ? t("common.loading")
+              : article
+                ? t("articleForm.submit.update")
+                : t("articleForm.submit.create")}
           </button>
 
           {onCancel && (

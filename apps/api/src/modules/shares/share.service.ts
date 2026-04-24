@@ -84,6 +84,24 @@ export const ShareService = {
     });
   },
 
+  async listSentInvites(ownerUserId: number) {
+    return prisma.shareInvite.findMany({
+      where: { ownerUserId },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
+  async revokeInvite(inviteId: number, ownerUserId: number) {
+    const invite = await prisma.shareInvite.findFirst({
+      where: { shareInviteId: inviteId, ownerUserId },
+    });
+    if (!invite) throw createHttpError(404, "Invite not found");
+    await prisma.shareInvite.update({
+      where: { shareInviteId: inviteId },
+      data: { status: "REVOKED" },
+    });
+  },
+
   async updateShare(
     ownerUserId: number,
     targetUserId: number,

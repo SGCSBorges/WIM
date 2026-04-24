@@ -41,7 +41,7 @@ const SharesList: React.FC<SharesListProps> = ({
 }) => {
   const { t } = useI18n();
   const [shares, setShares] = useState<Share[]>([]);
-  const [invites] = useState<ShareInvite[]>([]);
+  const [invites, setInvites] = useState<ShareInvite[]>([]);
   const [activeTab, setActiveTab] = useState<"shares" | "invites">("shares");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
@@ -50,6 +50,7 @@ const SharesList: React.FC<SharesListProps> = ({
 
   useEffect(() => {
     fetchShares();
+    fetchInvites();
   }, []);
 
   const fetchShares = async () => {
@@ -59,6 +60,15 @@ const SharesList: React.FC<SharesListProps> = ({
       setShares(data as Share[]);
     } catch (e: any) {
       setError(e?.message || t("common.errorOccurred"));
+    }
+  };
+
+  const fetchInvites = async () => {
+    try {
+      const data = await sharesAPI.getSentInvites();
+      setInvites(data as ShareInvite[]);
+    } catch {
+      // non-blocking: invites tab shows empty if fetch fails
     }
   };
 

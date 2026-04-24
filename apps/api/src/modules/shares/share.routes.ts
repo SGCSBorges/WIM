@@ -48,6 +48,32 @@ router.post(
   })
 );
 
+// liste les invitations envoyées par le user courant
+router.get(
+  "/invites/sent",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const rows = await ShareService.listSentInvites(req.user.sub);
+    res.json(rows);
+  })
+);
+
+// révoquer une invitation envoyée
+router.delete(
+  "/invites/:inviteId",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const inviteId = Number(req.params.inviteId);
+    await ShareService.revokeInvite(inviteId, req.user.sub);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "ShareInvite",
+      entityId: inviteId,
+    });
+    res.status(204).send();
+  })
+);
+
 // listes de partage
 router.get(
   "/owned",

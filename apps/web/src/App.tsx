@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Component, ErrorInfo, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import ArticlesList from "./components/articles/ArticlesList";
 import Dashboard from "./components/dashboard/Dashboard";
@@ -14,6 +14,34 @@ import ProfileView from "./components/profile/ProfileView";
 import { useI18n } from "./i18n/i18n";
 import { Language } from "./i18n/translations";
 import { useTheme, Theme } from "./theme/theme";
+
+interface ErrorBoundaryState { error: Error | null }
+export class ErrorBoundary extends Component<{ children: React.ReactNode }, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[ErrorBoundary]", error, info.componentStack);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="max-w-md w-full p-8 bg-red-50 border border-red-200 rounded-lg text-center">
+            <h1 className="text-xl font-bold text-red-800 mb-2">Something went wrong</h1>
+            <p className="text-sm text-red-600 mb-4">{this.state.error.message}</p>
+            <button
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              onClick={() => { this.setState({ error: null }); window.location.reload(); }}
+            >
+              Reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function App() {
   const { t, language, setLanguage } = useI18n();

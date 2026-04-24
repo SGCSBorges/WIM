@@ -585,6 +585,28 @@ export const sharesAPI = {
       throw new Error(data?.error || "Failed to revoke share");
     }
   },
+
+  async getSentInvites(): Promise<any[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/shares/invites/sent`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch invites");
+    }
+    return response.json();
+  },
+
+  async revokeInvite(inviteId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/shares/invites/${inviteId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to revoke invite");
+    }
+  },
 };
 
 // Shared articles API (read-only view for POWER_USER receivers)

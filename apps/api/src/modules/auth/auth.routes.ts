@@ -13,6 +13,12 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const data = RegisterSchema.parse(req.body);
     const result = await AuthService.register(data);
+    await auditAction(req, {
+      userId: result.user.userId,
+      action: "CREATE",
+      entity: "User",
+      entityId: result.user.userId,
+    });
     res.status(201).json(result);
   })
 );

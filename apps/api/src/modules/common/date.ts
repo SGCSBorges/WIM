@@ -1,3 +1,8 @@
+/**
+ * Adds `months` to `date`, clamping to the last valid day of the target month.
+ * e.g. Jan 31 + 1 month → Feb 28/29 (not March 2/3).
+ * Does not mutate the original date.
+ */
 export function addMonths(date: Date, months: number) {
   const d = new Date(date);
   const day = d.getDate();

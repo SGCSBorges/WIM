@@ -11,6 +11,10 @@ export function extractClient(req: Request) {
   return { ip, ua: ua as string | null };
 }
 
+/**
+ * Writes an audit log entry, automatically extracting IP and user-agent from the request.
+ * Falls back to `(req as AuthRequest).user?.sub` when `params.userId` is not provided.
+ */
 export async function auditAction(
   req: Request,
   params: {

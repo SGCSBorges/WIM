@@ -98,12 +98,10 @@ export const WarrantyService = {
       where: { garantieId: id, ownerUserId },
     });
     if (!current) throw createHttpError(404, "Garantie non trouvée");
-    if (current) {
-      await AlertService.cancelForWarranty({
-        ownerUserId: current.ownerUserId,
-        garantieId: current.garantieId,
-      });
-    }
+    await AlertService.cancelForWarranty({
+      ownerUserId: current.ownerUserId,
+      garantieId: current.garantieId,
+    });
     return prisma.garantie.delete({ where: { garantieId: id } });
   },
 };
