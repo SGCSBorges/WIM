@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";
 import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
@@ -61,7 +62,7 @@ export const WarrantyService = {
     });
     if (!current) throw createHttpError(404, "Garantie non trouvée");
 
-    const patch: any = { ...data };
+    const patch: Prisma.GarantieUpdateInput = { ...data };
     // Recalculate fin if either dateAchat or duration changes (use current for missing)
     if (data.garantieDateAchat || data.garantieDuration) {
       const dateAchat = data.garantieDateAchat

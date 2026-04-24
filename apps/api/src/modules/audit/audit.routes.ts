@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { authGuard, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
@@ -12,7 +13,7 @@ router.get(
   requireRole("ADMIN"),
   asyncHandler(async (req: Request, res: Response) => {
     const limit = Math.min(Number(req.query.limit) || 50, 200);
-    const where: any = {};
+    const where: Prisma.AuditLogWhereInput = {};
     if (req.query.userId) where.userId = Number(req.query.userId);
     if (req.query.entity) where.entity = String(req.query.entity);
     if (req.query.entityId) where.entityId = Number(req.query.entityId);

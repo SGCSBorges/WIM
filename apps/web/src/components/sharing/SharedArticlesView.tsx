@@ -11,8 +11,8 @@ type SharedArticle = {
   articleDescription?: string | null;
   createdAt: string;
   updatedAt: string;
-  garantie?: any;
-  locations?: any[];
+  garantie?: { garantieId: number; garantieNom: string; garantieFin: string; garantieIsValide: boolean } | null;
+  locations?: Array<{ locationId: number; location?: { name: string } }>;
   ownerUserId: number;
 };
 

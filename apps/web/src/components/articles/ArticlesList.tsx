@@ -96,7 +96,7 @@ const ArticlesList: React.FC = () => {
   const fetchLocations = async () => {
     try {
       const data = await locationsAPI.getAll();
-      const mapped: Location[] = (data || []).map((l: any) => ({
+      const mapped: Location[] = (data || []).map((l: { locationId: number; name: string }) => ({
         locationId: l.locationId,
         name: l.name,
       }));

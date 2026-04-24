@@ -199,7 +199,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         setLocationsLoading(true);
         const data = await locationsAPI.getAll();
         // backend returns locations with extra fields; we only need id+name
-        const mapped: Location[] = (data || []).map((l: any) => ({
+        const mapped: Location[] = (data || []).map((l: { locationId: number; name: string }) => ({
           locationId: l.locationId,
           name: l.name,
         }));
@@ -246,7 +246,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     }
 
     // Convert empty strings to null for optional fields
-    const submitData: any = {
+    const submitData: Omit<Article, "articleId"> = {
       ...formData,
       articleDescription: formData.articleDescription?.trim() || null,
       productImageUrl: formData.productImageUrl?.trim() || null,
