@@ -549,6 +549,59 @@ export const adminAPI = {
   },
 };
 
+// Warranties API
+export const warrantiesAPI = {
+  async getAll(): Promise<any[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/warranties`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch warranties");
+    }
+    return response.json();
+  },
+};
+
+// Shares API (owned-inventory sharing)
+export const sharesAPI = {
+  async getOwned(): Promise<any[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/shares/owned`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch shares");
+    }
+    return response.json();
+  },
+
+  async revoke(targetUserId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/shares/${targetUserId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to revoke share");
+    }
+  },
+};
+
+// Shared articles API (read-only view for POWER_USER receivers)
+export const sharedAPI = {
+  async getSharedArticles(): Promise<any[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/shared/articles`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch shared articles");
+    }
+    return response.json();
+  },
+};
+
 // Billing / Stripe
 export const billingAPI = {
   async createPowerUserCheckoutSession(

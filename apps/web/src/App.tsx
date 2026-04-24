@@ -25,6 +25,7 @@ export default function App() {
   });
 
   const [role, setRole] = useState(() => authAPI.getRole());
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
   // On mount, verify role from server to prevent localStorage spoofing.
   useEffect(() => {
@@ -62,11 +63,12 @@ export default function App() {
   }
 
   const startUpgrade = async (plan: "monthly" | "yearly") => {
+    setUpgradeError(null);
     try {
       const { url } = await billingAPI.createPowerUserCheckoutSession(plan);
       window.location.href = url;
     } catch (e: any) {
-      alert(e?.message || t("billing.upgradeStartError"));
+      setUpgradeError(e?.message || t("billing.upgradeStartError"));
     }
   };
 
@@ -179,6 +181,11 @@ export default function App() {
                           </button>
                         </div>
                       </div>
+                      {upgradeError && (
+                        <div className="mt-3 px-3 py-2 rounded-md text-sm bg-red-50 border border-red-200 text-red-700">
+                          {upgradeError}
+                        </div>
+                      )}
                     </div>
                   </section>
                 )}
