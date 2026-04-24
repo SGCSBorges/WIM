@@ -3,7 +3,7 @@ import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { AuthService } from "./auth.service";
 import { RegisterSchema, LoginSchema } from "./auth.schemas";
-import { authGuard } from "./auth.middleware";
+import { authGuard, AuthRequest } from "./auth.middleware";
 import { auditAction } from "../common/audit";
 
 const router = Router();
@@ -35,7 +35,7 @@ router.post(
 router.get(
   "/me",
   authGuard,
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: AuthRequest, res: Response) => {
     const profile = await AuthService.profile(req.user.sub);
     res.json(profile);
   })

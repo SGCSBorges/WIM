@@ -17,15 +17,19 @@ interface Article {
   locationIds?: number[];
   // Edit payload from API includes join rows like { locationId, location: { name } }
   locations?: Array<{ locationId: number; location?: { name: string } }>;
-  // For create/update we submit a simplified nested warranty payload.
-  // For editing, ArticlesList sends `garantie` which can include extra fields.
-  garantie?:
-    | {
-        garantieNom: string;
-        garantieDateAchat: string;
-        garantieDuration: number;
-      }
-    | any;
+  garantie?: {
+    garantieNom: string;
+    garantieDateAchat: string;
+    garantieDuration: number;
+    garantieFin?: string | null;
+    garantieIsValide?: boolean;
+    garantieImageAttachmentId?: number | null;
+    garantieImageAttachment?: {
+      fileName: string;
+      mimeType: string;
+      fileUrl: string;
+    } | null;
+  } | null;
 }
 
 interface Location {
@@ -49,19 +53,17 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [locationsError, setLocationsError] = useState<string | null>(null);
   const deriveInitialLocationIds = (a?: Article): number[] => {
-    const anyA: any = a as any;
-    const fromJoin = Array.isArray(anyA?.locations)
-      ? anyA.locations
-          .map((x: any) => Number(x?.locationId))
-          .filter((n: number) => Number.isFinite(n) && n > 0)
+    const fromJoin = Array.isArray(a?.locations)
+      ? a!.locations!
+          .map((x) => Number(x?.locationId))
+          .filter((n) => Number.isFinite(n) && n > 0)
       : [];
-    const fromLegacy = Array.isArray(anyA?.locationIds)
-      ? anyA.locationIds
-          .map((x: any) => Number(x))
-          .filter((n: number) => Number.isFinite(n) && n > 0)
+    const fromLegacy = Array.isArray(a?.locationIds)
+      ? a!.locationIds!
+          .map((x) => Number(x))
+          .filter((n) => Number.isFinite(n) && n > 0)
       : [];
 
-    // Prefer join data if present, fallback to legacy.
     return fromJoin.length > 0 ? fromJoin : fromLegacy;
   };
 
@@ -82,19 +84,18 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   });
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
-    Boolean((article as any)?.garantie),
+    Boolean(article?.garantie),
   );
   const [warrantyNom, setWarrantyNom] = useState(
-    ((article as any)?.garantie?.garantieNom as string) || "",
+    article?.garantie?.garantieNom || "",
   );
   const [warrantyDateAchat, setWarrantyDateAchat] = useState(() => {
-    const raw = (article as any)?.garantie?.garantieDateAchat;
+    const raw = article?.garantie?.garantieDateAchat;
     if (!raw) return "";
-    // API returns ISO string; input[type=date] expects YYYY-MM-DD
     return String(raw).slice(0, 10);
   });
   const [warrantyDuration, setWarrantyDuration] = useState<number>(
-    Number((article as any)?.garantie?.garantieDuration) || 24,
+    Number(article?.garantie?.garantieDuration) || 24,
   );
 
   const [warrantyProofAttachment, setWarrantyProofAttachment] = useState<{
@@ -103,9 +104,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     mimeType: string;
     fileUrl: string;
   } | null>(() => {
-    const g: any = (article as any)?.garantie;
+    const g = article?.garantie;
     if (!g?.garantieImageAttachmentId) return null;
-    // We might not have attachment details on the article payload; we at least keep the ID.
     return {
       attachmentId: Number(g.garantieImageAttachmentId),
       fileName: g?.garantieImageAttachment?.fileName || "",
@@ -122,15 +122,13 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   useEffect(() => {
     // When switching between create/edit, keep warranty state in sync.
     setSelectedLocationIds(deriveInitialLocationIds(article));
-    setWarrantyEnabled(Boolean((article as any)?.garantie));
-    setWarrantyNom(((article as any)?.garantie?.garantieNom as string) || "");
-    const raw = (article as any)?.garantie?.garantieDateAchat;
+    setWarrantyEnabled(Boolean(article?.garantie));
+    setWarrantyNom(article?.garantie?.garantieNom || "");
+    const raw = article?.garantie?.garantieDateAchat;
     setWarrantyDateAchat(raw ? String(raw).slice(0, 10) : "");
-    setWarrantyDuration(
-      Number((article as any)?.garantie?.garantieDuration) || 24,
-    );
+    setWarrantyDuration(Number(article?.garantie?.garantieDuration) || 24);
 
-    const g: any = (article as any)?.garantie;
+    const g = article?.garantie;
     if (g?.garantieImageAttachmentId) {
       setWarrantyProofAttachment({
         attachmentId: Number(g.garantieImageAttachmentId),

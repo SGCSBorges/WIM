@@ -186,14 +186,14 @@ export default function AdminUsers() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b ui-divider">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab("dashboard")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "dashboard"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-gray-300"
             }`}
           >
             {t("admin.dashboard")}
@@ -203,7 +203,7 @@ export default function AdminUsers() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "users"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-gray-300"
             }`}
           >
             {t("admin.users")}
@@ -225,13 +225,13 @@ export default function AdminUsers() {
             </div>
           ) : statistics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.totalUsers")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.users.total}
                     </p>
                   </div>
@@ -241,13 +241,13 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.totalArticles")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.articles.total}
                     </p>
                   </div>
@@ -257,13 +257,13 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.activeWarranties")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.warranties.active}
                     </p>
                   </div>
@@ -273,13 +273,13 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.sharedArticles")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.sharing.totalSharedArticles}
                     </p>
                   </div>

@@ -70,8 +70,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         garantieId: garantieId || undefined,
       });
       setAttachments(data);
-    } catch (error) {
-      console.error("Failed to fetch attachments:", error);
+    } catch (e: any) {
+      setDeleteError(e?.message || t("common.errorOccurred"));
     }
   };
 
@@ -140,8 +140,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch (error) {
-      console.error("Failed to download attachment:", error);
+    } catch {
+      // Download errors are browser-level; nothing meaningful to surface
     }
   };
 
@@ -189,7 +189,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     } else {
       return (
         <svg
-          className="h-8 w-8 text-gray-500"
+          className="h-8 w-8 ui-text-muted"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -464,7 +464,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          className="text-xs px-2 py-1 border border-gray-300 rounded"
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
                         >
                           {t("common.no")}
                         </button>

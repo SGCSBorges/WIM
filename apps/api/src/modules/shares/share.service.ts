@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { SharePermission, InviteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
+import { createHttpError } from "../../utils/http-error";
 import {
   InventoryShareCreateInput,
   ShareInviteCreateInput,
@@ -35,13 +36,13 @@ export const ShareService = {
   async acceptInvite(token: string, acceptorUserId: number) {
     const invite = await prisma.shareInvite.findUnique({ where: { token } });
     if (!invite || invite.status !== InviteStatus.PENDING)
-      throw Object.assign(new Error("Invitation invalide"), { status: 400 });
+      throw createHttpError(400, "Invitation invalide");
     if (invite.expiresAt < new Date()) {
       await prisma.shareInvite.update({
         where: { token },
         data: { status: InviteStatus.EXPIRED },
       });
-      throw Object.assign(new Error("Invitation expirée"), { status: 410 });
+      throw createHttpError(410, "Invitation expirée");
     }
     // Create the share
     await prisma.inventoryShare.create({
@@ -93,7 +94,7 @@ export const ShareService = {
     });
 
     if (!share) {
-      throw new Error("Share not found");
+      throw createHttpError(404, "Share not found");
     }
 
     return prisma.inventoryShare.update({
@@ -108,7 +109,7 @@ export const ShareService = {
     });
 
     if (!share) {
-      throw new Error("Share not found");
+      throw createHttpError(404, "Share not found");
     }
 
     await prisma.inventoryShare.delete({

@@ -176,8 +176,8 @@ const ArticlesList: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t("articles.title")}</h1>
-          <p className="text-gray-600">{t("articles.subtitle")}</p>
+          <h1 className="text-2xl font-bold">{t("articles.title")}</h1>
+          <p className="ui-text-muted">{t("articles.subtitle")}</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -186,7 +186,7 @@ const ArticlesList: React.FC = () => {
             onChange={(e) =>
               setLocationFilterId(e.target.value ? Number(e.target.value) : undefined)
             }
-            className="px-3 py-2 border border-gray-300 rounded-md"
+            className="ui-select px-3 py-2 rounded-md"
           >
             <option value="">{t("common.allLocations")}</option>
             {locations.map((l) => (
@@ -198,7 +198,7 @@ const ArticlesList: React.FC = () => {
 
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
           >
             {t("articles.create")}
           </button>
@@ -225,17 +225,17 @@ const ArticlesList: React.FC = () => {
         />
       )}
 
-      <div className="bg-white rounded-lg shadow">
+      <div className="ui-card rounded-lg shadow">
         {articles.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="text-gray-400 text-6xl mb-4">📦</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="ui-text-muted text-6xl mb-4">📦</div>
+            <h3 className="text-lg font-semibold mb-2">
               {t("articles.none.title")}
             </h3>
-            <p className="text-gray-600 mb-4">{t("articles.none.subtitle")}</p>
+            <p className="ui-text-muted mb-4">{t("articles.none.subtitle")}</p>
             <button
               onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
             >
               {t("articles.create")}
             </button>
@@ -243,39 +243,39 @@ const ArticlesList: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="ui-panel">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.name")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.model")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.description")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.warranty")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.proof")}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.actions")}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y ui-divider">
                 {articles.map((article) => (
                   <React.Fragment key={article.articleId}>
-                    <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr className="hover:ui-panel">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {article.articleNom}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
                         {article.articleModele}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm ui-text-muted">
                         {article.articleDescription || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -377,7 +377,7 @@ const ArticlesList: React.FC = () => {
                     </tr>
 
                     {openSharesArticleId === article.articleId && (
-                      <tr className="bg-gray-50">
+                      <tr className="ui-panel">
                         <td colSpan={6} className="px-6 py-4 text-sm">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">

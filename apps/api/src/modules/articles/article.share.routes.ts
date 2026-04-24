@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../../libs/prisma";
-import { authGuard, requireRole } from "../auth/auth.middleware";
+import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 
@@ -13,7 +13,7 @@ router.post(
   "/:articleId/share",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const articleId = Number(req.params.articleId);
     if (!Number.isFinite(articleId) || articleId <= 0) {
       return res.status(400).json({ error: "Invalid article id" });
@@ -52,7 +52,7 @@ router.get(
   "/:articleId/shares",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const articleId = Number(req.params.articleId);
     if (!Number.isFinite(articleId) || articleId <= 0) {
       return res.status(400).json({ error: "Invalid article id" });
@@ -80,7 +80,7 @@ router.delete(
   "/:articleId/share/:targetUserId",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const articleId = Number(req.params.articleId);
     if (!Number.isFinite(articleId) || articleId <= 0) {
       return res.status(400).json({ error: "Invalid article id" });
