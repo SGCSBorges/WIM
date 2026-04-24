@@ -1,3 +1,4 @@
+import { AlerteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { alertQueue } from "../../jobs/queues";
 import { logger } from "../../config/logger";
@@ -25,12 +26,12 @@ function buildJobId(
 }
 
 export const AlertService = {
-  list: (ownerUserId?: number, status?: string) => {
+  list: (ownerUserId?: number, status?: AlerteStatus) => {
     return prisma.alerte.findMany({
       where: {
-        ...(ownerUserId ? ({ ownerUserId } as any) : {}),
-        ...(status ? ({ status } as any) : {}),
-      } as any,
+        ...(ownerUserId ? { ownerUserId } : {}),
+        ...(status ? { status } : {}),
+      },
       orderBy: { alerteDate: "asc" },
       include: {
         garantie: {
@@ -76,8 +77,8 @@ export const AlertService = {
             alerteDate: executeAt,
             alerteGarantieId: input.garantieId,
             alerteArticleId: input.articleId ?? null,
-            ...({ status: "SCHEDULED" } as any),
-          } as any,
+            status: AlerteStatus.SCHEDULED,
+          },
         ],
         skipDuplicates: true,
       });
@@ -87,7 +88,7 @@ export const AlertService = {
           ownerUserId: input.ownerUserId,
           alerteGarantieId: input.garantieId,
           alerteDate: executeAt,
-        } as any,
+        },
         orderBy: { alerteId: "desc" },
       });
 
@@ -138,8 +139,8 @@ export const AlertService = {
       where: {
         ownerUserId: input.ownerUserId,
         alerteGarantieId: input.garantieId,
-        ...({ status: "SCHEDULED" } as any),
-      } as any,
+        status: AlerteStatus.SCHEDULED,
+      },
     });
 
     for (const a of alerts) {
@@ -158,8 +159,8 @@ export const AlertService = {
       where: {
         ownerUserId: input.ownerUserId,
         alerteGarantieId: input.garantieId,
-      } as any,
-      data: { status: "CANCELLED" } as any,
+      },
+      data: { status: AlerteStatus.CANCELLED },
     });
   },
 
@@ -179,7 +180,7 @@ export const AlertService = {
   markSent: (alerteId: number) =>
     prisma.alerte.update({
       where: { alerteId },
-      data: { status: "SENT", sentAt: new Date() } as any,
+      data: { status: AlerteStatus.SENT, sentAt: new Date() },
     }),
 
   markFailed: (alerteId: number, err: unknown) => {
@@ -188,12 +189,10 @@ export const AlertService = {
     return prisma.alerte.update({
       where: { alerteId },
       data: {
-        ...({
-          status: "FAILED",
-          failedAt: new Date(),
-          errorMessage: message.slice(0, 500),
-          errorStack: stack ? stack.slice(0, 2000) : null,
-        } as any),
+        status: AlerteStatus.FAILED,
+        failedAt: new Date(),
+        errorMessage: message.slice(0, 500),
+        errorStack: stack ? stack.slice(0, 2000) : null,
       },
     });
   },

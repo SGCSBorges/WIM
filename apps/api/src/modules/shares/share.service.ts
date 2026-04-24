@@ -1,5 +1,7 @@
 import crypto from "crypto";
+import { SharePermission, InviteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
+import { createHttpError } from "../../utils/http-error";
 import {
   InventoryShareCreateInput,
   ShareInviteCreateInput,
@@ -13,7 +15,7 @@ export const ShareService = {
       data: {
         ...data,
         token,
-        permission: data.permission.toUpperCase() as any, // Temporary type bypass
+        permission: data.permission.toUpperCase() as SharePermission,
       },
     });
   },
@@ -22,7 +24,7 @@ export const ShareService = {
     return prisma.inventoryShare.create({
       data: {
         ...data,
-        permission: data.permission.toUpperCase() as any, // Temporary type bypass
+        permission: data.permission.toUpperCase() as SharePermission,
       },
       include: {
         target: { select: { userId: true, email: true } },
@@ -33,21 +35,21 @@ export const ShareService = {
 
   async acceptInvite(token: string, acceptorUserId: number) {
     const invite = await prisma.shareInvite.findUnique({ where: { token } });
-    if (!invite || invite.status !== "PENDING")
-      throw Object.assign(new Error("Invitation invalide"), { status: 400 });
+    if (!invite || invite.status !== InviteStatus.PENDING)
+      throw createHttpError(400, "Invitation invalide");
     if (invite.expiresAt < new Date()) {
       await prisma.shareInvite.update({
         where: { token },
-        data: { status: "EXPIRED" },
+        data: { status: InviteStatus.EXPIRED },
       });
-      throw Object.assign(new Error("Invitation expirée"), { status: 410 });
+      throw createHttpError(410, "Invitation expirée");
     }
     // Create the share
     await prisma.inventoryShare.create({
       data: {
         ownerUserId: invite.ownerUserId,
         targetUserId: acceptorUserId,
-        permission: invite.permission as any, // Temporary type bypass
+        permission: invite.permission,
       },
     });
 
@@ -55,9 +57,9 @@ export const ShareService = {
     await prisma.shareInvite.update({
       where: { token },
       data: {
-        status: "ACCEPTED" as any,
+        status: InviteStatus.ACCEPTED,
         usedAt: new Date(),
-      } as any, // Temporary type bypass
+      },
     });
     return {
       ownerUserId: invite.ownerUserId,
@@ -92,12 +94,12 @@ export const ShareService = {
     });
 
     if (!share) {
-      throw new Error("Share not found");
+      throw createHttpError(404, "Share not found");
     }
 
     return prisma.inventoryShare.update({
-      where: { inventoryShareId: (share as any).shareId } as any, // Type bypass for field mismatch
-      data: { permission: permission as any }, // Temporary type bypass
+      where: { inventoryShareId: share.inventoryShareId },
+      data: { permission },
     });
   },
 
@@ -107,11 +109,11 @@ export const ShareService = {
     });
 
     if (!share) {
-      throw new Error("Share not found");
+      throw createHttpError(404, "Share not found");
     }
 
     await prisma.inventoryShare.delete({
-      where: { inventoryShareId: (share as any).shareId } as any, // Type bypass for field mismatch
+      where: { inventoryShareId: share.inventoryShareId },
     });
   },
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL, authAPI, statisticsAPI } from "../../services/api";
+import { adminAPI, articlesAPI, authAPI, statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 
 type UserRow = {
@@ -62,14 +62,6 @@ type AdminStatistics = {
   };
 };
 
-function headers() {
-  const token = localStorage.getItem("token");
-  return {
-    "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : "",
-  };
-}
-
 export default function AdminUsers() {
   const { t } = useI18n();
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -81,24 +73,14 @@ export default function AdminUsers() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "users">(
-    "dashboard",
-  );
+  const [activeTab, setActiveTab] = useState<"dashboard" | "users">("dashboard");
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  const role = useMemo(() => authAPI.getRole(), []);
+  const [confirmDeleteUserId, setConfirmDeleteUserId] = useState<number | null>(null);
+  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<number | null>(null);
 
-  const getErrorMessage = async (res: Response, fallback: string) => {
-    try {
-      const data = await res.json();
-      return data?.error || `${fallback} (${res.status})`;
-    } catch {
-      const text = await res.text().catch(() => "");
-      const snippet = text ? `: ${text.slice(0, 200)}` : "";
-      return `${fallback} (${res.status})${snippet}`;
-    }
-  };
+  const role = useMemo(() => authAPI.getRole(), []);
 
   const fetchStatistics = async () => {
     setLoadingStats(true);
@@ -117,13 +99,7 @@ export default function AdminUsers() {
     setLoadingUsers(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/users`, {
-        headers: headers(),
-      });
-      if (!res.ok) {
-        throw new Error(await getErrorMessage(res, "Failed to fetch users"));
-      }
-      const data = (await res.json()) as UserRow[];
+      const data = await adminAPI.listUsers();
       setUsers(data);
     } catch (e: any) {
       setError(e.message || t("admin.error.fetchUsers"));
@@ -136,18 +112,7 @@ export default function AdminUsers() {
     setLoadingInventory(true);
     setError(null);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/admin/users/${userId}/inventory`,
-        {
-          headers: headers(),
-        },
-      );
-      if (!res.ok) {
-        throw new Error(
-          await getErrorMessage(res, "Failed to fetch inventory"),
-        );
-      }
-      const data = (await res.json()) as UserInventory;
+      const data = await adminAPI.getUserInventory(userId);
       setInventory(data);
     } catch (e: any) {
       setError(e.message || t("admin.error.fetchInventory"));
@@ -157,20 +122,11 @@ export default function AdminUsers() {
   };
 
   const deleteUser = async (userId: number) => {
-    if (!confirm(t("admin.confirmDeleteUser"))) {
-      return;
-    }
+    setConfirmDeleteUserId(null);
     setActionLoading(`user:${userId}`);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-        method: "DELETE",
-        headers: headers(),
-      });
-      if (!res.ok) {
-        throw new Error(await getErrorMessage(res, "Failed to delete user"));
-      }
-      // refresh
+      await adminAPI.deleteUser(userId);
       if (selectedUser?.userId === userId) {
         setSelectedUser(null);
         setInventory(null);
@@ -184,18 +140,11 @@ export default function AdminUsers() {
   };
 
   const deleteArticle = async (articleId: number) => {
-    if (!confirm(t("admin.confirmDeleteArticle"))) return;
+    setConfirmDeleteArticleId(null);
     setActionLoading(`article:${articleId}`);
     setError(null);
     try {
-      // Admin can delete inventory items via normal endpoint (auth required)
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}`, {
-        method: "DELETE",
-        headers: headers(),
-      });
-      if (!res.ok) {
-        throw new Error(await getErrorMessage(res, "Failed to delete article"));
-      }
+      await articlesAPI.delete(articleId);
       if (selectedUser) {
         await fetchInventory(selectedUser.userId);
       }
@@ -237,14 +186,14 @@ export default function AdminUsers() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b ui-divider">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab("dashboard")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "dashboard"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-gray-300"
             }`}
           >
             {t("admin.dashboard")}
@@ -254,7 +203,7 @@ export default function AdminUsers() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "users"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-gray-300"
             }`}
           >
             {t("admin.users")}
@@ -276,13 +225,13 @@ export default function AdminUsers() {
             </div>
           ) : statistics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.totalUsers")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.users.total}
                     </p>
                   </div>
@@ -292,13 +241,13 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.totalArticles")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.articles.total}
                     </p>
                   </div>
@@ -308,13 +257,13 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.activeWarranties")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.warranties.active}
                     </p>
                   </div>
@@ -324,13 +273,13 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.sharedArticles")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.sharing.totalSharedArticles}
                     </p>
                   </div>
@@ -342,7 +291,7 @@ export default function AdminUsers() {
             </div>
           ) : (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-700">No statistics available</p>
+              <p className="text-sm text-yellow-700">{t("dashboard.noStats")}</p>
             </div>
           )}
         </div>
@@ -363,7 +312,7 @@ export default function AdminUsers() {
               {users.map((u) => (
                 <div
                   key={u.userId}
-                  className={`p-4 flex items-center justify-between ${
+                  className={`p-4 flex items-center justify-between gap-3 ${
                     selectedUser?.userId === u.userId ? "ui-panel" : ""
                   }`}
                 >
@@ -372,22 +321,42 @@ export default function AdminUsers() {
                       setSelectedUser(u);
                       fetchInventory(u.userId);
                     }}
-                    className="text-left flex-1 mr-4"
+                    className="text-left flex-1 min-w-0"
                   >
-                    <div className="font-medium">{u.email}</div>
+                    <div className="font-medium truncate">{u.email}</div>
                     <div className="text-xs ui-text-muted">
                       {t("admin.roleLabel")}: {u.role}
                     </div>
                   </button>
-                  <button
-                    onClick={() => deleteUser(u.userId)}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                    disabled={actionLoading === `user:${u.userId}`}
-                  >
-                    {actionLoading === `user:${u.userId}`
-                      ? t("admin.deleting")
-                      : t("admin.delete")}
-                  </button>
+
+                  {confirmDeleteUserId === u.userId ? (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-red-700">{t("admin.confirmDeleteUser")}</span>
+                      <button
+                        onClick={() => deleteUser(u.userId)}
+                        className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                        disabled={actionLoading === `user:${u.userId}`}
+                      >
+                        {t("common.yes")}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteUserId(null)}
+                        className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                      >
+                        {t("common.no")}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteUserId(u.userId)}
+                      className="text-red-600 hover:text-red-800 text-sm shrink-0"
+                      disabled={actionLoading === `user:${u.userId}`}
+                    >
+                      {actionLoading === `user:${u.userId}`
+                        ? t("admin.deleting")
+                        : t("admin.delete")}
+                    </button>
+                  )}
                 </div>
               ))}
               {!loadingUsers && users.length === 0 && (
@@ -426,35 +395,60 @@ export default function AdminUsers() {
                     {inventory.articlesOwned?.map((a) => (
                       <div
                         key={a.articleId}
-                        className="ui-panel rounded p-3 flex items-start justify-between"
+                        className="ui-panel rounded p-3 space-y-2"
                       >
-                        <div>
-                          <div className="font-medium">
-                            {a.articleNom} — {a.articleModele}
-                          </div>
-                          <div className="text-xs ui-text-muted">
-                            {a.articleDescription || t("admin.noDescription")}
-                          </div>
-                          {a.garantie && (
-                            <div className="text-xs ui-text-muted mt-1">
-                              {t("admin.warrantyLabel")}:{" "}
-                              {a.garantie.garantieNom} (
-                              {a.garantie.garantieIsValide
-                                ? t("admin.status.valid")
-                                : t("admin.status.expired")}
-                              )
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="font-medium">
+                              {a.articleNom} — {a.articleModele}
                             </div>
+                            <div className="text-xs ui-text-muted">
+                              {a.articleDescription || t("admin.noDescription")}
+                            </div>
+                            {a.garantie && (
+                              <div className="text-xs ui-text-muted mt-1">
+                                {t("admin.warrantyLabel")}:{" "}
+                                {a.garantie.garantieNom} (
+                                {a.garantie.garantieIsValide
+                                  ? t("admin.status.valid")
+                                  : t("admin.status.expired")}
+                                )
+                              </div>
+                            )}
+                          </div>
+
+                          {confirmDeleteArticleId === a.articleId ? (
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => deleteArticle(a.articleId)}
+                                className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                                disabled={actionLoading === `article:${a.articleId}`}
+                              >
+                                {t("common.yes")}
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteArticleId(null)}
+                                className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                              >
+                                {t("common.no")}
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteArticleId(a.articleId)}
+                              className="text-red-600 hover:text-red-800 text-sm shrink-0"
+                              disabled={actionLoading === `article:${a.articleId}`}
+                            >
+                              {actionLoading === `article:${a.articleId}`
+                                ? t("admin.deleting")
+                                : t("admin.delete")}
+                            </button>
                           )}
                         </div>
-                        <button
-                          onClick={() => deleteArticle(a.articleId)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                          disabled={actionLoading === `article:${a.articleId}`}
-                        >
-                          {actionLoading === `article:${a.articleId}`
-                            ? t("admin.deleting")
-                            : t("admin.delete")}
-                        </button>
+
+                        {confirmDeleteArticleId === a.articleId && (
+                          <p className="text-xs text-red-700">{t("admin.confirmDeleteArticle")}</p>
+                        )}
                       </div>
                     ))}
                     {inventory.articlesOwned?.length === 0 && (

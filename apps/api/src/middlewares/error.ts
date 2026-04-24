@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError, ZodIssue } from "zod";
+import { logger } from "../config/logger";
 
 export function errorHandler(
   err: any,
@@ -25,6 +26,6 @@ export function errorHandler(
   }
 
   // Fallback
-  console.error("[UnhandledError]", err);
+  logger.error({ err }, "[UnhandledError]");
   return res.status(500).json({ error: "Erreur interne" });
 }

@@ -4,6 +4,7 @@
  */
 
 import { prisma } from "../libs/prisma";
+import { logger } from "../config/logger";
 
 type UserRole = "USER" | "POWER_USER" | "ADMIN";
 
@@ -218,10 +219,7 @@ export async function getDashboardStatistics(
       },
     };
   } catch (error) {
-    console.error(
-      "[Statistics Service] Error fetching dashboard statistics:",
-      error
-    );
+    logger.error({ err: error }, "[statistics] failed to fetch dashboard statistics");
     throw new Error("Failed to fetch dashboard statistics");
   }
 }
@@ -308,10 +306,7 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
       },
     };
   } catch (error) {
-    console.error(
-      "[Statistics Service] Error fetching admin statistics:",
-      error
-    );
+    logger.error({ err: error }, "[statistics] failed to fetch admin statistics");
     throw new Error("Failed to fetch admin statistics");
   }
 }
@@ -331,10 +326,7 @@ export async function getBasicStatistics(params: { userId: number }) {
       alerts: alertsCount,
     };
   } catch (error) {
-    console.error(
-      "[Statistics Service] Error fetching basic statistics:",
-      error
-    );
+    logger.error({ err: error }, "[statistics] failed to fetch basic statistics");
     throw new Error("Failed to fetch basic statistics");
   }
 }

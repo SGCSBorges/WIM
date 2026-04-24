@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../../i18n/i18n";
-import { API_BASE_URL } from "../../services/api";
+import { warrantiesAPI } from "../../services/api";
 
 type Warranty = {
   garantieId: number;
@@ -12,14 +12,6 @@ type Warranty = {
   garantieArticleId: number;
 };
 
-function headers() {
-  const token = localStorage.getItem("token");
-  return {
-    "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : "",
-  };
-}
-
 export default function WarrantiesView() {
   const { t } = useI18n();
   const [items, setItems] = useState<Warranty[]>([]);
@@ -30,17 +22,8 @@ export default function WarrantiesView() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/warranties`, {
-        headers: headers(),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(
-          data?.error || `Failed to fetch warranties (${res.status})`,
-        );
-      }
-      const data = (await res.json()) as Warranty[];
-      setItems(data);
+      const data = await warrantiesAPI.getAll();
+      setItems(data as Warranty[]);
     } catch (e: any) {
       setError(e?.message || t("warranties.error.fetch"));
     } finally {

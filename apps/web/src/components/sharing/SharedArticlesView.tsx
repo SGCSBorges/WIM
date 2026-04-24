@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL } from "../../services/api";
+import React, { useEffect, useState } from "react";
+import { sharedAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 
 type SharedOwner = { userId: number; email: string };
@@ -30,27 +30,14 @@ export default function SharedArticlesView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useMemo(() => {
-    // Keep hook order stable in case future UI wants user context.
-    return null;
-  }, []);
-
-  const token = localStorage.getItem("token");
-
   const fetchRows = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/shared/articles`, {
-        headers: { Authorization: token ? `Bearer ${token}` : "" },
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Failed to fetch (${res.status})`);
-      }
-      setRows((await res.json()) as SharedArticleRow[]);
+      const data = await sharedAPI.getSharedArticles();
+      setRows(data as SharedArticleRow[]);
     } catch (e: any) {
-      setError(e?.message || "Failed to load shared articles");
+      setError(e?.message || t("common.errorOccurred"));
     } finally {
       setLoading(false);
     }
@@ -58,7 +45,6 @@ export default function SharedArticlesView() {
 
   useEffect(() => {
     fetchRows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {
@@ -73,10 +59,8 @@ export default function SharedArticlesView() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Shared articles</h1>
-          <p className="text-sm ui-text-muted">
-            Read-only. Only the owner can edit or unshare.
-          </p>
+          <h1 className="text-2xl font-bold">{t("shared.title")}</h1>
+          <p className="text-sm ui-text-muted">{t("shared.subtitle")}</p>
         </div>
         <button
           className="ui-btn-ghost px-3 py-2 rounded border ui-divider"
@@ -94,49 +78,47 @@ export default function SharedArticlesView() {
 
       {rows.length === 0 ? (
         <div className="ui-card rounded-lg p-6">
-          <p className="text-sm ui-text-muted">No shared articles.</p>
+          <p className="text-sm ui-text-muted">{t("shared.none")}</p>
         </div>
       ) : (
         <div className="ui-card rounded-lg">
           <div className="divide-y">
-            {rows.map((r) => {
-              return (
-                <div key={r.rowId} className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="font-medium truncate">
-                        {r.article.articleNom} — {r.article.articleModele}
-                      </div>
-                      <div className="text-xs ui-text-muted">
-                        Owner: {r.owner.email}
-                      </div>
-                      {r.article.articleDescription && (
-                        <div className="text-sm mt-2 ui-text-muted">
-                          {r.article.articleDescription}
-                        </div>
-                      )}
+            {rows.map((r) => (
+              <div key={r.rowId} className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">
+                      {r.article.articleNom} — {r.article.articleModele}
                     </div>
+                    <div className="text-xs ui-text-muted">
+                      {t("shared.owner")}: {r.owner.email}
+                    </div>
+                    {r.article.articleDescription && (
+                      <div className="text-sm mt-2 ui-text-muted">
+                        {r.article.articleDescription}
+                      </div>
+                    )}
+                  </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-                        disabled
-                        title="Read-only"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-                        disabled
-                        title="Only the owner can unshare (from their Articles view)"
-                      >
-                        Unshare
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
+                      disabled
+                      title={t("shared.subtitle")}
+                    >
+                      {t("shared.action.edit")}
+                    </button>
+                    <button
+                      className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
+                      disabled
+                      title={t("shared.subtitle")}
+                    >
+                      {t("shared.action.unshare")}
+                    </button>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       )}

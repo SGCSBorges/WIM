@@ -55,6 +55,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAttachments();
@@ -67,49 +70,42 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         garantieId: garantieId || undefined,
       });
       setAttachments(data);
-    } catch (error) {
-      console.error("Failed to fetch attachments:", error);
+    } catch (e: any) {
+      setDeleteError(e?.message || t("common.errorOccurred"));
     }
   };
 
   const handleAdd = async (formData: FormData) => {
     const file = formData.get("file");
-    const type = String(formData.get("type") || "OTHER") as
-      | "INVOICE"
-      | "WARRANTY"
-      | "OTHER";
+    const type = String(formData.get("type") || "OTHER") as "INVOICE" | "WARRANTY" | "OTHER";
 
     if (!(file instanceof File)) {
-      alert(t("attachments.form.error.fileRequired"));
+      setUploadError(t("attachments.form.error.fileRequired"));
       return;
     }
 
     try {
       setUploading(true);
+      setUploadError(null);
       await attachmentsAPI.uploadFile(file, type);
       setShowAddForm(false);
       await fetchAttachments();
     } catch (e) {
-      alert(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setUploadError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (attachmentId: number) => {
-    if (window.confirm(t("attachments.confirmDelete"))) {
-      if (onDelete) {
-        onDelete(attachmentId);
-      }
-
-      try {
-        await attachmentsAPI.deleteAttachment(attachmentId);
-        setAttachments(
-          attachments.filter((a) => a.attachmentId !== attachmentId),
-        );
-      } catch (error) {
-        console.error("Failed to delete attachment:", error);
-      }
+    setConfirmDeleteId(null);
+    setDeleteError(null);
+    if (onDelete) onDelete(attachmentId);
+    try {
+      await attachmentsAPI.deleteAttachment(attachmentId);
+      setAttachments(attachments.filter((a) => a.attachmentId !== attachmentId));
+    } catch (e: any) {
+      setDeleteError(e?.message || t("common.errorOccurred"));
     }
   };
 
@@ -144,8 +140,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch (error) {
-      console.error("Failed to download attachment:", error);
+    } catch {
+      // Download errors are browser-level; nothing meaningful to surface
     }
   };
 
@@ -193,7 +189,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     } else {
       return (
         <svg
-          className="h-8 w-8 text-gray-500"
+          className="h-8 w-8 ui-text-muted"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -287,9 +283,19 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       {showAddForm && (
         <AttachmentForm
           onSubmit={handleAdd}
-          onCancel={() => setShowAddForm(false)}
+          onCancel={() => { setShowAddForm(false); setUploadError(null); }}
           isLoading={uploading}
         />
+      )}
+      {uploadError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-sm text-red-700">{uploadError}</p>
+        </div>
+      )}
+      {deleteError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-sm text-red-700">{deleteError}</p>
+        </div>
       )}
 
       {/* Search and Filters */}
@@ -448,12 +454,29 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                       </button>
                     )}
 
-                    <button
-                      onClick={() => handleDelete(attachment.attachmentId)}
-                      className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors"
-                    >
-                      {t("attachments.action.delete")}
-                    </button>
+                    {confirmDeleteId === attachment.attachmentId ? (
+                      <>
+                        <button
+                          onClick={() => handleDelete(attachment.attachmentId)}
+                          className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                        >
+                          {t("common.yes")}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        >
+                          {t("common.no")}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(attachment.attachmentId)}
+                        className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                      >
+                        {t("attachments.action.delete")}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

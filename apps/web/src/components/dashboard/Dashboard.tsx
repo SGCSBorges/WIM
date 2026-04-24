@@ -1,8 +1,3 @@
-/**
- * Dashboard Component
- * Main dashboard page showing inventory statistics and overview
- */
-
 import React, { useState, useEffect } from "react";
 import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
@@ -52,12 +47,12 @@ const StatCard: React.FC<StatCardProps> = ({
   color,
   subtitle,
 }) => (
-  <div className="bg-white rounded-lg shadow p-6">
+  <div className="ui-card rounded-lg shadow p-6">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-gray-600">{title}</p>
-        <p className="text-3xl font-semibold text-gray-900">{value}</p>
-        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        <p className="text-sm font-medium ui-text-muted">{title}</p>
+        <p className="text-3xl font-semibold">{value}</p>
+        {subtitle && <p className="text-sm ui-text-muted mt-1">{subtitle}</p>}
       </div>
       <div
         className={`p-3 rounded-full ${color} text-white text-2xl flex items-center justify-center w-12 h-12`}
@@ -74,15 +69,13 @@ interface DetailCardProps {
 }
 
 const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
-  <div className="bg-white rounded-lg shadow p-6">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+  <div className="ui-card rounded-lg shadow p-6">
+    <h3 className="text-lg font-semibold mb-4">{title}</h3>
     <div className="space-y-3">
       {data.map((item, index) => (
         <div key={index} className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">{item.label}</span>
-          <span
-            className={`text-sm font-medium ${item.color || "text-gray-900"}`}
-          >
+          <span className="text-sm ui-text-muted">{item.label}</span>
+          <span className={`text-sm font-medium ${item.color || ""}`}>
             {item.value}
           </span>
         </div>
@@ -109,7 +102,6 @@ const Dashboard: React.FC = () => {
         setError(
           err instanceof Error ? err.message : t("common.errorOccurred"),
         );
-        console.error("Error fetching statistics:", err);
       } finally {
         setLoading(false);
       }
@@ -153,10 +145,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t("dashboard.title")}
-        </h1>
-        <p className="text-gray-600">{t("dashboard.subtitle")}</p>
+        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+        <p className="ui-text-muted">{t("dashboard.subtitle")}</p>
       </div>
 
       {/* Main Stats Grid */}
@@ -279,14 +269,14 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions or Additional Info */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="ui-card rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">
           {t("dashboard.systemHealth")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center">
             <span className="text-green-500 mr-2">✅</span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm ui-text-muted">
               {(statistics.warranties.total
                 ? (statistics.warranties.active / statistics.warranties.total) *
                   100
@@ -298,7 +288,7 @@ const Dashboard: React.FC = () => {
 
           <div className="flex items-center">
             <span className="text-blue-500 mr-2">📈</span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm ui-text-muted">
               {(statistics.articles.total
                 ? (statistics.articles.withWarranty /
                     statistics.articles.total) *
@@ -311,7 +301,7 @@ const Dashboard: React.FC = () => {
 
           <div className="flex items-center">
             <span className="text-orange-500 mr-2">⏰</span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm ui-text-muted">
               {statistics.warranties.expiringSoon}{" "}
               {t("dashboard.warrantiesNeedAttention")}
             </span>

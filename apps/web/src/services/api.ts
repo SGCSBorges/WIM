@@ -135,7 +135,7 @@ export const authAPI = {
   },
 
   async getProfile() {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/me`, {
       headers: getHeaders(),
     });
 
@@ -161,7 +161,7 @@ export const articlesAPI = {
     const url = new URL(`${API_BASE_URL}/articles`);
     if (locationId) url.searchParams.set("locationId", String(locationId));
 
-    const response = await fetch(url.toString(), {
+    const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
 
@@ -173,7 +173,7 @@ export const articlesAPI = {
   },
 
   async create(article: any) {
-    const response = await fetch(`${API_BASE_URL}/articles`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(article),
@@ -194,7 +194,7 @@ export const articlesAPI = {
   },
 
   async update(id: number, article: any) {
-    const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
       method: "PUT",
       headers: getHeaders(),
       body: JSON.stringify(article),
@@ -207,8 +207,37 @@ export const articlesAPI = {
     return response.json();
   },
 
+  async getShares(articleId: number) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${articleId}/shares`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch article shares");
+    return response.json();
+  },
+
+  async removeShare(articleId: number, shareId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/share/${shareId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok) throw new Error("Failed to remove share");
+  },
+
+  async setSharedWithPowerUsers(articleId: number, shared: boolean) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${articleId}/share`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ shared }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to update sharing");
+    }
+    return response.json();
+  },
+
   async delete(id: number) {
-    const response = await fetch(`${API_BASE_URL}/articles/${id}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
       method: "DELETE",
       headers: getHeaders(),
     });
@@ -232,7 +261,7 @@ export const articlesAPI = {
 // Locations API
 export const locationsAPI = {
   async getAll() {
-    const response = await fetch(`${API_BASE_URL}/locations`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/locations`, {
       headers: getHeaders(),
     });
     if (!response.ok) throw new Error("Failed to fetch locations");
@@ -240,7 +269,7 @@ export const locationsAPI = {
   },
 
   async create(data: { name: string; description?: string | null }) {
-    const response = await fetch(`${API_BASE_URL}/locations`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/locations`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify(data),
@@ -259,7 +288,7 @@ export const locationsAPI = {
   },
 
   async addArticle(locationId: number, articleId: number) {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${API_BASE_URL}/locations/${locationId}/articles`,
       {
         method: "POST",
@@ -272,7 +301,7 @@ export const locationsAPI = {
   },
 
   async removeArticle(locationId: number, articleId: number) {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${API_BASE_URL}/locations/${locationId}/articles/${articleId}`,
       {
         method: "DELETE",
@@ -293,7 +322,7 @@ export const attachmentsAPI = {
     if (options?.garantieId)
       url.searchParams.set("garantieId", options.garantieId.toString());
 
-    const response = await fetch(url.toString(), {
+    const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
 
@@ -320,7 +349,7 @@ export const attachmentsAPI = {
     form.append("file", file);
     form.append("type", type);
 
-    const response = await fetch(`${API_BASE_URL}/attachments/upload`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/attachments/upload`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       body: form,
@@ -346,7 +375,7 @@ export const attachmentsAPI = {
     const url = new URL(`${API_BASE_URL}/attachments/${id}`);
     if (removeFile) url.searchParams.set("removeFile", "true");
 
-    const response = await fetch(url.toString(), {
+    const response = await fetchWithTimeout(url.toString(), {
       method: "DELETE",
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
@@ -372,7 +401,7 @@ export const alertsAPI = {
     const url = new URL(`${API_BASE_URL}/alerts`);
     if (status) url.searchParams.set("status", status);
 
-    const response = await fetch(url.toString(), {
+    const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
 
@@ -394,7 +423,7 @@ export const alertsAPI = {
 // Statistics API
 export const statisticsAPI = {
   async getDashboard() {
-    const response = await fetch(`${API_BASE_URL}/statistics/dashboard`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/statistics/dashboard`, {
       headers: getHeaders(),
     });
 
@@ -406,7 +435,7 @@ export const statisticsAPI = {
   },
 
   async getBasic() {
-    const response = await fetch(`${API_BASE_URL}/statistics/basic`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/statistics/basic`, {
       headers: getHeaders(),
     });
 
@@ -418,7 +447,7 @@ export const statisticsAPI = {
   },
 
   async getAdmin() {
-    const response = await fetch(`${API_BASE_URL}/statistics/admin`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/statistics/admin`, {
       headers: getHeaders(),
     });
 
@@ -430,12 +459,154 @@ export const statisticsAPI = {
   },
 };
 
+// Profile API
+export const profileAPI = {
+  async getMe(): Promise<{ userId: number; email: string; role: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to load profile");
+    }
+    return response.json();
+  },
+
+  async updateEmail(email: string, currentPassword: string) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me/email`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ email, currentPassword }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to update email");
+    }
+    return response.json();
+  },
+
+  async updatePassword(currentPassword: string, newPassword: string) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me/password`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to update password");
+    }
+    return response.json().catch(() => null);
+  },
+
+  async deleteAccount(currentPassword: string) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
+      method: "DELETE",
+      headers: getHeaders(),
+      body: JSON.stringify({ currentPassword }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to delete account");
+    }
+  },
+};
+
+// Admin API
+export const adminAPI = {
+  async listUsers() {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/users`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch users");
+    }
+    return response.json();
+  },
+
+  async getUserInventory(userId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/users/${userId}/inventory`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch inventory");
+    }
+    return response.json();
+  },
+
+  async deleteUser(userId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/users/${userId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to delete user");
+    }
+  },
+};
+
+// Warranties API
+export const warrantiesAPI = {
+  async getAll(): Promise<any[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/warranties`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch warranties");
+    }
+    return response.json();
+  },
+};
+
+// Shares API (owned-inventory sharing)
+export const sharesAPI = {
+  async getOwned(): Promise<any[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/shares/owned`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch shares");
+    }
+    return response.json();
+  },
+
+  async revoke(targetUserId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/shares/${targetUserId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to revoke share");
+    }
+  },
+};
+
+// Shared articles API (read-only view for POWER_USER receivers)
+export const sharedAPI = {
+  async getSharedArticles(): Promise<any[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/shared/articles`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to fetch shared articles");
+    }
+    return response.json();
+  },
+};
+
 // Billing / Stripe
 export const billingAPI = {
   async createPowerUserCheckoutSession(
     plan: "monthly" | "yearly",
   ): Promise<{ url: string }> {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${API_BASE_URL}/billing/upgrade/power-user/checkout`,
       {
         method: "POST",
@@ -458,9 +629,33 @@ export const billingAPI = {
     return response.json();
   },
 
+  async openPortal(): Promise<{ url: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/billing/portal`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to open billing portal");
+    }
+    return response.json();
+  },
+
+  async cancelAtPeriodEnd() {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/billing/cancel/power-user`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error || "Failed to cancel subscription");
+    }
+    return response.json().catch(() => null);
+  },
+
   async refreshRoleFromServer(): Promise<string | null> {
     try {
-      const response = await fetch(`${API_BASE_URL}/billing/me`, {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/billing/me`, {
         headers: getHeaders(),
       });
       if (!response.ok) return getRole();

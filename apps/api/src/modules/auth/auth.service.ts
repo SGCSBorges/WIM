@@ -2,8 +2,9 @@ import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { RegisterInput, LoginInput } from "./auth.schemas";
+import { createHttpError } from "../../utils/http-error";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+// JWT_SECRET is guaranteed present by validateEnv() called at startup.
 const JWT_EXPIRES = "7d";
 
 export const AuthService = {
@@ -11,18 +12,16 @@ export const AuthService = {
     const existing = await prisma.user.findUnique({
       where: { email: data.email },
     });
-    if (existing) {
-      const err: any = new Error("Email déjà enregistré");
-      err.status = 409;
-      throw err;
-    }
+    if (existing) throw createHttpError(409, "Email déjà enregistré");
     const hashed = await bcrypt.hash(data.password, 10);
     const user = await prisma.user.create({
       data: { email: data.email, password: hashed, role: data.role },
     });
-    const token = jwt.sign({ sub: user.userId, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES,
-    });
+    const token = jwt.sign(
+      { sub: user.userId, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: JWT_EXPIRES }
+    );
     return {
       user: { userId: user.userId, email: user.email, role: user.role },
       token,
@@ -31,20 +30,14 @@ export const AuthService = {
 
   async login(data: LoginInput) {
     const user = await prisma.user.findUnique({ where: { email: data.email } });
-    if (!user) {
-      const err: any = new Error("Utilisateur introuvable");
-      err.status = 404;
-      throw err;
-    }
+    if (!user) throw createHttpError(404, "Utilisateur introuvable");
     const valid = await bcrypt.compare(data.password, user.password);
-    if (!valid) {
-      const err: any = new Error("Mot de passe invalide");
-      err.status = 401;
-      throw err;
-    }
-    const token = jwt.sign({ sub: user.userId, role: user.role }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES,
-    });
+    if (!valid) throw createHttpError(401, "Mot de passe invalide");
+    const token = jwt.sign(
+      { sub: user.userId, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: JWT_EXPIRES }
+    );
     return {
       user: { userId: user.userId, email: user.email, role: user.role },
       token,

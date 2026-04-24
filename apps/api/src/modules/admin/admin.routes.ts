@@ -121,9 +121,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const userId = Number(req.params.id);
 
-    // Prisma client naming for the warranties relation appears inconsistent across generated types.
-    // Use a typed escape hatch here to keep a stable API response.
-    const user = (await (prisma.user as any).findUnique({
+    const user = await prisma.user.findUnique({
       where: { userId },
       include: {
         articlesOwned: {
@@ -148,7 +146,7 @@ router.get(
           },
         },
       },
-    })) as any;
+    });
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });

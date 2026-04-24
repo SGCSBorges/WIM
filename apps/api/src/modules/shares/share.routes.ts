@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authGuard, requireRole } from "../auth/auth.middleware";
+import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import {
   ShareInviteAcceptSchema,
@@ -16,7 +16,7 @@ router.post(
   "/invites",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = ShareInviteCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
@@ -25,7 +25,7 @@ router.post(
     await auditAction(req, {
       action: "CREATE",
       entity: "ShareInvite",
-      entityId: (inv as any).inviteId || (inv as any).shareInviteId, // Handle field name inconsistency
+      entityId: inv.shareInviteId,
       metadata: { email: data.email, permission: data.permission },
     });
     res.status(201).json(inv);
@@ -36,7 +36,7 @@ router.post(
 router.post(
   "/invites/accept",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const { token } = ShareInviteAcceptSchema.parse(req.body);
     const result = await ShareService.acceptInvite(token, req.user.sub);
     await auditAction(req, {
@@ -52,7 +52,7 @@ router.post(
 router.get(
   "/owned",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const rows = await ShareService.listSharesOwned(req.user.sub);
     res.json(rows);
   })
@@ -61,7 +61,7 @@ router.get(
 router.get(
   "/received",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const rows = await ShareService.listSharesReceived(req.user.sub);
     res.json(rows);
   })
@@ -72,7 +72,7 @@ router.put(
   "/:targetUserId",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const { permission } = ShareUpdateSchema.parse(req.body);
     const targetUserId = Number(req.params.targetUserId);
     const updated = await ShareService.updateShare(
@@ -83,7 +83,7 @@ router.put(
     await auditAction(req, {
       action: "UPDATE",
       entity: "InventoryShare",
-      entityId: (updated as any).shareId || (updated as any).inventoryShareId, // Handle field name inconsistency
+      entityId: updated.inventoryShareId,
       metadata: { permission },
     });
     res.json(updated);
@@ -95,7 +95,7 @@ router.delete(
   "/:targetUserId",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const targetUserId = Number(req.params.targetUserId);
     await ShareService.revokeShare(req.user.sub, targetUserId);
     await auditAction(req, {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { API_BASE_URL } from "../../services/api";
+import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 
 type Props = {
@@ -8,49 +8,36 @@ type Props = {
   onShared?: () => void;
 };
 
-export default function ShareArticleButton({
-  articleId,
-  disabled,
-  onShared,
-}: Props) {
+export default function ShareArticleButton({ articleId, disabled, onShared }: Props) {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const share = async () => {
-    const token = localStorage.getItem("token");
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/share`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Share failed (${res.status})`);
-      }
-
-      alert("Shared");
+      await articlesAPI.setSharedWithPowerUsers(articleId, true);
       onShared?.();
     } catch (e: any) {
-      alert(e?.message || "Share failed");
+      setError(e?.message || t("common.errorOccurred"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <button
-      type="button"
-      onClick={share}
-      disabled={disabled || loading}
-      className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-      title="Share this article with all POWER_USER accounts"
-    >
-      {loading ? t("common.loading") : "Share"}
-    </button>
+    <span className="inline-flex flex-col items-start gap-1">
+      <button
+        type="button"
+        onClick={share}
+        disabled={disabled || loading}
+        className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
+        title={t("articles.share.tooltip")}
+      >
+        {loading ? t("common.loading") : t("articles.share.button")}
+      </button>
+      {error && <span className="text-xs text-red-600">{error}</span>}
+    </span>
   );
 }

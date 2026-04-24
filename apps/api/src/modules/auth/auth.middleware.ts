@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
+// JWT_SECRET is guaranteed present by validateEnv() called at startup.
 
 export interface AuthRequest extends Request {
   user?: { sub: number; role: string };
@@ -13,7 +13,10 @@ export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
     return res.status(401).json({ error: "Token manquant" });
   const token = header.split(" ")[1];
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as any;
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+      sub: number;
+      role: string;
+    };
     req.user = { sub: payload.sub, role: payload.role };
     next();
   } catch {

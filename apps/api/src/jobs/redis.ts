@@ -1,4 +1,5 @@
 import type { RedisOptions } from "ioredis";
+import { logger } from "../config/logger";
 
 export function createRedisConnection(): RedisOptions {
   const redisUrl = process.env.REDIS_URL;
@@ -25,7 +26,7 @@ export function createRedisConnection(): RedisOptions {
       };
     } catch (error) {
       // fallthrough
-      console.error("[Redis] Invalid REDIS_URL format:", error);
+      logger.error({ err: error }, "[redis] invalid REDIS_URL format, falling back to host/port");
     }
   }
 

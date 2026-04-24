@@ -1,5 +1,7 @@
 import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
+import Stripe from "stripe";
+import { createHttpError } from "../../utils/http-error";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -13,25 +15,14 @@ export const ProfileService = {
 
   async updateEmail(userId: number, email: string, currentPassword: string) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) {
-      const err: any = new Error("Utilisateur introuvable");
-      err.status = 404;
-      throw err;
-    }
+    if (!user) throw createHttpError(404, "Utilisateur introuvable");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) {
-      const err: any = new Error("Mot de passe invalide");
-      err.status = 401;
-      throw err;
-    }
+    if (!valid) throw createHttpError(401, "Mot de passe invalide");
 
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing && existing.userId !== userId) {
-      const err: any = new Error("Email déjà enregistré");
-      err.status = 409;
-      throw err;
-    }
+    if (existing && existing.userId !== userId)
+      throw createHttpError(409, "Email déjà enregistré");
 
     return prisma.user.update({
       where: { userId },
@@ -46,18 +37,10 @@ export const ProfileService = {
     newPassword: string
   ) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) {
-      const err: any = new Error("Utilisateur introuvable");
-      err.status = 404;
-      throw err;
-    }
+    if (!user) throw createHttpError(404, "Utilisateur introuvable");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) {
-      const err: any = new Error("Mot de passe invalide");
-      err.status = 401;
-      throw err;
-    }
+    if (!valid) throw createHttpError(401, "Mot de passe invalide");
 
     const hashed = await bcrypt.hash(newPassword, 10);
 
@@ -70,17 +53,20 @@ export const ProfileService = {
 
   async deleteAccount(userId: number, currentPassword: string) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) {
-      const err: any = new Error("Utilisateur introuvable");
-      err.status = 404;
-      throw err;
-    }
+    if (!user) throw createHttpError(404, "Utilisateur introuvable");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) {
-      const err: any = new Error("Mot de passe invalide");
-      err.status = 401;
-      throw err;
+    if (!valid) throw createHttpError(401, "Mot de passe invalide");
+
+    // Cancel active Stripe subscription before deleting so the user is not
+    // charged again after account removal.
+    if (user.stripeSubscriptionId && process.env.STRIPE_SECRET_KEY) {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+      } catch {
+        // Log but don't block deletion — subscription may already be cancelled.
+      }
     }
 
     // Delete in a safe order to avoid FK constraint issues.

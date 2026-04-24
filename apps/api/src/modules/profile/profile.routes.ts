@@ -1,5 +1,5 @@
 import { Router, Response } from "express";
-import { authGuard } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import {
@@ -21,7 +21,7 @@ const router = Router();
 router.get(
   "/me",
   authGuard,
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: AuthRequest, res: Response) => {
     const me = await ProfileService.get(Number(req.user.sub));
     res.json(me);
   })
@@ -30,7 +30,7 @@ router.get(
 router.put(
   "/me/email",
   authGuard,
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: AuthRequest, res: Response) => {
     const { email, currentPassword } = UpdateEmailSchema.parse(req.body);
     const updated = await ProfileService.updateEmail(
       Number(req.user.sub),
@@ -52,7 +52,7 @@ router.put(
 router.put(
   "/me/password",
   authGuard,
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: AuthRequest, res: Response) => {
     const { currentPassword, newPassword } = UpdatePasswordSchema.parse(
       req.body
     );
@@ -76,7 +76,7 @@ router.put(
 router.delete(
   "/me",
   authGuard,
-  asyncHandler(async (req: any, res: Response) => {
+  asyncHandler(async (req: AuthRequest, res: Response) => {
     /**
      * DELETE /api/profile/me
      *

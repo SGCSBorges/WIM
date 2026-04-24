@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";
 import { addMonths } from "../common/date";
+import { createHttpError } from "../../utils/http-error";
 
 export const ArticleService = {
   list: (ownerUserId: number, locationId?: number) =>
@@ -90,11 +91,8 @@ export const ArticleService = {
     const { locationIds, garantie, removeGarantie, ...patch } = data;
 
     // If updating locations, enforce at least one.
-    if (locationIds && Array.isArray(locationIds) && locationIds.length === 0) {
-      const err: any = new Error("Article must have at least one location");
-      err.status = 400;
-      throw err;
-    }
+    if (locationIds && Array.isArray(locationIds) && locationIds.length === 0)
+      throw createHttpError(400, "Article must have at least one location");
 
     // We need current warranty state to decide create vs update vs delete.
     type ArticleWithGarantie = Prisma.ArticleGetPayload<{ include: { garantie: true } }>;
@@ -102,11 +100,7 @@ export const ArticleService = {
       where: { articleId: id, ownerUserId },
       include: { garantie: true },
     });
-    if (!existing) {
-      const err: any = new Error("Article non trouvé");
-      err.status = 404;
-      throw err;
-    }
+    if (!existing) throw createHttpError(404, "Article non trouvé");
 
     // Apply warranty changes (if any) before updating the article itself.
     if (removeGarantie) {
@@ -167,11 +161,10 @@ export const ArticleService = {
             },
           });
         } else {
-          const err: any = new Error(
+          throw createHttpError(
+            400,
             "To create a warranty you must provide garantieNom, garantieDateAchat and garantieDuration"
           );
-          err.status = 400;
-          throw err;
         }
       }
     }
