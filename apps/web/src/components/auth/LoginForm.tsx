@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-import { useTheme } from "../../theme/theme";
+import { Language } from "../../i18n/translations";
+import { useTheme, Theme } from "../../theme/theme";
 
 interface LoginFormProps {
   onLogin: () => void;
@@ -152,7 +153,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               </label>
               <select
                 value={language}
-                onChange={(e) => setLanguage(e.target.value as any)}
+                onChange={(e) => setLanguage(e.target.value as Language)}
                 className="ui-select px-2 py-1 rounded-md text-sm"
               >
                 <option value="en">English</option>
@@ -165,7 +166,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               <label className="text-xs ui-text-muted">{t("nav.theme")}</label>
               <select
                 value={theme}
-                onChange={(e) => setTheme(e.target.value as any)}
+                onChange={(e) => setTheme(e.target.value as Theme)}
                 className="ui-select px-2 py-1 rounded-md text-sm"
               >
                 <option value="light">{t("theme.light")}</option>

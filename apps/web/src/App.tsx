@@ -11,7 +11,8 @@ import SharedArticlesView from "./components/sharing/SharedArticlesView";
 import AlertsView from "./components/alerts/AlertsView";
 import ProfileView from "./components/profile/ProfileView";
 import { useI18n } from "./i18n/i18n";
-import { useTheme } from "./theme/theme";
+import { Language } from "./i18n/translations";
+import { useTheme, Theme } from "./theme/theme";
 
 export default function App() {
   const { t, language, setLanguage } = useI18n();
@@ -186,7 +187,7 @@ export default function App() {
               </label>
               <select
                 value={language}
-                onChange={(e) => setLanguage(e.target.value as any)}
+                onChange={(e) => setLanguage(e.target.value as Language)}
                 className="ui-select px-2 py-1 rounded-md text-sm"
               >
                 <option value="en">English</option>
@@ -197,7 +198,7 @@ export default function App() {
               <label className="text-xs ui-text-muted">{t("nav.theme")}</label>
               <select
                 value={theme}
-                onChange={(e) => setTheme(e.target.value as any)}
+                onChange={(e) => setTheme(e.target.value as Theme)}
                 className="ui-select px-2 py-1 rounded-md text-sm"
               >
                 <option value="light">{t("theme.light")}</option>

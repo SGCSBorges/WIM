@@ -1,4 +1,5 @@
 import { Request } from "express";
+import { AuthRequest } from "../auth/auth.middleware";
 import { AuditService } from "../audit/audit.service";
 
 export function extractClient(req: Request) {
@@ -22,7 +23,7 @@ export async function auditAction(
 ) {
   const { ip, ua } = extractClient(req);
   await AuditService.log({
-    userId: params.userId ?? (req as any).user?.sub ?? null,
+    userId: params.userId ?? (req as AuthRequest).user?.sub ?? null,
     action: params.action,
     entity: params.entity,
     entityId: params.entityId ?? null,

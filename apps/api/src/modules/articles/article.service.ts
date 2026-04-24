@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";
 import { addMonths } from "../common/date";
@@ -24,7 +25,7 @@ export const ArticleService = {
             location: { select: { name: true } },
           },
         },
-      } as any,
+      },
     }),
 
   get: (id: number, ownerUserId: number) =>
@@ -38,11 +39,11 @@ export const ArticleService = {
             location: { select: { name: true } },
           },
         },
-      } as any,
+      },
     }),
 
   create: async (data: ArticleCreateInput) => {
-    const { locationIds, garantie, ...articleData } = data as any;
+    const { locationIds, garantie, ...articleData } = data;
     return prisma.article.create({
       data: {
         ...articleData,
@@ -81,12 +82,12 @@ export const ArticleService = {
             location: { select: { name: true } },
           },
         },
-      } as any,
+      },
     });
   },
 
   update: async (id: number, ownerUserId: number, data: ArticleUpdateInput) => {
-    const { locationIds, garantie, removeGarantie, ...patch } = data as any;
+    const { locationIds, garantie, removeGarantie, ...patch } = data;
 
     // If updating locations, enforce at least one.
     if (locationIds && Array.isArray(locationIds) && locationIds.length === 0) {
@@ -96,9 +97,10 @@ export const ArticleService = {
     }
 
     // We need current warranty state to decide create vs update vs delete.
-    const existing: any = await prisma.article.findFirst({
+    type ArticleWithGarantie = Prisma.ArticleGetPayload<{ include: { garantie: true } }>;
+    const existing: ArticleWithGarantie | null = await prisma.article.findFirst({
       where: { articleId: id, ownerUserId },
-      include: { garantie: true } as any,
+      include: { garantie: true },
     });
     if (!existing) {
       const err: any = new Error("Article non trouvé");
@@ -198,7 +200,7 @@ export const ArticleService = {
             location: { select: { name: true } },
           },
         },
-      } as any,
+      },
     });
   },
 

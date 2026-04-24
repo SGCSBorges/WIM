@@ -46,8 +46,8 @@ router.post(
       // Upgrade user after successful checkout
       if (event.type === "checkout.session.completed") {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userIdRaw = (session.metadata as any)?.userId;
-        const targetRole = (session.metadata as any)?.targetRole;
+        const userIdRaw = session.metadata?.userId;
+        const targetRole = session.metadata?.targetRole;
 
         const subscriptionId =
           typeof session.subscription === "string"
@@ -80,7 +80,7 @@ router.post(
         const subscriptionId = sub.id;
         const status = sub.status;
         const cancelAtPeriodEnd = sub.cancel_at_period_end;
-        const endedAt = (sub as any).ended_at as number | null | undefined;
+        const endedAt = sub.ended_at as number | null | undefined;
 
         // Map Stripe status to our role.
         const shouldDowngrade =

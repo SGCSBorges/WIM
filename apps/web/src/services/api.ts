@@ -4,8 +4,7 @@
 //   If you *do* have a reverse proxy that serves the web app and forwards /api to the API service,
 //   you can omit VITE_API_BASE_URL and same-origin "/api" will work.
 export const API_BASE_URL: string = (() => {
-  const env = (import.meta as any).env as Record<string, string | undefined>;
-  const fromEnv = env?.VITE_API_BASE_URL?.trim();
+  const fromEnv = import.meta.env.VITE_API_BASE_URL?.trim();
   if (fromEnv) {
     // Allow setting either:
     //  - https://wimapi.onrender.com/api  (full)
@@ -25,7 +24,7 @@ export const API_BASE_URL: string = (() => {
   }
 
   // Vite sets PROD/DEV booleans.
-  if (env?.PROD) return "/api";
+  if (import.meta.env.PROD) return "/api";
 
   return "http://localhost:3000/api";
 })();

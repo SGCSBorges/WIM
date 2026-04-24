@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../../i18n/i18n";
+import { TranslationKey } from "../../i18n/translations";
 import { alertsAPI } from "../../services/api";
 
 type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
@@ -108,7 +109,7 @@ export default function AlertsView() {
           <div className="flex items-center gap-3">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as "date" | "status" | "name")}
               className="ui-select px-2 py-1 rounded-md text-sm"
               title={t("alerts.sortBy")}
             >
@@ -127,7 +128,7 @@ export default function AlertsView() {
 
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => setStatusFilter(e.target.value as "ALL" | AlertStatus)}
               className="ui-select px-2 py-1 rounded-md text-sm"
             >
               <option value="ALL">{t("alerts.filters.all")}</option>
@@ -230,7 +231,7 @@ export default function AlertsView() {
                     a.status,
                   )}`}
                 >
-                  {t(`alerts.status.${a.status.toLowerCase()}` as any)}
+                  {t(`alerts.status.${a.status.toLowerCase()}` as TranslationKey)}
                 </span>
               </div>
             </div>

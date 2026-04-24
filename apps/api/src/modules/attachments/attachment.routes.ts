@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { AttachmentType } from "@prisma/client";
 import { asyncHandler } from "../common/http";
 import { AttachmentService } from "./attachment.service";
 import {
@@ -116,8 +117,8 @@ router.post(
   "/upload",
   authGuard,
   upload.single("file"),
-  asyncHandler(async (req: any, res) => {
-    const file = req.file as any;
+  asyncHandler(async (req: AuthRequest, res) => {
+    const file = req.file;
     if (!file) return res.status(400).json({ error: "Missing file" });
 
     const type = String(req.body?.type || "OTHER").toUpperCase();
@@ -129,7 +130,7 @@ router.post(
     const fileUrl = `${baseUrl}/uploads/${encodeURIComponent(file.filename)}`;
 
     const created = await AttachmentService.create({
-      type: type as any,
+      type: type as AttachmentType,
       fileName: file.originalname,
       mimeType: file.mimetype,
       fileSize: file.size,
@@ -166,7 +167,7 @@ router.put(
       req.body
     );
     const result = await AttachmentService.update(id, req.user.sub, bodyData);
-    const count = (result as any)?.count ?? 0;
+    const count = result?.count ?? 0;
     if (!count) {
       return res.status(404).json({ error: "Attachment not found" });
     }

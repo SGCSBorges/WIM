@@ -37,7 +37,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       setLanguage,
       t: (key: TranslationKey) => {
         const dict = translations[language] as Record<string, string>;
-        return dict[key] ?? (translations.en as any)[key] ?? key;
+        return dict[key] ?? (translations.en as Record<string, string>)[key] ?? key;
       },
     };
   }, [language]);
