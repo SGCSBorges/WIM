@@ -134,26 +134,14 @@ export async function getDashboardStatistics(
     const warrantiesActive = await prisma.garantie.count({
       where: {
         ownerUserId,
-        garantieFin: {
-          gte: currentDate,
-        },
-        garantieIsValide: true,
+        garantieFin: { gte: currentDate },
       },
     });
 
     const warrantiesExpired = await prisma.garantie.count({
       where: {
         ownerUserId,
-        OR: [
-          {
-            garantieFin: {
-              lt: currentDate,
-            },
-          },
-          {
-            garantieIsValide: false,
-          },
-        ],
+        garantieFin: { lt: currentDate },
       },
     });
 
@@ -164,7 +152,6 @@ export async function getDashboardStatistics(
           gte: currentDate,
           lte: thirtyDaysFromNow,
         },
-        garantieIsValide: true,
       },
     });
 
@@ -252,24 +239,12 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
     const currentDate = new Date();
     const warrantiesActive = await prisma.garantie.count({
       where: {
-        garantieFin: {
-          gte: currentDate,
-        },
-        garantieIsValide: true,
+        garantieFin: { gte: currentDate },
       },
     });
     const warrantiesExpired = await prisma.garantie.count({
       where: {
-        OR: [
-          {
-            garantieFin: {
-              lt: currentDate,
-            },
-          },
-          {
-            garantieIsValide: false,
-          },
-        ],
+        garantieFin: { lt: currentDate },
       },
     });
     const warrantiesWithAttachment = await prisma.garantie.count({

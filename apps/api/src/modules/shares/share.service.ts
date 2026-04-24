@@ -9,8 +9,12 @@ import {
 
 export const ShareService = {
   async createInvite(data: ShareInviteCreateInput) {
-    const token = crypto.randomBytes(64).toString("hex");
+    const existing = await prisma.shareInvite.findFirst({
+      where: { ownerUserId: data.ownerUserId, email: data.email, status: "PENDING" },
+    });
+    if (existing) throw createHttpError(409, "A pending invite for this email already exists");
 
+    const token = crypto.randomBytes(64).toString("hex");
     return prisma.shareInvite.create({
       data: {
         ...data,
@@ -70,7 +74,7 @@ export const ShareService = {
 
   async listSharesOwned(ownerUserId: number) {
     return prisma.inventoryShare.findMany({
-      where: { ownerUserId },
+      where: { ownerUserId, active: true },
       include: { target: { select: { userId: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -78,7 +82,7 @@ export const ShareService = {
 
   async listSharesReceived(targetUserId: number) {
     return prisma.inventoryShare.findMany({
-      where: { targetUserId },
+      where: { targetUserId, active: true },
       include: { owner: { select: { userId: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -123,15 +127,16 @@ export const ShareService = {
 
   async revokeShare(ownerUserId: number, targetUserId: number) {
     const share = await prisma.inventoryShare.findFirst({
-      where: { ownerUserId, targetUserId },
+      where: { ownerUserId, targetUserId, active: true },
     });
 
     if (!share) {
       throw createHttpError(404, "Share not found");
     }
 
-    await prisma.inventoryShare.delete({
+    await prisma.inventoryShare.update({
       where: { inventoryShareId: share.inventoryShareId },
+      data: { active: false },
     });
   },
 };

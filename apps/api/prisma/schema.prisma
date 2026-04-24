@@ -90,7 +90,7 @@ model Article {
   articleNom         String   @db.VarChar(100)
   articleModele      String   @db.VarChar(100)
   articleDescription String?  @db.VarChar(255)
-  productImageUrl    String?  @db.VarChar(255)
+  productImageUrl    String?  @db.VarChar(500)
 
   // Sharing v2 (simplest): when true, this article is visible in the shared view
   // to all POWER_USER accounts (read-only; owner-only edit/unshare).
@@ -160,7 +160,7 @@ model Alerte {
   sentAt            DateTime?
   failedAt          DateTime?
   errorMessage      String?  @db.VarChar(500)
-  errorStack        String?  @db.VarChar(2000)
+  errorStack        String?  @db.Text
 
   // Liens (au moins un des deux)
   alerteGarantieId Int?
@@ -198,6 +198,7 @@ model Attachment {
   fileUrl      String         @db.VarChar(500)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   owner    User     @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
   article  Article? @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
