@@ -70,6 +70,21 @@ export const WarrantyService = {
     });
     if (!current) throw createHttpError(404, "Warranty not found");
 
+    if (
+      data.garantieArticleId != null &&
+      data.garantieArticleId !== current.garantieArticleId
+    ) {
+      const article = await prisma.article.findFirst({
+        where: { articleId: data.garantieArticleId, ownerUserId },
+      });
+      if (!article) throw createHttpError(403, "Article not found or not owned by you");
+
+      const conflict = await prisma.garantie.findUnique({
+        where: { garantieArticleId: data.garantieArticleId },
+      });
+      if (conflict) throw createHttpError(409, "A warranty already exists for this article");
+    }
+
     const patch: Prisma.GarantieUpdateInput = { ...data };
     // Recalculate fin if either dateAchat or duration changes (use current for missing)
     if (data.garantieDateAchat || data.garantieDuration) {
