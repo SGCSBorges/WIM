@@ -55,7 +55,7 @@ export default function AlertsView() {
       );
       setItems(data);
     } catch (e: any) {
-      setError(e?.message || "Failed to fetch alerts");
+      setError(e?.message || t("common.errorOccurred"));
     } finally {
       setLoading(false);
     }

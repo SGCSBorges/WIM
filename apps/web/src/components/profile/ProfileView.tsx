@@ -18,6 +18,7 @@ export default function ProfileView() {
   const [billingBusy, setBillingBusy] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [email, setEmail] = useState("");
   const [currentPasswordForEmail, setCurrentPasswordForEmail] = useState("");
@@ -78,6 +79,7 @@ export default function ProfileView() {
 
   const deleteAccount = async () => {
     setError(null);
+    setDeleting(true);
     try {
       await profileAPI.deleteAccount(deletePassword);
       disconnectAndRedirect();
@@ -89,6 +91,7 @@ export default function ProfileView() {
       }
       setError(msg || t("common.errorOccurred"));
     } finally {
+      setDeleting(false);
       setShowDeleteConfirm(false);
     }
   };
@@ -198,7 +201,7 @@ export default function ProfileView() {
             <input className="w-full ui-input px-3 py-2 rounded" value={currentPasswordForEmail} onChange={(e) => setCurrentPasswordForEmail(e.target.value)} type="password" required />
           </div>
         </div>
-        <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updateEmail} disabled={saving}>{saving ? t("common.loading") : t("profile.email.save")}</button>
+        <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updateEmail} disabled={saving || !email || !currentPasswordForEmail}>{saving ? t("common.loading") : t("profile.email.save")}</button>
       </div>
 
       <div className="ui-card rounded-xl p-6 space-y-4">
@@ -213,7 +216,7 @@ export default function ProfileView() {
             <input className="w-full ui-input px-3 py-2 rounded" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" minLength={8} required />
           </div>
         </div>
-        <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updatePassword} disabled={saving}>{saving ? t("common.loading") : t("profile.password.save")}</button>
+        <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updatePassword} disabled={saving || !currentPassword || !newPassword}>{saving ? t("common.loading") : t("profile.password.save")}</button>
       </div>
 
       <div className="ui-card rounded-xl p-6 space-y-3 border border-red-200">
@@ -234,7 +237,7 @@ export default function ProfileView() {
           <div className="p-3 border border-red-300 bg-red-50 rounded-lg space-y-2">
             <p className="text-sm text-red-800">{t("profile.danger.confirm")}</p>
             <div className="flex gap-2">
-              <button className="px-3 py-1 text-sm rounded bg-red-600 text-white hover:bg-red-700" onClick={deleteAccount}>{t("common.yes")}</button>
+              <button className="px-3 py-1 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed" onClick={deleteAccount} disabled={deleting}>{deleting ? t("common.loading") : t("common.yes")}</button>
               <button className="ui-btn-ghost px-3 py-1 text-sm rounded border ui-divider" onClick={() => setShowDeleteConfirm(false)}>{t("common.no")}</button>
             </div>
           </div>
