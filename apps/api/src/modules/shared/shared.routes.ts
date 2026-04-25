@@ -17,7 +17,7 @@ router.get(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
-    const viewerUserId = Number(req.user!.sub);
+    const viewerUserId = req.user!.sub;
 
     const articles = await prisma.article.findMany({
       where: {

@@ -14,7 +14,7 @@ router.get(
   "/dashboard",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const userId = Number(req.user!.sub);
+    const userId = req.user!.sub;
     const role = req.user!.role;
     const statistics = await getDashboardStatistics({ userId, role });
     res.json(statistics);
@@ -25,7 +25,7 @@ router.get(
   "/basic",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const userId = Number(req.user!.sub);
+    const userId = req.user!.sub;
     const statistics = await getBasicStatistics({ userId });
     res.json(statistics);
   })

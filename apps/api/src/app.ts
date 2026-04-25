@@ -80,7 +80,7 @@ export function createApp() {
   app.use("/api/profile", profileRoutes);
   app.use("/api/statistics", statisticsRoutes);
 
-  // Handler d’erreurs (toujours en dernier)
+  // Error handler must be last
   app.use(errorHandler);
 
   return app;

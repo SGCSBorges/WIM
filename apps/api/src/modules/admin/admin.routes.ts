@@ -106,7 +106,7 @@ router.delete(
     );
 
     await auditAction(req, {
-      userId: Number(req.user!.sub),
+      userId: req.user!.sub,
       action: "DELETE",
       entity: "User",
       entityId: userId,
