@@ -21,6 +21,7 @@ import profileRoutes from "./modules/profile/profile.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 import path from "path";
 import { startWorkersOnce } from "./config/jobs";
+import { prisma } from "./libs/prisma";
 
 export function createApp() {
   const app = express();
@@ -50,8 +51,14 @@ export function createApp() {
     })
   );
 
-  // Santé
-  app.get("/health", (_req, res) => res.json({ status: "ok" }));
+  app.get("/health", async (_req, res) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      res.json({ status: "ok" });
+    } catch {
+      res.status(503).json({ status: "error", reason: "database unavailable" });
+    }
+  });
 
   // Static hosting for uploaded files (local dev)
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

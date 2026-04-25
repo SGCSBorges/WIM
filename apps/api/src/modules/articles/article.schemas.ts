@@ -4,7 +4,7 @@ export const ArticleCreateSchema = z.object({
   articleNom: z.string().min(1).max(100),
   articleModele: z.string().min(1).max(100),
   articleDescription: z.string().max(255).optional().nullable(),
-  productImageUrl: z.string().url().max(255).optional().nullable(),
+  productImageUrl: z.string().url().max(500).optional().nullable(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
   // Optional warranty created alongside the article
