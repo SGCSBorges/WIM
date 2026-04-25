@@ -47,11 +47,7 @@ router.post(
 );
 
 router.post("/logout", (_req, res) => {
-  res.clearCookie("wim_token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  res.clearCookie("wim_token", COOKIE_OPTS);
   res.status(204).send();
 });
 

@@ -25,6 +25,10 @@ import { startWorkersOnce } from "./config/jobs";
 export function createApp() {
   const app = express();
 
+  // Trust the first proxy hop (Render, nginx, etc.) so req.ip and
+  // rate-limiter see the real client IP, not the proxy address.
+  app.set("trust proxy", 1);
+
   // Run BullMQ workers in the same process (as requested)
   startWorkersOnce();
 

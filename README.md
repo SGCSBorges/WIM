@@ -12,7 +12,7 @@ WIM is a full-stack SaaS application for tracking physical assets, their warrant
 | Backend | Node.js · Express · TypeScript · Prisma ORM |
 | Database | PostgreSQL |
 | Queue | BullMQ + Redis |
-| Auth | JWT (Bearer token) |
+| Auth | JWT (httpOnly cookie) |
 | Payments | Stripe (subscriptions + webhooks) |
 | Logging | Pino structured logging |
 
@@ -304,7 +304,7 @@ RENDER_EXTERNAL_URL=https://wimapi.onrender.com
 
 ## Security notes
 
-- JWT tokens are stored in `localStorage` (XSS risk). A future improvement is to migrate to `httpOnly` cookies.
+- JWT tokens are stored in `httpOnly` cookies (`wim_token`), protecting them from XSS attacks.
 - CORS origin must be set via `CORS_ORIGIN` env var in production — the app will reject all cross-origin requests if unset.
 - `JWT_SECRET` must be set — the app exits at startup if missing.
 - Rate limiting is applied globally (100 req/min by default). Tune via `RATE_LIMIT_*` env vars.
@@ -314,7 +314,6 @@ RENDER_EXTERNAL_URL=https://wimapi.onrender.com
 
 ## Known limitations / roadmap
 
-- [ ] Migrate JWT to `httpOnly` cookies
 - [ ] Add pagination to all list endpoints
 - [ ] Migrate file uploads to cloud storage (S3/R2)
 - [ ] Add frontend invite acceptance flow
