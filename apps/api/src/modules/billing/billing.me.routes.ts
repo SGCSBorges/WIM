@@ -7,7 +7,7 @@ const router = Router();
 
 // Handy endpoint so the frontend can refresh user role after returning from Stripe.
 router.get("/me", authGuard, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user.sub;
+  const userId = req.user!.sub;
   const user = await prisma.user.findUnique({
     where: { userId },
     select: { userId: true, email: true, role: true },

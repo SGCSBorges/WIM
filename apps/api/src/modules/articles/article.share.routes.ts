@@ -18,7 +18,7 @@ router.post(
     if (!Number.isFinite(articleId) || articleId <= 0) {
       return res.status(400).json({ error: "Invalid article id" });
     }
-    const ownerUserId = Number(req.user.sub);
+    const ownerUserId = Number(req.user!.sub);
 
     // Only the article owner can share it.
     const article = await prisma.article.findFirst({
@@ -57,7 +57,7 @@ router.get(
     if (!Number.isFinite(articleId) || articleId <= 0) {
       return res.status(400).json({ error: "Invalid article id" });
     }
-    const ownerUserId = Number(req.user.sub);
+    const ownerUserId = Number(req.user!.sub);
 
     const article = await prisma.article.findFirst({
       where: { articleId, ownerUserId },
@@ -85,7 +85,7 @@ router.delete(
     if (!Number.isFinite(articleId) || articleId <= 0) {
       return res.status(400).json({ error: "Invalid article id" });
     }
-    const ownerUserId = Number(req.user.sub);
+    const ownerUserId = Number(req.user!.sub);
 
     const article = await prisma.article.findFirst({
       where: { articleId, ownerUserId },

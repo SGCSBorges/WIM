@@ -15,9 +15,9 @@ router.get(
     const q = AlertListQuerySchema.parse(req.query);
 
     // Only admins can specify ownerUserId to view other users' alerts
-    let ownerUserId = req.user.sub;
+    let ownerUserId = req.user!.sub;
     if (q.ownerUserId) {
-      if (req.user.role !== "ADMIN") {
+      if (req.user!.role !== "ADMIN") {
         return res.status(403).json({
           error: "Only administrators can view alerts for other users",
         });

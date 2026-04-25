@@ -15,7 +15,7 @@ router.get(
   "/",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const locations = await LocationService.list(req.user.sub);
+    const locations = await LocationService.list(req.user!.sub);
     res.json(locations);
   })
 );
@@ -25,7 +25,7 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
-    const location = await LocationService.get(id, req.user.sub);
+    const location = await LocationService.get(id, req.user!.sub);
     if (!location) return res.status(404).json({ error: "Location not found" });
     res.json(location);
   })
@@ -40,7 +40,7 @@ router.post(
     );
     const created = await LocationService.create({
       ...bodyData,
-      ownerUserId: req.user.sub,
+      ownerUserId: req.user!.sub,
     });
     await auditAction(req, {
       action: "CREATE",
@@ -60,7 +60,7 @@ router.put(
     const bodyData = LocationUpdateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
-    const updated = await LocationService.update(id, req.user.sub, bodyData);
+    const updated = await LocationService.update(id, req.user!.sub, bodyData);
     await auditAction(req, {
       action: "UPDATE",
       entity: "Location",
@@ -76,7 +76,7 @@ router.delete(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
-    await LocationService.remove(id, req.user.sub);
+    await LocationService.remove(id, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
       entity: "Location",
@@ -92,7 +92,7 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
-    const articles = await LocationService.listArticles(id, req.user.sub);
+    const articles = await LocationService.listArticles(id, req.user!.sub);
     res.json(articles);
   })
 );
@@ -106,7 +106,7 @@ router.post(
     const body = LocationAssignArticleSchema.parse(req.body);
     const row = await LocationService.addArticle(
       id,
-      req.user.sub,
+      req.user!.sub,
       body.articleId
     );
     await auditAction(req, {
@@ -126,7 +126,7 @@ router.delete(
   asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
     const articleId = Number(req.params.articleId);
-    await LocationService.removeArticle(id, req.user.sub, articleId);
+    await LocationService.removeArticle(id, req.user!.sub, articleId);
     await auditAction(req, {
       action: "DELETE",
       entity: "ArticleLocation",

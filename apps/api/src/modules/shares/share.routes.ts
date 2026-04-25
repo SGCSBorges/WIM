@@ -20,7 +20,7 @@ router.post(
     const bodyData = ShareInviteCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
-    const data = { ...bodyData, ownerUserId: req.user.sub };
+    const data = { ...bodyData, ownerUserId: req.user!.sub };
     const inv = await ShareService.createInvite(data);
     await auditAction(req, {
       action: "CREATE",
@@ -38,7 +38,7 @@ router.post(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const { token } = ShareInviteAcceptSchema.parse(req.body);
-    const result = await ShareService.acceptInvite(token, req.user.sub);
+    const result = await ShareService.acceptInvite(token, req.user!.sub);
     await auditAction(req, {
       action: "ACCEPT",
       entity: "InventoryShare",
@@ -53,7 +53,7 @@ router.get(
   "/invites/sent",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const rows = await ShareService.listSentInvites(req.user.sub);
+    const rows = await ShareService.listSentInvites(req.user!.sub);
     res.json(rows);
   })
 );
@@ -64,7 +64,7 @@ router.delete(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const inviteId = Number(req.params.inviteId);
-    await ShareService.revokeInvite(inviteId, req.user.sub);
+    await ShareService.revokeInvite(inviteId, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
       entity: "ShareInvite",
@@ -79,7 +79,7 @@ router.get(
   "/owned",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const rows = await ShareService.listSharesOwned(req.user.sub);
+    const rows = await ShareService.listSharesOwned(req.user!.sub);
     res.json(rows);
   })
 );
@@ -88,7 +88,7 @@ router.get(
   "/received",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const rows = await ShareService.listSharesReceived(req.user.sub);
+    const rows = await ShareService.listSharesReceived(req.user!.sub);
     res.json(rows);
   })
 );
@@ -102,7 +102,7 @@ router.put(
     const { permission } = ShareUpdateSchema.parse(req.body);
     const targetUserId = Number(req.params.targetUserId);
     const updated = await ShareService.updateShare(
-      req.user.sub,
+      req.user!.sub,
       targetUserId,
       permission
     );
@@ -123,7 +123,7 @@ router.delete(
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
     const targetUserId = Number(req.params.targetUserId);
-    await ShareService.revokeShare(req.user.sub, targetUserId);
+    await ShareService.revokeShare(req.user!.sub, targetUserId);
     await auditAction(req, {
       action: "DELETE",
       entity: "InventoryShare",

@@ -73,7 +73,7 @@ router.post(
     }
 
     const stripe = getStripe();
-    const userId = req.user.sub;
+    const userId = req.user!.sub;
 
     const user = await prisma.user.findUnique({
       where: { userId },
@@ -93,7 +93,7 @@ router.post(
       cancel_url: `${appUrl}/?stripe=cancel`,
       metadata: {
         userId: String(userId),
-        role: req.user.role,
+        role: req.user!.role,
         targetRole: "POWER_USER",
         plan,
       },
@@ -107,7 +107,7 @@ router.post(
   "/cancel/power-user",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const userId = req.user.sub;
+    const userId = req.user!.sub;
 
     const user = await prisma.user.findUnique({
       where: { userId },
@@ -144,7 +144,7 @@ router.post(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const appUrl = getAppUrl();
-    const userId = req.user.sub;
+    const userId = req.user!.sub;
     const stripe = getStripe();
 
     const user = await prisma.user.findUnique({

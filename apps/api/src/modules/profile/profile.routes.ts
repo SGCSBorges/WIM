@@ -22,7 +22,7 @@ router.get(
   "/me",
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const me = await ProfileService.get(Number(req.user.sub));
+    const me = await ProfileService.get(Number(req.user!.sub));
     res.json(me);
   })
 );
@@ -33,7 +33,7 @@ router.put(
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const { email, currentPassword } = UpdateEmailSchema.parse(req.body);
     const updated = await ProfileService.updateEmail(
-      Number(req.user.sub),
+      Number(req.user!.sub),
       email,
       currentPassword
     );
@@ -41,7 +41,7 @@ router.put(
     await auditAction(req, {
       action: "UPDATE",
       entity: "User",
-      entityId: Number(req.user.sub),
+      entityId: Number(req.user!.sub),
       metadata: { field: "email" },
     });
 
@@ -57,7 +57,7 @@ router.put(
       req.body
     );
     const updated = await ProfileService.updatePassword(
-      Number(req.user.sub),
+      Number(req.user!.sub),
       currentPassword,
       newPassword
     );
@@ -65,7 +65,7 @@ router.put(
     await auditAction(req, {
       action: "UPDATE",
       entity: "User",
-      entityId: Number(req.user.sub),
+      entityId: Number(req.user!.sub),
       metadata: { field: "password" },
     });
 
@@ -88,12 +88,12 @@ router.delete(
      * The service deletes dependent records owned by the user first to avoid FK issues.
      */
     const { currentPassword } = DeleteAccountSchema.parse(req.body);
-    await ProfileService.deleteAccount(Number(req.user.sub), currentPassword);
+    await ProfileService.deleteAccount(Number(req.user!.sub), currentPassword);
 
     await auditAction(req, {
       action: "DELETE",
       entity: "User",
-      entityId: Number(req.user.sub),
+      entityId: Number(req.user!.sub),
     });
 
     res.status(204).send();

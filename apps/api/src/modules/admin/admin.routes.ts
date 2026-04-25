@@ -108,7 +108,7 @@ router.delete(
     await prisma.user.delete({ where: { userId } });
 
     await auditAction(req, {
-      userId: Number(req.user.sub),
+      userId: Number(req.user!.sub),
       action: "DELETE",
       entity: "User",
       entityId: userId,
