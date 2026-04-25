@@ -4,6 +4,7 @@ import { prisma } from "../../libs/prisma";
 import { asyncHandler } from "../common/http";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
+import { createHttpError } from "../../utils/http-error";
 
 const idParam = z.coerce.number().int().positive();
 
@@ -87,28 +88,22 @@ router.delete(
   asyncHandler(async (req: AuthRequest, res) => {
     const userId = idParam.parse(req.params.id);
 
-    // Check if user exists
-    const user = await prisma.user.findUnique({
-      where: { userId },
-    });
+    const user = await prisma.user.findUnique({ where: { userId } });
+    if (!user) throw createHttpError(404, "User not found");
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // Prevent deleting the last admin
-    if (user.role === "ADMIN") {
-      const adminCount = await prisma.user.count({
-        where: { role: "ADMIN" },
-      });
-      if (adminCount <= 1) {
-        return res
-          .status(400)
-          .json({ error: "Cannot delete the last admin user" });
-      }
-    }
-
-    await prisma.user.delete({ where: { userId } });
+    // Wrap count-check and delete in a serializable transaction so two
+    // concurrent admin-deletion requests cannot both bypass the last-admin guard.
+    await prisma.$transaction(
+      async (tx) => {
+        if (user.role === "ADMIN") {
+          const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+          if (adminCount <= 1)
+            throw createHttpError(400, "Cannot delete the last admin user");
+        }
+        await tx.user.delete({ where: { userId } });
+      },
+      { isolationLevel: "Serializable" },
+    );
 
     await auditAction(req, {
       userId: Number(req.user!.sub),
@@ -157,9 +152,7 @@ router.get(
       },
     });
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) throw createHttpError(404, "User not found");
 
     res.json({
       userId: user.userId,
