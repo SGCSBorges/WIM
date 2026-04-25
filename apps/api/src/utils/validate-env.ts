@@ -6,6 +6,15 @@ const STRIPE_VARS = [
   "STRIPE_WEBHOOK_SECRET",
 ] as const;
 
+// These vars are not hard-required at boot but will cause runtime failures in
+// production if missing. Log a warning rather than exiting so a partial deploy
+// can still start and serve non-billing traffic.
+const PRODUCTION_WARN_VARS: Array<[string, string]> = [
+  ["APP_URL", "Stripe checkout redirect URLs will fail"],
+  ["REDIS_URL", "Alert reminder jobs may not queue (Redis fallback to localhost)"],
+  ["CORS_ORIGIN", "All cross-origin requests will be blocked by CORS"],
+];
+
 export function validateEnv(): void {
   const missing = REQUIRED_VARS.filter((v) => !process.env[v]);
   if (missing.length > 0) {
@@ -22,6 +31,12 @@ export function validateEnv(): void {
         `[startup] Missing Stripe environment variables in production: ${missingStripe.join(", ")}`
       );
       process.exit(1);
+    }
+
+    for (const [varName, consequence] of PRODUCTION_WARN_VARS) {
+      if (!process.env[varName]) {
+        console.warn(`[startup] WARNING: ${varName} is not set — ${consequence}`);
+      }
     }
   }
 }
