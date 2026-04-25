@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -11,6 +12,8 @@ import {
 } from "./attachment.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+
+const idParam = z.coerce.number().int().positive();
 
 const router = Router();
 
@@ -55,8 +58,8 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const filters: { articleId?: number; garantieId?: number } = {};
-    if (req.query.articleId) filters.articleId = Number(req.query.articleId);
-    if (req.query.garantieId) filters.garantieId = Number(req.query.garantieId);
+    if (req.query.articleId) filters.articleId = idParam.parse(req.query.articleId);
+    if (req.query.garantieId) filters.garantieId = idParam.parse(req.query.garantieId);
     const attachments = await AttachmentService.list(req.user!.sub, filters);
     res.json(attachments);
   })
@@ -70,7 +73,7 @@ router.get(
   "/warranty/:garantieId",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const garantieId = Number(req.params.garantieId);
+    const garantieId = idParam.parse(req.params.garantieId);
     const attachments = await AttachmentService.getForWarranty(garantieId, req.user!.sub);
     res.json(attachments);
   })
@@ -81,7 +84,7 @@ router.get(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const attachment = await AttachmentService.get(id, req.user!.sub);
     if (!attachment) return res.status(404).json({ error: "Attachment not found" });
     res.json(attachment);
@@ -156,7 +159,7 @@ router.put(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const bodyData = AttachmentUpdateSchema.omit({ ownerUserId: true }).parse(req.body);
     const result = await AttachmentService.update(id, req.user!.sub, bodyData);
     const count = result?.count ?? 0;
@@ -177,7 +180,7 @@ router.delete(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const removeFile =
       String(req.query?.removeFile || "false").toLowerCase() === "true";
 

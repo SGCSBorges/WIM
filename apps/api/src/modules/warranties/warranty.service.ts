@@ -68,7 +68,7 @@ export const WarrantyService = {
     const current = await prisma.garantie.findFirst({
       where: { garantieId: id, ownerUserId },
     });
-    if (!current) throw createHttpError(404, "Garantie non trouvée");
+    if (!current) throw createHttpError(404, "Warranty not found");
 
     const patch: Prisma.GarantieUpdateInput = { ...data };
     // Recalculate fin if either dateAchat or duration changes (use current for missing)
@@ -105,7 +105,7 @@ export const WarrantyService = {
     const current = await prisma.garantie.findFirst({
       where: { garantieId: id, ownerUserId },
     });
-    if (!current) throw createHttpError(404, "Garantie non trouvée");
+    if (!current) throw createHttpError(404, "Warranty not found");
     await AlertService.cancelForWarranty({
       ownerUserId: current.ownerUserId,
       garantieId: current.garantieId,

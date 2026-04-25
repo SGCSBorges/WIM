@@ -1,8 +1,11 @@
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../../libs/prisma";
 import { asyncHandler } from "../common/http";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
+
+const idParam = z.coerce.number().int().positive();
 
 const router = Router();
 
@@ -82,7 +85,7 @@ router.delete(
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (req: AuthRequest, res) => {
-    const userId = Number(req.params.id);
+    const userId = idParam.parse(req.params.id);
 
     // Check if user exists
     const user = await prisma.user.findUnique({
@@ -125,7 +128,7 @@ router.get(
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
-    const userId = Number(req.params.id);
+    const userId = idParam.parse(req.params.id);
 
     const user = await prisma.user.findUnique({
       where: { userId },

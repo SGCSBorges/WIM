@@ -22,7 +22,7 @@ router.get(
   asyncHandler(async (req: AuthRequest, res) => {
     const id = z.coerce.number().int().parse(req.params.id);
     const g = await WarrantyService.get(id, req.user!.sub);
-    if (!g) return res.status(404).json({ error: "Garantie non trouvée" });
+    if (!g) return res.status(404).json({ error: "Warranty not found" });
     res.json(g);
   })
 );

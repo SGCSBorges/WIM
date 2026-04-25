@@ -100,7 +100,7 @@ export const ArticleService = {
       where: { articleId: id, ownerUserId },
       include: { garantie: true },
     });
-    if (!existing) throw createHttpError(404, "Article non trouvé");
+    if (!existing) throw createHttpError(404, "Article not found");
 
     return prisma.$transaction(async (tx) => {
       // Apply warranty changes (if any) before updating the article itself.
@@ -201,7 +201,7 @@ export const ArticleService = {
 
   remove: async (id: number, ownerUserId: number) => {
     const existing = await prisma.article.findFirst({ where: { articleId: id, ownerUserId } });
-    if (!existing) throw createHttpError(404, "Article non trouvé");
+    if (!existing) throw createHttpError(404, "Article not found");
     return prisma.article.delete({ where: { articleId: id } });
   },
 };

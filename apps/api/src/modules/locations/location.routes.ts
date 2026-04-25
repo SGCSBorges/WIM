@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
@@ -8,6 +9,8 @@ import {
   LocationUpdateSchema,
 } from "./location.schemas";
 import { LocationService } from "./location.service";
+
+const idParam = z.coerce.number().int().positive();
 
 const router = Router();
 
@@ -24,7 +27,7 @@ router.get(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const location = await LocationService.get(id, req.user!.sub);
     if (!location) return res.status(404).json({ error: "Location not found" });
     res.json(location);
@@ -56,7 +59,7 @@ router.put(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const bodyData = LocationUpdateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
@@ -75,7 +78,7 @@ router.delete(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     await LocationService.remove(id, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
@@ -91,7 +94,7 @@ router.get(
   "/:id/articles",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const articles = await LocationService.listArticles(id, req.user!.sub);
     res.json(articles);
   })
@@ -102,7 +105,7 @@ router.post(
   "/:id/articles",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const body = LocationAssignArticleSchema.parse(req.body);
     const row = await LocationService.addArticle(
       id,
@@ -124,8 +127,8 @@ router.delete(
   "/:id/articles/:articleId",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
-    const articleId = Number(req.params.articleId);
+    const id = idParam.parse(req.params.id);
+    const articleId = idParam.parse(req.params.articleId);
     await LocationService.removeArticle(id, req.user!.sub, articleId);
     await auditAction(req, {
       action: "DELETE",

@@ -28,5 +28,5 @@ export function errorHandler(
 
   // Fallback
   logger.error({ err }, "[UnhandledError]");
-  return res.status(500).json({ error: "Erreur interne" });
+  return res.status(500).json({ error: "Internal server error" });
 }

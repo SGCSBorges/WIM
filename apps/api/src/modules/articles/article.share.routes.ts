@@ -1,8 +1,11 @@
 import { Router } from "express";
+import { z } from "zod";
 import { prisma } from "../../libs/prisma";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
+
+const idParam = z.coerce.number().int().positive();
 
 const router = Router();
 
@@ -14,11 +17,8 @@ router.post(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
-    const articleId = Number(req.params.articleId);
-    if (!Number.isFinite(articleId) || articleId <= 0) {
-      return res.status(400).json({ error: "Invalid article id" });
-    }
-    const ownerUserId = Number(req.user!.sub);
+    const articleId = idParam.parse(req.params.articleId);
+    const ownerUserId = req.user!.sub;
 
     // Only the article owner can share it.
     const article = await prisma.article.findFirst({
@@ -26,7 +26,7 @@ router.post(
       select: { articleId: true },
     });
     if (!article) {
-      return res.status(404).json({ error: "Article non trouvé" });
+      return res.status(404).json({ error: "Article not found" });
     }
 
     const updated = await prisma.article.update({
@@ -53,11 +53,8 @@ router.get(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
-    const articleId = Number(req.params.articleId);
-    if (!Number.isFinite(articleId) || articleId <= 0) {
-      return res.status(400).json({ error: "Invalid article id" });
-    }
-    const ownerUserId = Number(req.user!.sub);
+    const articleId = idParam.parse(req.params.articleId);
+    const ownerUserId = req.user!.sub;
 
     const article = await prisma.article.findFirst({
       where: { articleId, ownerUserId },
@@ -76,18 +73,15 @@ router.delete(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
-    const articleId = Number(req.params.articleId);
-    if (!Number.isFinite(articleId) || articleId <= 0) {
-      return res.status(400).json({ error: "Invalid article id" });
-    }
-    const ownerUserId = Number(req.user!.sub);
+    const articleId = idParam.parse(req.params.articleId);
+    const ownerUserId = req.user!.sub;
 
     const article = await prisma.article.findFirst({
       where: { articleId, ownerUserId },
       select: { articleId: true },
     });
     if (!article) {
-      return res.status(404).json({ error: "Article non trouvé" });
+      return res.status(404).json({ error: "Article not found" });
     }
 
     await prisma.article.update({
