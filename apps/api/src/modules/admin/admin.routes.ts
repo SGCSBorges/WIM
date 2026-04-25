@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { prisma } from "../../libs/prisma";
 import { asyncHandler } from "../common/http";
-import { authGuard, requireRole } from "../auth/auth.middleware";
+import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
+import { auditAction } from "../common/audit";
 
 const router = Router();
 
@@ -80,7 +81,7 @@ router.delete(
   "/users/:id",
   authGuard,
   requireRole("ADMIN"),
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const userId = Number(req.params.id);
 
     // Check if user exists
@@ -104,9 +105,14 @@ router.delete(
       }
     }
 
-    // Delete user (cascade will handle related data)
-    await prisma.user.delete({
-      where: { userId },
+    await prisma.user.delete({ where: { userId } });
+
+    await auditAction(req, {
+      userId: Number(req.user.sub),
+      action: "DELETE",
+      entity: "User",
+      entityId: userId,
+      metadata: { deletedEmail: user.email, deletedRole: user.role },
     });
 
     res.status(204).send();
