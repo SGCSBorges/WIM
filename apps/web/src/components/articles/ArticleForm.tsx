@@ -186,6 +186,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     }
 
     setWarrantyProofAttachment(null);
+    setDeleteProofFromServer(false);
   };
 
   const selectedSet = useMemo(
