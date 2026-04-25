@@ -27,6 +27,17 @@ export const ReminderProcessor = {
         select: { garantieId: true, garantieNom: true, garantieFin: true },
       });
 
+      // Warranty was deleted while this job was in-flight (e.g., user deleted the
+      // article). The alert record is gone too (cascade), so there is nothing to
+      // notify about. Complete gracefully so BullMQ does not retry.
+      if (!g) {
+        logger.warn(
+          { jobId: job.id, garantieId: data.garantieId },
+          "[alerts] warranty deleted before job ran — skipping"
+        );
+        return;
+      }
+
       logger.info(
         {
           jobId: job.id,
