@@ -61,11 +61,19 @@ router.post(
         }
 
         if (targetRole === "POWER_USER") {
-          await prisma.user.update({
-            where: { userId },
+          // Use updateMany with a NOT guard so that replaying the same event
+          // (same subscriptionId already stored) is a no-op rather than a
+          // redundant write that could re-upgrade a since-cancelled user.
+          await prisma.user.updateMany({
+            where: {
+              userId,
+              ...(subscriptionId
+                ? { NOT: { stripeSubscriptionId: subscriptionId } }
+                : {}),
+            },
             data: {
               role: "POWER_USER",
-              stripeSubscriptionId: subscriptionId || undefined,
+              ...(subscriptionId ? { stripeSubscriptionId: subscriptionId } : {}),
             },
           });
         }

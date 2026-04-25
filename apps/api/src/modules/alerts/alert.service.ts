@@ -97,7 +97,7 @@ export const AlertService = {
         continue;
       }
 
-      const delay = executeMs - now.getTime();
+      const delay = Math.max(0, executeMs - now.getTime());
       const jobId = buildJobId(input.garantieId, reminderKind, executeAt);
 
       const payload: WarrantyReminderJobPayload = {

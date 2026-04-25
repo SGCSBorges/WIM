@@ -3,6 +3,7 @@ import { prisma } from "../../libs/prisma";
 import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";
 import { addMonths } from "../common/date";
 import { createHttpError } from "../../utils/http-error";
+import { AlertService } from "../alerts/alert.service";
 
 export const ArticleService = {
   list: (ownerUserId: number, locationId?: number) =>
@@ -200,8 +201,21 @@ export const ArticleService = {
   },
 
   remove: async (id: number, ownerUserId: number) => {
-    const existing = await prisma.article.findFirst({ where: { articleId: id, ownerUserId } });
+    const existing = await prisma.article.findFirst({
+      where: { articleId: id, ownerUserId },
+      include: { garantie: { select: { garantieId: true } } },
+    });
     if (!existing) throw createHttpError(404, "Article not found");
+
+    // Cancel BullMQ jobs before cascade-delete removes the warranty from DB,
+    // otherwise the jobs fire against a non-existent warranty.
+    if (existing.garantie) {
+      await AlertService.cancelForWarranty({
+        ownerUserId,
+        garantieId: existing.garantie.garantieId,
+      });
+    }
+
     return prisma.article.delete({ where: { articleId: id } });
   },
 };
