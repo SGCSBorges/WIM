@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const passwordSchema = z
+export const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters")
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
@@ -14,7 +14,8 @@ const passwordSchema = z
 export const RegisterSchema = z.object({
   email: z.string().email(),
   password: passwordSchema,
-  role: z.enum(["USER", "POWER_USER", "ADMIN"]).default("USER"),
+  // Public registration is USER-only; POWER_USER/ADMIN are granted via billing/admin.
+  role: z.literal("USER").default("USER"),
 });
 
 export const LoginSchema = z.object({

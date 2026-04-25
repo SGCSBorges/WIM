@@ -1,9 +1,12 @@
 import { Router, Response } from "express";
+import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { ArticleService } from "./article.service";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+
+const idParam = z.coerce.number().int().positive();
 
 const router = Router();
 
@@ -14,7 +17,7 @@ router.get(
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const locationIdRaw = req.query.locationId;
     const locationId = locationIdRaw ? Number(locationIdRaw) : undefined;
-    const articles = await ArticleService.list(req.user.sub, locationId);
+    const articles = await ArticleService.list(req.user!.sub, locationId);
     res.json(articles);
   })
 );
@@ -24,8 +27,8 @@ router.get(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const id = Number(req.params.id);
-    const article = await ArticleService.get(id, req.user.sub);
+    const id = idParam.parse(req.params.id);
+    const article = await ArticleService.get(id, req.user!.sub);
     if (!article) return res.status(404).json({ error: "Article non trouvé" });
     res.json(article);
   })
@@ -40,7 +43,7 @@ router.post(
     const bodyData = ArticleCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
-    const data = { ...bodyData, ownerUserId: req.user.sub };
+    const data = { ...bodyData, ownerUserId: req.user!.sub };
     const created = await ArticleService.create(data);
     await auditAction(req, {
       action: "CREATE",
@@ -58,9 +61,9 @@ router.put(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
+    const id = idParam.parse(req.params.id);
     const data = ArticleUpdateSchema.parse(req.body);
-    const updated = await ArticleService.update(id, req.user.sub, data);
+    const updated = await ArticleService.update(id, req.user!.sub, data);
     await auditAction(req, {
       action: "UPDATE",
       entity: "Article",
@@ -76,8 +79,8 @@ router.delete(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = Number(req.params.id);
-    await ArticleService.remove(id, req.user.sub);
+    const id = idParam.parse(req.params.id);
+    await ArticleService.remove(id, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
       entity: "Article",

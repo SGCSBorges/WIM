@@ -56,7 +56,7 @@ export function createApp() {
   app.use("/api/articles", articleRoutes);
   app.use("/api/articles", articleShareRoutes);
   app.use("/api/warranties", warrantyRoutes);
-  app.use("/api/auth", authRoutes);
+  app.use("/api/auth", security.authRateLimiter, authRoutes);
   app.use("/api/audit", auditRoutes);
   app.use("/api/admin", adminRoutes);
   app.use("/api/attachments", attachmentRoutes);

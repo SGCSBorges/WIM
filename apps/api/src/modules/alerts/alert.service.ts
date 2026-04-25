@@ -26,10 +26,10 @@ function buildJobId(
 }
 
 export const AlertService = {
-  list: (ownerUserId?: number, status?: AlerteStatus) => {
+  list: (ownerUserId: number, status?: AlerteStatus) => {
     return prisma.alerte.findMany({
       where: {
-        ...(ownerUserId ? { ownerUserId } : {}),
+        ownerUserId,
         ...(status ? { status } : {}),
       },
       orderBy: { alerteDate: "asc" },
@@ -155,10 +155,12 @@ export const AlertService = {
       }
     }
 
+    // Only cancel SCHEDULED alerts — leave SENT/FAILED records intact for audit purposes.
     await prisma.alerte.updateMany({
       where: {
         ownerUserId: input.ownerUserId,
         alerteGarantieId: input.garantieId,
+        status: AlerteStatus.SCHEDULED,
       },
       data: { status: AlerteStatus.CANCELLED },
     });

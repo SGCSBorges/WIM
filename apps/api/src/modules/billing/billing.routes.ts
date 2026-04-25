@@ -15,6 +15,24 @@ function getStripe() {
   return new Stripe(key);
 }
 
+async function getOrCreateStripeCustomer(
+  stripe: Stripe,
+  userId: number,
+  email: string,
+  stripeCustomerId: string | null,
+): Promise<string> {
+  if (stripeCustomerId) return stripeCustomerId;
+  const customer = await stripe.customers.create({
+    email,
+    metadata: { userId: String(userId) },
+  });
+  await prisma.user.update({
+    where: { userId },
+    data: { stripeCustomerId: customer.id },
+  });
+  return customer.id;
+}
+
 function getAppUrl(): string {
   const raw =
     process.env.APP_URL ||
@@ -63,18 +81,9 @@ router.post(
     });
     if (!user) throw createHttpError(404, "User not found");
 
-    let stripeCustomerId = user.stripeCustomerId;
-    if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { userId: String(user.userId) },
-      });
-      stripeCustomerId = customer.id;
-      await prisma.user.update({
-        where: { userId: user.userId },
-        data: { stripeCustomerId },
-      });
-    }
+    const stripeCustomerId = await getOrCreateStripeCustomer(
+      stripe, user.userId, user.email, user.stripeCustomerId,
+    );
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -144,18 +153,9 @@ router.post(
     });
     if (!user) throw createHttpError(404, "User not found");
 
-    let customerId = user.stripeCustomerId;
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { userId: String(user.userId) },
-      });
-      customerId = customer.id;
-      await prisma.user.update({
-        where: { userId: user.userId },
-        data: { stripeCustomerId: customerId },
-      });
-    }
+    const customerId = await getOrCreateStripeCustomer(
+      stripe, user.userId, user.email, user.stripeCustomerId,
+    );
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,

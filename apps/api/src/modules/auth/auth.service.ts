@@ -30,9 +30,10 @@ export const AuthService = {
 
   async login(data: LoginInput) {
     const user = await prisma.user.findUnique({ where: { email: data.email } });
-    if (!user) throw createHttpError(404, "Utilisateur introuvable");
-    const valid = await bcrypt.compare(data.password, user.password);
-    if (!valid) throw createHttpError(401, "Mot de passe invalide");
+    // Always run bcrypt to prevent timing-based user enumeration.
+    const DUMMY = "$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
+    const valid = await bcrypt.compare(data.password, user?.password ?? DUMMY);
+    if (!user || !valid) throw createHttpError(401, "Invalid credentials");
     const token = jwt.sign(
       { sub: user.userId, role: user.role },
       process.env.JWT_SECRET!,

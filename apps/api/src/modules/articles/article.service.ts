@@ -197,6 +197,9 @@ export const ArticleService = {
     });
   },
 
-  remove: (id: number, ownerUserId: number) =>
-    prisma.article.delete({ where: { articleId: id, ownerUserId } }),
+  remove: async (id: number, ownerUserId: number) => {
+    const existing = await prisma.article.findFirst({ where: { articleId: id, ownerUserId } });
+    if (!existing) throw createHttpError(404, "Article non trouvé");
+    return prisma.article.delete({ where: { articleId: id } });
+  },
 };

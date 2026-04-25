@@ -14,8 +14,16 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 
 const router = Router();
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+]);
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -29,30 +37,19 @@ const upload = multer({
       cb(null, `${base}-${Date.now()}${ext}`);
     },
   }),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Unsupported file type: ${file.mimetype}`));
+    }
   },
 });
 
-/**
- * Attachments API
- * Base path: /api/attachments
- *
- * Important distinction:
- * - /api/attachments/* endpoints are protected and require JWT.
- * - Uploaded files are served from /uploads/* (see app.ts) and are public.
- *   This allows the frontend to open/download the file directly via `fileUrl`
- *   without sending an Authorization header.
- */
+// ---- Routes ----
 
-/**
- * GET /api/attachments
- * Lists attachments owned by the authenticated user.
- *
- * Optional filters:
- * - articleId: number
- * - garantieId: number
- */
+/** GET /api/attachments */
 router.get(
   "/",
   authGuard,
@@ -60,40 +57,44 @@ router.get(
     const filters: { articleId?: number; garantieId?: number } = {};
     if (req.query.articleId) filters.articleId = Number(req.query.articleId);
     if (req.query.garantieId) filters.garantieId = Number(req.query.garantieId);
-
-    const attachments = await AttachmentService.list(req.user.sub, filters);
+    const attachments = await AttachmentService.list(req.user!.sub, filters);
     res.json(attachments);
   })
 );
 
 /**
- * GET /api/attachments/:id
- * Returns attachment metadata (NOT the file content).
+ * GET /api/attachments/warranty/:garantieId
+ * Must be declared BEFORE /:id so Express doesn't treat "warranty" as an id.
  */
+router.get(
+  "/warranty/:garantieId",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const garantieId = Number(req.params.garantieId);
+    const attachments = await AttachmentService.getForWarranty(garantieId, req.user!.sub);
+    res.json(attachments);
+  })
+);
+
+/** GET /api/attachments/:id */
 router.get(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
-    const attachment = await AttachmentService.get(id, req.user.sub);
-    if (!attachment)
-      return res.status(404).json({ error: "Attachment not found" });
+    const attachment = await AttachmentService.get(id, req.user!.sub);
+    if (!attachment) return res.status(404).json({ error: "Attachment not found" });
     res.json(attachment);
   })
 );
 
-/**
- * POST /api/attachments
- * Creates an attachment metadata record (no file upload).
- */
+/** POST /api/attachments — create metadata record (no file) */
 router.post(
   "/",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const bodyData = AttachmentCreateSchema.omit({ ownerUserId: true }).parse(
-      req.body
-    );
-    const data = { ...bodyData, ownerUserId: req.user.sub };
+    const bodyData = AttachmentCreateSchema.omit({ ownerUserId: true }).parse(req.body);
+    const data = { ...bodyData, ownerUserId: req.user!.sub };
     const created = await AttachmentService.create(data);
     await auditAction(req, {
       action: "CREATE",
@@ -105,14 +106,7 @@ router.post(
   })
 );
 
-/**
- * POST /api/attachments/upload
- * Uploads a file (multipart/form-data) and creates the corresponding attachment record.
- *
- * Form fields:
- * - file (required)
- * - type (optional): INVOICE | WARRANTY | OTHER
- */
+/** POST /api/attachments/upload — multipart file upload */
 router.post(
   "/upload",
   authGuard,
@@ -135,7 +129,7 @@ router.post(
       mimeType: file.mimetype,
       fileSize: file.size,
       fileUrl,
-      ownerUserId: req.user.sub,
+      ownerUserId: req.user!.sub,
     });
 
     await auditAction(req, {
@@ -157,21 +151,17 @@ router.post(
   })
 );
 
-/** PUT update attachment */
+/** PUT /api/attachments/:id */
 router.put(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
-    const bodyData = AttachmentUpdateSchema.omit({ ownerUserId: true }).parse(
-      req.body
-    );
-    const result = await AttachmentService.update(id, req.user.sub, bodyData);
+    const bodyData = AttachmentUpdateSchema.omit({ ownerUserId: true }).parse(req.body);
+    const result = await AttachmentService.update(id, req.user!.sub, bodyData);
     const count = result?.count ?? 0;
-    if (!count) {
-      return res.status(404).json({ error: "Attachment not found" });
-    }
-    const updated = await AttachmentService.get(id, req.user.sub);
+    if (!count) return res.status(404).json({ error: "Attachment not found" });
+    const updated = await AttachmentService.get(id, req.user!.sub);
     await auditAction(req, {
       action: "UPDATE",
       entity: "Attachment",
@@ -182,13 +172,7 @@ router.put(
   })
 );
 
-/**
- * DELETE /api/attachments/:id
- * Deletes attachment metadata.
- *
- * Query:
- * - removeFile=true (optional): best-effort unlink from local disk.
- */
+/** DELETE /api/attachments/:id — optionally removes the file from disk */
 router.delete(
   "/:id",
   authGuard,
@@ -197,16 +181,19 @@ router.delete(
     const removeFile =
       String(req.query?.removeFile || "false").toLowerCase() === "true";
 
-    // If requested, attempt to remove the local file from disk (best-effort).
     if (removeFile) {
-      const attachment = await AttachmentService.get(id, req.user.sub);
+      const attachment = await AttachmentService.get(id, req.user!.sub);
       if (attachment?.fileUrl) {
         try {
           const url = new URL(attachment.fileUrl);
           const pathname = decodeURIComponent(url.pathname);
           if (pathname.startsWith("/uploads/")) {
             const storedName = pathname.replace("/uploads/", "");
-            const fullPath = path.join(UPLOAD_DIR, storedName);
+            const fullPath = path.resolve(UPLOAD_DIR, storedName);
+            // Guard against path traversal: ensure fullPath stays inside UPLOAD_DIR.
+            if (!fullPath.startsWith(UPLOAD_DIR + path.sep)) {
+              throw new Error("Invalid file path");
+            }
             await fs.promises.unlink(fullPath);
           }
         } catch {
@@ -215,7 +202,7 @@ router.delete(
       }
     }
 
-    await AttachmentService.remove(id, req.user.sub);
+    await AttachmentService.remove(id, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
       entity: "Attachment",
@@ -223,20 +210,6 @@ router.delete(
       metadata: removeFile ? { removeFile: true } : undefined,
     });
     res.json({ message: "Attachment deleted successfully" });
-  })
-);
-
-/** GET attachments for warranty */
-router.get(
-  "/warranty/:garantieId",
-  authGuard,
-  asyncHandler(async (req: AuthRequest, res) => {
-    const garantieId = Number(req.params.garantieId);
-    const attachments = await AttachmentService.getForWarranty(
-      garantieId,
-      req.user.sub
-    );
-    res.json(attachments);
   })
 );
 

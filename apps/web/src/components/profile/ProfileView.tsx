@@ -5,9 +5,6 @@ import { useI18n } from "../../i18n/i18n";
 type Me = { userId: number; email: string; role: string };
 
 function disconnectAndRedirect() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  localStorage.removeItem("userId");
   window.location.href = "/";
 }
 
@@ -17,6 +14,7 @@ export default function ProfileView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -50,6 +48,7 @@ export default function ProfileView() {
 
   const updateEmail = async () => {
     setError(null);
+    setSaving(true);
     try {
       const updated = await profileAPI.updateEmail(email, currentPasswordForEmail);
       setMe(updated);
@@ -57,11 +56,14 @@ export default function ProfileView() {
       showSuccess(t("profile.email.success"));
     } catch (e: any) {
       setError(e?.message || t("common.errorOccurred"));
+    } finally {
+      setSaving(false);
     }
   };
 
   const updatePassword = async () => {
     setError(null);
+    setSaving(true);
     try {
       await profileAPI.updatePassword(currentPassword, newPassword);
       setCurrentPassword("");
@@ -69,6 +71,8 @@ export default function ProfileView() {
       showSuccess(t("profile.password.success"));
     } catch (e: any) {
       setError(e?.message || t("common.errorOccurred"));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -193,7 +197,7 @@ export default function ProfileView() {
             <input className="w-full ui-input px-3 py-2 rounded" value={currentPasswordForEmail} onChange={(e) => setCurrentPasswordForEmail(e.target.value)} type="password" />
           </div>
         </div>
-        <button className="ui-btn-primary px-4 py-2 rounded" onClick={updateEmail}>{t("profile.email.save")}</button>
+        <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updateEmail} disabled={saving}>{saving ? t("common.loading") : t("profile.email.save")}</button>
       </div>
 
       <div className="ui-card rounded-xl p-6 space-y-4">
@@ -208,7 +212,7 @@ export default function ProfileView() {
             <input className="w-full ui-input px-3 py-2 rounded" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" minLength={8} />
           </div>
         </div>
-        <button className="ui-btn-primary px-4 py-2 rounded" onClick={updatePassword}>{t("profile.password.save")}</button>
+        <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updatePassword} disabled={saving}>{saving ? t("common.loading") : t("profile.password.save")}</button>
       </div>
 
       <div className="ui-card rounded-xl p-6 space-y-3 border border-red-200">

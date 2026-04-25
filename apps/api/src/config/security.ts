@@ -25,4 +25,12 @@ export const security = {
     legacyHeaders: false,
     message: { error: "Trop de requêtes, réessayez plus tard." },
   }),
+  // Tighter limit for auth endpoints to slow brute-force attacks.
+  authRateLimiter: rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many authentication attempts, please try again later." },
+  }),
 };

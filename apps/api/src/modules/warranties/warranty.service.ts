@@ -21,6 +21,14 @@ export const WarrantyService = {
       data.garantieDuration
     );
 
+    // Ensure the article belongs to the requesting user before attaching a warranty.
+    if (data.garantieArticleId != null) {
+      const article = await prisma.article.findFirst({
+        where: { articleId: data.garantieArticleId, ownerUserId: data.ownerUserId },
+      });
+      if (!article) throw createHttpError(403, "Article not found or not owned by you");
+    }
+
     // 1–1 : vérifier qu'il n'existe pas déjà une garantie pour l'article
     const existing = await prisma.garantie.findUnique({
       where: { garantieArticleId: data.garantieArticleId },

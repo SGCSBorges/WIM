@@ -8,8 +8,9 @@ export interface AuthRequest extends Request {
 }
 
 export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
-  // Accept token from httpOnly cookie (browser) or Authorization header (API clients)
-  const cookieToken: string | undefined = (req as any).cookies?.wim_token;
+  // Accept token from httpOnly cookie (browser) or Authorization header (API clients).
+  // cookie-parser populates req.cookies; the type is available via @types/cookie-parser.
+  const cookieToken: string | undefined = req.cookies?.wim_token;
   const header = req.headers.authorization;
   const bearerToken = header?.startsWith("Bearer ") ? header.split(" ")[1] : undefined;
   const token = cookieToken ?? bearerToken;

@@ -57,6 +57,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,6 +65,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   }, [articleId, garantieId]);
 
   const fetchAttachments = async () => {
+    setFetchError(null);
     try {
       const data = await attachmentsAPI.getAll({
         articleId: articleId || undefined,
@@ -71,7 +73,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       });
       setAttachments(data);
     } catch (e: any) {
-      setDeleteError(e?.message || t("common.errorOccurred"));
+      setFetchError(e?.message || t("common.errorOccurred"));
     }
   };
 
@@ -290,6 +292,11 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       {uploadError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-sm text-red-700">{uploadError}</p>
+        </div>
+      )}
+      {fetchError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-sm text-red-700">{fetchError}</p>
         </div>
       )}
       {deleteError && (
