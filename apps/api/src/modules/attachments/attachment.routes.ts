@@ -126,14 +126,21 @@ router.post(
     const baseUrl = `${req.protocol}://${req.get("host")}`;
     const fileUrl = `${baseUrl}/uploads/${encodeURIComponent(file.filename)}`;
 
-    const created = await AttachmentService.create({
-      type: attachmentType,
-      fileName: file.originalname,
-      mimeType: file.mimetype,
-      fileSize: file.size,
-      fileUrl,
-      ownerUserId: req.user!.sub,
-    });
+    let created;
+    try {
+      created = await AttachmentService.create({
+        type: attachmentType,
+        fileName: file.originalname,
+        mimeType: file.mimetype,
+        fileSize: file.size,
+        fileUrl,
+        ownerUserId: req.user!.sub,
+      });
+    } catch (err) {
+      // DB failed — remove the uploaded file so it doesn't orphan on disk.
+      fs.unlink(file.path, () => {});
+      throw err;
+    }
 
     await auditAction(req, {
       action: "CREATE",

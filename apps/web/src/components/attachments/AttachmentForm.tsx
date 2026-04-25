@@ -54,16 +54,13 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
         newErrors.file = t("attachments.form.error.fileTooLarge");
       }
 
-      // Check file type (basic validation)
+      // Must match ALLOWED_MIME_TYPES in attachment.routes.ts
       const allowedTypes = [
         "application/pdf",
         "image/jpeg",
         "image/png",
         "image/gif",
         "image/webp",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "text/plain",
       ];
 
       if (!allowedTypes.includes(selectedFile.type)) {
