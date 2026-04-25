@@ -10,12 +10,13 @@ export function errorHandler(
 ) {
   // Validation Zod
   if (err instanceof ZodError) {
+    const msg = err.issues[0]?.message ?? "Validation error";
     return res.status(400).json({
-      error: "ValidationError",
+      error: msg,
       issues: err.issues.map((e: ZodIssue) => ({
         path: e.path,
         message: e.message,
-        code: e.code, // utile pour déboguer
+        code: e.code,
       })),
     });
   }

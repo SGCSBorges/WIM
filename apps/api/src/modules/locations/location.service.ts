@@ -37,20 +37,24 @@ export const LocationService = {
       data,
     }),
 
-  update: (
+  update: async (
     locationId: number,
     ownerUserId: number,
     data: LocationUpdateInput
-  ) =>
-    prisma.location.update({
-      where: { locationId, ownerUserId },
+  ) => {
+    const existing = await prisma.location.findFirst({ where: { locationId, ownerUserId } });
+    if (!existing) throw createHttpError(404, "Location not found");
+    return prisma.location.update({
+      where: { locationId },
       data: { ...data, ownerUserId },
-    }),
+    });
+  },
 
-  remove: (locationId: number, ownerUserId: number) =>
-    prisma.location.delete({
-      where: { locationId, ownerUserId },
-    }),
+  remove: async (locationId: number, ownerUserId: number) => {
+    const existing = await prisma.location.findFirst({ where: { locationId, ownerUserId } });
+    if (!existing) throw createHttpError(404, "Location not found");
+    return prisma.location.delete({ where: { locationId } });
+  },
 
   addArticle: async (
     locationId: number,

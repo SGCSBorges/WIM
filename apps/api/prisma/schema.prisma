@@ -107,6 +107,7 @@ model Article {
 
   @@index([ownerUserId])
   @@index([articleNom, articleModele])
+  @@index([sharedWithPowerUsers])
 }
 
 model ArticleLocation {

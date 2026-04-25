@@ -16,7 +16,9 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const locationIdRaw = req.query.locationId;
-    const locationId = locationIdRaw ? Number(locationIdRaw) : undefined;
+    const locationId = locationIdRaw
+      ? z.coerce.number().int().positive().parse(locationIdRaw)
+      : undefined;
     const articles = await ArticleService.list(req.user!.sub, locationId);
     res.json(articles);
   })
@@ -29,7 +31,7 @@ router.get(
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const id = idParam.parse(req.params.id);
     const article = await ArticleService.get(id, req.user!.sub);
-    if (!article) return res.status(404).json({ error: "Article non trouvé" });
+    if (!article) return res.status(404).json({ error: "Article not found" });
     res.json(article);
   })
 );

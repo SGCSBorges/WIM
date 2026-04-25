@@ -15,7 +15,6 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "USER" as "USER" | "POWER_USER" | "ADMIN",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,11 +29,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         await authAPI.login(formData.email, formData.password);
         onLogin();
       } else {
-        await authAPI.register(
-          formData.email,
-          formData.password,
-          formData.role,
-        );
+        await authAPI.register(formData.email, formData.password);
         // After successful registration, try to login
         await authAPI.login(formData.email, formData.password);
         onLogin();

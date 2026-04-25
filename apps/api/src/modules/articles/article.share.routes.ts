@@ -61,18 +61,13 @@ router.get(
 
     const article = await prisma.article.findFirst({
       where: { articleId, ownerUserId },
-      select: { articleId: true },
-    });
-    if (!article) {
-      return res.status(404).json({ error: "Article non trouvé" });
-    }
-
-    const row = await prisma.article.findFirst({
-      where: { articleId, ownerUserId },
       select: { articleId: true, sharedWithPowerUsers: true, updatedAt: true },
     });
+    if (!article) {
+      return res.status(404).json({ error: "Article not found" });
+    }
 
-    return res.json(row);
+    return res.json(article);
   })
 );
 

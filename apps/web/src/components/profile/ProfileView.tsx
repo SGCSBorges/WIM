@@ -82,11 +82,12 @@ export default function ProfileView() {
       await profileAPI.deleteAccount(deletePassword);
       disconnectAndRedirect();
     } catch (e: any) {
-      if (e?.status === 401 || e?.status === 404) {
+      const msg: string = e?.message ?? "";
+      if (/4(01|04)/.test(msg) || /not found|unauthorized/i.test(msg)) {
         disconnectAndRedirect();
         return;
       }
-      setError(e?.message || t("common.errorOccurred"));
+      setError(msg || t("common.errorOccurred"));
     } finally {
       setShowDeleteConfirm(false);
     }
@@ -190,11 +191,11 @@ export default function ProfileView() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-sm font-medium mb-1">{t("profile.email.new")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+            <input className="w-full ui-input px-3 py-2 rounded" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">{t("profile.email.currentPassword")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={currentPasswordForEmail} onChange={(e) => setCurrentPasswordForEmail(e.target.value)} type="password" />
+            <input className="w-full ui-input px-3 py-2 rounded" value={currentPasswordForEmail} onChange={(e) => setCurrentPasswordForEmail(e.target.value)} type="password" required />
           </div>
         </div>
         <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updateEmail} disabled={saving}>{saving ? t("common.loading") : t("profile.email.save")}</button>
@@ -205,11 +206,11 @@ export default function ProfileView() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-sm font-medium mb-1">{t("profile.password.current")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" />
+            <input className="w-full ui-input px-3 py-2 rounded" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">{t("profile.password.new")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" minLength={8} />
+            <input className="w-full ui-input px-3 py-2 rounded" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" minLength={8} required />
           </div>
         </div>
         <button className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60 disabled:cursor-not-allowed" onClick={updatePassword} disabled={saving}>{saving ? t("common.loading") : t("profile.password.save")}</button>

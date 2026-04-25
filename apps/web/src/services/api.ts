@@ -511,9 +511,39 @@ export const adminAPI = {
   },
 };
 
+export interface WarrantyItem {
+  garantieId: number;
+  garantieNom: string;
+  garantieDateAchat: string;
+  garantieDuration: number;
+  garantieFin: string;
+  garantieIsValide: boolean;
+  garantieArticleId: number | null;
+}
+
+export interface ShareItem {
+  inventoryShareId: number;
+  permission: "READ" | "WRITE";
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  target: { userId: number; email: string };
+}
+
+export interface ShareInviteItem {
+  shareInviteId: number;
+  email: string;
+  token: string;
+  status: "PENDING" | "ACCEPTED" | "REVOKED" | "EXPIRED";
+  permission: "READ" | "WRITE";
+  expiresAt: string;
+  usedAt?: string;
+  createdAt: string;
+}
+
 // Warranties API
 export const warrantiesAPI = {
-  async getAll(): Promise<any[]> {
+  async getAll(): Promise<WarrantyItem[]> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/warranties`, {
       headers: getHeaders(),
     });
@@ -527,7 +557,7 @@ export const warrantiesAPI = {
 
 // Shares API (owned-inventory sharing)
 export const sharesAPI = {
-  async getOwned(): Promise<any[]> {
+  async getOwned(): Promise<ShareItem[]> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/shares/owned`, {
       headers: getHeaders(),
     });
@@ -549,7 +579,20 @@ export const sharesAPI = {
     }
   },
 
-  async getSentInvites(): Promise<any[]> {
+  async createInvite(data: { email: string; permission: "READ" | "WRITE" }): Promise<ShareInviteItem> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/shares/invites`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body?.error || "Failed to create invite");
+    }
+    return response.json();
+  },
+
+  async getSentInvites(): Promise<ShareInviteItem[]> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/shares/invites/sent`,
       { headers: getHeaders() },

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import {
@@ -63,7 +64,7 @@ router.delete(
   "/invites/:inviteId",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const inviteId = Number(req.params.inviteId);
+    const inviteId = z.coerce.number().int().positive().parse(req.params.inviteId);
     await ShareService.revokeInvite(inviteId, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
@@ -100,7 +101,7 @@ router.put(
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
     const { permission } = ShareUpdateSchema.parse(req.body);
-    const targetUserId = Number(req.params.targetUserId);
+    const targetUserId = z.coerce.number().int().positive().parse(req.params.targetUserId);
     const updated = await ShareService.updateShare(
       req.user!.sub,
       targetUserId,
@@ -122,7 +123,7 @@ router.delete(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
-    const targetUserId = Number(req.params.targetUserId);
+    const targetUserId = z.coerce.number().int().positive().parse(req.params.targetUserId);
     await ShareService.revokeShare(req.user!.sub, targetUserId);
     await auditAction(req, {
       action: "DELETE",

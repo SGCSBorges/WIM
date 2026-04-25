@@ -1,76 +1,54 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useI18n } from "../../i18n/i18n";
-import { sharesAPI } from "../../services/api";
-
-interface Share {
-  inventoryShareId: number;
-  permission: "READ" | "WRITE";
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  target: {
-    userId: number;
-    email: string;
-  };
-}
-
-interface ShareInvite {
-  shareInviteId: number;
-  email: string;
-  token: string;
-  status: "PENDING" | "ACCEPTED" | "REVOKED" | "EXPIRED";
-  permission: "READ" | "WRITE";
-  expiresAt: string;
-  usedAt?: string;
-  createdAt: string;
-}
+import { sharesAPI, ShareItem, ShareInviteItem } from "../../services/api";
 
 interface SharesListProps {
-  onEdit?: (share: Share) => void;
+  onEdit?: (share: ShareItem) => void;
   onRevoke?: (shareId: number) => void;
-  onInviteRevoke?: (inviteId: number) => void;
-  onAdd?: () => void;
-  isLoading?: boolean;
 }
 
-const SharesList: React.FC<SharesListProps> = ({
-  onEdit,
-  onRevoke,
-  onAdd,
-  isLoading = false,
-}) => {
+const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const { t } = useI18n();
-  const [shares, setShares] = useState<Share[]>([]);
-  const [invites, setInvites] = useState<ShareInvite[]>([]);
+  const [shares, setShares] = useState<ShareItem[]>([]);
+  const [invites, setInvites] = useState<ShareInviteItem[]>([]);
   const [activeTab, setActiveTab] = useState<"shares" | "invites">("shares");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
   const [confirmRevokeId, setConfirmRevokeId] = useState<number | null>(null);
+  const [confirmRevokeInviteId, setConfirmRevokeInviteId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchShares();
-    fetchInvites();
-  }, []);
+  // Inline invite form
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePermission, setInvitePermission] = useState<"READ" | "WRITE">("READ");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
-  const fetchShares = async () => {
+  const fetchShares = useCallback(async () => {
     setError(null);
     try {
       const data = await sharesAPI.getOwned();
-      setShares(data as Share[]);
+      setShares(data);
     } catch (e: any) {
       setError(e?.message || t("common.errorOccurred"));
     }
-  };
+  }, [t]);
 
-  const fetchInvites = async () => {
+  const fetchInvites = useCallback(async () => {
     try {
       const data = await sharesAPI.getSentInvites();
-      setInvites(data as ShareInvite[]);
+      setInvites(data);
     } catch {
-      // non-blocking: invites tab shows empty if fetch fails
+      // non-blocking
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([fetchShares(), fetchInvites()]).finally(() => setLoading(false));
+  }, [fetchShares, fetchInvites]);
 
   const handleRevokeShare = async (shareId: number) => {
     setConfirmRevokeId(null);
@@ -80,9 +58,42 @@ const SharesList: React.FC<SharesListProps> = ({
     setError(null);
     try {
       await sharesAPI.revoke(share.target.userId);
-      setShares(shares.filter((s) => s.inventoryShareId !== shareId));
+      setShares((prev) => prev.filter((s) => s.inventoryShareId !== shareId));
     } catch (e: any) {
       setError(e?.message || t("common.errorOccurred"));
+    }
+  };
+
+  const handleRevokeInvite = async (inviteId: number) => {
+    setConfirmRevokeInviteId(null);
+    setError(null);
+    try {
+      await sharesAPI.revokeInvite(inviteId);
+      setInvites((prev) => prev.filter((i) => i.shareInviteId !== inviteId));
+    } catch (e: any) {
+      setError(e?.message || t("common.errorOccurred"));
+    }
+  };
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviteError(null);
+    if (!inviteEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)) {
+      setInviteError(t("shareForm.error.emailInvalid"));
+      return;
+    }
+    setInviteBusy(true);
+    try {
+      const inv = await sharesAPI.createInvite({ email: inviteEmail.trim(), permission: invitePermission });
+      setInvites((prev) => [inv, ...prev]);
+      setInviteEmail("");
+      setInvitePermission("READ");
+      setShowInviteForm(false);
+      setActiveTab("invites");
+    } catch (e: any) {
+      setInviteError(e?.message || t("common.errorOccurred"));
+    } finally {
+      setInviteBusy(false);
     }
   };
 
@@ -91,11 +102,10 @@ const SharesList: React.FC<SharesListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PENDING":   return "bg-yellow-100 text-yellow-800";
-      case "ACCEPTED":  return "bg-green-100 text-green-800";
-      case "REVOKED":   return "bg-red-100 text-red-800";
-      case "EXPIRED":   return "bg-gray-100 text-gray-800";
-      default:          return "bg-gray-100 text-gray-800";
+      case "PENDING":  return "bg-yellow-100 text-yellow-800";
+      case "ACCEPTED": return "bg-green-100 text-green-800";
+      case "REVOKED":  return "bg-red-100 text-red-800";
+      default:         return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -119,10 +129,12 @@ const SharesList: React.FC<SharesListProps> = ({
     return matchesSearch && matchesFilter;
   });
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="space-y-4">
+        <div className="h-8 ui-card rounded animate-pulse w-48" />
+        <div className="h-32 ui-card rounded animate-pulse" />
+        <div className="h-24 ui-card rounded animate-pulse" />
       </div>
     );
   }
@@ -131,15 +143,49 @@ const SharesList: React.FC<SharesListProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold ui-title">{t("shares.title")}</h2>
-        {onAdd && (
-          <button
-            onClick={onAdd}
-            className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
-          >
-            {t("shares.add")}
-          </button>
-        )}
+        <button
+          onClick={() => setShowInviteForm((v) => !v)}
+          className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
+        >
+          {showInviteForm ? t("common.cancel") : t("shares.add")}
+        </button>
       </div>
+
+      {showInviteForm && (
+        <form onSubmit={handleSendInvite} className="ui-card rounded-lg p-4 space-y-3">
+          <h3 className="font-semibold ui-title">{t("shareForm.title")}</h3>
+          {inviteError && (
+            <p className="text-sm text-red-600">{inviteError}</p>
+          )}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="email"
+              required
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder={t("shareForm.email.placeholder")}
+              className="ui-input flex-1 px-3 py-2 rounded"
+              disabled={inviteBusy}
+            />
+            <select
+              value={invitePermission}
+              onChange={(e) => setInvitePermission(e.target.value as "READ" | "WRITE")}
+              className="ui-select px-3 py-2 rounded"
+              disabled={inviteBusy}
+            >
+              <option value="READ">{t("shareForm.permission.read")}</option>
+              <option value="WRITE">{t("shareForm.permission.write")}</option>
+            </select>
+            <button
+              type="submit"
+              disabled={inviteBusy}
+              className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60"
+            >
+              {inviteBusy ? t("common.loading") : t("shareForm.send")}
+            </button>
+          </div>
+        </form>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -175,15 +221,13 @@ const SharesList: React.FC<SharesListProps> = ({
 
       {/* Search and Filter */}
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder={`${t("shares.search.placeholder")}…`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="ui-input w-full px-3 py-2 rounded-md"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder={`${t("shares.search.placeholder")}…`}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="ui-input flex-1 px-3 py-2 rounded-md"
+        />
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
@@ -209,9 +253,7 @@ const SharesList: React.FC<SharesListProps> = ({
               </div>
               <h3 className="text-lg font-medium mb-2">{t("shares.none.activeTitle")}</h3>
               <p className="ui-text-muted">
-                {searchTerm || filterStatus !== "all"
-                  ? t("shares.none.filtered")
-                  : t("shares.none.activeEmpty")}
+                {searchTerm || filterStatus !== "all" ? t("shares.none.filtered") : t("shares.none.activeEmpty")}
               </p>
             </div>
           ) : (
@@ -231,13 +273,7 @@ const SharesList: React.FC<SharesListProps> = ({
                     <p className="text-sm ui-text-muted">
                       {t("shares.label.sharedOn")} {new Date(share.createdAt).toLocaleDateString()}
                     </p>
-                    {share.updatedAt !== share.createdAt && (
-                      <p className="text-sm ui-text-muted">
-                        {t("shares.label.updatedOn")} {new Date(share.updatedAt).toLocaleDateString()}
-                      </p>
-                    )}
                   </div>
-
                   <div className="flex space-x-2 items-center">
                     {onEdit && share.active && (
                       <button
@@ -251,18 +287,8 @@ const SharesList: React.FC<SharesListProps> = ({
                       confirmRevokeId === share.inventoryShareId ? (
                         <>
                           <span className="text-xs text-red-700">{t("shares.confirmRevoke")}</span>
-                          <button
-                            onClick={() => handleRevokeShare(share.inventoryShareId)}
-                            className="px-2 py-1 text-xs bg-red-600 text-white rounded"
-                          >
-                            {t("common.yes")}
-                          </button>
-                          <button
-                            onClick={() => setConfirmRevokeId(null)}
-                            className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded"
-                          >
-                            {t("common.no")}
-                          </button>
+                          <button onClick={() => handleRevokeShare(share.inventoryShareId)} className="px-2 py-1 text-xs bg-red-600 text-white rounded">{t("common.yes")}</button>
+                          <button onClick={() => setConfirmRevokeId(null)} className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded">{t("common.no")}</button>
                         </>
                       ) : (
                         <button
@@ -292,9 +318,7 @@ const SharesList: React.FC<SharesListProps> = ({
               </div>
               <h3 className="text-lg font-medium mb-2">{t("shares.none.pendingTitle")}</h3>
               <p className="ui-text-muted">
-                {searchTerm || filterStatus !== "all"
-                  ? t("shares.none.filtered")
-                  : t("shares.none.pendingEmpty")}
+                {searchTerm || filterStatus !== "all" ? t("shares.none.filtered") : t("shares.none.pendingEmpty")}
               </p>
             </div>
           ) : (
@@ -322,6 +346,24 @@ const SharesList: React.FC<SharesListProps> = ({
                         )}
                       </div>
                     </div>
+                    {invite.status === "PENDING" && !isExpired && (
+                      <div className="flex items-center space-x-2">
+                        {confirmRevokeInviteId === invite.shareInviteId ? (
+                          <>
+                            <span className="text-xs text-red-700">{t("shares.confirmRevoke")}</span>
+                            <button onClick={() => handleRevokeInvite(invite.shareInviteId)} className="px-2 py-1 text-xs bg-red-600 text-white rounded">{t("common.yes")}</button>
+                            <button onClick={() => setConfirmRevokeInviteId(null)} className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded">{t("common.no")}</button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmRevokeInviteId(invite.shareInviteId)}
+                            className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                          >
+                            {t("shares.action.revoke")}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

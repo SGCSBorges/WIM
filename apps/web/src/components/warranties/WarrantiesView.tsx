@@ -63,26 +63,34 @@ export default function WarrantiesView() {
       <div className="ui-card rounded-lg">
         <div className="p-4 border-b ui-divider flex items-center justify-between">
           <h2 className="font-semibold">{t("warranties.all")}</h2>
-          {loading ? (
-            <span className="text-xs ui-text-muted">{t("common.loading")}</span>
-          ) : (
-            <button
-              onClick={fetchAll}
-              className="text-sm ui-btn-ghost rounded px-2 py-1"
-            >
-              {t("common.refresh")}
-            </button>
-          )}
+          <button
+            onClick={fetchAll}
+            disabled={loading}
+            className="text-sm ui-btn-ghost rounded px-2 py-1 disabled:opacity-50"
+          >
+            {loading ? t("common.loading") : t("common.refresh")}
+          </button>
         </div>
 
         <div className="divide-y">
+          {loading && (
+            <>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 space-y-2 animate-pulse">
+                  <div className="h-4 ui-card rounded w-1/3" />
+                  <div className="h-3 ui-card rounded w-1/2" />
+                </div>
+              ))}
+            </>
+          )}
+
           {!loading && sorted.length === 0 && (
             <div className="p-4 text-sm ui-text-muted">
               {t("warranties.none")}
             </div>
           )}
 
-          {sorted.map((w) => (
+          {!loading && sorted.map((w) => (
             <div key={w.garantieId} className="p-4">
               <div className="font-medium">{w.garantieNom}</div>
               <div className="text-xs ui-text-muted">

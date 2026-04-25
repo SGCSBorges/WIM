@@ -132,6 +132,7 @@ const ArticlesList: React.FC = () => {
   };
 
   const handleSubmit = async (articleData: Omit<Article, "articleId">) => {
+    setError(null);
     try {
       if (editingArticle) {
         await articlesAPI.update(editingArticle.articleId, articleData);
@@ -148,6 +149,7 @@ const ArticlesList: React.FC = () => {
 
   const handleDelete = async (articleId: number) => {
     setConfirmDeleteArticleId(null);
+    setError(null);
     try {
       await articlesAPI.delete(articleId);
       await fetchArticles();

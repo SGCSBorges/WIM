@@ -102,98 +102,100 @@ export const ArticleService = {
     });
     if (!existing) throw createHttpError(404, "Article non trouvé");
 
-    // Apply warranty changes (if any) before updating the article itself.
-    if (removeGarantie) {
-      if (existing.garantie?.garantieId) {
-        await prisma.garantie.delete({
-          where: { garantieId: existing.garantie.garantieId },
-        });
-      }
-    } else if (garantie) {
-      const shouldRecomputeFin =
-        garantie.garantieDateAchat !== undefined ||
-        garantie.garantieDuration !== undefined;
+    return prisma.$transaction(async (tx) => {
+      // Apply warranty changes (if any) before updating the article itself.
+      if (removeGarantie) {
+        if (existing.garantie?.garantieId) {
+          await tx.garantie.delete({
+            where: { garantieId: existing.garantie.garantieId },
+          });
+        }
+      } else if (garantie) {
+        const shouldRecomputeFin =
+          garantie.garantieDateAchat !== undefined ||
+          garantie.garantieDuration !== undefined;
 
-      if (existing.garantie?.garantieId) {
-        await prisma.garantie.update({
-          where: { garantieId: existing.garantie.garantieId },
-          data: {
-            ...garantie,
-            ...(shouldRecomputeFin
-              ? {
-                  garantieFin: addMonths(
-                    new Date(
-                      garantie.garantieDateAchat ??
-                        existing.garantie.garantieDateAchat
-                    ),
-                    garantie.garantieDuration ??
-                      existing.garantie.garantieDuration
-                  ),
-                }
-              : {}),
-          },
-        });
-      } else {
-        // Create a warranty if article has none yet.
-        if (
-          garantie.garantieNom &&
-          garantie.garantieDateAchat &&
-          garantie.garantieDuration
-        ) {
-          await prisma.garantie.create({
+        if (existing.garantie?.garantieId) {
+          await tx.garantie.update({
+            where: { garantieId: existing.garantie.garantieId },
             data: {
-              ownerUserId,
-              garantieArticleId: id,
-              garantieNom: garantie.garantieNom,
-              garantieDateAchat: garantie.garantieDateAchat,
-              garantieDuration: garantie.garantieDuration,
-              ...(garantie.garantieImageAttachmentId !== undefined
+              ...garantie,
+              ...(shouldRecomputeFin
                 ? {
-                    garantieImageAttachmentId:
-                      garantie.garantieImageAttachmentId,
+                    garantieFin: addMonths(
+                      new Date(
+                        garantie.garantieDateAchat ??
+                          existing.garantie.garantieDateAchat
+                      ),
+                      garantie.garantieDuration ??
+                        existing.garantie.garantieDuration
+                    ),
                   }
                 : {}),
-              garantieFin: addMonths(
-                new Date(garantie.garantieDateAchat),
-                garantie.garantieDuration
-              ),
-              garantieIsValide: true,
             },
           });
         } else {
-          throw createHttpError(
-            400,
-            "To create a warranty you must provide garantieNom, garantieDateAchat and garantieDuration"
-          );
+          // Create a warranty if article has none yet.
+          if (
+            garantie.garantieNom &&
+            garantie.garantieDateAchat &&
+            garantie.garantieDuration
+          ) {
+            await tx.garantie.create({
+              data: {
+                ownerUserId,
+                garantieArticleId: id,
+                garantieNom: garantie.garantieNom,
+                garantieDateAchat: garantie.garantieDateAchat,
+                garantieDuration: garantie.garantieDuration,
+                ...(garantie.garantieImageAttachmentId !== undefined
+                  ? {
+                      garantieImageAttachmentId:
+                        garantie.garantieImageAttachmentId,
+                    }
+                  : {}),
+                garantieFin: addMonths(
+                  new Date(garantie.garantieDateAchat),
+                  garantie.garantieDuration
+                ),
+                garantieIsValide: true,
+              },
+            });
+          } else {
+            throw createHttpError(
+              400,
+              "To create a warranty you must provide garantieNom, garantieDateAchat and garantieDuration"
+            );
+          }
         }
       }
-    }
 
-    return prisma.article.update({
-      where: { articleId: id },
-      data: {
-        ...patch,
-        ownerUserId,
-        ...(locationIds
-          ? {
-              locations: {
-                deleteMany: {},
-                create: locationIds.map((locationId: number) => ({
-                  locationId,
-                })),
-              },
-            }
-          : {}),
-      },
-      include: {
-        garantie: true,
-        locations: {
-          select: {
-            locationId: true,
-            location: { select: { name: true } },
+      return tx.article.update({
+        where: { articleId: id },
+        data: {
+          ...patch,
+          ownerUserId,
+          ...(locationIds
+            ? {
+                locations: {
+                  deleteMany: {},
+                  create: locationIds.map((locationId: number) => ({
+                    locationId,
+                  })),
+                },
+              }
+            : {}),
+        },
+        include: {
+          garantie: true,
+          locations: {
+            select: {
+              locationId: true,
+              location: { select: { name: true } },
+            },
           },
         },
-      },
+      });
     });
   },
 
