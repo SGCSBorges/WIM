@@ -178,7 +178,7 @@ const Dashboard: React.FC = () => {
         <StatCard
           title={t("dashboard.sharedWithMe")}
           value={statistics.sharing.totalSharedArticles}
-          icon="�"
+          icon="📥"
           color="bg-orange-500"
           subtitle={t("dashboard.availableInSharedView")}
         />

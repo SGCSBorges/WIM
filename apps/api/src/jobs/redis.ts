@@ -34,7 +34,7 @@ export function createRedisConnection(): RedisOptions {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
     host: process.env.REDIS_HOST || "127.0.0.1",
-    port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
+    port: process.env.REDIS_PORT && Number(process.env.REDIS_PORT) > 0 ? Number(process.env.REDIS_PORT) : 6379,
     retryStrategy: (times) => Math.min(times * 200, 2000),
   };
 }

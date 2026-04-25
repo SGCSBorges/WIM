@@ -44,6 +44,11 @@ const fetchWithTimeout = async (
       signal: controller.signal,
       credentials: "include", // always send the httpOnly cookie
     });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Request timed out — please try again");
+    }
+    throw err;
   } finally {
     clearTimeout(timeout);
   }
@@ -178,9 +183,9 @@ export const articlesAPI = {
     return response.json();
   },
 
-  async removeShare(articleId: number, shareId: number) {
+  async removeShare(articleId: number) {
     const response = await fetchWithTimeout(
-      `${API_BASE_URL}/articles/${articleId}/share/${shareId}`,
+      `${API_BASE_URL}/articles/${articleId}/share`,
       { method: "DELETE", headers: getHeaders() },
     );
     if (!response.ok) throw new Error("Failed to remove share");

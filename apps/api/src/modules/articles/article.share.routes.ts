@@ -69,7 +69,7 @@ router.get(
 );
 
 router.delete(
-  "/:articleId/share/:targetUserId",
+  "/:articleId/share",
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {

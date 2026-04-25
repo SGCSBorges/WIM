@@ -34,7 +34,7 @@ export const WarrantyService = {
       where: { garantieArticleId: data.garantieArticleId },
     });
     if (existing)
-      throw createHttpError(409, "Une garantie existe déjà pour cet article");
+      throw createHttpError(409, "A warranty already exists for this article");
 
     // Créer la garantie une seule fois
     const created = await prisma.garantie.create({

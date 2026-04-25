@@ -184,24 +184,25 @@ router.delete(
     const removeFile =
       String(req.query?.removeFile || "false").toLowerCase() === "true";
 
-    if (removeFile) {
-      const attachment = await AttachmentService.get(id, req.user!.sub);
-      if (attachment?.fileUrl) {
-        try {
-          const url = new URL(attachment.fileUrl);
-          const pathname = decodeURIComponent(url.pathname);
-          if (pathname.startsWith("/uploads/")) {
-            const storedName = pathname.replace("/uploads/", "");
-            const fullPath = path.resolve(UPLOAD_DIR, storedName);
-            // Guard against path traversal: ensure fullPath stays inside UPLOAD_DIR.
-            if (!fullPath.startsWith(UPLOAD_DIR + path.sep)) {
-              throw new Error("Invalid file path");
-            }
-            await fs.promises.unlink(fullPath);
+    // Always fetch first — establishes ownership and gives us the fileUrl.
+    const attachment = await AttachmentService.get(id, req.user!.sub);
+    if (!attachment) return res.status(404).json({ error: "Attachment not found" });
+
+    if (removeFile && attachment.fileUrl) {
+      try {
+        const url = new URL(attachment.fileUrl);
+        const pathname = decodeURIComponent(url.pathname);
+        if (pathname.startsWith("/uploads/")) {
+          const storedName = pathname.replace("/uploads/", "");
+          const fullPath = path.resolve(UPLOAD_DIR, storedName);
+          // Guard against path traversal: ensure fullPath stays inside UPLOAD_DIR.
+          if (!fullPath.startsWith(UPLOAD_DIR + path.sep)) {
+            throw new Error("Invalid file path");
           }
-        } catch {
-          // ignore parse/unlink errors (file may already be gone)
+          await fs.promises.unlink(fullPath);
         }
+      } catch {
+        // ignore parse/unlink errors (file may already be gone)
       }
     }
 

@@ -92,7 +92,10 @@ export const AlertService = {
         orderBy: { alerteId: "desc" },
       });
 
-      if (!alerte) continue;
+      if (!alerte) {
+        logger.warn({ garantieId: input.garantieId, executeAt }, "[alerts] alert record not found after createMany — skipping job");
+        continue;
+      }
 
       const delay = executeMs - now.getTime();
       const jobId = buildJobId(input.garantieId, reminderKind, executeAt);
