@@ -59,17 +59,17 @@ router.post(
     const priceId = plan === "yearly" ? yearlyPriceId : monthlyPriceId;
 
     if (!priceId) {
-      return res.status(500).json({
-        error:
-          "Missing Stripe Price ID for selected plan. Set STRIPE_POWER_USER_PRICE_MONTHLY and STRIPE_POWER_USER_PRICE_YEARLY.",
-      });
+      throw createHttpError(
+        500,
+        "Missing Stripe Price ID for selected plan. Set STRIPE_POWER_USER_PRICE_MONTHLY and STRIPE_POWER_USER_PRICE_YEARLY.",
+      );
     }
 
     if (!String(priceId).startsWith("price_")) {
-      return res.status(500).json({
-        error:
-          "Stripe price IDs must start with price_. You currently have amounts instead of Stripe Price IDs.",
-      });
+      throw createHttpError(
+        500,
+        "Stripe price IDs must start with price_. You currently have amounts instead of Stripe Price IDs.",
+      );
     }
 
     const stripe = getStripe();

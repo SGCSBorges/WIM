@@ -46,30 +46,32 @@ export const ShareService = {
         where: { token },
         data: { status: InviteStatus.EXPIRED },
       });
-      throw createHttpError(410, "Invitation expirée");
+      throw createHttpError(410, "Invite has expired");
     }
-    // Create the share
-    await prisma.inventoryShare.create({
-      data: {
+
+    return prisma.$transaction(async (tx) => {
+      await tx.inventoryShare.create({
+        data: {
+          ownerUserId: invite.ownerUserId,
+          targetUserId: acceptorUserId,
+          permission: invite.permission,
+        },
+      });
+
+      await tx.shareInvite.update({
+        where: { token },
+        data: {
+          status: InviteStatus.ACCEPTED,
+          usedAt: new Date(),
+        },
+      });
+
+      return {
         ownerUserId: invite.ownerUserId,
         targetUserId: acceptorUserId,
         permission: invite.permission,
-      },
+      };
     });
-
-    // Mark invite as accepted
-    await prisma.shareInvite.update({
-      where: { token },
-      data: {
-        status: InviteStatus.ACCEPTED,
-        usedAt: new Date(),
-      },
-    });
-    return {
-      ownerUserId: invite.ownerUserId,
-      targetUserId: acceptorUserId,
-      permission: invite.permission,
-    };
   },
 
   async listSharesOwned(ownerUserId: number) {

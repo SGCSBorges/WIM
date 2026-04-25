@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
+import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
 
 const router = Router();
@@ -13,7 +14,7 @@ router.get("/me", authGuard, asyncHandler(async (req: AuthRequest, res) => {
     select: { userId: true, email: true, role: true },
   });
 
-  if (!user) return res.status(404).json({ error: "User not found" });
+  if (!user) throw createHttpError(404, "User not found");
   res.json(user);
 }));
 

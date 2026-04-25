@@ -64,11 +64,16 @@ export default function App() {
         setAuthStatus("authed");
 
         if (stripeResult === "success") {
-          billingAPI.refreshRoleFromServer().then((newRole) => {
-            if (newRole) setRole(newRole);
-            url.searchParams.delete("stripe");
-            window.history.replaceState({}, document.title, url.toString());
-          });
+          billingAPI.refreshRoleFromServer()
+            .then((newRole) => { if (newRole) setRole(newRole); })
+            .catch(() => {})
+            .finally(() => {
+              url.searchParams.delete("stripe");
+              window.history.replaceState({}, document.title, url.toString());
+            });
+        } else if (stripeResult === "cancel") {
+          url.searchParams.delete("stripe");
+          window.history.replaceState({}, document.title, url.toString());
         }
       })
       .catch(() => {

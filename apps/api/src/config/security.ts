@@ -23,7 +23,7 @@ export const security = {
     max: Number(process.env.RATE_LIMIT_MAX ?? 100),
     standardHeaders: true,
     legacyHeaders: false,
-    message: { error: "Trop de requêtes, réessayez plus tard." },
+    message: { error: "Too many requests, please try again later." },
   }),
   // Tighter limit for auth endpoints to slow brute-force attacks.
   authRateLimiter: rateLimit({
