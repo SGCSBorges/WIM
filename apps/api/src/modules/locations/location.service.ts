@@ -46,14 +46,14 @@ export const LocationService = {
     if (!existing) throw createHttpError(404, "Location not found");
     return prisma.location.update({
       where: { locationId },
-      data: { ...data, ownerUserId },
+      data,
     });
   },
 
   remove: async (locationId: number, ownerUserId: number) => {
     const existing = await prisma.location.findFirst({ where: { locationId, ownerUserId } });
     if (!existing) throw createHttpError(404, "Location not found");
-    return prisma.location.delete({ where: { locationId } });
+    await prisma.location.deleteMany({ where: { locationId, ownerUserId } });
   },
 
   addArticle: async (
