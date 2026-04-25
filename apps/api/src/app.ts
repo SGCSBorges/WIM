@@ -1,4 +1,5 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import { security } from "./config/security";
 import { errorHandler } from "./middlewares/error";
@@ -36,6 +37,7 @@ export function createApp() {
   app.use(security.cors);
   app.use(security.rateLimiter);
 
+  app.use(cookieParser());
   app.use(express.json({ limit: "1mb" }));
   app.use(
     pinoHttp({

@@ -1,5 +1,4 @@
 import { Router, Request, Response } from "express";
-import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { AuthService } from "./auth.service";
 import { RegisterSchema, LoginSchema } from "./auth.schemas";
@@ -7,6 +6,13 @@ import { authGuard, AuthRequest } from "./auth.middleware";
 import { auditAction } from "../common/audit";
 
 const router = Router();
+
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 router.post(
   "/register",
@@ -19,7 +25,8 @@ router.post(
       entity: "User",
       entityId: result.user.userId,
     });
-    res.status(201).json(result);
+    res.cookie("wim_token", result.token, COOKIE_OPTS);
+    res.status(201).json({ user: result.user });
   })
 );
 
@@ -34,15 +41,25 @@ router.post(
       entity: "User",
       entityId: result.user.userId,
     });
-    res.json(result);
+    res.cookie("wim_token", result.token, COOKIE_OPTS);
+    res.json({ user: result.user });
   })
 );
+
+router.post("/logout", (_req, res) => {
+  res.clearCookie("wim_token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  res.status(204).send();
+});
 
 router.get(
   "/me",
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const profile = await AuthService.profile(req.user.sub);
+    const profile = await AuthService.profile(req.user!.sub);
     res.json(profile);
   })
 );

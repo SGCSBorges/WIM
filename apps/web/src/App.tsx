@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import ArticlesList from "./components/articles/ArticlesList";
 import Dashboard from "./components/dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
-import { authAPI, billingAPI } from "./services/api";
+import { authAPI, billingAPI, profileAPI } from "./services/api";
 import AdminUsers from "./components/admin/AdminUsers";
 import WarrantiesView from "./components/warranties/WarrantiesView";
 import AttachmentsList from "./components/attachments/AttachmentsList";
@@ -49,45 +49,57 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return authAPI.isAuthenticated();
-  });
-
-  const [role, setRole] = useState(() => authAPI.getRole());
+  // 'loading' while we verify the session cookie with /auth/me on mount
+  const [authStatus, setAuthStatus] = useState<"loading" | "authed" | "unauthed">("loading");
+  const [role, setRole] = useState<string | null>(null);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
-  // On mount, verify role from server to prevent localStorage spoofing.
   useEffect(() => {
-    if (!authAPI.isAuthenticated()) return;
     const url = new URL(window.location.href);
     const stripeResult = url.searchParams.get("stripe");
-    if (stripeResult === "success") {
-      billingAPI.refreshRoleFromServer().then((newRole) => {
-        setRole(newRole);
-        url.searchParams.delete("stripe");
-        window.history.replaceState({}, document.title, url.toString());
+
+    authAPI.getMe()
+      .then((user) => {
+        setRole(user.role);
+        setAuthStatus("authed");
+
+        if (stripeResult === "success") {
+          billingAPI.refreshRoleFromServer().then((newRole) => {
+            if (newRole) setRole(newRole);
+            url.searchParams.delete("stripe");
+            window.history.replaceState({}, document.title, url.toString());
+          });
+        }
+      })
+      .catch(() => {
+        setAuthStatus("unauthed");
       });
-    } else {
-      billingAPI.refreshRoleFromServer().then((verifiedRole) => {
-        setRole(verifiedRole);
-      });
-    }
   }, []);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
-    setRole(authAPI.getRole());
+    // Role was cached in _cachedRole by authAPI.login/register; read it back
+    // then re-verify with server to get the authoritative value
+    profileAPI.getMe().then((user) => setRole(user.role)).catch(() => {});
+    setAuthStatus("authed");
     navigate("/");
   };
 
-  const handleLogout = () => {
-    authAPI.logout();
-    setIsAuthenticated(false);
+  const handleLogout = async () => {
+    await authAPI.logout();
+    setAuthStatus("unauthed");
     setRole(null);
     navigate("/");
   };
 
-  if (!isAuthenticated) {
+  if (authStatus === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-sm ui-text-muted animate-pulse">Loading…</div>
+      </div>
+    );
+  }
+
+  if (authStatus === "unauthed") {
     return <LoginForm onLogin={handleLogin} />;
   }
 

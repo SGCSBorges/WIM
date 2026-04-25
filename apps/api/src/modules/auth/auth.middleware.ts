@@ -8,12 +8,15 @@ export interface AuthRequest extends Request {
 }
 
 export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
+  // Accept token from httpOnly cookie (browser) or Authorization header (API clients)
+  const cookieToken: string | undefined = (req as any).cookies?.wim_token;
   const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer "))
-    return res.status(401).json({ error: "Token manquant" });
-  const token = header.split(" ")[1];
+  const bearerToken = header?.startsWith("Bearer ") ? header.split(" ")[1] : undefined;
+  const token = cookieToken ?? bearerToken;
+
+  if (!token) return res.status(401).json({ error: "Token manquant" });
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
       sub: number;
       role: string;
     };

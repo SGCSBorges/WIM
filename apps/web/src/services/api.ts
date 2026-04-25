@@ -6,10 +6,6 @@
 export const API_BASE_URL: string = (() => {
   const fromEnv = import.meta.env.VITE_API_BASE_URL?.trim();
   if (fromEnv) {
-    // Allow setting either:
-    //  - https://wimapi.onrender.com/api  (full)
-    //  - https://wimapi.onrender.com      (origin only)
-    // If it's just an origin (no pathname or just "/"), append "/api".
     const trimmed = fromEnv.replace(/\/$/, "");
     try {
       const u = new URL(trimmed);
@@ -18,39 +14,22 @@ export const API_BASE_URL: string = (() => {
         return u.toString().replace(/\/$/, "");
       }
     } catch {
-      // If it's a relative path like "/api", just keep it.
+      // relative path like "/api"
     }
     return trimmed;
   }
 
-  // Vite sets PROD/DEV booleans.
   if (import.meta.env.PROD) return "/api";
 
   return "http://localhost:3000/api";
 })();
 
-// Get JWT token from localStorage
-const getToken = (): string | null => {
-  return localStorage.getItem("token");
-};
+// In-memory role cache — populated on login/register/getMe; no localStorage.
+let _cachedRole: string | null = null;
 
-const getRole = (): string | null => {
-  return localStorage.getItem("role");
-};
-
-// Create headers with auth token
-const getHeaders = (): Record<string, string> => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  const token = getToken();
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  return headers;
-};
+const getHeaders = (): Record<string, string> => ({
+  "Content-Type": "application/json",
+});
 
 const fetchWithTimeout = async (
   input: RequestInfo | URL,
@@ -60,7 +39,11 @@ const fetchWithTimeout = async (
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(input, { ...(init ?? {}), signal: controller.signal });
+    return await fetch(input, {
+      ...(init ?? {}),
+      signal: controller.signal,
+      credentials: "include", // always send the httpOnly cookie
+    });
   } finally {
     clearTimeout(timeout);
   }
@@ -71,9 +54,7 @@ export const authAPI = {
   async login(email: string, password: string) {
     const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       body: JSON.stringify({ email, password }),
     });
 
@@ -89,21 +70,14 @@ export const authAPI = {
     }
 
     const data = await response.json();
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-    }
-    if (data.user?.role) {
-      localStorage.setItem("role", data.user.role);
-    }
+    _cachedRole = data.user?.role ?? null;
     return data;
   },
 
   async register(email: string, password: string, role: string = "USER") {
     const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       body: JSON.stringify({ email, password, role }),
     });
 
@@ -113,45 +87,33 @@ export const authAPI = {
         const errorData = await response.json();
         errorMessage = errorData.error || errorMessage;
       } catch {
-        // If response is not JSON, use status text
         errorMessage = response.statusText || errorMessage;
       }
       throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-    }
-    if (data.user?.role) {
-      localStorage.setItem("role", data.user.role);
-    }
+    _cachedRole = data.user?.role ?? null;
     return data;
   },
 
-  logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+  async logout() {
+    await fetchWithTimeout(`${API_BASE_URL}/auth/logout`, { method: "POST" }).catch(
+      () => undefined,
+    );
+    _cachedRole = null;
   },
 
-  async getProfile() {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/me`, {
-      headers: getHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to get profile");
-    }
-
-    return response.json();
-  },
-
-  isAuthenticated(): boolean {
-    return !!getToken();
+  async getMe(): Promise<{ userId: number; email: string; role: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/me`);
+    if (!response.ok) throw new Error("Not authenticated");
+    const user = await response.json();
+    _cachedRole = user?.role ?? null;
+    return user;
   },
 
   getRole(): string | null {
-    return getRole();
+    return _cachedRole;
   },
 };
 
@@ -208,9 +170,10 @@ export const articlesAPI = {
   },
 
   async getShares(articleId: number) {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${articleId}/shares`, {
-      headers: getHeaders(),
-    });
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/shares`,
+      { headers: getHeaders() },
+    );
     if (!response.ok) throw new Error("Failed to fetch article shares");
     return response.json();
   },
@@ -218,17 +181,20 @@ export const articlesAPI = {
   async removeShare(articleId: number, shareId: number) {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/articles/${articleId}/share/${shareId}`,
-      { method: "DELETE", headers: getHeaders() }
+      { method: "DELETE", headers: getHeaders() },
     );
     if (!response.ok) throw new Error("Failed to remove share");
   },
 
   async setSharedWithPowerUsers(articleId: number, shared: boolean) {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${articleId}/share`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify({ shared }),
-    });
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/share`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ shared }),
+      },
+    );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data?.error || "Failed to update sharing");
@@ -253,7 +219,6 @@ export const articlesAPI = {
       throw new Error(errorMessage);
     }
 
-    // DELETE returns 204 No Content, so no JSON to parse
     return null;
   },
 };
@@ -344,16 +309,19 @@ export const attachmentsAPI = {
     file: File,
     type: "INVOICE" | "WARRANTY" | "OTHER" = "OTHER",
   ) {
-    const token = getToken();
     const form = new FormData();
     form.append("file", file);
     form.append("type", type);
 
-    const response = await fetchWithTimeout(`${API_BASE_URL}/attachments/upload`, {
-      method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      body: form,
-    });
+    // No Content-Type header — let the browser set multipart/form-data boundary.
+    // credentials: 'include' is added by fetchWithTimeout automatically.
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/attachments/upload`,
+      {
+        method: "POST",
+        body: form,
+      },
+    );
 
     if (!response.ok) {
       let errorMessage = `Failed to upload file (${response.status})`;
@@ -370,14 +338,12 @@ export const attachmentsAPI = {
   },
 
   async deleteAttachment(id: number, options?: { removeFile?: boolean }) {
-    const token = getToken();
     const removeFile = options?.removeFile === true;
     const url = new URL(`${API_BASE_URL}/attachments/${id}`);
     if (removeFile) url.searchParams.set("removeFile", "true");
 
     const response = await fetchWithTimeout(url.toString(), {
       method: "DELETE",
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
 
     if (!response.ok) {
@@ -423,38 +389,29 @@ export const alertsAPI = {
 // Statistics API
 export const statisticsAPI = {
   async getDashboard() {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/statistics/dashboard`, {
-      headers: getHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch dashboard statistics");
-    }
-
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/statistics/dashboard`,
+      { headers: getHeaders() },
+    );
+    if (!response.ok) throw new Error("Failed to fetch dashboard statistics");
     return response.json();
   },
 
   async getBasic() {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/statistics/basic`, {
-      headers: getHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch basic statistics");
-    }
-
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/statistics/basic`,
+      { headers: getHeaders() },
+    );
+    if (!response.ok) throw new Error("Failed to fetch basic statistics");
     return response.json();
   },
 
   async getAdmin() {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/statistics/admin`, {
-      headers: getHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch admin statistics");
-    }
-
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/statistics/admin`,
+      { headers: getHeaders() },
+    );
+    if (!response.ok) throw new Error("Failed to fetch admin statistics");
     return response.json();
   },
 };
@@ -473,11 +430,14 @@ export const profileAPI = {
   },
 
   async updateEmail(email: string, currentPassword: string) {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me/email`, {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify({ email, currentPassword }),
-    });
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/email`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ email, currentPassword }),
+      },
+    );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data?.error || "Failed to update email");
@@ -486,11 +446,14 @@ export const profileAPI = {
   },
 
   async updatePassword(currentPassword: string, newPassword: string) {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me/password`, {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify({ currentPassword, newPassword }),
-    });
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/password`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ currentPassword, newPassword }),
+      },
+    );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data?.error || "Failed to update password");
@@ -527,7 +490,7 @@ export const adminAPI = {
   async getUserInventory(userId: number) {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/admin/users/${userId}/inventory`,
-      { headers: getHeaders() }
+      { headers: getHeaders() },
     );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
@@ -539,7 +502,7 @@ export const adminAPI = {
   async deleteUser(userId: number) {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/admin/users/${userId}`,
-      { method: "DELETE", headers: getHeaders() }
+      { method: "DELETE", headers: getHeaders() },
     );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
@@ -578,7 +541,7 @@ export const sharesAPI = {
   async revoke(targetUserId: number): Promise<void> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/shares/${targetUserId}`,
-      { method: "DELETE", headers: getHeaders() }
+      { method: "DELETE", headers: getHeaders() },
     );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
@@ -587,9 +550,10 @@ export const sharesAPI = {
   },
 
   async getSentInvites(): Promise<any[]> {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/shares/invites/sent`, {
-      headers: getHeaders(),
-    });
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/shares/invites/sent`,
+      { headers: getHeaders() },
+    );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data?.error || "Failed to fetch invites");
@@ -600,7 +564,7 @@ export const sharesAPI = {
   async revokeInvite(inviteId: number): Promise<void> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/shares/invites/${inviteId}`,
-      { method: "DELETE", headers: getHeaders() }
+      { method: "DELETE", headers: getHeaders() },
     );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
@@ -612,9 +576,10 @@ export const sharesAPI = {
 // Shared articles API (read-only view for POWER_USER receivers)
 export const sharedAPI = {
   async getSharedArticles(): Promise<any[]> {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/shared/articles`, {
-      headers: getHeaders(),
-    });
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/shared/articles`,
+      { headers: getHeaders() },
+    );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data?.error || "Failed to fetch shared articles");
@@ -666,7 +631,7 @@ export const billingAPI = {
   async cancelAtPeriodEnd() {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/billing/cancel/power-user`,
-      { method: "POST", headers: getHeaders() }
+      { method: "POST", headers: getHeaders() },
     );
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
@@ -680,15 +645,15 @@ export const billingAPI = {
       const response = await fetchWithTimeout(`${API_BASE_URL}/billing/me`, {
         headers: getHeaders(),
       });
-      if (!response.ok) return getRole();
+      if (!response.ok) return _cachedRole;
       const data = await response.json();
       if (data?.role) {
-        localStorage.setItem("role", data.role);
+        _cachedRole = data.role;
         return data.role;
       }
-      return getRole();
+      return _cachedRole;
     } catch {
-      return getRole();
+      return _cachedRole;
     }
   },
 };
