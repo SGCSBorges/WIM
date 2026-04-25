@@ -40,7 +40,7 @@ export const ShareService = {
   async acceptInvite(token: string, acceptorUserId: number) {
     const invite = await prisma.shareInvite.findUnique({ where: { token } });
     if (!invite || invite.status !== InviteStatus.PENDING)
-      throw createHttpError(400, "Invitation invalide");
+      throw createHttpError(400, "Invalid or expired invite token");
     if (invite.expiresAt < new Date()) {
       await prisma.shareInvite.update({
         where: { token },

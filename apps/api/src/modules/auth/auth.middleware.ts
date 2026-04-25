@@ -15,7 +15,7 @@ export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
   const bearerToken = header?.startsWith("Bearer ") ? header.split(" ")[1] : undefined;
   const token = cookieToken ?? bearerToken;
 
-  if (!token) return res.status(401).json({ error: "Token manquant" });
+  if (!token) return res.status(401).json({ error: "Missing token" });
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
       sub: number;
@@ -24,7 +24,7 @@ export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
     req.user = { sub: payload.sub, role: payload.role };
     next();
   } catch {
-    res.status(401).json({ error: "Token invalide ou expiré" });
+    res.status(401).json({ error: "Invalid or expired token" });
   }
 }
 
@@ -32,7 +32,7 @@ export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
 export function requireRole(role: string) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || req.user.role !== role)
-      return res.status(403).json({ error: "Accès refusé" });
+      return res.status(403).json({ error: "Access denied" });
     next();
   };
 }

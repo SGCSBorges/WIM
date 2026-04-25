@@ -15,14 +15,14 @@ export const ProfileService = {
 
   async updateEmail(userId: number, email: string, currentPassword: string) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw createHttpError(404, "Utilisateur introuvable");
+    if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Mot de passe invalide");
+    if (!valid) throw createHttpError(401, "Invalid password");
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing && existing.userId !== userId)
-      throw createHttpError(409, "Email déjà enregistré");
+      throw createHttpError(409, "Email already in use");
 
     return prisma.user.update({
       where: { userId },
@@ -37,10 +37,10 @@ export const ProfileService = {
     newPassword: string
   ) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw createHttpError(404, "Utilisateur introuvable");
+    if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Mot de passe invalide");
+    if (!valid) throw createHttpError(401, "Invalid password");
 
     const hashed = await bcrypt.hash(newPassword, 10);
 
@@ -53,10 +53,10 @@ export const ProfileService = {
 
   async deleteAccount(userId: number, currentPassword: string) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) throw createHttpError(404, "Utilisateur introuvable");
+    if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Mot de passe invalide");
+    if (!valid) throw createHttpError(401, "Invalid password");
 
     // Cancel active Stripe subscription before deleting so the user is not
     // charged again after account removal.

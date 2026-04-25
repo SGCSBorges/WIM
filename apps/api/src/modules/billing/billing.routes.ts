@@ -1,9 +1,12 @@
 import { Router } from "express";
+import { z } from "zod";
 import Stripe from "stripe";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
+
+const PlanSchema = z.object({ plan: z.enum(["monthly", "yearly"]).optional() });
 
 const router = Router();
 
@@ -49,10 +52,7 @@ router.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const appUrl = getAppUrl();
 
-    const plan = String(req.body?.plan || "monthly");
-    if (plan !== "monthly" && plan !== "yearly") {
-      return res.status(400).json({ error: "Invalid plan" });
-    }
+    const { plan = "monthly" } = PlanSchema.parse(req.body);
 
     const monthlyPriceId = process.env.STRIPE_POWER_USER_PRICE_MONTHLY;
     const yearlyPriceId = process.env.STRIPE_POWER_USER_PRICE_YEARLY;

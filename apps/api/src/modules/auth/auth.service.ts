@@ -12,7 +12,7 @@ export const AuthService = {
     const existing = await prisma.user.findUnique({
       where: { email: data.email },
     });
-    if (existing) throw createHttpError(409, "Email déjà enregistré");
+    if (existing) throw createHttpError(409, "Email already registered");
     const hashed = await bcrypt.hash(data.password, 10);
     const user = await prisma.user.create({
       data: { email: data.email, password: hashed, role: data.role },

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import multer from "multer";
+import { createHttpError } from "../../utils/http-error";
 import path from "path";
 import fs from "fs";
 import { AttachmentType } from "@prisma/client";
@@ -14,6 +15,7 @@ import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 
 const idParam = z.coerce.number().int().positive();
+const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
 const router = Router();
 
@@ -116,18 +118,16 @@ router.post(
   upload.single("file"),
   asyncHandler(async (req: AuthRequest, res) => {
     const file = req.file;
-    if (!file) return res.status(400).json({ error: "Missing file" });
+    if (!file) throw createHttpError(400, "Missing file");
 
-    const type = String(req.body?.type || "OTHER").toUpperCase();
-    if (!["INVOICE", "WARRANTY", "OTHER"].includes(type)) {
-      return res.status(400).json({ error: "Invalid attachment type" });
-    }
+    const { type } = z.object({ type: AttachmentTypeSchema.optional() }).parse(req.body);
+    const attachmentType: AttachmentType = type ?? "OTHER";
 
     const baseUrl = `${req.protocol}://${req.get("host")}`;
     const fileUrl = `${baseUrl}/uploads/${encodeURIComponent(file.filename)}`;
 
     const created = await AttachmentService.create({
-      type: type as AttachmentType,
+      type: attachmentType,
       fileName: file.originalname,
       mimeType: file.mimetype,
       fileSize: file.size,
@@ -145,7 +145,7 @@ router.post(
           storedName: file.filename,
           mimeType: file.mimetype,
           fileSize: file.size,
-          type,
+          type: attachmentType,
         },
       },
     });
@@ -213,7 +213,7 @@ router.delete(
       entityId: id,
       metadata: removeFile ? { removeFile: true } : undefined,
     });
-    res.json({ message: "Attachment deleted successfully" });
+    res.status(204).send();
   })
 );
 

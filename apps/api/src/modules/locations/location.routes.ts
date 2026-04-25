@@ -85,7 +85,7 @@ router.delete(
       entity: "Location",
       entityId: id,
     });
-    res.status(204).end();
+    res.status(204).send();
   })
 );
 
@@ -136,7 +136,7 @@ router.delete(
       entityId: undefined,
       metadata: { locationId: id, articleId },
     });
-    res.status(204).end();
+    res.status(204).send();
   })
 );
 

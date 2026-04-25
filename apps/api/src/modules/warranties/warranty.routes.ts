@@ -72,7 +72,7 @@ router.delete(
       entity: "Garantie",
       entityId: id,
     });
-    res.status(204).end();
+    res.status(204).send();
   })
 );
 

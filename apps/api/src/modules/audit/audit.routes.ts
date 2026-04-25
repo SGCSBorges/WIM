@@ -7,6 +7,13 @@ import { asyncHandler } from "../common/http";
 
 const positiveInt = z.coerce.number().int().positive();
 
+const AuditQuerySchema = z.object({
+  limit:    positiveInt.optional(),
+  userId:   positiveInt.optional(),
+  entity:   z.enum(["User", "Article", "Garantie", "Location", "Attachment", "ShareInvite", "InventoryShare", "ArticleLocation"]).optional(),
+  entityId: positiveInt.optional(),
+});
+
 const router = Router();
 
 // GET /api/audit?limit=50&userId=...&entity=Article
@@ -15,13 +22,12 @@ router.get(
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (req: Request, res: Response) => {
-    const limit = req.query.limit
-      ? Math.min(positiveInt.parse(req.query.limit), 200)
-      : 50;
+    const query = AuditQuerySchema.parse(req.query);
+    const limit = query.limit ? Math.min(query.limit, 200) : 50;
     const where: Prisma.AuditLogWhereInput = {};
-    if (req.query.userId) where.userId = positiveInt.parse(req.query.userId);
-    if (req.query.entity) where.entity = String(req.query.entity);
-    if (req.query.entityId) where.entityId = positiveInt.parse(req.query.entityId);
+    if (query.userId)   where.userId   = query.userId;
+    if (query.entity)   where.entity   = query.entity;
+    if (query.entityId) where.entityId = query.entityId;
 
     const logs = await prisma.auditLog.findMany({
       where,
