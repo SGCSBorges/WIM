@@ -121,7 +121,13 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [deleteProofFromServer, setDeleteProofFromServer] = useState(false);
 
   useEffect(() => {
-    // When switching between create/edit, keep warranty state in sync.
+    // When switching between create/edit, keep all form state in sync.
+    setFormData({
+      articleNom: article?.articleNom || "",
+      articleModele: article?.articleModele || "",
+      articleDescription: article?.articleDescription || "",
+      productImageUrl: article?.productImageUrl || "",
+    });
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setWarrantyEnabled(Boolean(article?.garantie));
     setWarrantyNom(article?.garantie?.garantieNom || "");
@@ -226,6 +232,15 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
+    if (!formData.articleNom.trim()) {
+      setFormError(t("articleForm.name.required"));
+      return;
+    }
+    if (!formData.articleModele.trim()) {
+      setFormError(t("articleForm.model.required"));
+      return;
+    }
 
     if (selectedLocationIds.length === 0) {
       setFormError(t("articleForm.locations.required"));
@@ -603,7 +618,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || warrantyProofUploading}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting
