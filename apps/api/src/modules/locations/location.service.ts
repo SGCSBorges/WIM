@@ -8,13 +8,7 @@ export const LocationService = {
       where: { ownerUserId },
       orderBy: { updatedAt: "desc" },
       include: {
-        articles: {
-          select: {
-            articleId: true,
-            assignedAt: true,
-            article: { select: { articleNom: true, articleModele: true } },
-          },
-        },
+        _count: { select: { articles: true } },
       },
     }),
 

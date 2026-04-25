@@ -148,6 +148,7 @@ model Garantie {
 
   @@index([ownerUserId])
   @@index([garantieFin])
+  @@index([ownerUserId, garantieFin])
 }
 
 model Alerte {
@@ -175,6 +176,8 @@ model Alerte {
   article  Article?  @relation(fields: [alerteArticleId], references: [articleId], onDelete: Cascade)
 
   @@index([ownerUserId])
+  @@index([status])
+  @@index([ownerUserId, status])
   @@index([alerteDate])
   @@index([ownerUserId, alerteDate])
   @@index([alerteGarantieId])
