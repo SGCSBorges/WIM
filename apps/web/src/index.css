@@ -168,12 +168,19 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ui-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+  border-color: transparent;
 }
 
 .ui-input {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .ui-input:focus {
   outline: none;
@@ -188,24 +195,59 @@ body {
 .ui-btn-primary {
   background: var(--primary);
   color: var(--primary-contrast);
+  transition: background-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
 }
-.ui-btn-primary:hover {
+.ui-btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
 }
 .ui-btn-primary:focus {
   outline: none;
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
+.ui-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .ui-btn-ghost {
   color: var(--btn-ghost-text);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
-.ui-btn-ghost:hover {
+.ui-btn-ghost:hover:not(:disabled) {
   color: var(--btn-ghost-hover-text);
   background: var(--btn-ghost-hover-bg);
+}
+.ui-btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .ui-nav-item-active {
   background: var(--nav-active-bg);
   color: var(--nav-active-text);
+}
+
+/* Hover-highlight for table rows and list items */
+.hover-surface {
+  transition: background-color 0.1s ease;
+}
+.hover-surface:hover {
+  background: var(--surface-muted);
+}
+
+/* Theme-aware action link colours */
+.ui-action-primary {
+  color: var(--primary);
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+.ui-action-primary:hover {
+  opacity: 0.75;
+}
+
+.ui-action-danger {
+  color: #dc2626;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+.ui-action-danger:hover {
+  opacity: 0.75;
 }

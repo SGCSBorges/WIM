@@ -200,7 +200,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                     <button
                       type="button"
                       onClick={() => setSelectedFile(null)}
-                      className="text-xs text-red-600 hover:text-red-800"
+                      className="text-xs ui-action-danger"
                     >
                       {t("attachments.form.fileRemove")}
                     </button>
@@ -222,7 +222,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                     </svg>
                     <div>
                       <p className="text-sm text-gray-600">
-                        <span className="font-medium text-blue-600 hover:text-blue-500">
+                        <span className="font-medium ui-action-primary">
                           {t("attachments.form.drop.clickToUpload")}
                         </span>{" "}
                         {t("attachments.form.drop.orDrag")}

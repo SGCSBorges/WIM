@@ -349,7 +349,7 @@ export default function AdminUsers() {
                   ) : (
                     <button
                       onClick={() => setConfirmDeleteUserId(u.userId)}
-                      className="text-red-600 hover:text-red-800 text-sm shrink-0"
+                      className="ui-action-danger text-sm shrink-0"
                       disabled={actionLoading === `user:${u.userId}`}
                     >
                       {actionLoading === `user:${u.userId}`
@@ -436,7 +436,7 @@ export default function AdminUsers() {
                           ) : (
                             <button
                               onClick={() => setConfirmDeleteArticleId(a.articleId)}
-                              className="text-red-600 hover:text-red-800 text-sm shrink-0"
+                              className="ui-action-danger text-sm shrink-0"
                               disabled={actionLoading === `article:${a.articleId}`}
                             >
                               {actionLoading === `article:${a.articleId}`

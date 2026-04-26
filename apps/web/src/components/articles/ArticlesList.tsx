@@ -140,14 +140,6 @@ const ArticlesList: React.FC = () => {
     fetchArticles();
   }, [locationFilterId]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -174,7 +166,7 @@ const ArticlesList: React.FC = () => {
 
           <button
             onClick={() => setShowForm(true)}
-            className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
+            className="ui-btn-primary px-4 py-2 rounded-md"
           >
             {t("articles.create")}
           </button>
@@ -202,7 +194,30 @@ const ArticlesList: React.FC = () => {
       )}
 
       <div className="ui-card rounded-lg shadow">
-        {articles.length === 0 ? (
+        {loading ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="ui-panel">
+                <tr>
+                  {[t("articles.table.name"), t("articles.table.model"), t("articles.table.description"), t("articles.table.warranty"), t("articles.table.proof"), t("articles.table.actions")].map((h) => (
+                    <th key={h} className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y ui-divider">
+                {[1, 2, 3, 4].map((i) => (
+                  <tr key={i}>
+                    {[60, 40, 80, 24, 24, 48].map((w, j) => (
+                      <td key={j} className="px-6 py-4">
+                        <div className={`h-4 animate-pulse rounded ui-panel w-${w}`} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : articles.length === 0 ? (
           <div className="p-8 text-center">
             <div className="ui-text-muted text-6xl mb-4">📦</div>
             <h3 className="text-lg font-semibold mb-2">
@@ -211,7 +226,7 @@ const ArticlesList: React.FC = () => {
             <p className="ui-text-muted mb-4">{t("articles.none.subtitle")}</p>
             <button
               onClick={() => setShowForm(true)}
-              className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
+              className="ui-btn-primary px-4 py-2 rounded-md"
             >
               {t("articles.create")}
             </button>
@@ -244,7 +259,7 @@ const ArticlesList: React.FC = () => {
               <tbody className="divide-y ui-divider">
                 {articles.map((article) => (
                   <React.Fragment key={article.articleId}>
-                    <tr className="hover:ui-panel">
+                    <tr className="hover-surface">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {article.articleNom}
                       </td>
@@ -287,7 +302,7 @@ const ArticlesList: React.FC = () => {
                             setEditingArticle(article);
                             setShowForm(true);
                           }}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          className="ui-action-primary mr-3"
                         >
                           {t("common.edit")}
                         </button>
@@ -344,7 +359,7 @@ const ArticlesList: React.FC = () => {
                         ) : (
                           <button
                             onClick={() => setConfirmDeleteArticleId(article.articleId)}
-                            className="text-red-600 hover:text-red-900"
+                            className="ui-action-danger"
                           >
                             {t("common.delete")}
                           </button>
@@ -402,7 +417,7 @@ const ArticlesList: React.FC = () => {
                                 ) : (
                                   <button
                                     type="button"
-                                    className="text-red-600 hover:text-red-900"
+                                    className="ui-action-danger"
                                     disabled={shareBusyArticleId === article.articleId}
                                     onClick={() => setConfirmUnshareArticleId(article.articleId)}
                                   >

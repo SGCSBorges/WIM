@@ -8,7 +8,7 @@ WIM is a full-stack SaaS application for tracking physical assets, their warrant
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18 · TypeScript · Vite · Tailwind CSS · React Router v7 |
+| Frontend | React 19 · TypeScript · Vite · Tailwind CSS · React Router v7 |
 | Backend | Node.js · Express · TypeScript · Prisma ORM |
 | Database | PostgreSQL |
 | Queue | BullMQ + Redis |
@@ -70,8 +70,10 @@ Optional variables:
 | `PORT` | API port (default: `3000`) |
 | `CORS_ORIGIN` | Allowed frontend origin (default: deny all in production) |
 | `APP_URL` | Public URL of the frontend (used for Stripe redirect URLs) |
-| `STRIPE_SECRET_KEY` | Stripe secret key (required in production) |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (required in production) |
+| `STRIPE_SECRET_KEY` | Stripe secret key (required for billing features) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (required for billing features) |
+| `STRIPE_POWER_USER_PRICE_MONTHLY` | Stripe Price ID for monthly POWER_USER subscription (format: `price_…`) |
+| `STRIPE_POWER_USER_PRICE_YEARLY` | Stripe Price ID for yearly POWER_USER subscription (format: `price_…`) |
 | `RATE_LIMIT_WINDOW_MS` | Rate limit window in ms (default: `60000`) |
 | `RATE_LIMIT_MAX` | Max requests per window (default: `100`) |
 
@@ -333,6 +335,8 @@ RENDER_EXTERNAL_URL=https://wimapi.onrender.com
 
 - [ ] Add pagination to all list endpoints
 - [ ] Migrate file uploads to cloud storage (S3/R2)
-- [ ] Add frontend invite acceptance flow
+- [ ] Add frontend invite acceptance flow (token-based URL)
 - [ ] Add per-user rate limiting
 - [ ] Extend test coverage to route-level integration tests
+- [ ] Add React Router URL-based navigation (currently state-based, no back/forward support)
+- [ ] Add data caching layer (TanStack Query) to reduce redundant API fetches on navigation

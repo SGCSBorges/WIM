@@ -479,7 +479,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     ) : (
                       <button
                         onClick={() => setConfirmDeleteId(attachment.attachmentId)}
-                        className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                        className="text-xs ui-action-danger px-2 py-1 rounded"
                       >
                         {t("attachments.action.delete")}
                       </button>

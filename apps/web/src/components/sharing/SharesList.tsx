@@ -278,7 +278,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                     {onEdit && share.active && (
                       <button
                         onClick={() => onEdit(share)}
-                        className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                        className="px-3 py-1 text-sm ui-action-primary rounded"
                       >
                         {t("shares.action.edit")}
                       </button>
@@ -293,7 +293,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       ) : (
                         <button
                           onClick={() => setConfirmRevokeId(share.inventoryShareId)}
-                          className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                          className="px-3 py-1 text-sm ui-action-danger rounded"
                         >
                           {t("shares.action.revoke")}
                         </button>
@@ -357,7 +357,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                         ) : (
                           <button
                             onClick={() => setConfirmRevokeInviteId(invite.shareInviteId)}
-                            className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                            className="px-3 py-1 text-sm ui-action-danger rounded"
                           >
                             {t("shares.action.revoke")}
                           </button>

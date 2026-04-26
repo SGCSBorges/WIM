@@ -489,7 +489,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                             `#${warrantyProofAttachment.attachmentId}`}
                         </p>
                         <a
-                          className="text-blue-600 hover:underline"
+                          className="ui-action-primary hover:underline"
                           href={
                             warrantyProofAttachment.fileUrl ||
                             `${API_BASE_URL}/attachments/${warrantyProofAttachment.attachmentId}`
