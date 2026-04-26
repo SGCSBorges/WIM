@@ -122,14 +122,14 @@ VITE_API_BASE_URL=http://localhost:3000/api
 
 Base path: `/api`
 
-All endpoints except `/auth/register`, `/auth/login`, and `/billing/webhook` require a `Authorization: Bearer <token>` header.
+All endpoints except `/auth/register`, `/auth/login`, and `/billing/webhook` require authentication. The JWT is stored in an `httpOnly` cookie (`wim_token`) set by the server on login — clients must send requests with `credentials: 'include'` (or equivalent). No `Authorization` header is needed.
 
 ### Auth — `/api/auth`
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `POST` | `/register` | ✗ | Register a new USER account |
-| `POST` | `/login` | ✗ | Login, returns JWT token |
+| `POST` | `/login` | ✗ | Login — sets `wim_token` httpOnly cookie |
 | `GET` | `/me` | ✓ | Return current user profile |
 
 ### Articles — `/api/articles`
