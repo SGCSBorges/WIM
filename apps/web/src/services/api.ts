@@ -1,3 +1,5 @@
+import type { Article } from "../types";
+
 // API base URL strategy:
 // - In development, default to the local API.
 // - In production, prefer setting VITE_API_BASE_URL (e.g. https://wimapi.onrender.com/api).
@@ -139,7 +141,7 @@ export const articlesAPI = {
     return response.json();
   },
 
-  async create(article: any) {
+  async create(article: Omit<Article, "articleId">) {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles`, {
       method: "POST",
       headers: getHeaders(),
@@ -160,7 +162,7 @@ export const articlesAPI = {
     return response.json();
   },
 
-  async update(id: number, article: any) {
+  async update(id: number, article: Omit<Article, "articleId">) {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
       method: "PUT",
       headers: getHeaders(),

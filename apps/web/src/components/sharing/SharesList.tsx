@@ -31,8 +31,8 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
     try {
       const data = await sharesAPI.getOwned();
       setShares(data);
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     }
   }, [t]);
 
@@ -40,10 +40,10 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
     try {
       const data = await sharesAPI.getSentInvites();
       setInvites(data);
-    } catch {
-      // non-blocking
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     setLoading(true);
@@ -59,8 +59,8 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
     try {
       await sharesAPI.revoke(share.target.userId);
       setShares((prev) => prev.filter((s) => s.inventoryShareId !== shareId));
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     }
   };
 
@@ -70,8 +70,8 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
     try {
       await sharesAPI.revokeInvite(inviteId);
       setInvites((prev) => prev.filter((i) => i.shareInviteId !== inviteId));
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     }
   };
 
@@ -90,8 +90,8 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       setInvitePermission("READ");
       setShowInviteForm(false);
       setActiveTab("invites");
-    } catch (e: any) {
-      setInviteError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setInviteError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setInviteBusy(false);
     }
@@ -188,7 +188,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}

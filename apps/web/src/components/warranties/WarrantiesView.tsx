@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { warrantiesAPI } from "../../services/api";
 
@@ -24,8 +25,8 @@ export default function WarrantiesView() {
     try {
       const data = await warrantiesAPI.getAll();
       setItems(data as Warranty[]);
-    } catch (e: any) {
-      setError(e?.message || t("warranties.error.fetch"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("warranties.error.fetch"));
     } finally {
       setLoading(false);
     }
@@ -55,7 +56,7 @@ export default function WarrantiesView() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
@@ -95,7 +96,7 @@ export default function WarrantiesView() {
               <div className="font-medium">{w.garantieNom}</div>
               <div className="text-xs ui-text-muted">
                 {t("warranties.purchase")}:{" "}
-                {new Date(w.garantieDateAchat).toLocaleDateString()} —{" "}
+                {format(parseISO(w.garantieDateAchat), "dd MMM yyyy")} —{" "}
                 {t("warranties.duration")}: {w.garantieDuration}{" "}
                 {t("warranties.months")}
               </div>

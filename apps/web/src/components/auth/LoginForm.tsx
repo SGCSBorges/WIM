@@ -117,7 +117,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           </div>
 
           {error && (
-            <div className="px-4 py-3 rounded-md text-sm bg-red-50 border border-red-200 text-red-700">
+            <div role="alert" className="px-4 py-3 rounded-md text-sm bg-red-50 border border-red-200 text-red-700">
               {error}
             </div>
           )}

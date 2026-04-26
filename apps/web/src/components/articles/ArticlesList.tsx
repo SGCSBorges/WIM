@@ -182,9 +182,9 @@ const ArticlesList: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center">
-            <span className="text-red-400 mr-2">❌</span>
+            <span className="text-red-400 mr-2" aria-hidden="true">❌</span>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
