@@ -5,6 +5,7 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
+import { auditAction } from "../common/audit";
 
 const PlanSchema = z.object({ plan: z.enum(["monthly", "yearly"]).optional() });
 
@@ -99,6 +100,13 @@ router.post(
       },
     });
 
+    await auditAction(req, {
+      action: "BILLING_CHECKOUT_STARTED",
+      entity: "User",
+      entityId: userId,
+      metadata: { plan, sessionId: session.id },
+    });
+
     return res.json({ url: session.url });
   })
 );
@@ -131,6 +139,16 @@ router.post(
       { cancel_at_period_end: true }
     );
 
+    await auditAction(req, {
+      action: "BILLING_CANCEL_REQUESTED",
+      entity: "User",
+      entityId: userId,
+      metadata: {
+        subscriptionId: updatedSub.id,
+        cancelAtPeriodEnd: updatedSub.cancel_at_period_end,
+      },
+    });
+
     return res.json({
       subscriptionId: updatedSub.id,
       cancelAtPeriodEnd: updatedSub.cancel_at_period_end,
@@ -160,6 +178,13 @@ router.post(
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${appUrl}/?billing=return`,
+    });
+
+    await auditAction(req, {
+      action: "BILLING_PORTAL_OPENED",
+      entity: "User",
+      entityId: userId,
+      metadata: { customerId },
     });
 
     return res.json({ url: session.url });

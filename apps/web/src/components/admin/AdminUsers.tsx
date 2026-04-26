@@ -88,8 +88,8 @@ export default function AdminUsers() {
     try {
       const data = await statisticsAPI.getAdmin();
       setStatistics(data);
-    } catch (e: any) {
-      setError(e.message || t("admin.error.fetchStatistics"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("admin.error.fetchStatistics"));
     } finally {
       setLoadingStats(false);
     }
@@ -101,8 +101,8 @@ export default function AdminUsers() {
     try {
       const data = await adminAPI.listUsers();
       setUsers(data);
-    } catch (e: any) {
-      setError(e.message || t("admin.error.fetchUsers"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("admin.error.fetchUsers"));
     } finally {
       setLoadingUsers(false);
     }
@@ -114,8 +114,8 @@ export default function AdminUsers() {
     try {
       const data = await adminAPI.getUserInventory(userId);
       setInventory(data);
-    } catch (e: any) {
-      setError(e.message || t("admin.error.fetchInventory"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("admin.error.fetchInventory"));
     } finally {
       setLoadingInventory(false);
     }
@@ -132,8 +132,8 @@ export default function AdminUsers() {
         setInventory(null);
       }
       await fetchUsers();
-    } catch (e: any) {
-      setError(e.message || t("admin.error.deleteUser"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("admin.error.deleteUser"));
     } finally {
       setActionLoading(null);
     }
@@ -148,8 +148,8 @@ export default function AdminUsers() {
       if (selectedUser) {
         await fetchInventory(selectedUser.userId);
       }
-    } catch (e: any) {
-      setError(e.message || t("admin.error.deleteArticle"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("admin.error.deleteArticle"));
     } finally {
       setActionLoading(null);
     }

@@ -19,8 +19,8 @@ export default function ShareArticleButton({ articleId, disabled, onShared }: Pr
     try {
       await articlesAPI.setSharedWithPowerUsers(articleId, true);
       onShared?.();
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setLoading(false);
     }

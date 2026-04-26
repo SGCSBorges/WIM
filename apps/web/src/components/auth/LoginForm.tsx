@@ -12,40 +12,50 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const { t, language, setLanguage } = useI18n();
   const { theme, setTheme } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    setEmailError(null);
+    setPasswordError(null);
 
+    let valid = true;
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setEmailError(t("auth.error.emailInvalid"));
+      valid = false;
+    }
+    if (!formData.password || formData.password.length < 8) {
+      setPasswordError(t("auth.error.passwordTooShort"));
+      valid = false;
+    }
+    if (!valid) return;
+
+    setLoading(true);
     try {
       if (isLogin) {
         await authAPI.login(formData.email, formData.password);
         onLogin();
       } else {
         await authAPI.register(formData.email, formData.password);
-        // After successful registration, try to login
         await authAPI.login(formData.email, formData.password);
         onLogin();
       }
-    } catch (err: any) {
-      setError(err.message || t("auth.error.default"));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("auth.error.default"));
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === "email") setEmailError(null);
+    if (e.target.name === "password") setPasswordError(null);
   };
 
   return (
@@ -90,17 +100,18 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
-              className="w-full ui-input px-3 py-2 rounded-md shadow-sm"
+              className={`w-full ui-input px-3 py-2 rounded-md shadow-sm ${emailError ? "border-red-400" : ""}`}
               placeholder="your@email.com"
+              aria-describedby={emailError ? "email-error" : undefined}
+              aria-invalid={emailError ? "true" : undefined}
             />
+            {emailError && (
+              <p id="email-error" className="mt-1 text-xs text-red-600">{emailError}</p>
+            )}
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium mb-1"
-            >
+            <label htmlFor="password" className="block text-sm font-medium mb-1">
               {t("auth.password")}
             </label>
             <input
@@ -109,11 +120,14 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              required
-              minLength={8}
-              className="w-full ui-input px-3 py-2 rounded-md shadow-sm"
+              className={`w-full ui-input px-3 py-2 rounded-md shadow-sm ${passwordError ? "border-red-400" : ""}`}
               placeholder="••••••••"
+              aria-describedby={passwordError ? "password-error" : undefined}
+              aria-invalid={passwordError ? "true" : undefined}
             />
+            {passwordError && (
+              <p id="password-error" className="mt-1 text-xs text-red-600">{passwordError}</p>
+            )}
           </div>
 
           {error && (

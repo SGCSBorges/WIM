@@ -113,8 +113,8 @@ export default function App() {
     try {
       const { url } = await billingAPI.createPowerUserCheckoutSession(plan);
       window.location.href = url;
-    } catch (e: any) {
-      setUpgradeError(e?.message || t("billing.upgradeStartError"));
+    } catch (e: unknown) {
+      setUpgradeError(e instanceof Error ? e.message : t("billing.upgradeStartError"));
     }
   };
 

@@ -72,8 +72,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         garantieId: garantieId || undefined,
       });
       setAttachments(data);
-    } catch (e: any) {
-      setFetchError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setFetchError(e instanceof Error ? e.message : t("common.errorOccurred"));
     }
   };
 
@@ -106,8 +106,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     try {
       await attachmentsAPI.deleteAttachment(attachmentId);
       setAttachments(attachments.filter((a) => a.attachmentId !== attachmentId));
-    } catch (e: any) {
-      setDeleteError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setDeleteError(e instanceof Error ? e.message : t("common.errorOccurred"));
     }
   };
 

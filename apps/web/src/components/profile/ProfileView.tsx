@@ -38,8 +38,8 @@ export default function ProfileView() {
       const data = await profileAPI.getMe();
       setMe(data);
       setEmail(data.email);
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setLoading(false);
     }
@@ -55,8 +55,8 @@ export default function ProfileView() {
       setMe(updated);
       setCurrentPasswordForEmail("");
       showSuccess(t("profile.email.success"));
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setSaving(false);
     }
@@ -70,8 +70,8 @@ export default function ProfileView() {
       setCurrentPassword("");
       setNewPassword("");
       showSuccess(t("profile.password.success"));
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setSaving(false);
     }
@@ -83,8 +83,8 @@ export default function ProfileView() {
     try {
       await profileAPI.deleteAccount(deletePassword);
       disconnectAndRedirect();
-    } catch (e: any) {
-      const msg: string = e?.message ?? "";
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
       if (/4(01|04)/.test(msg) || /not found|unauthorized/i.test(msg)) {
         disconnectAndRedirect();
         return;
@@ -102,8 +102,8 @@ export default function ProfileView() {
     try {
       const { url } = await billingAPI.openPortal();
       window.location.href = url;
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setBillingBusy(false);
     }
@@ -117,8 +117,8 @@ export default function ProfileView() {
       await billingAPI.cancelAtPeriodEnd();
       showSuccess(t("profile.billing.cancelSuccess"));
       await loadMe();
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setBillingBusy(false);
     }

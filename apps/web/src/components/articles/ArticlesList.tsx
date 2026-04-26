@@ -85,8 +85,8 @@ const ArticlesList: React.FC = () => {
     try {
       const data = await articlesAPI.getShares(articleId) as ArticleShareStatus;
       setShareStatusByArticleId((prev) => ({ ...prev, [articleId]: data }));
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setSharesLoadingArticleId(null);
     }
@@ -98,8 +98,8 @@ const ArticlesList: React.FC = () => {
     try {
       await articlesAPI.setSharedWithPowerUsers(articleId, false);
       await loadShareStatus(articleId);
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setShareBusyArticleId(null);
     }

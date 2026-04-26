@@ -129,6 +129,8 @@ export const translations = {
 
     "auth.subtitle": "Warranty & Inventory Manager",
     "auth.error.default": "Authentication failed",
+    "auth.error.emailInvalid": "Please enter a valid email address",
+    "auth.error.passwordTooShort": "Password must be at least 8 characters",
     "auth.loading": "Please wait...",
 
     "common.errorOccurred": "An error occurred",
@@ -532,6 +534,8 @@ export const translations = {
 
     "auth.subtitle": "Gestionnaire de garanties & inventaire",
     "auth.error.default": "Échec de l'authentification",
+    "auth.error.emailInvalid": "Veuillez saisir une adresse email valide",
+    "auth.error.passwordTooShort": "Le mot de passe doit comporter au moins 8 caractères",
     "auth.loading": "Veuillez patienter…",
 
     "common.errorOccurred": "Une erreur s'est produite",
@@ -934,6 +938,8 @@ export const translations = {
 
     "auth.subtitle": "Gestor de Garantias & Inventário",
     "auth.error.default": "Falha na autenticação",
+    "auth.error.emailInvalid": "Introduza um endereço de email válido",
+    "auth.error.passwordTooShort": "A password deve ter pelo menos 8 caracteres",
     "auth.loading": "Por favor aguarde…",
 
     "common.errorOccurred": "Ocorreu um erro",

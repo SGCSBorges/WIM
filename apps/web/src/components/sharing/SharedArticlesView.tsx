@@ -36,8 +36,8 @@ export default function SharedArticlesView() {
     try {
       const data = await sharedAPI.getSharedArticles();
       setRows(data as SharedArticleRow[]);
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setLoading(false);
     }

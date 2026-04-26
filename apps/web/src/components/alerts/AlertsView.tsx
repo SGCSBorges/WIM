@@ -54,8 +54,8 @@ export default function AlertsView() {
         statusFilter === "ALL" ? undefined : statusFilter,
       );
       setItems(data);
-    } catch (e: any) {
-      setError(e?.message || t("common.errorOccurred"));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
     } finally {
       setLoading(false);
     }
