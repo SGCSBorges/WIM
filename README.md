@@ -210,6 +210,23 @@ Requires `POWER_USER` role for share management.
 |---|---|---|---|
 | `GET` | `/articles` | POWER_USER | List articles shared to the current user |
 
+### Statistics — `/api/statistics`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/dashboard` | ✓ | Return role-aware dashboard statistics for the current user |
+| `GET` | `/basic` | ✓ | Return basic statistics for the current user |
+| `GET` | `/admin` | ADMIN | Return platform-wide statistics (admin only) |
+
+### Profile — `/api/profile`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/me` | ✓ | Return current user's profile |
+| `PUT` | `/me/email` | ✓ | Update email (body: `{ email, currentPassword }`) |
+| `PUT` | `/me/password` | ✓ | Update password (body: `{ currentPassword, newPassword }`) |
+| `DELETE` | `/me` | ✓ | Delete account (body: `{ currentPassword }`) — returns 204 |
+
 ### Billing — `/api/billing`
 
 | Method | Path | Auth | Description |
