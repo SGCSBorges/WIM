@@ -41,21 +41,21 @@ describe("LocationService.update", () => {
   it("rejects with 404 when location not found or not owned", async () => {
     mockPrisma.location.findFirst.mockResolvedValue(null);
     await expect(
-      LocationService.update(99, 1, { locationNom: "New" })
+      LocationService.update(99, 1, { name: "New" })
     ).rejects.toMatchObject({ status: 404, message: "Location not found" });
     expect(mockPrisma.location.update).not.toHaveBeenCalled();
   });
 
   it("updates and returns the location when ownership is confirmed", async () => {
-    const loc = { locationId: 5, ownerUserId: 1, locationNom: "Old" };
-    const updated = { ...loc, locationNom: "New" };
+    const loc = { locationId: 5, ownerUserId: 1, name: "Old" };
+    const updated = { ...loc, name: "New" };
     mockPrisma.location.findFirst.mockResolvedValue(loc);
     mockPrisma.location.update.mockResolvedValue(updated);
 
-    const result = await LocationService.update(5, 1, { locationNom: "New" });
+    const result = await LocationService.update(5, 1, { name: "New" });
     expect(result).toEqual(updated);
     expect(mockPrisma.location.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { locationId: 5 }, data: { locationNom: "New" } })
+      expect.objectContaining({ where: { locationId: 5 }, data: { name: "New" } })
     );
   });
 });
