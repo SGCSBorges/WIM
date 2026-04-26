@@ -6,7 +6,8 @@
     "target": "ES2022",
     "moduleResolution": "Node",
     "baseUrl": ".",
-    "paths": {}
+    "paths": {},
+    "types": ["vite/client"]
   },
   "include": ["src", "vite.config.ts"]
 }

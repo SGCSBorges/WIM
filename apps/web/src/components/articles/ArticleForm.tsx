@@ -7,35 +7,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { attachmentsAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { API_BASE_URL } from "../../services/api";
-
-interface Article {
-  articleId?: number;
-  articleNom: string;
-  articleModele: string;
-  articleDescription?: string | null;
-  productImageUrl?: string | null;
-  locationIds?: number[];
-  // Edit payload from API includes join rows like { locationId, location: { name } }
-  locations?: Array<{ locationId: number; location?: { name: string } }>;
-  garantie?: {
-    garantieNom: string;
-    garantieDateAchat: string;
-    garantieDuration: number;
-    garantieFin?: string | null;
-    garantieIsValide?: boolean;
-    garantieImageAttachmentId?: number | null;
-    garantieImageAttachment?: {
-      fileName: string;
-      mimeType: string;
-      fileUrl: string;
-    } | null;
-  } | null;
-}
-
-interface Location {
-  locationId: number;
-  name: string;
-}
+import type { Article, Location } from "../../types";
 
 interface ArticleFormProps {
   article?: Article;

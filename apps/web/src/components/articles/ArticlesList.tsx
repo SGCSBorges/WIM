@@ -8,39 +8,13 @@ import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
 import { articlesAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import type { Article, FetchedArticle, Location } from "../../types";
 
 type ArticleShareStatus = {
   articleId: number;
   sharedWithPowerUsers: boolean;
   updatedAt: string;
 } | null;
-
-interface Article {
-  articleId: number;
-  articleNom: string;
-  articleModele: string;
-  articleDescription?: string | null;
-  productImageUrl?: string | null;
-  sharedWithPowerUsers?: boolean;
-  garantie?: {
-    garantieId: number;
-    garantieNom: string;
-    garantieDateAchat?: string;
-    garantieDuration?: number;
-    garantieFin?: string;
-    garantieIsValide?: boolean;
-    garantieImageAttachmentId?: number | null;
-  } | null;
-  locations?: Array<{
-    locationId: number;
-    location?: { name: string };
-  }>;
-}
-
-interface Location {
-  locationId: number;
-  name: string;
-}
 
 const ArticlesList: React.FC = () => {
   const { t } = useI18n();
@@ -64,11 +38,11 @@ const ArticlesList: React.FC = () => {
     }
   };
 
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<FetchedArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [editingArticle, setEditingArticle] = useState<FetchedArticle | null>(null);
 
   const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(null);
   const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(null);

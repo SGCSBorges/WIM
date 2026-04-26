@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useI18n } from "../../i18n/i18n";
+import type { TranslationKey } from "../../i18n/translations";
 
 interface ShareFormProps {
   onSubmit: (shareData: { email: string; permission: "READ" | "WRITE" }) => void;
@@ -71,10 +72,10 @@ const ShareForm: React.FC<ShareFormProps> = ({ onSubmit, onCancel, isLoading = f
                 />
                 <label htmlFor={perm.toLowerCase()} className="ml-3 flex-1">
                   <span className="block text-sm font-medium">
-                    {t(`shareForm.permission.${perm.toLowerCase()}`)}
+                    {t(`shareForm.permission.${perm.toLowerCase()}` as TranslationKey)}
                   </span>
                   <span className="block text-sm ui-text-muted">
-                    {t(`shareForm.permission.${perm.toLowerCase()}.help`)}
+                    {t(`shareForm.permission.${perm.toLowerCase()}.help` as TranslationKey)}
                   </span>
                 </label>
               </div>
