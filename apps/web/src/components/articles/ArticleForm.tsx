@@ -307,8 +307,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="ui-card rounded-lg shadow p-6">
+      <h2 className="text-lg font-semibold mb-4">
         {article ? t("articleForm.editTitle") : t("articleForm.createTitle")}
       </h2>
 
@@ -316,7 +316,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         <div>
           <label
             htmlFor="articleNom"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium ui-text-muted mb-1"
           >
             {t("articleForm.name")} *
           </label>
@@ -327,7 +327,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             required
             value={formData.articleNom}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.name")}
             maxLength={100}
           />
@@ -336,7 +336,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         <div>
           <label
             htmlFor="articleModele"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium ui-text-muted mb-1"
           >
             {t("articleForm.model")} *
           </label>
@@ -347,7 +347,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             required
             value={formData.articleModele}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.model")}
             maxLength={100}
           />
@@ -356,7 +356,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         <div>
           <label
             htmlFor="articleDescription"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium ui-text-muted mb-1"
           >
             {t("articleForm.description")}
           </label>
@@ -366,7 +366,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             value={formData.articleDescription || ""}
             onChange={handleChange}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.description")}
             maxLength={255}
           />
@@ -375,7 +375,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         <div>
           <label
             htmlFor="productImageUrl"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium ui-text-muted mb-1"
           >
             {t("articleForm.productImageUrl")}
           </label>
@@ -385,13 +385,13 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             name="productImageUrl"
             value={formData.productImageUrl || ""}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.imageUrl")}
             maxLength={255}
           />
         </div>
 
-        <div className="border-t border-gray-200 pt-4">
+        <div className="border-t ui-divider pt-4">
           <div className="flex items-center gap-2">
             <input
               id="warrantyEnabled"
@@ -401,7 +401,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             />
             <label
               htmlFor="warrantyEnabled"
-              className="text-sm font-medium text-gray-700"
+              className="text-sm font-medium"
             >
               {t("articleForm.warranty.toggle")}
             </label>
@@ -411,33 +411,33 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             <div className="mt-3 space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium ui-text-muted mb-1">
                     {t("articleForm.warranty.name")}
                   </label>
                   <input
                     type="text"
                     value={warrantyNom}
                     onChange={(e) => setWarrantyNom(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 ui-input rounded-md"
                     placeholder={t("articleForm.warranty.placeholder.name")}
                     maxLength={100}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium ui-text-muted mb-1">
                     {t("articleForm.warranty.purchaseDate")}
                   </label>
                   <input
                     type="date"
                     value={warrantyDateAchat}
                     onChange={(e) => setWarrantyDateAchat(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 ui-input rounded-md"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium ui-text-muted mb-1">
                     {t("articleForm.warranty.durationMonths")}
                   </label>
                   <input
@@ -448,13 +448,13 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                     onChange={(e) =>
                       setWarrantyDuration(Number(e.target.value))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 ui-input rounded-md"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium ui-text-muted mb-1">
                   {t("attachments.form.fileUpload")}
                 </label>
                 <div className="flex flex-col gap-2">
@@ -472,7 +472,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   />
 
                   {warrantyProofUploading && (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm ui-text-muted">
                       {t("common.loading")}
                     </p>
                   )}
@@ -482,7 +482,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   )}
 
                   {warrantyProofAttachment && (
-                    <div className="text-sm text-gray-700 flex items-center justify-between gap-3 border border-gray-200 rounded-md px-3 py-2">
+                    <div className="text-sm flex items-center justify-between gap-3 border ui-divider rounded-md px-3 py-2">
                       <div className="min-w-0">
                         <p className="truncate font-medium">
                           {warrantyProofAttachment.fileName ||
@@ -503,7 +503,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                       <button
                         type="button"
                         onClick={clearWarrantyProof}
-                        className="text-red-600 hover:underline whitespace-nowrap"
+                        className="ui-action-danger whitespace-nowrap"
                       >
                         {t("common.delete")}
                       </button>
@@ -511,7 +511,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   )}
 
                   {warrantyProofAttachment && (
-                    <label className="flex items-center gap-2 text-xs text-gray-600">
+                    <label className="flex items-center gap-2 text-xs ui-text-muted">
                       <input
                         type="checkbox"
                         checked={deleteProofFromServer}
@@ -529,22 +529,22 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium ui-text-muted mb-1">
             {t("articleForm.locations")} *
           </label>
 
           {locationsLoading ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm ui-text-muted">
               {t("articleForm.locations.loading")}
             </p>
           ) : locationsError ? (
             <p className="text-sm text-red-600">{locationsError}</p>
           ) : locations.length === 0 ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm ui-text-muted">
               {t("articleForm.locations.none")}
             </p>
           ) : (
-            <div className="border border-gray-200 rounded-md p-3 space-y-2 max-h-40 overflow-auto">
+            <div className="border ui-divider rounded-md p-3 space-y-2 max-h-40 overflow-auto">
               {locations.map((loc) => (
                 <label key={loc.locationId} className="flex items-center gap-2">
                   <input
@@ -552,7 +552,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                     checked={selectedSet.has(loc.locationId)}
                     onChange={() => toggleLocation(loc.locationId)}
                   />
-                  <span className="text-sm text-gray-700">{loc.name}</span>
+                  <span className="text-sm">{loc.name}</span>
                 </label>
               ))}
             </div>
@@ -564,14 +564,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               value={newLocationName}
               onChange={(e) => setNewLocationName(e.target.value)}
               placeholder={t("articleForm.location.new.placeholder")}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+              className="flex-1 px-3 py-2 ui-input rounded-md"
               maxLength={120}
             />
             <button
               type="button"
               onClick={handleCreateLocation}
               disabled={creatingLocation || !newLocationName.trim()}
-              className="px-3 py-2 bg-gray-900 text-white rounded-md disabled:opacity-50"
+              className="px-3 py-2 ui-btn-primary rounded-md"
             >
               {creatingLocation
                 ? t("articleForm.location.create.loading")
@@ -591,7 +591,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           <button
             type="submit"
             disabled={submitting || warrantyProofUploading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="px-4 py-2 ui-btn-primary rounded-md"
           >
             {submitting
               ? t("common.loading")
@@ -604,7 +604,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              className="px-4 py-2 ui-btn-ghost border ui-divider rounded-md"
             >
               {t("common.cancel")}
             </button>
