@@ -145,7 +145,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
         <h2 className="text-2xl font-bold ui-title">{t("shares.title")}</h2>
         <button
           onClick={() => setShowInviteForm((v) => !v)}
-          className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
+          className="ui-btn-primary px-4 py-2 rounded-md"
         >
           {showInviteForm ? t("common.cancel") : t("shares.add")}
         </button>
@@ -179,7 +179,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             <button
               type="submit"
               disabled={inviteBusy}
-              className="ui-btn-primary px-4 py-2 rounded disabled:opacity-60"
+              className="ui-btn-primary px-4 py-2 rounded"
             >
               {inviteBusy ? t("common.loading") : t("shareForm.send")}
             </button>

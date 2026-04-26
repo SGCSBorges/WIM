@@ -135,8 +135,8 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+    <div className="max-w-2xl mx-auto p-6 ui-card rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-6">
         {attachment
           ? t("attachments.form.editTitle")
           : t("attachments.form.addTitle")}
@@ -146,7 +146,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
         {/* File Upload */}
         {!attachment && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium ui-text-muted mb-2">
               {t("attachments.form.fileUpload")} *
             </label>
 
@@ -156,7 +156,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                   ? "border-blue-400 bg-blue-50"
                   : errors.file
                     ? "border-red-300 bg-red-50"
-                    : "border-gray-300 hover:border-gray-400"
+                    : "border-[var(--border)] hover:border-[var(--primary)]"
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -190,10 +190,10 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                       />
                     </svg>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium">
                         {selectedFile.name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs ui-text-muted">
                         {formatFileSize(selectedFile.size)}
                       </p>
                     </div>
@@ -221,13 +221,13 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                       />
                     </svg>
                     <div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm ui-text-muted">
                         <span className="font-medium ui-action-primary">
                           {t("attachments.form.drop.clickToUpload")}
                         </span>{" "}
                         {t("attachments.form.drop.orDrag")}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs ui-text-muted">
                         {t("attachments.form.drop.help")}
                       </p>
                     </div>
@@ -244,8 +244,8 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
 
         {/* Current file info for edit mode */}
         {attachment && (
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">
+          <div className="p-4 ui-panel rounded-lg">
+            <h3 className="text-sm font-medium mb-2">
               {t("attachments.form.currentFile")}
             </h3>
             <div className="flex items-center space-x-3">
@@ -263,10 +263,10 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                 />
               </svg>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium">
                   {attachment.fileName}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs ui-text-muted">
                   {formatFileSize(attachment.fileSize)}
                 </p>
               </div>
@@ -278,7 +278,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
         <div>
           <label
             htmlFor="type"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium ui-text-muted mb-2"
           >
             {t("attachments.form.type")} *
           </label>
@@ -291,7 +291,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                 type: e.target.value as typeof formData.type,
               }))
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="ui-select w-full rounded-md"
             disabled={isLoading}
           >
             <option value="OTHER">{t("attachments.type.other")}</option>
@@ -314,11 +314,11 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
         )}
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+        <div className="flex justify-end space-x-4 pt-4 border-t ui-divider">
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 ui-btn-primary rounded-md"
           >
             {isLoading
               ? t("attachments.form.uploading")
@@ -331,7 +331,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              className="px-4 py-2 ui-btn-ghost border ui-divider rounded-md"
             >
               {t("common.cancel")}
             </button>

@@ -67,7 +67,7 @@ export default function WarrantiesView() {
           <button
             onClick={fetchAll}
             disabled={loading}
-            className="text-sm ui-btn-ghost rounded px-2 py-1 disabled:opacity-50"
+            className="text-sm ui-btn-ghost rounded px-2 py-1"
           >
             {loading ? t("common.loading") : t("common.refresh")}
           </button>

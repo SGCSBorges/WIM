@@ -276,7 +276,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             if (onAdd) onAdd();
             setShowAddForm((v) => !v);
           }}
-          className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
+          className="ui-btn-primary px-4 py-2 rounded-md"
         >
           {showAddForm ? t("common.cancel") : t("attachments.add")}
         </button>
@@ -426,7 +426,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleDownload(attachment)}
-                      className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
+                      className="text-xs ui-btn-ghost px-2 py-1 rounded"
                       title={t("attachments.action.download")}
                     >
                       {t("attachments.action.download")}
@@ -444,7 +444,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                           "noopener,noreferrer",
                         );
                       }}
-                      className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
+                      className="text-xs ui-btn-ghost px-2 py-1 rounded"
                       title={t("attachments.action.view")}
                     >
                       {t("attachments.action.view")}
@@ -455,7 +455,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     {onEdit && (
                       <button
                         onClick={() => onEdit(attachment)}
-                        className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
+                        className="text-xs ui-btn-ghost px-2 py-1 rounded"
                       >
                         {t("attachments.action.edit")}
                       </button>

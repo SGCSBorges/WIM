@@ -91,7 +91,7 @@ const ShareForm: React.FC<ShareFormProps> = ({ onSubmit, onCancel, isLoading = f
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2 ui-btn-primary rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 ui-btn-primary rounded-md"
           >
             {isLoading ? t("shareForm.sending") : t("shareForm.send")}
           </button>
@@ -99,7 +99,7 @@ const ShareForm: React.FC<ShareFormProps> = ({ onSubmit, onCancel, isLoading = f
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 ui-btn-ghost border ui-divider rounded-md transition-colors"
+              className="px-4 py-2 ui-btn-ghost border ui-divider rounded-md"
             >
               {t("common.cancel")}
             </button>

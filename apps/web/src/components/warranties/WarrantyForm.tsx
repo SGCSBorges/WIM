@@ -196,7 +196,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="ui-btn-primary px-6 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="ui-btn-primary px-6 py-2 rounded-md"
           >
             {isLoading
               ? t("warrantyForm.saving")
@@ -209,7 +209,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             <button
               type="button"
               onClick={onCancel}
-              className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider transition-colors"
+              className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider"
             >
               {t("common.cancel")}
             </button>
