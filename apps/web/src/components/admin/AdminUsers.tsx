@@ -193,7 +193,7 @@ export default function AdminUsers() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "dashboard"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent ui-text-muted hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
             {t("admin.dashboard")}
@@ -203,7 +203,7 @@ export default function AdminUsers() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "users"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent ui-text-muted hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
             {t("admin.users")}

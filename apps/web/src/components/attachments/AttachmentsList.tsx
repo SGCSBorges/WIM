@@ -214,9 +214,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       case "WARRANTY":
         return "bg-green-100 text-green-800";
       case "OTHER":
-        return "bg-gray-100 text-gray-800";
+        return "ui-badge";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "ui-badge";
     }
   };
 

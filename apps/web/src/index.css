@@ -251,3 +251,10 @@ body {
 .ui-action-danger:hover {
   opacity: 0.75;
 }
+
+/* Neutral badge — adapts to all themes */
+.ui-badge {
+  background: var(--surface-muted);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}

@@ -232,7 +232,7 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.unassigned"),
               value: statistics.locations.unassigned,
-              color: "text-gray-600",
+              color: "ui-text-muted",
             },
           ]}
         />

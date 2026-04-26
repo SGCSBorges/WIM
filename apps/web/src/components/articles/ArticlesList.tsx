@@ -273,13 +273,13 @@ const ArticlesList: React.FC = () => {
                         {(() => {
                           const ws = getWarrantyStatus(article.garantie);
                           const colorClasses = {
-                            gray: "bg-gray-50 text-gray-600 border-gray-200",
-                            green: "bg-green-50 text-green-700 border-green-200",
-                            yellow: "bg-yellow-50 text-yellow-700 border-yellow-200",
-                            red: "bg-red-50 text-red-700 border-red-200",
+                            gray: "ui-badge",
+                            green: "bg-green-50 text-green-700 border border-green-200",
+                            yellow: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+                            red: "bg-red-50 text-red-700 border border-red-200",
                           };
                           return (
-                            <span className={`px-2 py-1 rounded border ${colorClasses[ws.color as keyof typeof colorClasses]}`}>
+                            <span className={`px-2 py-1 rounded ${colorClasses[ws.color as keyof typeof colorClasses]}`}>
                               {ws.label}
                             </span>
                           );
@@ -291,7 +291,7 @@ const ArticlesList: React.FC = () => {
                             {t("common.yes")}
                           </span>
                         ) : (
-                          <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
+                          <span className="px-2 py-1 rounded ui-badge">
                             {t("common.no")}
                           </span>
                         )}

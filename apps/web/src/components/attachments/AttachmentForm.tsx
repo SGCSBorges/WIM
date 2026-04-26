@@ -208,7 +208,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                 ) : (
                   <div className="space-y-2">
                     <svg
-                      className="mx-auto h-12 w-12 text-gray-400"
+                      className="mx-auto h-12 w-12 ui-text-muted"
                       stroke="currentColor"
                       fill="none"
                       viewBox="0 0 48 48"
@@ -250,7 +250,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             </h3>
             <div className="flex items-center space-x-3">
               <svg
-                className="h-8 w-8 text-gray-400"
+                className="h-8 w-8 ui-text-muted"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

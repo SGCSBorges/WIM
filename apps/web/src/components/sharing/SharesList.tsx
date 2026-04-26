@@ -105,7 +105,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       case "PENDING":  return "bg-yellow-100 text-yellow-800";
       case "ACCEPTED": return "bg-green-100 text-green-800";
       case "REVOKED":  return "bg-red-100 text-red-800";
-      default:         return "bg-gray-100 text-gray-800";
+      default:         return "ui-badge";
     }
   };
 
@@ -201,7 +201,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "shares"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent ui-text-muted hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
             {t("shares.tab.active")} ({shares.filter((s) => s.active).length})
@@ -211,7 +211,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "invites"
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent ui-text-muted hover:border-gray-300"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
             {t("shares.tab.pending")} ({invites.filter((i) => i.status === "PENDING").length})
