@@ -1,11 +1,9 @@
 import { Router } from "express";
-import { z } from "zod";
 import { prisma } from "../../libs/prisma";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
-
-const idParam = z.coerce.number().int().positive();
+import { idParam } from "../common/schemas";
 
 const router = Router();
 

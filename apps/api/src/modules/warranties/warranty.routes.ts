@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { WarrantyService } from "./warranty.service";
 import { WarrantyCreateSchema, WarrantyUpdateSchema } from "./warranty.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { idParam } from "../common/schemas";
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.get(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = z.coerce.number().int().parse(req.params.id);
+    const id = idParam.parse(req.params.id);
     const g = await WarrantyService.get(id, req.user!.sub);
     if (!g) return res.status(404).json({ error: "Warranty not found" });
     res.json(g);
@@ -48,7 +48,7 @@ router.put(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = z.coerce.number().int().parse(req.params.id);
+    const id = idParam.parse(req.params.id);
     const data = WarrantyUpdateSchema.parse(req.body);
     const updated = await WarrantyService.update(id, req.user!.sub, data);
     await auditAction(req, {
@@ -65,7 +65,7 @@ router.delete(
   "/:id",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const id = z.coerce.number().int().parse(req.params.id);
+    const id = idParam.parse(req.params.id);
     await WarrantyService.remove(id, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",

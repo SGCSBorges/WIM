@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
@@ -9,8 +8,7 @@ import {
   LocationUpdateSchema,
 } from "./location.schemas";
 import { LocationService } from "./location.service";
-
-const idParam = z.coerce.number().int().positive();
+import { idParam } from "../common/schemas";
 
 const router = Router();
 

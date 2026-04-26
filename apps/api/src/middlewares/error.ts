@@ -3,7 +3,7 @@ import { ZodError, ZodIssue } from "zod";
 import { logger } from "../config/logger";
 
 export function errorHandler(
-  err: any,
+  err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction
@@ -22,8 +22,9 @@ export function errorHandler(
   }
 
   // Erreurs applicatives typées avec status
-  if (err?.status && err?.message) {
-    return res.status(err.status).json({ error: err.message });
+  if (err && typeof err === "object" && "status" in err && "message" in err) {
+    const e = err as { status: number; message: string };
+    return res.status(e.status).json({ error: e.message });
   }
 
   // Fallback

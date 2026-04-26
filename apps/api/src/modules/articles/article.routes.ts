@@ -5,8 +5,7 @@ import { ArticleService } from "./article.service";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
-
-const idParam = z.coerce.number().int().positive();
+import { idParam } from "../common/schemas";
 
 const router = Router();
 

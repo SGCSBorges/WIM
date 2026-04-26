@@ -13,8 +13,7 @@ import {
 } from "./attachment.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
-
-const idParam = z.coerce.number().int().positive();
+import { idParam } from "../common/schemas";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
 const router = Router();

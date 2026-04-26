@@ -37,10 +37,11 @@ router.post(
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(req.body, sig, signingSecret);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       return res
         .status(400)
-        .send(`Webhook signature verification failed: ${err.message}`);
+        .send(`Webhook signature verification failed: ${errMsg}`);
     }
 
     try {

@@ -4,14 +4,13 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { authGuard, requireRole } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
-
-const positiveInt = z.coerce.number().int().positive();
+import { idParam } from "../common/schemas";
 
 const AuditQuerySchema = z.object({
-  limit:    positiveInt.optional(),
-  userId:   positiveInt.optional(),
+  limit:    idParam.optional(),
+  userId:   idParam.optional(),
   entity:   z.enum(["User", "Article", "Garantie", "Location", "Attachment", "ShareInvite", "InventoryShare", "ArticleLocation"]).optional(),
-  entityId: positiveInt.optional(),
+  entityId: idParam.optional(),
 });
 
 const router = Router();
