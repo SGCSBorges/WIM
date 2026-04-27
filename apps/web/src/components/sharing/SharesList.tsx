@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { sharesAPI, ShareItem, ShareInviteItem } from "../../services/api";
 
@@ -271,7 +272,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       </span>
                     </div>
                     <p className="text-sm ui-text-muted">
-                      {t("shares.label.sharedOn")} {new Date(share.createdAt).toLocaleDateString()}
+                      {t("shares.label.sharedOn")} {format(parseISO(share.createdAt), "dd MMM yyyy")}
                     </p>
                   </div>
                   <div className="flex space-x-2 items-center">
@@ -339,10 +340,10 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                         </span>
                       </div>
                       <div className="text-sm ui-text-muted space-y-1">
-                        <p>{t("shares.label.sentOn")} {new Date(invite.createdAt).toLocaleDateString()}</p>
-                        <p>{t("shares.label.expiresOn")} {new Date(invite.expiresAt).toLocaleDateString()}</p>
+                        <p>{t("shares.label.sentOn")} {format(parseISO(invite.createdAt), "dd MMM yyyy")}</p>
+                        <p>{t("shares.label.expiresOn")} {format(parseISO(invite.expiresAt), "dd MMM yyyy")}</p>
                         {invite.usedAt && (
-                          <p>{t("shares.label.acceptedOn")} {new Date(invite.usedAt).toLocaleDateString()}</p>
+                          <p>{t("shares.label.acceptedOn")} {format(parseISO(invite.usedAt), "dd MMM yyyy")}</p>
                         )}
                       </div>
                     </div>

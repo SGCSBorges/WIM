@@ -31,8 +31,8 @@ const ALLOWED_MIME_TYPES = new Set([
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (_req: AuthRequest, _file: any, cb: any) => cb(null, UPLOAD_DIR),
-    filename: (_req: AuthRequest, file: any, cb: any) => {
+    destination: (_req: AuthRequest, _file: Express.Multer.File, cb: (err: Error | null, dest: string) => void) => cb(null, UPLOAD_DIR),
+    filename: (_req: AuthRequest, file: Express.Multer.File, cb: (err: Error | null, name: string) => void) => {
       const safeBase = path
         .basename(file.originalname)
         .replace(/[^a-zA-Z0-9._-]/g, "_");

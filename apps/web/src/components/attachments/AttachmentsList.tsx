@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
@@ -399,7 +400,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     </p>
 
                     <p className="text-xs ui-text-muted">
-                      {new Date(attachment.createdAt).toLocaleDateString()}
+                      {format(parseISO(attachment.createdAt), "dd MMM yyyy")}
                     </p>
 
                     {/* Linked entities */}

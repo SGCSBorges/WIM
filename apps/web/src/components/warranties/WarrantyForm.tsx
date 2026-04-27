@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { format } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 
 interface Warranty {
@@ -90,7 +91,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
       const purchaseDate = new Date(formData.garantieDateAchat);
       const endDate = new Date(purchaseDate);
       endDate.setMonth(endDate.getMonth() + formData.garantieDuration);
-      return endDate.toLocaleDateString();
+      return format(endDate, "dd MMM yyyy");
     }
     return "";
   };

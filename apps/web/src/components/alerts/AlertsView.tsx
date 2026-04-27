@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { TranslationKey } from "../../i18n/translations";
 import { alertsAPI } from "../../services/api";
@@ -168,7 +169,7 @@ export default function AlertsView() {
                   <div className="font-medium">{a.alerteNom}</div>
                   <div className="text-xs ui-text-muted">
                     {t("alerts.date")}:{" "}
-                    {new Date(a.alerteDate).toLocaleString()}
+                    {format(parseISO(a.alerteDate), "dd MMM yyyy, HH:mm")}
                   </div>
 
                   {(a.garantie ||
