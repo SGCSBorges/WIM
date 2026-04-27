@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { TranslationKey } from "../../i18n/translations";
@@ -47,7 +47,7 @@ export default function AlertsView() {
   const [sortBy, setSortBy] = useState<"date" | "status" | "name">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -60,12 +60,11 @@ export default function AlertsView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, t]);
 
   useEffect(() => {
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [fetchAll]);
 
   const sorted = useMemo(() => {
     const arr = [...items];

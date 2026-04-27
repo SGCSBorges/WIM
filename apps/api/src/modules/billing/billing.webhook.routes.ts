@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import Stripe from "stripe";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
@@ -18,8 +18,7 @@ function getStripe() {
  */
 router.post(
   "/webhook",
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require("express").raw({ type: "application/json" }),
+  express.raw({ type: "application/json" }),
   async (req, res) => {
     const signingSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!signingSecret) {
