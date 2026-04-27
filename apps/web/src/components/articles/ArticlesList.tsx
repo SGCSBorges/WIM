@@ -174,7 +174,7 @@ const ArticlesList: React.FC = () => {
       </div>
 
       {error && (
-        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div role="alert" className="border ui-alert-error rounded-lg p-4">
           <div className="flex items-center">
             <span className="text-red-400 mr-2" aria-hidden="true">❌</span>
             <p className="text-sm text-red-700">{error}</p>
@@ -274,9 +274,9 @@ const ArticlesList: React.FC = () => {
                           const ws = getWarrantyStatus(article.garantie);
                           const colorClasses = {
                             gray: "ui-badge",
-                            green: "bg-green-50 text-green-700 border border-green-200",
-                            yellow: "bg-yellow-50 text-yellow-700 border border-yellow-200",
-                            red: "bg-red-50 text-red-700 border border-red-200",
+                            green: "ui-badge-success",
+                            yellow: "ui-badge-warning",
+                            red: "ui-badge-danger",
                           };
                           return (
                             <span className={`px-2 py-1 rounded ${colorClasses[ws.color as keyof typeof colorClasses]}`}>
@@ -287,7 +287,7 @@ const ArticlesList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {article.garantie?.garantieImageAttachmentId ? (
-                          <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
+                          <span className="px-2 py-1 rounded ui-badge-success">
                             {t("common.yes")}
                           </span>
                         ) : (

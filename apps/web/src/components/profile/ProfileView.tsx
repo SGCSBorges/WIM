@@ -140,12 +140,12 @@ export default function ProfileView() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4" role="alert">
+        <div className="border ui-alert-error rounded-lg p-4" role="alert">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4" role="status">
+        <div className="border ui-alert-success rounded-lg p-4" role="status">
           <p className="text-sm text-green-700">{success}</p>
         </div>
       )}
@@ -178,7 +178,7 @@ export default function ProfileView() {
             </button>
           </div>
           {showCancelConfirm && (
-            <div className="mt-3 p-3 border border-yellow-300 bg-yellow-50 rounded-lg space-y-2">
+            <div className="mt-3 p-3 border ui-alert-warning rounded-lg space-y-2">
               <p className="text-sm text-yellow-800">{t("profile.billing.cancelTooltip")}</p>
               <div className="flex gap-2">
                 <button className="ui-btn-primary px-3 py-1 text-sm rounded" onClick={confirmCancelAtPeriodEnd}>{t("common.yes")}</button>
@@ -234,7 +234,7 @@ export default function ProfileView() {
             {t("profile.danger.deleteButton")}
           </button>
         ) : (
-          <div className="p-3 border border-red-300 bg-red-50 rounded-lg space-y-2">
+          <div className="p-3 border ui-alert-error rounded-lg space-y-2">
             <p className="text-sm text-red-800">{t("profile.danger.confirm")}</p>
             <div className="flex gap-2">
               <button className="px-3 py-1 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60" onClick={deleteAccount} disabled={deleting}>{deleting ? t("common.loading") : t("common.yes")}</button>

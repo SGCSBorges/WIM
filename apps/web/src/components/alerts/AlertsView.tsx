@@ -29,10 +29,10 @@ type Alert = {
 
 function statusBadge(status: AlertStatus) {
   switch (status) {
-    case "SCHEDULED": return "bg-blue-100 text-blue-800";
-    case "SENT":      return "bg-green-100 text-green-800";
+    case "SCHEDULED": return "ui-badge-info";
+    case "SENT":      return "ui-badge-success";
     case "CANCELLED": return "ui-badge";
-    case "FAILED":    return "bg-red-100 text-red-800";
+    case "FAILED":    return "ui-badge-danger";
     default:          return "ui-badge";
   }
 }
@@ -150,7 +150,7 @@ export default function AlertsView() {
 
         {error && (
           <div className="p-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="border ui-alert-error rounded-lg p-4">
               <p className="text-sm text-red-700">{error}</p>
             </div>
           </div>

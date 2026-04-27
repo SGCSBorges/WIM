@@ -153,9 +153,9 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             <div
               className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
                 dragActive
-                  ? "border-blue-400 bg-blue-50"
+                  ? "border-[var(--primary)] ui-alert-info"
                   : errors.file
-                    ? "border-red-300 bg-red-50"
+                    ? "ui-alert-error"
                     : "border-[var(--border)] hover:border-[var(--primary)]"
               }`}
               onDragEnter={handleDrag}
@@ -302,8 +302,8 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
 
         {/* Linked Entity Info */}
         {(formData.articleId || formData.garantieId) && (
-          <div className="p-3 bg-blue-50 rounded-md">
-            <p className="text-sm text-blue-800">
+          <div className="p-3 border ui-alert-info rounded-md">
+            <p className="text-sm ui-action-primary">
               <strong>{t("attachments.form.linkedTo")}</strong>{" "}
               {formData.articleId
                 ? t("attachments.for.article")

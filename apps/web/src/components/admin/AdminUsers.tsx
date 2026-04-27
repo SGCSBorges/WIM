@@ -192,7 +192,7 @@ export default function AdminUsers() {
             onClick={() => setActiveTab("dashboard")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "dashboard"
-                ? "border-blue-500 text-blue-600"
+                ? "ui-tab-active"
                 : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
@@ -202,7 +202,7 @@ export default function AdminUsers() {
             onClick={() => setActiveTab("users")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "users"
-                ? "border-blue-500 text-blue-600"
+                ? "ui-tab-active"
                 : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
@@ -212,7 +212,7 @@ export default function AdminUsers() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="border ui-alert-error rounded-lg p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
@@ -290,7 +290,7 @@ export default function AdminUsers() {
               </div>
             </div>
           ) : (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="border ui-alert-warning rounded-lg p-4">
               <p className="text-sm text-yellow-700">{t("dashboard.noStats")}</p>
             </div>
           )}

@@ -210,9 +210,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   const getTypeColor = (type: string) => {
     switch (type) {
       case "INVOICE":
-        return "bg-blue-100 text-blue-800";
+        return "ui-badge-info";
       case "WARRANTY":
-        return "bg-green-100 text-green-800";
+        return "ui-badge-success";
       case "OTHER":
         return "ui-badge";
       default:
@@ -290,17 +290,17 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         />
       )}
       {uploadError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="border ui-alert-error rounded-lg p-3">
           <p className="text-sm text-red-700">{uploadError}</p>
         </div>
       )}
       {fetchError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="border ui-alert-error rounded-lg p-3">
           <p className="text-sm text-red-700">{fetchError}</p>
         </div>
       )}
       {deleteError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="border ui-alert-error rounded-lg p-3">
           <p className="text-sm text-red-700">{deleteError}</p>
         </div>
       )}

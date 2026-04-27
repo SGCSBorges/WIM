@@ -98,13 +98,13 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   };
 
   const getPermissionColor = (permission: string) =>
-    permission === "WRITE" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800";
+    permission === "WRITE" ? "ui-badge-danger" : "ui-badge-success";
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PENDING":  return "bg-yellow-100 text-yellow-800";
-      case "ACCEPTED": return "bg-green-100 text-green-800";
-      case "REVOKED":  return "bg-red-100 text-red-800";
+      case "PENDING":  return "ui-badge-warning";
+      case "ACCEPTED": return "ui-badge-success";
+      case "REVOKED":  return "ui-badge-danger";
       default:         return "ui-badge";
     }
   };
@@ -188,7 +188,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       )}
 
       {error && (
-        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div role="alert" className="border ui-alert-error rounded-lg p-3">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
@@ -200,7 +200,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             onClick={() => setActiveTab("shares")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "shares"
-                ? "border-blue-500 text-blue-600"
+                ? "ui-tab-active"
                 : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
@@ -210,7 +210,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             onClick={() => setActiveTab("invites")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "invites"
-                ? "border-blue-500 text-blue-600"
+                ? "ui-tab-active"
                 : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
@@ -266,7 +266,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPermissionColor(share.permission)}`}>
                         {share.permission}
                       </span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${share.active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${share.active ? "ui-badge-success" : "ui-badge-danger"}`}>
                         {share.active ? t("shares.status.active") : t("shares.status.inactive")}
                       </span>
                     </div>

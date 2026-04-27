@@ -120,7 +120,7 @@ const Dashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div className="border ui-alert-error rounded-lg p-4">
         <div className="flex items-center">
           <span className="text-red-400 mr-2">❌</span>
           <p className="text-sm text-red-700">
@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
 
   if (!statistics) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div className="border ui-alert-warning rounded-lg p-4">
         <div className="flex items-center">
           <span className="text-yellow-400 mr-2">⚠️</span>
           <p className="text-sm text-yellow-700">{t("dashboard.noStats")}</p>
