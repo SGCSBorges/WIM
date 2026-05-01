@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import AttachmentForm from "./AttachmentForm";
@@ -62,11 +62,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAttachments();
-  }, [articleId, garantieId]);
-
-  const fetchAttachments = async () => {
+  const fetchAttachments = useCallback(async () => {
     setFetchError(null);
     try {
       const data = await attachmentsAPI.getAll({
@@ -77,7 +73,11 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     } catch (e: unknown) {
       setFetchError(getErrorMessage(e, t("common.errorOccurred")));
     }
-  };
+  }, [articleId, garantieId, t]);
+
+  useEffect(() => {
+    fetchAttachments();
+  }, [fetchAttachments]);
 
   const handleAdd = async (formData: FormData) => {
     const file = formData.get("file");

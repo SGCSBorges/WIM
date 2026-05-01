@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { adminAPI, articlesAPI, authAPI, statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -81,7 +81,7 @@ export default function AdminUsers() {
   const [confirmDeleteUserId, setConfirmDeleteUserId] = useState<number | null>(null);
   const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<number | null>(null);
 
-  const role = useMemo(() => authAPI.getRole(), []);
+  const role = authAPI.getRole();
 
   const fetchStatistics = async () => {
     setLoadingStats(true);

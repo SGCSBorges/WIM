@@ -102,6 +102,7 @@ export const LocationService = {
 
     const rows = await prisma.articleLocation.findMany({
       where: { locationId },
+      take: 500,
       orderBy: { assignedAt: "desc" },
       include: {
         article: {

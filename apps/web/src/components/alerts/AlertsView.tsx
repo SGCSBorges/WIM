@@ -50,6 +50,7 @@ export default function AlertsView() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    setItems([]);
     setError(null);
     try {
       const data = await alertsAPI.getAll(
@@ -61,7 +62,10 @@ export default function AlertsView() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, t]);
+  // t is intentionally excluded: translating the fallback error in the closure
+  // is acceptable; excluding it prevents an unnecessary refetch on language change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchAll();

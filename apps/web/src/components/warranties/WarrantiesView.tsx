@@ -38,11 +38,11 @@ export default function WarrantiesView() {
   }, []);
 
   const sorted = useMemo(() => {
-    return [...items].sort(
-      (a, b) =>
-        new Date(b.garantieDateAchat).getTime() -
-        new Date(a.garantieDateAchat).getTime(),
-    );
+    return [...items].sort((a, b) => {
+      const ta = a.garantieDateAchat ? new Date(a.garantieDateAchat).getTime() : 0;
+      const tb = b.garantieDateAchat ? new Date(b.garantieDateAchat).getTime() : 0;
+      return tb - ta;
+    });
   }, [items]);
 
   return (
