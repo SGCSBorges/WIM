@@ -262,7 +262,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     try {
       await onSubmit(submitData);
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : t("common.errorOccurred"));
+      setFormError(getErrorMessage(err, t("common.errorOccurred")));
     } finally {
       setSubmitting(false);
     }

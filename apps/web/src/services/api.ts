@@ -286,7 +286,6 @@ export const attachmentsAPI = {
     });
 
     if (!response.ok) throw new Error(await extractError(response, `Failed to delete attachment (${response.status})`));
-    return response.json();
   },
 };
 
@@ -468,11 +467,16 @@ export const sharesAPI = {
     if (!response.ok) throw new Error(await extractError(response, "Failed to revoke share"));
   },
 
-  async createInvite(data: { email: string; permission: "READ" | "WRITE" }): Promise<ShareInviteItem> {
+  async createInvite(data: {
+    email: string;
+    permission: "READ" | "WRITE";
+    expiresAt?: Date | string;
+  }): Promise<ShareInviteItem> {
+    const expiresAt = data.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     const response = await fetchWithTimeout(`${API_BASE_URL}/shares/invites`, {
       method: "POST",
       headers: getHeaders(),
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, expiresAt }),
     });
     if (!response.ok) throw new Error(await extractError(response, "Failed to create invite"));
     return response.json();

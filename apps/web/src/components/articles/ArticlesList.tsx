@@ -62,7 +62,7 @@ const ArticlesList: React.FC = () => {
       setArticles(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
+      setError(getErrorMessage(err, t("common.errorOccurred")));
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ const ArticlesList: React.FC = () => {
       setShowForm(false);
       setEditingArticle(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
+      setError(getErrorMessage(err, t("common.errorOccurred")));
     }
   };
 
@@ -129,7 +129,7 @@ const ArticlesList: React.FC = () => {
       await articlesAPI.delete(articleId);
       await fetchArticles();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
+      setError(getErrorMessage(err, t("common.errorOccurred")));
     }
   };
 

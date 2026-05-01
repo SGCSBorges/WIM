@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
+import { getErrorMessage } from "../../utils/error";
 
 interface LoginFormProps {
   onLogin: () => void;
@@ -44,7 +45,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         onLogin();
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("auth.error.default"));
+      setError(getErrorMessage(err, t("auth.error.default")));
     } finally {
       setLoading(false);
     }

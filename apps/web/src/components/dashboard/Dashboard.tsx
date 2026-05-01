@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { getErrorMessage } from "../../utils/error";
 
 interface DashboardStatistics {
   articles: {
@@ -99,9 +100,7 @@ const Dashboard: React.FC = () => {
         const data = await statisticsAPI.getDashboard();
         setStatistics(data);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : t("common.errorOccurred"),
-        );
+        setError(getErrorMessage(err, t("common.errorOccurred")));
       } finally {
         setLoading(false);
       }
