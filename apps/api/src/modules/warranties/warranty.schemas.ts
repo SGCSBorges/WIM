@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const WarrantyCreateSchema = z.object({
   garantieArticleId: z.number().int().positive(),
-  garantieNom: z.string().min(1).max(100),
+  garantieNom: z.string().trim().min(1).max(100),
   garantieDateAchat: z.coerce.date(),
   garantieDuration: z.number().int().min(1).max(120),
 });

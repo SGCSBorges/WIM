@@ -496,9 +496,27 @@ export const sharesAPI = {
   },
 };
 
+export interface SharedArticleRow {
+  rowId: number;
+  owner: { userId: number; email: string };
+  article: {
+    articleId: number;
+    articleNom: string;
+    articleModele: string;
+    articleDescription?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    garantie?: { garantieId: number; garantieNom: string; garantieFin: string; garantieIsValide: boolean } | null;
+    locations?: Array<{ locationId: number; location?: { name: string } }>;
+    ownerUserId: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Shared articles API (read-only view for POWER_USER receivers)
 export const sharedAPI = {
-  async getSharedArticles(): Promise<any[]> {
+  async getSharedArticles(): Promise<SharedArticleRow[]> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/shared/articles`,
       { headers: getHeaders() },

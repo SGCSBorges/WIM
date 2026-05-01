@@ -1,28 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { sharedAPI } from "../../services/api";
+import React, { useCallback, useEffect, useState } from "react";
+import { sharedAPI, SharedArticleRow } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-
-type SharedOwner = { userId: number; email: string };
-
-type SharedArticle = {
-  articleId: number;
-  articleNom: string;
-  articleModele: string;
-  articleDescription?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  garantie?: { garantieId: number; garantieNom: string; garantieFin: string; garantieIsValide: boolean } | null;
-  locations?: Array<{ locationId: number; location?: { name: string } }>;
-  ownerUserId: number;
-};
-
-type SharedArticleRow = {
-  rowId: number;
-  owner: SharedOwner;
-  article: SharedArticle;
-  createdAt: string;
-  updatedAt: string;
-};
+import { getErrorMessage } from "../../utils/error";
 
 export default function SharedArticlesView() {
   const { t } = useI18n();
@@ -30,22 +9,22 @@ export default function SharedArticlesView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRows = async () => {
+  const fetchRows = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await sharedAPI.getSharedArticles();
-      setRows(data as SharedArticleRow[]);
+      setRows(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchRows();
-  }, []);
+  }, [fetchRows]);
 
   if (loading) {
     return (

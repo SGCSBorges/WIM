@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { profileAPI, billingAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { getErrorMessage } from "../../utils/error";
 
 type Me = { userId: number; email: string; role: string };
 
@@ -46,7 +47,7 @@ export default function ProfileView() {
       setMe(data);
       setEmail(data.email);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setLoading(false);
     }
@@ -63,7 +64,7 @@ export default function ProfileView() {
       setCurrentPasswordForEmail("");
       showSuccess(t("profile.email.success"));
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setSaving(false);
     }
@@ -78,7 +79,7 @@ export default function ProfileView() {
       setNewPassword("");
       showSuccess(t("profile.password.success"));
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setSaving(false);
     }
@@ -91,7 +92,7 @@ export default function ProfileView() {
       await profileAPI.deleteAccount(deletePassword);
       disconnectAndRedirect();
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "";
+      const msg = getErrorMessage(e, "");
       if (/4(01|04)/.test(msg) || /not found|unauthorized/i.test(msg)) {
         disconnectAndRedirect();
         return;
@@ -110,7 +111,7 @@ export default function ProfileView() {
       const { url } = await billingAPI.openPortal();
       window.location.href = url;
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setBillingBusy(false);
     }
@@ -125,7 +126,7 @@ export default function ProfileView() {
       showSuccess(t("profile.billing.cancelSuccess"));
       await loadMe();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setBillingBusy(false);
     }

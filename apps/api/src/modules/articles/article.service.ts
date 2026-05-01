@@ -18,6 +18,7 @@ export const ArticleService = {
             }
           : {}),
       },
+      take: 500,
       orderBy: { articleId: "desc" },
       include: {
         garantie: true,
@@ -46,6 +47,15 @@ export const ArticleService = {
 
   create: async (data: ArticleCreateInput) => {
     const { locationIds, garantie, ...articleData } = data;
+
+    if (garantie?.garantieImageAttachmentId) {
+      const owned = await prisma.attachment.findFirst({
+        where: { attachmentId: garantie.garantieImageAttachmentId, ownerUserId: articleData.ownerUserId },
+        select: { attachmentId: true },
+      });
+      if (!owned) throw createHttpError(403, "Attachment not found or not owned by you");
+    }
+
     return prisma.article.create({
       data: {
         ...articleData,
@@ -112,6 +122,14 @@ export const ArticleService = {
           });
         }
       } else if (garantie) {
+        if (garantie.garantieImageAttachmentId) {
+          const owned = await tx.attachment.findFirst({
+            where: { attachmentId: garantie.garantieImageAttachmentId, ownerUserId },
+            select: { attachmentId: true },
+          });
+          if (!owned) throw createHttpError(403, "Attachment not found or not owned by you");
+        }
+
         const shouldRecomputeFin =
           garantie.garantieDateAchat !== undefined ||
           garantie.garantieDuration !== undefined;

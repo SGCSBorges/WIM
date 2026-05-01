@@ -77,6 +77,7 @@ export const ShareService = {
   async listSharesOwned(ownerUserId: number) {
     return prisma.inventoryShare.findMany({
       where: { ownerUserId, active: true },
+      take: 500,
       include: { target: { select: { userId: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -85,6 +86,7 @@ export const ShareService = {
   async listSharesReceived(targetUserId: number) {
     return prisma.inventoryShare.findMany({
       where: { targetUserId, active: true },
+      take: 500,
       include: { owner: { select: { userId: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -93,6 +95,7 @@ export const ShareService = {
   async listSentInvites(ownerUserId: number) {
     return prisma.shareInvite.findMany({
       where: { ownerUserId },
+      take: 500,
       orderBy: { createdAt: "desc" },
     });
   },

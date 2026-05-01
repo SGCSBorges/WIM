@@ -6,6 +6,7 @@ export const LocationService = {
   list: (ownerUserId: number) =>
     prisma.location.findMany({
       where: { ownerUserId },
+      take: 500,
       orderBy: { updatedAt: "desc" },
       include: {
         _count: { select: { articles: true } },
@@ -80,6 +81,13 @@ export const LocationService = {
       where: { locationId, ownerUserId },
     });
     if (!location) throw createHttpError(404, "Location not found");
+
+    const article = await prisma.article.findFirst({
+      where: { articleId, ownerUserId },
+      select: { articleId: true },
+    });
+    if (!article) throw createHttpError(403, "Article not found or not owned by you");
+
     await prisma.articleLocation.delete({
       where: { articleId_locationId: { articleId, locationId } },
     });

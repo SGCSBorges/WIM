@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const LocationCreateSchema = z.object({
-  name: z.string().min(1).max(120),
-  description: z.string().max(255).optional().nullable(),
+  name: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(255).optional().nullable(),
   ownerUserId: z.number().int().positive(),
 });
 

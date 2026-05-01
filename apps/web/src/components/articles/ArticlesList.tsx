@@ -9,6 +9,7 @@ import ShareArticleButton from "./ShareArticleButton";
 import { articlesAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location } from "../../types";
+import { getErrorMessage } from "../../utils/error";
 
 type ArticleShareStatus = {
   articleId: number;
@@ -86,7 +87,7 @@ const ArticlesList: React.FC = () => {
       const data = await articlesAPI.getShares(articleId) as ArticleShareStatus;
       setShareStatusByArticleId((prev) => ({ ...prev, [articleId]: data }));
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setSharesLoadingArticleId(null);
     }
@@ -99,7 +100,7 @@ const ArticlesList: React.FC = () => {
       await articlesAPI.setSharedWithPowerUsers(articleId, false);
       await loadShareStatus(articleId);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setShareBusyArticleId(null);
     }

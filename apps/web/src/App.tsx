@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, useEffect, useState } from "react";
+import { getErrorMessage } from "./utils/error";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import ArticlesList from "./components/articles/ArticlesList";
 import Dashboard from "./components/dashboard/Dashboard";
@@ -12,8 +13,7 @@ import SharedArticlesView from "./components/sharing/SharedArticlesView";
 import AlertsView from "./components/alerts/AlertsView";
 import ProfileView from "./components/profile/ProfileView";
 import { useI18n } from "./i18n/i18n";
-import { Language } from "./i18n/translations";
-import { useTheme, Theme } from "./theme/theme";
+import LanguageThemeSelector from "./components/common/LanguageThemeSelector";
 
 interface ErrorBoundaryState { error: Error | null }
 export class ErrorBoundary extends Component<{ children: React.ReactNode }, ErrorBoundaryState> {
@@ -44,8 +44,7 @@ export class ErrorBoundary extends Component<{ children: React.ReactNode }, Erro
 }
 
 export default function App() {
-  const { t, language, setLanguage } = useI18n();
-  const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -114,7 +113,7 @@ export default function App() {
       const { url } = await billingAPI.createPowerUserCheckoutSession(plan);
       window.location.href = url;
     } catch (e: unknown) {
-      setUpgradeError(e instanceof Error ? e.message : t("billing.upgradeStartError"));
+      setUpgradeError(getErrorMessage(e, t("billing.upgradeStartError")));
     }
   };
 
@@ -150,29 +149,7 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-3">
-              <label className="text-xs ui-text-muted">
-                {t("nav.language")}
-              </label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
-                className="ui-select px-2 py-1 rounded-md text-sm"
-              >
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="pt">Português</option>
-              </select>
-
-              <label className="text-xs ui-text-muted">{t("nav.theme")}</label>
-              <select
-                value={theme}
-                onChange={(e) => setTheme(e.target.value as Theme)}
-                className="ui-select px-2 py-1 rounded-md text-sm"
-              >
-                <option value="light">{t("theme.light")}</option>
-                <option value="dark">{t("theme.dark")}</option>
-                <option value="ocean">{t("theme.ocean")}</option>
-              </select>
+              <LanguageThemeSelector />
 
               {role === "ADMIN" && navLink("/admin", t("nav.admin"))}
 

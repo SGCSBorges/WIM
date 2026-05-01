@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { warrantiesAPI } from "../../services/api";
+import { getErrorMessage } from "../../utils/error";
 
 type Warranty = {
   garantieId: number;
@@ -26,7 +27,7 @@ export default function WarrantiesView() {
       const data = await warrantiesAPI.getAll();
       setItems(data as Warranty[]);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("warranties.error.fetch"));
+      setError(getErrorMessage(e, t("warranties.error.fetch")));
     } finally {
       setLoading(false);
     }

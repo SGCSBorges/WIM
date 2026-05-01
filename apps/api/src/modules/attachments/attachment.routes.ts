@@ -14,6 +14,7 @@ import {
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { idParam } from "../common/schemas";
+import { logger } from "../../config/logger";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
 const router = Router();
@@ -122,7 +123,9 @@ router.post(
     const { type } = z.object({ type: AttachmentTypeSchema.optional() }).parse(req.body);
     const attachmentType: AttachmentType = type ?? "OTHER";
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const baseUrl =
+      process.env.APP_URL?.replace(/\/$/, "") ??
+      `${req.protocol}://${req.get("host")}`;
     const fileUrl = `${baseUrl}/uploads/${encodeURIComponent(file.filename)}`;
 
     let created;
@@ -136,8 +139,11 @@ router.post(
         ownerUserId: req.user!.sub,
       });
     } catch (err) {
-      // DB failed — remove the uploaded file so it doesn't orphan on disk.
-      fs.unlink(file.path, () => {});
+      try {
+        await fs.promises.unlink(file.path);
+      } catch (fsErr) {
+        logger.warn({ err: fsErr, filePath: file.path }, "[attachment] failed to unlink orphaned file after DB error");
+      }
       throw err;
     }
 

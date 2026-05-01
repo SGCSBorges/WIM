@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-import { Language } from "../../i18n/translations";
-import { useTheme, Theme } from "../../theme/theme";
+import LanguageThemeSelector from "../common/LanguageThemeSelector";
 
 interface LoginFormProps {
   onLogin: () => void;
 }
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
-  const { t, language, setLanguage } = useI18n();
-  const { theme, setTheme } = useTheme();
+  const { t } = useI18n();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
@@ -151,36 +149,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t ui-divider">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
-            <div className="flex items-center justify-center gap-2">
-              <label className="text-xs ui-text-muted">
-                {t("nav.language")}
-              </label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
-                className="ui-select px-2 py-1 rounded-md text-sm"
-              >
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="pt">Português</option>
-              </select>
-            </div>
-
-            <div className="flex items-center justify-center gap-2">
-              <label className="text-xs ui-text-muted">{t("nav.theme")}</label>
-              <select
-                value={theme}
-                onChange={(e) => setTheme(e.target.value as Theme)}
-                className="ui-select px-2 py-1 rounded-md text-sm"
-              >
-                <option value="light">{t("theme.light")}</option>
-                <option value="dark">{t("theme.dark")}</option>
-                <option value="ocean">{t("theme.ocean")}</option>
-              </select>
-            </div>
-          </div>
+        <div className="mt-6 pt-4 border-t ui-divider flex justify-center">
+          <LanguageThemeSelector />
         </div>
       </div>
     </div>

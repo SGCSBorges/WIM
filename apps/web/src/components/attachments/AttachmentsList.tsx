@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
+import { getErrorMessage } from "../../utils/error";
 
 interface Attachment {
   attachmentId: number;
@@ -74,7 +75,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       });
       setAttachments(data);
     } catch (e: unknown) {
-      setFetchError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setFetchError(getErrorMessage(e, t("common.errorOccurred")));
     }
   };
 
@@ -96,7 +97,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       setShowAddForm(false);
       await fetchAttachments();
     } catch (e) {
-      setUploadError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setUploadError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setUploading(false);
     }
@@ -110,7 +111,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       await attachmentsAPI.deleteAttachment(attachmentId);
       setAttachments(attachments.filter((a) => a.attachmentId !== attachmentId));
     } catch (e: unknown) {
-      setDeleteError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setDeleteError(getErrorMessage(e, t("common.errorOccurred")));
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { adminAPI, articlesAPI, authAPI, statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { getErrorMessage } from "../../utils/error";
 
 type UserRow = {
   userId: number;
@@ -89,7 +90,7 @@ export default function AdminUsers() {
       const data = await statisticsAPI.getAdmin();
       setStatistics(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("admin.error.fetchStatistics"));
+      setError(getErrorMessage(e, t("admin.error.fetchStatistics")));
     } finally {
       setLoadingStats(false);
     }
@@ -102,7 +103,7 @@ export default function AdminUsers() {
       const data = await adminAPI.listUsers();
       setUsers(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("admin.error.fetchUsers"));
+      setError(getErrorMessage(e, t("admin.error.fetchUsers")));
     } finally {
       setLoadingUsers(false);
     }
@@ -115,7 +116,7 @@ export default function AdminUsers() {
       const data = await adminAPI.getUserInventory(userId);
       setInventory(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("admin.error.fetchInventory"));
+      setError(getErrorMessage(e, t("admin.error.fetchInventory")));
     } finally {
       setLoadingInventory(false);
     }
@@ -133,7 +134,7 @@ export default function AdminUsers() {
       }
       await fetchUsers();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("admin.error.deleteUser"));
+      setError(getErrorMessage(e, t("admin.error.deleteUser")));
     } finally {
       setActionLoading(null);
     }
@@ -149,7 +150,7 @@ export default function AdminUsers() {
         await fetchInventory(selectedUser.userId);
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("admin.error.deleteArticle"));
+      setError(getErrorMessage(e, t("admin.error.deleteArticle")));
     } finally {
       setActionLoading(null);
     }

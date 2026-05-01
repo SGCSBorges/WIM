@@ -8,6 +8,7 @@ import { attachmentsAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { API_BASE_URL } from "../../services/api";
 import type { Article, Location } from "../../types";
+import { getErrorMessage } from "../../utils/error";
 
 interface ArticleFormProps {
   article?: Article;
@@ -136,7 +137,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       });
     } catch (e) {
       setWarrantyProofError(
-        e instanceof Error ? e.message : t("common.errorOccurred"),
+        getErrorMessage(e, t("common.errorOccurred")),
       );
     } finally {
       setWarrantyProofUploading(false);
@@ -158,7 +159,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       }
     } catch (e) {
       setWarrantyProofError(
-        e instanceof Error ? e.message : t("common.errorOccurred"),
+        getErrorMessage(e, t("common.errorOccurred")),
       );
       return;
     }
@@ -190,7 +191,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       } catch (e) {
         if (mounted)
           setLocationsError(
-            e instanceof Error ? e.message : t("common.errorOccurred"),
+            getErrorMessage(e, t("common.errorOccurred")),
           );
       } finally {
         if (mounted) setLocationsLoading(false);
@@ -290,7 +291,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       );
       setNewLocationName("");
     } catch (e) {
-      setLocCreateError(e instanceof Error ? e.message : t("locations.error.create"));
+      setLocCreateError(getErrorMessage(e, t("locations.error.create")));
     } finally {
       setCreatingLocation(false);
     }

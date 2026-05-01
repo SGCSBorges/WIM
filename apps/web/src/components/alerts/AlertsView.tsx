@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { TranslationKey } from "../../i18n/translations";
 import { alertsAPI } from "../../services/api";
+import { getErrorMessage } from "../../utils/error";
 
 type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
 
@@ -56,7 +57,7 @@ export default function AlertsView() {
       );
       setItems(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ export const WarrantyService = {
   list: (ownerUserId: number) =>
     prisma.garantie.findMany({
       where: { ownerUserId },
+      take: 500,
       orderBy: { garantieId: "desc" },
     }),
   get: (id: number, ownerUserId: number) =>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { sharesAPI, ShareItem, ShareInviteItem } from "../../services/api";
+import { getErrorMessage } from "../../utils/error";
 
 interface SharesListProps {
   onEdit?: (share: ShareItem) => void;
@@ -33,7 +34,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       const data = await sharesAPI.getOwned();
       setShares(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     }
   }, [t]);
 
@@ -42,7 +43,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       const data = await sharesAPI.getSentInvites();
       setInvites(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     }
   }, [t]);
 
@@ -61,7 +62,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       await sharesAPI.revoke(share.target.userId);
       setShares((prev) => prev.filter((s) => s.inventoryShareId !== shareId));
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     }
   };
 
@@ -72,7 +73,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       await sharesAPI.revokeInvite(inviteId);
       setInvites((prev) => prev.filter((i) => i.shareInviteId !== inviteId));
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     }
   };
 
@@ -92,7 +93,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       setShowInviteForm(false);
       setActiveTab("invites");
     } catch (e: unknown) {
-      setInviteError(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setInviteError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setInviteBusy(false);
     }
