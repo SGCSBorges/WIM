@@ -222,6 +222,20 @@ body {
   cursor: not-allowed;
 }
 
+.ui-btn-danger {
+  background: #dc2626;
+  color: #fff;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.ui-btn-danger:hover:not(:disabled) { background: #b91c1c; }
+.ui-btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Stat icon circle backgrounds */
+.ui-icon-primary { background: color-mix(in srgb, var(--primary) 80%, #000); color: #fff; }
+.ui-icon-success { background: #16a34a; color: #fff; }
+.ui-icon-warning { background: #d97706; color: #fff; }
+.ui-icon-purple  { background: #7c3aed; color: #fff; }
+
 .ui-nav-item-active {
   background: var(--nav-active-bg);
   color: var(--nav-active-text);

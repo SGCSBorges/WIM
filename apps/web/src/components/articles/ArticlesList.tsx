@@ -345,7 +345,7 @@ const ArticlesList: React.FC = () => {
                             <span className="text-xs text-red-700">{t("articles.delete.confirm")}</span>
                             <button
                               onClick={() => handleDelete(article.articleId)}
-                              className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                              className="text-xs px-2 py-1 ui-btn-danger rounded"
                             >
                               {t("common.yes")}
                             </button>
@@ -400,7 +400,7 @@ const ArticlesList: React.FC = () => {
                                     <span className="text-xs text-red-700">{t("articles.shares.unshareConfirm")}</span>
                                     <button
                                       type="button"
-                                      className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                                      className="text-xs px-2 py-1 ui-btn-danger rounded"
                                       disabled={shareBusyArticleId === article.articleId}
                                       onClick={() => handleUnshareAll(article.articleId)}
                                     >

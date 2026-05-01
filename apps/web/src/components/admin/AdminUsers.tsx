@@ -235,7 +235,7 @@ export default function AdminUsers() {
                       {statistics.users.total}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-blue-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-primary text-2xl flex items-center justify-center w-12 h-12">
                     👥
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export default function AdminUsers() {
                       {statistics.articles.total}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-green-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-success text-2xl flex items-center justify-center w-12 h-12">
                     📦
                   </div>
                 </div>
@@ -267,7 +267,7 @@ export default function AdminUsers() {
                       {statistics.warranties.active}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-purple-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-purple text-2xl flex items-center justify-center w-12 h-12">
                     🛡️
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export default function AdminUsers() {
                       {statistics.sharing.totalSharedArticles}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-orange-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-warning text-2xl flex items-center justify-center w-12 h-12">
                     🤝
                   </div>
                 </div>
@@ -334,7 +334,7 @@ export default function AdminUsers() {
                       <span className="text-xs text-red-700">{t("admin.confirmDeleteUser")}</span>
                       <button
                         onClick={() => deleteUser(u.userId)}
-                        className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                        className="text-xs px-2 py-1 ui-btn-danger rounded"
                         disabled={actionLoading === `user:${u.userId}`}
                       >
                         {t("common.yes")}
@@ -421,7 +421,7 @@ export default function AdminUsers() {
                             <div className="flex items-center gap-2 shrink-0">
                               <button
                                 onClick={() => deleteArticle(a.articleId)}
-                                className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                                className="text-xs px-2 py-1 ui-btn-danger rounded"
                                 disabled={actionLoading === `article:${a.articleId}`}
                               >
                                 {t("common.yes")}

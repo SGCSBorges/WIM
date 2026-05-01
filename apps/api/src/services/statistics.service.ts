@@ -77,7 +77,11 @@ export async function getDashboardStatistics(
 ): Promise<DashboardStatistics> {
   try {
     const ownerUserId = Number(params.userId);
-    const role = String(params.role || "USER") as UserRole;
+    const VALID_ROLES = ["USER", "POWER_USER", "ADMIN"] as const;
+    const rawRole = String(params.role || "USER");
+    const role: UserRole = (VALID_ROLES as readonly string[]).includes(rawRole)
+      ? (rawRole as UserRole)
+      : "USER";
 
     const currentDate = new Date();
     const thirtyDaysFromNow = new Date();
@@ -214,7 +218,9 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
 
     const roleCounts = { USER: 0, POWER_USER: 0, ADMIN: 0 };
     for (const row of usersByRole) {
-      roleCounts[row.role as keyof typeof roleCounts] = row._count.userId;
+      if (row.role in roleCounts) {
+        roleCounts[row.role as keyof typeof roleCounts] = row._count.userId;
+      }
     }
 
     return {

@@ -2,6 +2,7 @@ import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
 import { createHttpError } from "../../utils/http-error";
+import { logger } from "../../config/logger";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -64,8 +65,8 @@ export const ProfileService = {
       try {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
         await stripe.subscriptions.cancel(user.stripeSubscriptionId);
-      } catch {
-        // Log but don't block deletion — subscription may already be cancelled.
+      } catch (err) {
+        logger.warn({ err, userId }, "[profile] stripe subscription cancel failed during account deletion — proceeding");
       }
     }
 

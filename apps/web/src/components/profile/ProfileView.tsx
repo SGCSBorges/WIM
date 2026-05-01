@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { profileAPI, billingAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 
@@ -26,12 +26,19 @@ export default function ProfileView() {
   const [newPassword, setNewPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
 
-  const showSuccess = (msg: string) => {
-    setSuccess(msg);
-    setTimeout(() => setSuccess(null), 4000);
-  };
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadMe = async () => {
+  const showSuccess = useCallback((msg: string) => {
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    setSuccess(msg);
+    successTimerRef.current = setTimeout(() => setSuccess(null), 4000);
+  }, []);
+
+  useEffect(() => () => {
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+  }, []);
+
+  const loadMe = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -43,9 +50,9 @@ export default function ProfileView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
-  useEffect(() => { loadMe(); }, []);
+  useEffect(() => { loadMe(); }, [loadMe]);
 
   const updateEmail = async () => {
     setError(null);
@@ -228,7 +235,7 @@ export default function ProfileView() {
         </div>
         {!showDeleteConfirm ? (
           <button
-            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+            className="px-4 py-2 rounded ui-btn-danger"
             onClick={() => setShowDeleteConfirm(true)}
           >
             {t("profile.danger.deleteButton")}
@@ -237,7 +244,7 @@ export default function ProfileView() {
           <div className="p-3 border ui-alert-error rounded-lg space-y-2">
             <p className="text-sm text-red-800">{t("profile.danger.confirm")}</p>
             <div className="flex gap-2">
-              <button className="px-3 py-1 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60" onClick={deleteAccount} disabled={deleting}>{deleting ? t("common.loading") : t("common.yes")}</button>
+              <button className="px-3 py-1 text-sm rounded ui-btn-danger" onClick={deleteAccount} disabled={deleting}>{deleting ? t("common.loading") : t("common.yes")}</button>
               <button className="ui-btn-ghost px-3 py-1 text-sm rounded border ui-divider" onClick={() => setShowDeleteConfirm(false)}>{t("common.no")}</button>
             </div>
           </div>

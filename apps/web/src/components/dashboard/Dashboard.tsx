@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.totalArticles")}
           value={statistics.articles.total}
           icon="📦"
-          color="bg-blue-500"
+          color="ui-icon-primary"
           subtitle={`${statistics.articles.withWarranty} ${t("dashboard.withWarranty")}`}
         />
 
@@ -163,7 +163,7 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.activeWarranties")}
           value={statistics.warranties.active}
           icon="🛡️"
-          color="bg-green-500"
+          color="ui-icon-success"
           subtitle={`${statistics.warranties.expiringSoon} ${t("dashboard.expiringSoon")}`}
         />
 
@@ -171,7 +171,7 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.sharedByMe")}
           value={statistics.sharing.ownedSharedArticles}
           icon="📤"
-          color="bg-purple-500"
+          color="ui-icon-purple"
           subtitle={t("dashboard.ownedArticlesShared")}
         />
 
@@ -179,7 +179,7 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.sharedWithMe")}
           value={statistics.sharing.totalSharedArticles}
           icon="📥"
-          color="bg-orange-500"
+          color="ui-icon-warning"
           subtitle={t("dashboard.availableInSharedView")}
         />
       </div>

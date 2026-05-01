@@ -80,7 +80,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
   const handleAdd = async (formData: FormData) => {
     const file = formData.get("file");
-    const type = String(formData.get("type") || "OTHER") as "INVOICE" | "WARRANTY" | "OTHER";
+    const rawType = String(formData.get("type") || "OTHER");
+    const type: "INVOICE" | "WARRANTY" | "OTHER" =
+      rawType === "INVOICE" || rawType === "WARRANTY" ? rawType : "OTHER";
 
     if (!(file instanceof File)) {
       setUploadError(t("attachments.form.error.fileRequired"));
@@ -466,7 +468,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                       <>
                         <button
                           onClick={() => handleDelete(attachment.attachmentId)}
-                          className="text-xs px-2 py-1 bg-red-600 text-white rounded"
+                          className="text-xs px-2 py-1 ui-btn-danger rounded"
                         >
                           {t("common.yes")}
                         </button>

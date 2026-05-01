@@ -170,7 +170,10 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             />
             <select
               value={invitePermission}
-              onChange={(e) => setInvitePermission(e.target.value as "READ" | "WRITE")}
+              onChange={(e) => {
+              const val = e.target.value;
+              if (val === "READ" || val === "WRITE") setInvitePermission(val);
+            }}
               className="ui-select px-3 py-2 rounded"
               disabled={inviteBusy}
             >
@@ -288,7 +291,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       confirmRevokeId === share.inventoryShareId ? (
                         <>
                           <span className="text-xs text-red-700">{t("shares.confirmRevoke")}</span>
-                          <button onClick={() => handleRevokeShare(share.inventoryShareId)} className="px-2 py-1 text-xs bg-red-600 text-white rounded">{t("common.yes")}</button>
+                          <button onClick={() => handleRevokeShare(share.inventoryShareId)} className="px-2 py-1 text-xs ui-btn-danger rounded">{t("common.yes")}</button>
                           <button onClick={() => setConfirmRevokeId(null)} className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded">{t("common.no")}</button>
                         </>
                       ) : (
@@ -352,7 +355,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                         {confirmRevokeInviteId === invite.shareInviteId ? (
                           <>
                             <span className="text-xs text-red-700">{t("shares.confirmRevoke")}</span>
-                            <button onClick={() => handleRevokeInvite(invite.shareInviteId)} className="px-2 py-1 text-xs bg-red-600 text-white rounded">{t("common.yes")}</button>
+                            <button onClick={() => handleRevokeInvite(invite.shareInviteId)} className="px-2 py-1 text-xs ui-btn-danger rounded">{t("common.yes")}</button>
                             <button onClick={() => setConfirmRevokeInviteId(null)} className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded">{t("common.no")}</button>
                           </>
                         ) : (

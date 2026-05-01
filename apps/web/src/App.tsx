@@ -26,11 +26,11 @@ export class ErrorBoundary extends Component<{ children: React.ReactNode }, Erro
     if (this.state.error) {
       return (
         <div className="min-h-screen flex items-center justify-center">
-          <div className="max-w-md w-full p-8 bg-red-50 border border-red-200 rounded-lg text-center">
+          <div className="max-w-md w-full p-8 border ui-alert-error rounded-lg text-center">
             <h1 className="text-xl font-bold text-red-800 mb-2">Something went wrong</h1>
             <p className="text-sm text-red-600 mb-4">{this.state.error.message}</p>
             <button
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="px-4 py-2 ui-btn-danger rounded"
               onClick={() => { this.setState({ error: null }); window.location.reload(); }}
             >
               Reload
@@ -228,7 +228,7 @@ export default function App() {
                         </div>
                       </div>
                       {upgradeError && (
-                        <div className="mt-3 px-3 py-2 rounded-md text-sm bg-red-50 border border-red-200 text-red-700">
+                        <div className="mt-3 px-3 py-2 rounded-md text-sm border ui-alert-error text-red-700">
                           {upgradeError}
                         </div>
                       )}

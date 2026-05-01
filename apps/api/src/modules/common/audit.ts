@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { AuthRequest } from "../auth/auth.middleware";
-import { AuditService } from "../audit/audit.service";
+import { AuditService, AuditInput } from "../audit/audit.service";
 
 export function extractClient(req: Request) {
   const ip =
@@ -17,13 +17,7 @@ export function extractClient(req: Request) {
  */
 export async function auditAction(
   req: Request,
-  params: {
-    userId?: number | null;
-    action: string;
-    entity: string;
-    entityId?: number | null;
-    metadata?: Record<string, unknown>;
-  }
+  params: Pick<AuditInput, "userId" | "action" | "entity" | "entityId" | "metadata">
 ) {
   const { ip, ua } = extractClient(req);
   await AuditService.log({
