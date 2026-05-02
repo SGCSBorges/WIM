@@ -170,6 +170,25 @@ export const AlertService = {
     });
   },
 
+  cancelForUser: async (ownerUserId: number) => {
+    const alerts = await prisma.alerte.findMany({
+      where: { ownerUserId, status: AlerteStatus.SCHEDULED },
+      select: { alerteGarantieId: true, alerteDate: true },
+    });
+
+    for (const a of alerts) {
+      if (!a.alerteGarantieId) continue;
+      for (const reminderKind of ["J30", "J7", "J1"] as const) {
+        const jobId = buildJobId(a.alerteGarantieId, reminderKind, a.alerteDate);
+        const job = await alertQueue.getJob(jobId);
+        if (job) {
+          await job.remove();
+          logger.info({ jobId }, "[alerts] cancelled job for account deletion");
+        }
+      }
+    }
+  },
+
   rescheduleForWarranty: async (input: {
     ownerUserId: number;
     garantieId: number;

@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import Stripe from "stripe";
 import { createHttpError } from "../../utils/http-error";
 import { logger } from "../../config/logger";
+import { AlertService } from "../alerts/alert.service";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -68,6 +69,14 @@ export const ProfileService = {
       } catch (err) {
         logger.warn({ err, userId }, "[profile] stripe subscription cancel failed during account deletion — proceeding");
       }
+    }
+
+    // Cancel scheduled BullMQ jobs before removing DB records so they don't
+    // fire against deleted rows and fill the Redis failed-jobs queue.
+    try {
+      await AlertService.cancelForUser(userId);
+    } catch (err) {
+      logger.warn({ err, userId }, "[profile] alert job cancellation failed during account deletion — proceeding");
     }
 
     // Delete in a safe order to avoid FK constraint issues.

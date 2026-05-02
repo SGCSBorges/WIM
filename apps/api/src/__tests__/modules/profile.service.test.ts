@@ -37,6 +37,11 @@ vi.mock("bcrypt", async (importOriginal) => {
 // Stripe is only used in deleteAccount when STRIPE_SECRET_KEY is set; skip it in unit tests.
 vi.mock("stripe", () => ({ default: vi.fn() }));
 
+// AlertService.cancelForUser is a best-effort pre-deletion step; mock it out.
+vi.mock("../../modules/alerts/alert.service", () => ({
+  AlertService: { cancelForUser: vi.fn().mockResolvedValue(undefined) },
+}));
+
 import { prisma } from "../../libs/prisma";
 import { ProfileService } from "../../modules/profile/profile.service";
 
