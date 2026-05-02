@@ -188,6 +188,7 @@ router.post(
       metadata: { customerId },
     });
 
+    if (!session.url) throw createHttpError(500, "Stripe did not return a portal URL");
     return res.json({ url: session.url });
   })
 );
