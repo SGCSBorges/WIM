@@ -444,11 +444,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                         // Default behavior: open the attachment URL.
                         // Navigating directly to /api/attachments/:id would fail because the browser
                         // won't send the Authorization header (Token manquant).
-                        window.open(
-                          attachment.fileUrl,
-                          "_blank",
-                          "noopener,noreferrer",
-                        );
+                        if (/^https?:\/\//i.test(attachment.fileUrl)) {
+                          window.open(attachment.fileUrl, "_blank", "noopener,noreferrer");
+                        }
                       }}
                       className="text-xs ui-btn-ghost px-2 py-1 rounded"
                       title={t("attachments.action.view")}
