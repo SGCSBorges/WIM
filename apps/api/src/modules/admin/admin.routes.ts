@@ -72,6 +72,7 @@ router.get(
         createdAt: true,
         updatedAt: true,
       },
+      take: 500,
       orderBy: { createdAt: "desc" },
     });
     res.json(users);
@@ -127,6 +128,7 @@ router.get(
       where: { userId },
       include: {
         articlesOwned: {
+          take: 500,
           include: {
             garantie: {
               select: {
@@ -138,6 +140,7 @@ router.get(
           },
         },
         warrantiesOwned: {
+          take: 500,
           include: {
             article: {
               select: {

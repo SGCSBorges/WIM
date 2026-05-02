@@ -15,6 +15,7 @@ export const AttachmentService = {
         ...(filters?.articleId && { articleId: filters.articleId }),
         ...(filters?.garantieId && { garantieId: filters.garantieId }),
       },
+      take: 500,
       orderBy: { createdAt: "desc" },
       include: {
         article: {

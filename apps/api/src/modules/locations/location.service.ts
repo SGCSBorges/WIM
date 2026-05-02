@@ -18,6 +18,7 @@ export const LocationService = {
       where: { locationId, ownerUserId },
       include: {
         articles: {
+          take: 500,
           select: {
             articleId: true,
             assignedAt: true,
