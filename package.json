@@ -17,5 +17,9 @@
     "lint": "npm run lint --workspaces --if-present",
     "fmt": "npm run format --workspaces --if-present",
     "test": "npm test --workspaces --if-present"
+  },
+  "overrides": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   }
 }

@@ -40,6 +40,10 @@ jobs:
         working-directory: apps/api
         run: npm test
 
+      - name: Web - Test
+        working-directory: apps/web
+        run: npm test
+
       - name: Web - Build
         working-directory: apps/web
         run: npm run build
