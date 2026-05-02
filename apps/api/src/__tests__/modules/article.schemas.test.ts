@@ -56,6 +56,22 @@ describe("ArticleCreateSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts a valid https productImageUrl", () => {
+    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: "https://example.com/img.jpg" }).success).toBe(true);
+  });
+
+  it("rejects a javascript: productImageUrl", () => {
+    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: "javascript:alert(1)" }).success).toBe(false);
+  });
+
+  it("rejects a data: productImageUrl", () => {
+    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: "data:text/html,<h1>xss</h1>" }).success).toBe(false);
+  });
+
+  it("accepts null productImageUrl", () => {
+    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: null }).success).toBe(true);
+  });
 });
 
 describe("ArticleUpdateSchema", () => {
