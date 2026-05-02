@@ -14,7 +14,7 @@ import {
 } from "./attachment.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
-import { idParam } from "../common/schemas";
+import { idParam, paginationQuery } from "../common/schemas";
 import { logger } from "../../config/logger";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
@@ -61,7 +61,8 @@ router.get(
     const filters: { articleId?: number; garantieId?: number } = {};
     if (req.query.articleId) filters.articleId = idParam.parse(req.query.articleId);
     if (req.query.garantieId) filters.garantieId = idParam.parse(req.query.garantieId);
-    const attachments = await AttachmentService.list(req.user!.sub, filters);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const attachments = await AttachmentService.list(req.user!.sub, filters, page, limit);
     res.json(attachments);
   })
 );

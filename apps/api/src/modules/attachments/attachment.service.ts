@@ -7,7 +7,9 @@ import {
 export const AttachmentService = {
   list: (
     ownerUserId: number,
-    filters?: { articleId?: number; garantieId?: number }
+    filters?: { articleId?: number; garantieId?: number },
+    page = 1,
+    limit = 50
   ) =>
     prisma.attachment.findMany({
       where: {
@@ -15,7 +17,8 @@ export const AttachmentService = {
         ...(filters?.articleId && { articleId: filters.articleId }),
         ...(filters?.garantieId && { garantieId: filters.garantieId }),
       },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { createdAt: "desc" },
       include: {
         article: {

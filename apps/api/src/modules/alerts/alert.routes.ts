@@ -4,6 +4,7 @@ import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { AlertService } from "./alert.service";
 import { AlertListQuerySchema } from "./alert.schemas";
+import { paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -25,7 +26,8 @@ router.get(
       ownerUserId = q.ownerUserId;
     }
 
-    res.json(await AlertService.list(ownerUserId, q.status as AlerteStatus | undefined));
+    const { page, limit } = paginationQuery.parse(req.query);
+    res.json(await AlertService.list(ownerUserId, q.status as AlerteStatus | undefined, page, limit));
   })
 );
 

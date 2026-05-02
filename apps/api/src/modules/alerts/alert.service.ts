@@ -26,13 +26,14 @@ function buildJobId(
 }
 
 export const AlertService = {
-  list: (ownerUserId: number, status?: AlerteStatus) => {
+  list: (ownerUserId: number, status?: AlerteStatus, page = 1, limit = 50) => {
     return prisma.alerte.findMany({
       where: {
         ownerUserId,
         ...(status ? { status } : {}),
       },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { alerteDate: "asc" },
       include: {
         garantie: {
