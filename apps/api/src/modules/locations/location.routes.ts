@@ -8,7 +8,7 @@ import {
   LocationUpdateSchema,
 } from "./location.schemas";
 import { LocationService } from "./location.service";
-import { idParam } from "../common/schemas";
+import { idParam, paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -16,7 +16,8 @@ router.get(
   "/",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const locations = await LocationService.list(req.user!.sub);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const locations = await LocationService.list(req.user!.sub, page, limit);
     res.json(locations);
   })
 );
@@ -93,7 +94,8 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
-    const articles = await LocationService.listArticles(id, req.user!.sub);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const articles = await LocationService.listArticles(id, req.user!.sub, page, limit);
     res.json(articles);
   })
 );

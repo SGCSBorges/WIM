@@ -3,10 +3,11 @@ import { LocationCreateInput, LocationUpdateInput } from "./location.schemas";
 import { createHttpError } from "../../utils/http-error";
 
 export const LocationService = {
-  list: (ownerUserId: number) =>
+  list: (ownerUserId: number, page = 1, limit = 50) =>
     prisma.location.findMany({
       where: { ownerUserId },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { updatedAt: "desc" },
       include: {
         _count: { select: { articles: true } },
@@ -95,7 +96,7 @@ export const LocationService = {
     return { ok: true };
   },
 
-  listArticles: async (locationId: number, ownerUserId: number) => {
+  listArticles: async (locationId: number, ownerUserId: number, page = 1, limit = 50) => {
     const location = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
     });
@@ -103,7 +104,8 @@ export const LocationService = {
 
     const rows = await prisma.articleLocation.findMany({
       where: { locationId },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { assignedAt: "desc" },
       include: {
         article: {

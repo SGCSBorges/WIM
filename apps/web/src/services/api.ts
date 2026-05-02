@@ -115,9 +115,11 @@ export const authAPI = {
 
 // Articles API
 export const articlesAPI = {
-  async getAll(locationId?: number) {
+  async getAll(locationId?: number, page?: number, limit?: number) {
     const url = new URL(`${API_BASE_URL}/articles`);
     if (locationId) url.searchParams.set("locationId", String(locationId));
+    if (page != null) url.searchParams.set("page", String(page));
+    if (limit != null) url.searchParams.set("limit", String(limit));
 
     const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
@@ -193,8 +195,11 @@ export const articlesAPI = {
 
 // Locations API
 export const locationsAPI = {
-  async getAll() {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/locations`, {
+  async getAll(page?: number, limit?: number) {
+    const url = new URL(`${API_BASE_URL}/locations`);
+    if (page != null) url.searchParams.set("page", String(page));
+    if (limit != null) url.searchParams.set("limit", String(limit));
+    const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
     if (!response.ok) throw new Error(await extractError(response, "Failed to fetch locations"));
@@ -440,8 +445,11 @@ export interface ShareInviteItem {
 
 // Warranties API
 export const warrantiesAPI = {
-  async getAll(): Promise<WarrantyItem[]> {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/warranties`, {
+  async getAll(page?: number, limit?: number): Promise<WarrantyItem[]> {
+    const url = new URL(`${API_BASE_URL}/warranties`);
+    if (page != null) url.searchParams.set("page", String(page));
+    if (limit != null) url.searchParams.set("limit", String(limit));
+    const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
     if (!response.ok) throw new Error(await extractError(response, "Failed to fetch warranties"));
@@ -451,8 +459,11 @@ export const warrantiesAPI = {
 
 // Shares API (owned-inventory sharing)
 export const sharesAPI = {
-  async getOwned(): Promise<ShareItem[]> {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/shares/owned`, {
+  async getOwned(page?: number, limit?: number): Promise<ShareItem[]> {
+    const url = new URL(`${API_BASE_URL}/shares/owned`);
+    if (page != null) url.searchParams.set("page", String(page));
+    if (limit != null) url.searchParams.set("limit", String(limit));
+    const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
     if (!response.ok) throw new Error(await extractError(response, "Failed to fetch shares"));
@@ -482,11 +493,13 @@ export const sharesAPI = {
     return response.json();
   },
 
-  async getSentInvites(): Promise<ShareInviteItem[]> {
-    const response = await fetchWithTimeout(
-      `${API_BASE_URL}/shares/invites/sent`,
-      { headers: getHeaders() },
-    );
+  async getSentInvites(page?: number, limit?: number): Promise<ShareInviteItem[]> {
+    const url = new URL(`${API_BASE_URL}/shares/invites/sent`);
+    if (page != null) url.searchParams.set("page", String(page));
+    if (limit != null) url.searchParams.set("limit", String(limit));
+    const response = await fetchWithTimeout(url.toString(), {
+      headers: getHeaders(),
+    });
     if (!response.ok) throw new Error(await extractError(response, "Failed to fetch invites"));
     return response.json();
   },
@@ -520,11 +533,13 @@ export interface SharedArticleRow {
 
 // Shared articles API (read-only view for POWER_USER receivers)
 export const sharedAPI = {
-  async getSharedArticles(): Promise<SharedArticleRow[]> {
-    const response = await fetchWithTimeout(
-      `${API_BASE_URL}/shared/articles`,
-      { headers: getHeaders() },
-    );
+  async getSharedArticles(page?: number, limit?: number): Promise<SharedArticleRow[]> {
+    const url = new URL(`${API_BASE_URL}/shared/articles`);
+    if (page != null) url.searchParams.set("page", String(page));
+    if (limit != null) url.searchParams.set("limit", String(limit));
+    const response = await fetchWithTimeout(url.toString(), {
+      headers: getHeaders(),
+    });
     if (!response.ok) throw new Error(await extractError(response, "Failed to fetch shared articles"));
     return response.json();
   },

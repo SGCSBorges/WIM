@@ -4,7 +4,7 @@ import { WarrantyService } from "./warranty.service";
 import { WarrantyCreateSchema, WarrantyUpdateSchema } from "./warranty.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
-import { idParam } from "../common/schemas";
+import { idParam, paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -12,7 +12,8 @@ router.get(
   "/",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    res.json(await WarrantyService.list(req.user!.sub));
+    const { page, limit } = paginationQuery.parse(req.query);
+    res.json(await WarrantyService.list(req.user!.sub, page, limit));
   })
 );
 

@@ -6,7 +6,7 @@ import { createHttpError } from "../../utils/http-error";
 import { AlertService } from "../alerts/alert.service";
 
 export const ArticleService = {
-  list: (ownerUserId: number, locationId?: number) =>
+  list: (ownerUserId: number, locationId?: number, page = 1, limit = 50) =>
     prisma.article.findMany({
       where: {
         ownerUserId,
@@ -18,7 +18,8 @@ export const ArticleService = {
             }
           : {}),
       },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { articleId: "desc" },
       include: {
         garantie: true,

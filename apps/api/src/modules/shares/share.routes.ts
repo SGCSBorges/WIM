@@ -9,6 +9,7 @@ import {
 } from "./share.schemas";
 import { ShareService } from "./share.service";
 import { auditAction } from "../common/audit";
+import { paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -54,7 +55,8 @@ router.get(
   "/invites/sent",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const rows = await ShareService.listSentInvites(req.user!.sub);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const rows = await ShareService.listSentInvites(req.user!.sub, page, limit);
     res.json(rows);
   })
 );
@@ -80,7 +82,8 @@ router.get(
   "/owned",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const rows = await ShareService.listSharesOwned(req.user!.sub);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const rows = await ShareService.listSharesOwned(req.user!.sub, page, limit);
     res.json(rows);
   })
 );
@@ -89,7 +92,8 @@ router.get(
   "/received",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const rows = await ShareService.listSharesReceived(req.user!.sub);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const rows = await ShareService.listSharesReceived(req.user!.sub, page, limit);
     res.json(rows);
   })
 );

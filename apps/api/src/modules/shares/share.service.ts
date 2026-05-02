@@ -85,28 +85,31 @@ export const ShareService = {
     });
   },
 
-  async listSharesOwned(ownerUserId: number) {
+  async listSharesOwned(ownerUserId: number, page = 1, limit = 50) {
     return prisma.inventoryShare.findMany({
       where: { ownerUserId, active: true },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       include: { target: { select: { userId: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
   },
 
-  async listSharesReceived(targetUserId: number) {
+  async listSharesReceived(targetUserId: number, page = 1, limit = 50) {
     return prisma.inventoryShare.findMany({
       where: { targetUserId, active: true },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       include: { owner: { select: { userId: true, email: true } } },
       orderBy: { createdAt: "desc" },
     });
   },
 
-  async listSentInvites(ownerUserId: number) {
+  async listSentInvites(ownerUserId: number, page = 1, limit = 50) {
     return prisma.shareInvite.findMany({
       where: { ownerUserId },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { createdAt: "desc" },
     });
   },

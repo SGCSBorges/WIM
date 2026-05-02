@@ -6,10 +6,11 @@ import { AlertService } from "../alerts/alert.service";
 import { createHttpError } from "../../utils/http-error";
 
 export const WarrantyService = {
-  list: (ownerUserId: number) =>
+  list: (ownerUserId: number, page = 1, limit = 50) =>
     prisma.garantie.findMany({
       where: { ownerUserId },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { garantieId: "desc" },
     }),
   get: (id: number, ownerUserId: number) =>

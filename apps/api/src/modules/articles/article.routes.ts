@@ -5,7 +5,7 @@ import { ArticleService } from "./article.service";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
-import { idParam } from "../common/schemas";
+import { idParam, paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -18,7 +18,8 @@ router.get(
     const locationId = locationIdRaw
       ? z.coerce.number().int().positive().parse(locationIdRaw)
       : undefined;
-    const articles = await ArticleService.list(req.user!.sub, locationId);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const articles = await ArticleService.list(req.user!.sub, locationId, page, limit);
     res.json(articles);
   })
 );

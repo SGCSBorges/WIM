@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
+import { paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.get(
   asyncHandler(async (req: AuthRequest, res) => {
     const viewerUserId = req.user!.sub;
 
+    const { page, limit } = paginationQuery.parse(req.query);
     const articles = await prisma.article.findMany({
       where: {
         sharedWithPowerUsers: true,
@@ -26,7 +28,8 @@ router.get(
         // (Owner can still see/manage sharing from their own list.)
         ownerUserId: { not: viewerUserId },
       },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { updatedAt: "desc" },
       include: {
         owner: { select: { userId: true, email: true } },
