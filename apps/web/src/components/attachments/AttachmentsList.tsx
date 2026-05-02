@@ -139,6 +139,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         // ignore URL parse errors; keep original href
       }
 
+      if (!/^https?:\/\//i.test(href)) return;
+
       const a = document.createElement("a");
       a.href = href;
       a.download = attachment.fileName;
