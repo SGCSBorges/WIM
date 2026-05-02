@@ -47,7 +47,9 @@ router.get(
       include: {
         owner: { select: { userId: true; email: true } };
         garantie: true;
-        locations: { select: { locationId: true; location: { select: { name: true } } } };
+        locations: {
+          select: { locationId: true; location: { select: { name: true } } };
+        };
       };
     }>;
 

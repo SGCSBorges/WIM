@@ -23,7 +23,7 @@ function detectInitialLanguage(): Language {
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, _setLanguage] = useState<Language>(() =>
-    detectInitialLanguage(),
+    detectInitialLanguage()
   );
 
   const setLanguage = (lang: Language) => {
@@ -37,7 +37,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       setLanguage,
       t: (key: TranslationKey) => {
         const dict = translations[language] as Record<string, string>;
-        return dict[key] ?? (translations.en as Record<string, string>)[key] ?? key;
+        return (
+          dict[key] ?? (translations.en as Record<string, string>)[key] ?? key
+        );
       },
     };
   }, [language]);

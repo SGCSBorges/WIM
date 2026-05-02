@@ -1,5 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { adminAPI, articlesAPI, authAPI, statisticsAPI } from "../../services/api";
+import { useCallback, useEffect, useState } from "react";
+import {
+  adminAPI,
+  articlesAPI,
+  authAPI,
+  statisticsAPI,
+} from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 
@@ -74,12 +79,18 @@ export default function AdminUsers() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "users">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "users">(
+    "dashboard"
+  );
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  const [confirmDeleteUserId, setConfirmDeleteUserId] = useState<number | null>(null);
-  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<number | null>(null);
+  const [confirmDeleteUserId, setConfirmDeleteUserId] = useState<number | null>(
+    null
+  );
+  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
+    number | null
+  >(null);
 
   const role = authAPI.getRole();
 
@@ -292,7 +303,9 @@ export default function AdminUsers() {
             </div>
           ) : (
             <div className="border ui-alert-warning rounded-lg p-4">
-              <p className="text-sm text-yellow-700">{t("dashboard.noStats")}</p>
+              <p className="text-sm text-yellow-700">
+                {t("dashboard.noStats")}
+              </p>
             </div>
           )}
         </div>
@@ -332,7 +345,9 @@ export default function AdminUsers() {
 
                   {confirmDeleteUserId === u.userId ? (
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-red-700">{t("admin.confirmDeleteUser")}</span>
+                      <span className="text-xs text-red-700">
+                        {t("admin.confirmDeleteUser")}
+                      </span>
                       <button
                         onClick={() => deleteUser(u.userId)}
                         className="text-xs px-2 py-1 ui-btn-danger rounded"
@@ -423,7 +438,9 @@ export default function AdminUsers() {
                               <button
                                 onClick={() => deleteArticle(a.articleId)}
                                 className="text-xs px-2 py-1 ui-btn-danger rounded"
-                                disabled={actionLoading === `article:${a.articleId}`}
+                                disabled={
+                                  actionLoading === `article:${a.articleId}`
+                                }
                               >
                                 {t("common.yes")}
                               </button>
@@ -436,9 +453,13 @@ export default function AdminUsers() {
                             </div>
                           ) : (
                             <button
-                              onClick={() => setConfirmDeleteArticleId(a.articleId)}
+                              onClick={() =>
+                                setConfirmDeleteArticleId(a.articleId)
+                              }
                               className="ui-action-danger text-sm shrink-0"
-                              disabled={actionLoading === `article:${a.articleId}`}
+                              disabled={
+                                actionLoading === `article:${a.articleId}`
+                              }
                             >
                               {actionLoading === `article:${a.articleId}`
                                 ? t("admin.deleting")
@@ -448,7 +469,9 @@ export default function AdminUsers() {
                         </div>
 
                         {confirmDeleteArticleId === a.articleId && (
-                          <p className="text-xs text-red-700">{t("admin.confirmDeleteArticle")}</p>
+                          <p className="text-xs text-red-700">
+                            {t("admin.confirmDeleteArticle")}
+                          </p>
                         )}
                       </div>
                     ))}

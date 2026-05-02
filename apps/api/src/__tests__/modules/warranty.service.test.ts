@@ -31,7 +31,10 @@ const mockPrisma = prisma as unknown as {
   article: Record<string, ReturnType<typeof vi.fn>>;
 };
 
-const mockAlertService = AlertService as unknown as Record<string, ReturnType<typeof vi.fn>>;
+const mockAlertService = AlertService as unknown as Record<
+  string,
+  ReturnType<typeof vi.fn>
+>;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -55,7 +58,10 @@ describe("WarrantyService.create", () => {
 
   it("rejects with 409 when a warranty already exists for the article", async () => {
     mockPrisma.article.findFirst.mockResolvedValue({ articleId: 5 });
-    mockPrisma.garantie.findUnique.mockResolvedValue({ garantieId: 1, garantieArticleId: 5 });
+    mockPrisma.garantie.findUnique.mockResolvedValue({
+      garantieId: 1,
+      garantieArticleId: 5,
+    });
     await expect(WarrantyService.create(baseInput)).rejects.toMatchObject({
       status: 409,
       message: "A warranty already exists for this article",
@@ -134,7 +140,10 @@ describe("WarrantyService.update", () => {
 
   it("does not reschedule alerts when only the name changes", async () => {
     mockPrisma.garantie.findFirst.mockResolvedValue(current);
-    mockPrisma.garantie.update.mockResolvedValue({ ...current, garantieNom: "Renamed" });
+    mockPrisma.garantie.update.mockResolvedValue({
+      ...current,
+      garantieNom: "Renamed",
+    });
 
     await WarrantyService.update(1, 1, { garantieNom: "Renamed" });
 

@@ -4,9 +4,15 @@ export const ArticleCreateSchema = z.object({
   articleNom: z.string().trim().min(1).max(100),
   articleModele: z.string().trim().min(1).max(100),
   articleDescription: z.string().trim().max(255).optional().nullable(),
-  productImageUrl: z.string().url().max(500)
-    .refine(u => /^https?:\/\//i.test(u), { message: "productImageUrl must be an http(s) URL" })
-    .optional().nullable(),
+  productImageUrl: z
+    .string()
+    .url()
+    .max(500)
+    .refine((u) => /^https?:\/\//i.test(u), {
+      message: "productImageUrl must be an http(s) URL",
+    })
+    .optional()
+    .nullable(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
   // Optional warranty created alongside the article

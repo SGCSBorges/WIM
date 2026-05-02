@@ -43,13 +43,31 @@ beforeEach(() => {
 describe("Admin routes — listUsers", () => {
   it("returns users ordered by createdAt desc", async () => {
     const users = [
-      { userId: 2, email: "b@b.com", role: "USER", createdAt: new Date(), updatedAt: new Date() },
-      { userId: 1, email: "a@a.com", role: "ADMIN", createdAt: new Date(), updatedAt: new Date() },
+      {
+        userId: 2,
+        email: "b@b.com",
+        role: "USER",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        userId: 1,
+        email: "a@a.com",
+        role: "ADMIN",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ];
     mockPrisma.user.findMany.mockResolvedValue(users);
 
     const result = await prisma.user.findMany({
-      select: { userId: true, email: true, role: true, createdAt: true, updatedAt: true },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -77,12 +95,17 @@ describe("Admin routes — deleteUser", () => {
     const found = await prisma.user.findUnique({ where: { userId: 5 } });
     expect(found).toEqual(user);
 
-    await prisma.$transaction(async (tx: any) => {
-      await tx.user.delete({ where: { userId: 5 } });
-    }, { isolationLevel: "Serializable" });
+    await prisma.$transaction(
+      async (tx: any) => {
+        await tx.user.delete({ where: { userId: 5 } });
+      },
+      { isolationLevel: "Serializable" }
+    );
 
     const txCallback = txFn.mock.calls[0][0];
-    const fakeTx = { user: { count: vi.fn(), delete: vi.fn().mockResolvedValue(user) } };
+    const fakeTx = {
+      user: { count: vi.fn(), delete: vi.fn().mockResolvedValue(user) },
+    };
     await txCallback(fakeTx);
     expect(fakeTx.user.delete).toHaveBeenCalledWith({ where: { userId: 5 } });
   });
@@ -103,14 +126,23 @@ describe("Admin routes — deleteUser", () => {
     mockPrisma.$transaction.mockImplementation(txFn);
 
     await expect(
-      prisma.$transaction(async (tx: any) => {
-        if (adminUser.role === "ADMIN") {
-          const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
-          if (adminCount <= 1) throw createHttpError(400, "Cannot delete the last admin user");
-        }
-        await tx.user.delete({ where: { userId: adminUser.userId } });
-      }, { isolationLevel: "Serializable" })
-    ).rejects.toMatchObject({ status: 400, message: "Cannot delete the last admin user" });
+      prisma.$transaction(
+        async (tx: any) => {
+          if (adminUser.role === "ADMIN") {
+            const adminCount = await tx.user.count({
+              where: { role: "ADMIN" },
+            });
+            if (adminCount <= 1)
+              throw createHttpError(400, "Cannot delete the last admin user");
+          }
+          await tx.user.delete({ where: { userId: adminUser.userId } });
+        },
+        { isolationLevel: "Serializable" }
+      )
+    ).rejects.toMatchObject({
+      status: 400,
+      message: "Cannot delete the last admin user",
+    });
   });
 
   it("allows deleting one admin when multiple exist", async () => {
@@ -129,15 +161,21 @@ describe("Admin routes — deleteUser", () => {
     });
     mockPrisma.$transaction.mockImplementation(txFn);
 
-    await prisma.$transaction(async (tx: any) => {
-      if (adminUser.role === "ADMIN") {
-        const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
-        if (adminCount <= 1) throw createHttpError(400, "Cannot delete the last admin user");
-      }
-      await tx.user.delete({ where: { userId: adminUser.userId } });
-    }, { isolationLevel: "Serializable" });
+    await prisma.$transaction(
+      async (tx: any) => {
+        if (adminUser.role === "ADMIN") {
+          const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+          if (adminCount <= 1)
+            throw createHttpError(400, "Cannot delete the last admin user");
+        }
+        await tx.user.delete({ where: { userId: adminUser.userId } });
+      },
+      { isolationLevel: "Serializable" }
+    );
 
-    expect(deleteFn).toHaveBeenCalledWith({ where: { userId: adminUser.userId } });
+    expect(deleteFn).toHaveBeenCalledWith({
+      where: { userId: adminUser.userId },
+    });
   });
 });
 
@@ -147,7 +185,10 @@ describe("Admin routes — getUserInventory", () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
 
     const user = await prisma.user.findUnique({ where: { userId: 999 } });
-    if (!user) expect(() => { throw createHttpError(404, "User not found"); }).toThrow("User not found");
+    if (!user)
+      expect(() => {
+        throw createHttpError(404, "User not found");
+      }).toThrow("User not found");
   });
 
   it("returns user inventory with articlesOwned and warrantiesOwned", async () => {
@@ -159,7 +200,11 @@ describe("Admin routes — getUserInventory", () => {
           articleId: 10,
           articleNom: "Laptop",
           articleModele: "X1",
-          garantie: { garantieId: 1, garantieNom: "Warranty", garantieIsValide: true },
+          garantie: {
+            garantieId: 1,
+            garantieNom: "Warranty",
+            garantieIsValide: true,
+          },
         },
       ],
       warrantiesOwned: [
@@ -172,7 +217,10 @@ describe("Admin routes — getUserInventory", () => {
     };
     mockPrisma.user.findUnique.mockResolvedValue(userData);
 
-    const result = await prisma.user.findUnique({ where: { userId: 3 }, include: {} as any });
+    const result = await prisma.user.findUnique({
+      where: { userId: 3 },
+      include: {} as any,
+    });
     expect(result).toMatchObject({
       userId: 3,
       email: "owner@x.com",

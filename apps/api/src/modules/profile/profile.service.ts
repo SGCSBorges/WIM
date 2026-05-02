@@ -67,7 +67,10 @@ export const ProfileService = {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
         await stripe.subscriptions.cancel(user.stripeSubscriptionId);
       } catch (err) {
-        logger.warn({ err, userId }, "[profile] stripe subscription cancel failed during account deletion — proceeding");
+        logger.warn(
+          { err, userId },
+          "[profile] stripe subscription cancel failed during account deletion — proceeding"
+        );
       }
     }
 
@@ -76,7 +79,10 @@ export const ProfileService = {
     try {
       await AlertService.cancelForUser(userId);
     } catch (err) {
-      logger.warn({ err, userId }, "[profile] alert job cancellation failed during account deletion — proceeding");
+      logger.warn(
+        { err, userId },
+        "[profile] alert job cancellation failed during account deletion — proceeding"
+      );
     }
 
     // Delete in a safe order to avoid FK constraint issues.

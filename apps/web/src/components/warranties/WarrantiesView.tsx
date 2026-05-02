@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { warrantiesAPI } from "../../services/api";
@@ -39,8 +39,12 @@ export default function WarrantiesView() {
 
   const sorted = useMemo(() => {
     return [...items].sort((a, b) => {
-      const ta = a.garantieDateAchat ? new Date(a.garantieDateAchat).getTime() : 0;
-      const tb = b.garantieDateAchat ? new Date(b.garantieDateAchat).getTime() : 0;
+      const ta = a.garantieDateAchat
+        ? new Date(a.garantieDateAchat).getTime()
+        : 0;
+      const tb = b.garantieDateAchat
+        ? new Date(b.garantieDateAchat).getTime()
+        : 0;
       return tb - ta;
     });
   }, [items]);
@@ -92,20 +96,21 @@ export default function WarrantiesView() {
             </div>
           )}
 
-          {!loading && sorted.map((w) => (
-            <div key={w.garantieId} className="p-4">
-              <div className="font-medium">{w.garantieNom}</div>
-              <div className="text-xs ui-text-muted">
-                {t("warranties.purchase")}:{" "}
-                {format(parseISO(w.garantieDateAchat), "dd MMM yyyy")} —{" "}
-                {t("warranties.duration")}: {w.garantieDuration}{" "}
-                {t("warranties.months")}
+          {!loading &&
+            sorted.map((w) => (
+              <div key={w.garantieId} className="p-4">
+                <div className="font-medium">{w.garantieNom}</div>
+                <div className="text-xs ui-text-muted">
+                  {t("warranties.purchase")}:{" "}
+                  {format(parseISO(w.garantieDateAchat), "dd MMM yyyy")} —{" "}
+                  {t("warranties.duration")}: {w.garantieDuration}{" "}
+                  {t("warranties.months")}
+                </div>
+                <div className="text-xs ui-text-muted">
+                  {t("warranties.articleId")}: {w.garantieArticleId}
+                </div>
               </div>
-              <div className="text-xs ui-text-muted">
-                {t("warranties.articleId")}: {w.garantieArticleId}
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 

@@ -7,9 +7,20 @@ import { asyncHandler } from "../common/http";
 import { idParam } from "../common/schemas";
 
 const AuditQuerySchema = z.object({
-  limit:    idParam.optional(),
-  userId:   idParam.optional(),
-  entity:   z.enum(["User", "Article", "Garantie", "Location", "Attachment", "ShareInvite", "InventoryShare", "ArticleLocation"]).optional(),
+  limit: idParam.optional(),
+  userId: idParam.optional(),
+  entity: z
+    .enum([
+      "User",
+      "Article",
+      "Garantie",
+      "Location",
+      "Attachment",
+      "ShareInvite",
+      "InventoryShare",
+      "ArticleLocation",
+    ])
+    .optional(),
   entityId: idParam.optional(),
 });
 
@@ -24,8 +35,8 @@ router.get(
     const query = AuditQuerySchema.parse(req.query);
     const limit = query.limit ? Math.min(query.limit, 200) : 50;
     const where: Prisma.AuditLogWhereInput = {};
-    if (query.userId)   where.userId   = query.userId;
-    if (query.entity)   where.entity   = query.entity;
+    if (query.userId) where.userId = query.userId;
+    if (query.entity) where.entity = query.entity;
     if (query.entityId) where.entityId = query.entityId;
 
     const logs = await prisma.auditLog.findMany({

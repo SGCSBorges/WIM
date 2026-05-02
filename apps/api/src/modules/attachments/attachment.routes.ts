@@ -33,8 +33,16 @@ const ALLOWED_MIME_TYPES = new Set([
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (_req: AuthRequest, _file: Express.Multer.File, cb: (err: Error | null, dest: string) => void) => cb(null, UPLOAD_DIR),
-    filename: (_req: AuthRequest, file: Express.Multer.File, cb: (err: Error | null, name: string) => void) => {
+    destination: (
+      _req: AuthRequest,
+      _file: Express.Multer.File,
+      cb: (err: Error | null, dest: string) => void
+    ) => cb(null, UPLOAD_DIR),
+    filename: (
+      _req: AuthRequest,
+      file: Express.Multer.File,
+      cb: (err: Error | null, name: string) => void
+    ) => {
       const ext = path.extname(
         path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, "_")
       );
@@ -59,10 +67,17 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const filters: { articleId?: number; garantieId?: number } = {};
-    if (req.query.articleId) filters.articleId = idParam.parse(req.query.articleId);
-    if (req.query.garantieId) filters.garantieId = idParam.parse(req.query.garantieId);
+    if (req.query.articleId)
+      filters.articleId = idParam.parse(req.query.articleId);
+    if (req.query.garantieId)
+      filters.garantieId = idParam.parse(req.query.garantieId);
     const { page, limit } = paginationQuery.parse(req.query);
-    const attachments = await AttachmentService.list(req.user!.sub, filters, page, limit);
+    const attachments = await AttachmentService.list(
+      req.user!.sub,
+      filters,
+      page,
+      limit
+    );
     res.json(attachments);
   })
 );
@@ -76,7 +91,10 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const garantieId = idParam.parse(req.params.garantieId);
-    const attachments = await AttachmentService.getForWarranty(garantieId, req.user!.sub);
+    const attachments = await AttachmentService.getForWarranty(
+      garantieId,
+      req.user!.sub
+    );
     res.json(attachments);
   })
 );
@@ -88,7 +106,8 @@ router.get(
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     const attachment = await AttachmentService.get(id, req.user!.sub);
-    if (!attachment) return res.status(404).json({ error: "Attachment not found" });
+    if (!attachment)
+      return res.status(404).json({ error: "Attachment not found" });
     res.json(attachment);
   })
 );
@@ -98,7 +117,9 @@ router.post(
   "/",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const bodyData = AttachmentCreateSchema.omit({ ownerUserId: true }).parse(req.body);
+    const bodyData = AttachmentCreateSchema.omit({ ownerUserId: true }).parse(
+      req.body
+    );
     const data = { ...bodyData, ownerUserId: req.user!.sub };
     const created = await AttachmentService.create(data);
     await auditAction(req, {
@@ -120,7 +141,9 @@ router.post(
     const file = req.file;
     if (!file) throw createHttpError(400, "Missing file");
 
-    const { type } = z.object({ type: AttachmentTypeSchema.optional() }).parse(req.body);
+    const { type } = z
+      .object({ type: AttachmentTypeSchema.optional() })
+      .parse(req.body);
     const attachmentType: AttachmentType = type ?? "OTHER";
 
     const baseUrl =
@@ -142,7 +165,10 @@ router.post(
       try {
         await fs.promises.unlink(file.path);
       } catch (fsErr) {
-        logger.warn({ err: fsErr, filePath: file.path }, "[attachment] failed to unlink orphaned file after DB error");
+        logger.warn(
+          { err: fsErr, filePath: file.path },
+          "[attachment] failed to unlink orphaned file after DB error"
+        );
       }
       throw err;
     }
@@ -172,7 +198,9 @@ router.put(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
-    const bodyData = AttachmentUpdateSchema.omit({ ownerUserId: true }).parse(req.body);
+    const bodyData = AttachmentUpdateSchema.omit({ ownerUserId: true }).parse(
+      req.body
+    );
     const result = await AttachmentService.update(id, req.user!.sub, bodyData);
     const count = result?.count ?? 0;
     if (!count) return res.status(404).json({ error: "Attachment not found" });
@@ -198,7 +226,8 @@ router.delete(
 
     // Always fetch first — establishes ownership and gives us the fileUrl.
     const attachment = await AttachmentService.get(id, req.user!.sub);
-    if (!attachment) return res.status(404).json({ error: "Attachment not found" });
+    if (!attachment)
+      return res.status(404).json({ error: "Attachment not found" });
 
     if (removeFile && attachment.fileUrl) {
       try {

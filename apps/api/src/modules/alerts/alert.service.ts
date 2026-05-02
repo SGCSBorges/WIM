@@ -95,7 +95,10 @@ export const AlertService = {
       });
 
       if (!alerte) {
-        logger.warn({ garantieId: input.garantieId, executeAt }, "[alerts] alert record not found after createMany — skipping job");
+        logger.warn(
+          { garantieId: input.garantieId, executeAt },
+          "[alerts] alert record not found after createMany — skipping job"
+        );
         continue;
       }
 
@@ -180,7 +183,11 @@ export const AlertService = {
     for (const a of alerts) {
       if (!a.alerteGarantieId) continue;
       for (const reminderKind of ["J30", "J7", "J1"] as const) {
-        const jobId = buildJobId(a.alerteGarantieId, reminderKind, a.alerteDate);
+        const jobId = buildJobId(
+          a.alerteGarantieId,
+          reminderKind,
+          a.alerteDate
+        );
         const job = await alertQueue.getJob(jobId);
         if (job) {
           await job.remove();

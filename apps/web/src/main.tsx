@@ -17,5 +17,5 @@ createRoot(document.getElementById("root")!).render(
         </ThemeProvider>
       </BrowserRouter>
     </ErrorBoundary>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

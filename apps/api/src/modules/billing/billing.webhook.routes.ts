@@ -73,7 +73,9 @@ router.post(
             },
             data: {
               role: "POWER_USER",
-              ...(subscriptionId ? { stripeSubscriptionId: subscriptionId } : {}),
+              ...(subscriptionId
+                ? { stripeSubscriptionId: subscriptionId }
+                : {}),
             },
           });
         }
@@ -117,7 +119,10 @@ router.post(
       return res.status(200).json({ received: true });
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e);
-      logger.error({ err: e, eventType: event.type }, "[stripe-webhook] handler error");
+      logger.error(
+        { err: e, eventType: event.type },
+        "[stripe-webhook] handler error"
+      );
       return res.status(500).json({ error: message });
     }
   }

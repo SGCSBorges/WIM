@@ -33,7 +33,9 @@ describe("AttachmentService.list", () => {
     mockPrisma.attachment.findMany.mockResolvedValue([]);
     await AttachmentService.list(1);
     expect(mockPrisma.attachment.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ ownerUserId: 1 }) })
+      expect.objectContaining({
+        where: expect.objectContaining({ ownerUserId: 1 }),
+      })
     );
   });
 
@@ -41,14 +43,18 @@ describe("AttachmentService.list", () => {
     mockPrisma.attachment.findMany.mockResolvedValue([]);
     await AttachmentService.list(1, { articleId: 5 });
     expect(mockPrisma.attachment.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ articleId: 5 }) })
+      expect.objectContaining({
+        where: expect.objectContaining({ articleId: 5 }),
+      })
     );
   });
 });
 
 describe("AttachmentService.getForWarranty", () => {
   it("returns empty array when warranty has no image attachment", async () => {
-    mockPrisma.garantie.findFirst.mockResolvedValue({ garantieImageAttachmentId: null });
+    mockPrisma.garantie.findFirst.mockResolvedValue({
+      garantieImageAttachmentId: null,
+    });
     const result = await AttachmentService.getForWarranty(1, 1);
     expect(result).toEqual([]);
     expect(mockPrisma.attachment.findFirst).not.toHaveBeenCalled();
@@ -61,8 +67,14 @@ describe("AttachmentService.getForWarranty", () => {
   });
 
   it("returns attachment array when warranty has an image", async () => {
-    const attachment = { attachmentId: 7, ownerUserId: 1, fileName: "proof.jpg" };
-    mockPrisma.garantie.findFirst.mockResolvedValue({ garantieImageAttachmentId: 7 });
+    const attachment = {
+      attachmentId: 7,
+      ownerUserId: 1,
+      fileName: "proof.jpg",
+    };
+    mockPrisma.garantie.findFirst.mockResolvedValue({
+      garantieImageAttachmentId: 7,
+    });
     mockPrisma.attachment.findFirst.mockResolvedValue(attachment);
     const result = await AttachmentService.getForWarranty(1, 1);
     expect(result).toEqual([attachment]);
@@ -71,7 +83,14 @@ describe("AttachmentService.getForWarranty", () => {
 
 describe("AttachmentService.create", () => {
   it("delegates to prisma.attachment.create", async () => {
-    const data = { ownerUserId: 1, fileName: "file.pdf", mimeType: "application/pdf", fileSize: 100, fileUrl: "http://x/f.pdf", type: "OTHER" as const };
+    const data = {
+      ownerUserId: 1,
+      fileName: "file.pdf",
+      mimeType: "application/pdf",
+      fileSize: 100,
+      fileUrl: "http://x/f.pdf",
+      type: "OTHER" as const,
+    };
     const created = { attachmentId: 1, ...data };
     mockPrisma.attachment.create.mockResolvedValue(created);
     const result = await AttachmentService.create(data);

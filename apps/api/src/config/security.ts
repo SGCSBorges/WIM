@@ -8,7 +8,7 @@ const allowedOrigins =
     ? rawOrigin
     : process.env.NODE_ENV !== "production"
       ? true // dev convenience: allow all origins when CORS_ORIGIN not set
-      : [];  // production: block all cross-origin requests if not configured
+      : []; // production: block all cross-origin requests if not configured
 
 export const security = {
   helmet: helmet({
@@ -31,6 +31,8 @@ export const security = {
     max: 20,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { error: "Too many authentication attempts, please try again later." },
+    message: {
+      error: "Too many authentication attempts, please try again later.",
+    },
   }),
 };

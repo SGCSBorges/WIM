@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { ArticleCreateSchema, ArticleUpdateSchema } from "../../modules/articles/article.schemas";
+import {
+  ArticleCreateSchema,
+  ArticleUpdateSchema,
+} from "../../modules/articles/article.schemas";
 
 const validCreate = {
   articleNom: "MacBook Pro",
@@ -14,11 +17,15 @@ describe("ArticleCreateSchema", () => {
   });
 
   it("rejects empty articleNom", () => {
-    expect(ArticleCreateSchema.safeParse({ ...validCreate, articleNom: "" }).success).toBe(false);
+    expect(
+      ArticleCreateSchema.safeParse({ ...validCreate, articleNom: "" }).success
+    ).toBe(false);
   });
 
   it("rejects empty locationIds array", () => {
-    expect(ArticleCreateSchema.safeParse({ ...validCreate, locationIds: [] }).success).toBe(false);
+    expect(
+      ArticleCreateSchema.safeParse({ ...validCreate, locationIds: [] }).success
+    ).toBe(false);
   });
 
   it("accepts optional garantie with required fields", () => {
@@ -58,32 +65,56 @@ describe("ArticleCreateSchema", () => {
   });
 
   it("accepts a valid https productImageUrl", () => {
-    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: "https://example.com/img.jpg" }).success).toBe(true);
+    expect(
+      ArticleCreateSchema.safeParse({
+        ...validCreate,
+        productImageUrl: "https://example.com/img.jpg",
+      }).success
+    ).toBe(true);
   });
 
   it("rejects a javascript: productImageUrl", () => {
-    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: "javascript:alert(1)" }).success).toBe(false);
+    expect(
+      ArticleCreateSchema.safeParse({
+        ...validCreate,
+        productImageUrl: "javascript:alert(1)",
+      }).success
+    ).toBe(false);
   });
 
   it("rejects a data: productImageUrl", () => {
-    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: "data:text/html,<h1>xss</h1>" }).success).toBe(false);
+    expect(
+      ArticleCreateSchema.safeParse({
+        ...validCreate,
+        productImageUrl: "data:text/html,<h1>xss</h1>",
+      }).success
+    ).toBe(false);
   });
 
   it("accepts null productImageUrl", () => {
-    expect(ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: null }).success).toBe(true);
+    expect(
+      ArticleCreateSchema.safeParse({ ...validCreate, productImageUrl: null })
+        .success
+    ).toBe(true);
   });
 });
 
 describe("ArticleUpdateSchema", () => {
   it("accepts a partial update", () => {
-    expect(ArticleUpdateSchema.safeParse({ articleNom: "New name" }).success).toBe(true);
+    expect(
+      ArticleUpdateSchema.safeParse({ articleNom: "New name" }).success
+    ).toBe(true);
   });
 
   it("accepts removeGarantie flag", () => {
-    expect(ArticleUpdateSchema.safeParse({ removeGarantie: true }).success).toBe(true);
+    expect(
+      ArticleUpdateSchema.safeParse({ removeGarantie: true }).success
+    ).toBe(true);
   });
 
   it("rejects empty string articleNom when provided", () => {
-    expect(ArticleUpdateSchema.safeParse({ articleNom: "" }).success).toBe(false);
+    expect(ArticleUpdateSchema.safeParse({ articleNom: "" }).success).toBe(
+      false
+    );
   });
 });

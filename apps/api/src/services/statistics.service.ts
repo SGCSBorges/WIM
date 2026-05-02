@@ -102,7 +102,9 @@ export async function getDashboardStatistics(
       ownedSharedArticles,
     ] = await Promise.all([
       prisma.article.count({ where: { ownerUserId } }),
-      prisma.article.count({ where: { ownerUserId, garantie: { isNot: null } } }),
+      prisma.article.count({
+        where: { ownerUserId, garantie: { isNot: null } },
+      }),
       prisma.location.findMany({
         where: { ownerUserId },
         select: { locationId: true, name: true },
@@ -114,14 +116,25 @@ export async function getDashboardStatistics(
         _count: { articleId: true },
       }),
       prisma.garantie.count({ where: { ownerUserId } }),
-      prisma.garantie.count({ where: { ownerUserId, garantieFin: { gte: currentDate } } }),
-      prisma.garantie.count({ where: { ownerUserId, garantieFin: { lt: currentDate } } }),
       prisma.garantie.count({
-        where: { ownerUserId, garantieFin: { gte: currentDate, lte: thirtyDaysFromNow } },
+        where: { ownerUserId, garantieFin: { gte: currentDate } },
       }),
-      prisma.garantie.count({ where: { ownerUserId, garantieImageAttachmentId: { not: null } } }),
+      prisma.garantie.count({
+        where: { ownerUserId, garantieFin: { lt: currentDate } },
+      }),
+      prisma.garantie.count({
+        where: {
+          ownerUserId,
+          garantieFin: { gte: currentDate, lte: thirtyDaysFromNow },
+        },
+      }),
+      prisma.garantie.count({
+        where: { ownerUserId, garantieImageAttachmentId: { not: null } },
+      }),
       prisma.alerte.count({ where: { ownerUserId } }),
-      prisma.article.count({ where: { ownerUserId, sharedWithPowerUsers: true } }),
+      prisma.article.count({
+        where: { ownerUserId, sharedWithPowerUsers: true },
+      }),
     ]);
 
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
@@ -183,7 +196,10 @@ export async function getDashboardStatistics(
       },
     };
   } catch (error) {
-    logger.error({ err: error }, "[statistics] failed to fetch dashboard statistics");
+    logger.error(
+      { err: error },
+      "[statistics] failed to fetch dashboard statistics"
+    );
     throw new Error("Failed to fetch dashboard statistics");
   }
 }
@@ -211,7 +227,9 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
       prisma.garantie.count(),
       prisma.garantie.count({ where: { garantieFin: { gte: currentDate } } }),
       prisma.garantie.count({ where: { garantieFin: { lt: currentDate } } }),
-      prisma.garantie.count({ where: { garantieImageAttachmentId: { not: null } } }),
+      prisma.garantie.count({
+        where: { garantieImageAttachmentId: { not: null } },
+      }),
       prisma.alerte.count(),
       prisma.article.count({ where: { sharedWithPowerUsers: true } }),
     ]);
@@ -245,7 +263,10 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
       },
     };
   } catch (error) {
-    logger.error({ err: error }, "[statistics] failed to fetch admin statistics");
+    logger.error(
+      { err: error },
+      "[statistics] failed to fetch admin statistics"
+    );
     throw new Error("Failed to fetch admin statistics");
   }
 }
@@ -265,7 +286,10 @@ export async function getBasicStatistics(params: { userId: number }) {
       alerts: alertsCount,
     };
   } catch (error) {
-    logger.error({ err: error }, "[statistics] failed to fetch basic statistics");
+    logger.error(
+      { err: error },
+      "[statistics] failed to fetch basic statistics"
+    );
     throw new Error("Failed to fetch basic statistics");
   }
 }

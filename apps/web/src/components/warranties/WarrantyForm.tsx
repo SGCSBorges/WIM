@@ -47,7 +47,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
     if (!formData.garantieDateAchat) {
       newErrors.garantieDateAchat = t(
-        "warrantyForm.error.purchaseDateRequired",
+        "warrantyForm.error.purchaseDateRequired"
       );
     }
 
@@ -75,7 +75,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
   const handleInputChange = (
     field: keyof typeof formData,
-    value: string | number,
+    value: string | number
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -166,7 +166,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             onChange={(e) =>
               handleInputChange(
                 "garantieDuration",
-                parseInt(e.target.value) || 0,
+                parseInt(e.target.value) || 0
               )
             }
             className="ui-input w-full px-3 py-2 rounded-md"

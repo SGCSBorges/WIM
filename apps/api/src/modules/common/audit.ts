@@ -17,7 +17,10 @@ export function extractClient(req: Request) {
  */
 export async function auditAction(
   req: Request,
-  params: Pick<AuditInput, "userId" | "action" | "entity" | "entityId" | "metadata">
+  params: Pick<
+    AuditInput,
+    "userId" | "action" | "entity" | "entityId" | "metadata"
+  >
 ) {
   const { ip, ua } = extractClient(req);
   await AuditService.log({

@@ -376,8 +376,10 @@ export const translations = {
     "profile.subscription.subtitle": "Manage your Power User subscription.",
     "profile.billing.manage": "Manage billing",
     "profile.billing.cancelAtPeriodEnd": "Cancel at period end",
-    "profile.billing.cancelTooltip": "Your subscription will remain active until the end of the current billing period, then will not renew.",
-    "profile.billing.cancelSuccess": "Subscription will be cancelled at the end of the billing period.",
+    "profile.billing.cancelTooltip":
+      "Your subscription will remain active until the end of the current billing period, then will not renew.",
+    "profile.billing.cancelSuccess":
+      "Subscription will be cancelled at the end of the billing period.",
     "profile.email.title": "Change Email",
     "profile.email.new": "New email address",
     "profile.email.currentPassword": "Current password",
@@ -389,21 +391,25 @@ export const translations = {
     "profile.password.save": "Update password",
     "profile.password.success": "Password updated successfully.",
     "profile.danger.title": "Danger Zone",
-    "profile.danger.subtitle": "Permanently delete your account and all associated data.",
+    "profile.danger.subtitle":
+      "Permanently delete your account and all associated data.",
     "profile.danger.currentPassword": "Confirm with your current password",
     "profile.danger.deleteButton": "Delete my account",
-    "profile.danger.confirm": "Are you sure? This action is irreversible. All your data will be permanently deleted.",
+    "profile.danger.confirm":
+      "Are you sure? This action is irreversible. All your data will be permanently deleted.",
 
     "articles.share.button": "Share",
     "articles.share.tooltip": "Share this article with all Power User accounts",
     "articles.shares.title": "Sharing",
     "articles.shares.button": "Shares",
     "articles.shares.hideButton": "Hide shares",
-    "articles.shares.description": "Owner-only. Sharing makes this article visible to all Power User accounts (read-only).",
+    "articles.shares.description":
+      "Owner-only. Sharing makes this article visible to all Power User accounts (read-only).",
     "articles.shares.sharedStatus": "Shared with all Power Users.",
     "articles.shares.notSharedStatus": "Not shared.",
     "articles.shares.unshareButton": "Unshare",
-    "articles.shares.unshareConfirm": "Unshare this article from all Power Users?",
+    "articles.shares.unshareConfirm":
+      "Unshare this article from all Power Users?",
   },
 
   fr: {
@@ -535,7 +541,8 @@ export const translations = {
     "auth.subtitle": "Gestionnaire de garanties & inventaire",
     "auth.error.default": "Échec de l'authentification",
     "auth.error.emailInvalid": "Veuillez saisir une adresse email valide",
-    "auth.error.passwordTooShort": "Le mot de passe doit comporter au moins 8 caractères",
+    "auth.error.passwordTooShort":
+      "Le mot de passe doit comporter au moins 8 caractères",
     "auth.loading": "Veuillez patienter…",
 
     "common.errorOccurred": "Une erreur s'est produite",
@@ -702,7 +709,8 @@ export const translations = {
     "alerts.status.failed": "Échouée",
 
     "shared.title": "Partagé avec moi",
-    "shared.subtitle": "Lecture seule. Seul le propriétaire peut modifier ou retirer le partage.",
+    "shared.subtitle":
+      "Lecture seule. Seul le propriétaire peut modifier ou retirer le partage.",
     "shared.none": "Aucun article n'a encore été partagé avec vous.",
     "shared.owner": "Propriétaire",
     "shared.action.edit": "Modifier",
@@ -784,8 +792,10 @@ export const translations = {
     "profile.subscription.subtitle": "Gérez votre abonnement Power User.",
     "profile.billing.manage": "Gérer la facturation",
     "profile.billing.cancelAtPeriodEnd": "Annuler en fin de période",
-    "profile.billing.cancelTooltip": "Votre abonnement restera actif jusqu'à la fin de la période en cours, puis ne sera pas renouvelé.",
-    "profile.billing.cancelSuccess": "L'abonnement sera annulé à la fin de la période de facturation.",
+    "profile.billing.cancelTooltip":
+      "Votre abonnement restera actif jusqu'à la fin de la période en cours, puis ne sera pas renouvelé.",
+    "profile.billing.cancelSuccess":
+      "L'abonnement sera annulé à la fin de la période de facturation.",
     "profile.email.title": "Changer l'email",
     "profile.email.new": "Nouvelle adresse email",
     "profile.email.currentPassword": "Mot de passe actuel",
@@ -797,21 +807,27 @@ export const translations = {
     "profile.password.save": "Mettre à jour le mot de passe",
     "profile.password.success": "Mot de passe mis à jour avec succès.",
     "profile.danger.title": "Zone dangereuse",
-    "profile.danger.subtitle": "Supprimez définitivement votre compte et toutes les données associées.",
-    "profile.danger.currentPassword": "Confirmez avec votre mot de passe actuel",
+    "profile.danger.subtitle":
+      "Supprimez définitivement votre compte et toutes les données associées.",
+    "profile.danger.currentPassword":
+      "Confirmez avec votre mot de passe actuel",
     "profile.danger.deleteButton": "Supprimer mon compte",
-    "profile.danger.confirm": "Êtes-vous sûr ? Cette action est irréversible. Toutes vos données seront définitivement supprimées.",
+    "profile.danger.confirm":
+      "Êtes-vous sûr ? Cette action est irréversible. Toutes vos données seront définitivement supprimées.",
 
     "articles.share.button": "Partager",
-    "articles.share.tooltip": "Partager cet article avec tous les comptes Power User",
+    "articles.share.tooltip":
+      "Partager cet article avec tous les comptes Power User",
     "articles.shares.title": "Partage",
     "articles.shares.button": "Partages",
     "articles.shares.hideButton": "Masquer les partages",
-    "articles.shares.description": "Propriétaire uniquement. Le partage rend cet article visible pour tous les comptes Power User (lecture seule).",
+    "articles.shares.description":
+      "Propriétaire uniquement. Le partage rend cet article visible pour tous les comptes Power User (lecture seule).",
     "articles.shares.sharedStatus": "Partagé avec tous les Power Users.",
     "articles.shares.notSharedStatus": "Non partagé.",
     "articles.shares.unshareButton": "Dé-partager",
-    "articles.shares.unshareConfirm": "Retirer le partage de cet article pour tous les Power Users ?",
+    "articles.shares.unshareConfirm":
+      "Retirer le partage de cet article pour tous les Power Users ?",
   },
 
   pt: {
@@ -939,7 +955,8 @@ export const translations = {
     "auth.subtitle": "Gestor de Garantias & Inventário",
     "auth.error.default": "Falha na autenticação",
     "auth.error.emailInvalid": "Introduza um endereço de email válido",
-    "auth.error.passwordTooShort": "A password deve ter pelo menos 8 caracteres",
+    "auth.error.passwordTooShort":
+      "A password deve ter pelo menos 8 caracteres",
     "auth.loading": "Por favor aguarde…",
 
     "common.errorOccurred": "Ocorreu um erro",
@@ -1104,7 +1121,8 @@ export const translations = {
     "alerts.status.failed": "Falhou",
 
     "shared.title": "Partilhado comigo",
-    "shared.subtitle": "Apenas leitura. Só o proprietário pode editar ou cancelar a partilha.",
+    "shared.subtitle":
+      "Apenas leitura. Só o proprietário pode editar ou cancelar a partilha.",
     "shared.none": "Ainda não foi partilhado nenhum artigo consigo.",
     "shared.owner": "Proprietário",
     "shared.action.edit": "Editar",
@@ -1185,8 +1203,10 @@ export const translations = {
     "profile.subscription.subtitle": "Gira a sua subscrição Power User.",
     "profile.billing.manage": "Gerir faturação",
     "profile.billing.cancelAtPeriodEnd": "Cancelar no fim do período",
-    "profile.billing.cancelTooltip": "A sua subscrição permanecerá ativa até ao fim do período atual e não será renovada.",
-    "profile.billing.cancelSuccess": "A subscrição será cancelada no fim do período de faturação.",
+    "profile.billing.cancelTooltip":
+      "A sua subscrição permanecerá ativa até ao fim do período atual e não será renovada.",
+    "profile.billing.cancelSuccess":
+      "A subscrição será cancelada no fim do período de faturação.",
     "profile.email.title": "Alterar Email",
     "profile.email.new": "Novo endereço de email",
     "profile.email.currentPassword": "Password atual",
@@ -1198,21 +1218,26 @@ export const translations = {
     "profile.password.save": "Atualizar password",
     "profile.password.success": "Password atualizada com sucesso.",
     "profile.danger.title": "Zona de Perigo",
-    "profile.danger.subtitle": "Elimine permanentemente a sua conta e todos os dados associados.",
+    "profile.danger.subtitle":
+      "Elimine permanentemente a sua conta e todos os dados associados.",
     "profile.danger.currentPassword": "Confirme com a sua password atual",
     "profile.danger.deleteButton": "Eliminar a minha conta",
-    "profile.danger.confirm": "Tem a certeza? Esta ação é irreversível. Todos os seus dados serão permanentemente eliminados.",
+    "profile.danger.confirm":
+      "Tem a certeza? Esta ação é irreversível. Todos os seus dados serão permanentemente eliminados.",
 
     "articles.share.button": "Partilhar",
-    "articles.share.tooltip": "Partilhar este artigo com todas as contas Power User",
+    "articles.share.tooltip":
+      "Partilhar este artigo com todas as contas Power User",
     "articles.shares.title": "Partilha",
     "articles.shares.button": "Partilhas",
     "articles.shares.hideButton": "Ocultar partilhas",
-    "articles.shares.description": "Apenas proprietário. A partilha torna este artigo visível para todas as contas Power User (só leitura).",
+    "articles.shares.description":
+      "Apenas proprietário. A partilha torna este artigo visível para todas as contas Power User (só leitura).",
     "articles.shares.sharedStatus": "Partilhado com todos os Power Users.",
     "articles.shares.notSharedStatus": "Não partilhado.",
     "articles.shares.unshareButton": "Remover partilha",
-    "articles.shares.unshareConfirm": "Remover a partilha deste artigo para todos os Power Users?",
+    "articles.shares.unshareConfirm":
+      "Remover a partilha deste artigo para todos os Power Users?",
   },
 } as const;
 

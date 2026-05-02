@@ -39,7 +39,9 @@ export const LocationService = {
     ownerUserId: number,
     data: LocationUpdateInput
   ) => {
-    const existing = await prisma.location.findFirst({ where: { locationId, ownerUserId } });
+    const existing = await prisma.location.findFirst({
+      where: { locationId, ownerUserId },
+    });
     if (!existing) throw createHttpError(404, "Location not found");
     return prisma.location.update({
       where: { locationId },
@@ -48,7 +50,9 @@ export const LocationService = {
   },
 
   remove: async (locationId: number, ownerUserId: number) => {
-    const existing = await prisma.location.findFirst({ where: { locationId, ownerUserId } });
+    const existing = await prisma.location.findFirst({
+      where: { locationId, ownerUserId },
+    });
     if (!existing) throw createHttpError(404, "Location not found");
     await prisma.location.deleteMany({ where: { locationId, ownerUserId } });
   },
@@ -88,7 +92,8 @@ export const LocationService = {
       where: { articleId, ownerUserId },
       select: { articleId: true },
     });
-    if (!article) throw createHttpError(403, "Article not found or not owned by you");
+    if (!article)
+      throw createHttpError(403, "Article not found or not owned by you");
 
     await prisma.articleLocation.delete({
       where: { articleId_locationId: { articleId, locationId } },
@@ -96,7 +101,12 @@ export const LocationService = {
     return { ok: true };
   },
 
-  listArticles: async (locationId: number, ownerUserId: number, page = 1, limit = 50) => {
+  listArticles: async (
+    locationId: number,
+    ownerUserId: number,
+    page = 1,
+    limit = 50
+  ) => {
     const location = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
     });

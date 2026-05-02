@@ -55,7 +55,10 @@ describe("LocationService.update", () => {
     const result = await LocationService.update(5, 1, { name: "New" });
     expect(result).toEqual(updated);
     expect(mockPrisma.location.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { locationId: 5 }, data: { name: "New" } })
+      expect.objectContaining({
+        where: { locationId: 5 },
+        data: { name: "New" },
+      })
     );
   });
 });
@@ -67,12 +70,17 @@ describe("LocationService.update", () => {
 describe("LocationService.remove", () => {
   it("rejects with 404 when location not found or not owned", async () => {
     mockPrisma.location.findFirst.mockResolvedValue(null);
-    await expect(LocationService.remove(99, 1)).rejects.toMatchObject({ status: 404 });
+    await expect(LocationService.remove(99, 1)).rejects.toMatchObject({
+      status: 404,
+    });
     expect(mockPrisma.location.deleteMany).not.toHaveBeenCalled();
   });
 
   it("deletes the location when ownership is confirmed", async () => {
-    mockPrisma.location.findFirst.mockResolvedValue({ locationId: 3, ownerUserId: 1 });
+    mockPrisma.location.findFirst.mockResolvedValue({
+      locationId: 3,
+      ownerUserId: 1,
+    });
     mockPrisma.location.deleteMany.mockResolvedValue({ count: 1 });
 
     await LocationService.remove(3, 1);
@@ -110,7 +118,10 @@ describe("LocationService.addArticle", () => {
   it("upserts the article-location link when both belong to the user", async () => {
     mockPrisma.location.findFirst.mockResolvedValue({ locationId: 2 });
     mockPrisma.article.findFirst.mockResolvedValue({ articleId: 7 });
-    mockPrisma.articleLocation.upsert.mockResolvedValue({ articleId: 7, locationId: 2 });
+    mockPrisma.articleLocation.upsert.mockResolvedValue({
+      articleId: 7,
+      locationId: 2,
+    });
 
     const result = await LocationService.addArticle(2, 1, 7);
     expect(result).toMatchObject({ articleId: 7, locationId: 2 });

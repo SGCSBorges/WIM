@@ -4,9 +4,8 @@
  */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { attachmentsAPI, locationsAPI } from "../../services/api";
+import { attachmentsAPI, locationsAPI, API_BASE_URL } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-import { API_BASE_URL } from "../../services/api";
 import type { Article, Location } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 
@@ -27,13 +26,13 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [locationsError, setLocationsError] = useState<string | null>(null);
   const deriveInitialLocationIds = (a?: Article): number[] => {
     const fromJoin = Array.isArray(a?.locations)
-      ? a!.locations!
-          .map((x) => Number(x?.locationId))
+      ? a!
+          .locations!.map((x) => Number(x?.locationId))
           .filter((n) => Number.isFinite(n) && n > 0)
       : [];
     const fromLegacy = Array.isArray(a?.locationIds)
-      ? a!.locationIds!
-          .map((x) => Number(x))
+      ? a!
+          .locationIds!.map((x) => Number(x))
           .filter((n) => Number.isFinite(n) && n > 0)
       : [];
 
@@ -41,7 +40,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   };
 
   const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>(() =>
-    deriveInitialLocationIds(article),
+    deriveInitialLocationIds(article)
   );
 
   const [newLocationName, setNewLocationName] = useState("");
@@ -58,10 +57,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   });
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
-    Boolean(article?.garantie),
+    Boolean(article?.garantie)
   );
   const [warrantyNom, setWarrantyNom] = useState(
-    article?.garantie?.garantieNom || "",
+    article?.garantie?.garantieNom || ""
   );
   const [warrantyDateAchat, setWarrantyDateAchat] = useState(() => {
     const raw = article?.garantie?.garantieDateAchat;
@@ -69,7 +68,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     return String(raw).slice(0, 10);
   });
   const [warrantyDuration, setWarrantyDuration] = useState<number>(
-    Number(article?.garantie?.garantieDuration) || 24,
+    Number(article?.garantie?.garantieDuration) || 24
   );
 
   const [warrantyProofAttachment, setWarrantyProofAttachment] = useState<{
@@ -89,7 +88,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   });
   const [warrantyProofUploading, setWarrantyProofUploading] = useState(false);
   const [warrantyProofError, setWarrantyProofError] = useState<string | null>(
-    null,
+    null
   );
   const [deleteProofFromServer, setDeleteProofFromServer] = useState(false);
 
@@ -136,9 +135,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         fileUrl: created.fileUrl,
       });
     } catch (e) {
-      setWarrantyProofError(
-        getErrorMessage(e, t("common.errorOccurred")),
-      );
+      setWarrantyProofError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setWarrantyProofUploading(false);
     }
@@ -154,13 +151,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           warrantyProofAttachment.attachmentId,
           {
             removeFile: true,
-          },
+          }
         );
       }
     } catch (e) {
-      setWarrantyProofError(
-        getErrorMessage(e, t("common.errorOccurred")),
-      );
+      setWarrantyProofError(getErrorMessage(e, t("common.errorOccurred")));
       return;
     }
 
@@ -170,7 +165,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
   const selectedSet = useMemo(
     () => new Set(selectedLocationIds),
-    [selectedLocationIds],
+    [selectedLocationIds]
   );
 
   useEffect(() => {
@@ -180,19 +175,19 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         setLocationsLoading(true);
         const data = await locationsAPI.getAll();
         // backend returns locations with extra fields; we only need id+name
-        const mapped: Location[] = (data || []).map((l: { locationId: number; name: string }) => ({
-          locationId: l.locationId,
-          name: l.name,
-        }));
+        const mapped: Location[] = (data || []).map(
+          (l: { locationId: number; name: string }) => ({
+            locationId: l.locationId,
+            name: l.name,
+          })
+        );
         if (mounted) {
           setLocations(mapped);
           setLocationsError(null);
         }
       } catch (e) {
         if (mounted)
-          setLocationsError(
-            getErrorMessage(e, t("common.errorOccurred")),
-          );
+          setLocationsError(getErrorMessage(e, t("common.errorOccurred")));
       } finally {
         if (mounted) setLocationsLoading(false);
       }
@@ -270,7 +265,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
   const toggleLocation = (id: number) => {
     setSelectedLocationIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
@@ -287,7 +282,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       };
       setLocations((prev) => [loc, ...prev]);
       setSelectedLocationIds((prev) =>
-        prev.includes(loc.locationId) ? prev : [...prev, loc.locationId],
+        prev.includes(loc.locationId) ? prev : [...prev, loc.locationId]
       );
       setNewLocationName("");
     } catch (e) {
@@ -298,7 +293,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -400,10 +395,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               checked={warrantyEnabled}
               onChange={(e) => setWarrantyEnabled(e.target.checked)}
             />
-            <label
-              htmlFor="warrantyEnabled"
-              className="text-sm font-medium"
-            >
+            <label htmlFor="warrantyEnabled" className="text-sm font-medium">
               {t("articleForm.warranty.toggle")}
             </label>
           </div>
@@ -492,7 +484,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                         <a
                           className="ui-action-primary hover:underline"
                           href={
-                            /^https?:\/\//i.test(warrantyProofAttachment.fileUrl || "")
+                            /^https?:\/\//i.test(
+                              warrantyProofAttachment.fileUrl || ""
+                            )
                               ? warrantyProofAttachment.fileUrl
                               : `${API_BASE_URL}/attachments/${warrantyProofAttachment.attachmentId}`
                           }
@@ -585,9 +579,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           )}
         </div>
 
-        {formError && (
-          <p className="text-sm text-red-600">{formError}</p>
-        )}
+        {formError && <p className="text-sm text-red-600">{formError}</p>}
 
         <div className="flex gap-3 pt-4">
           <button

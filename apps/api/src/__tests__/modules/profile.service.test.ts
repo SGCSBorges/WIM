@@ -62,7 +62,9 @@ beforeEach(() => {
 describe("ProfileService.updateEmail", () => {
   it("rejects with 404 when user does not exist", async () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
-    await expect(ProfileService.updateEmail(1, "new@x.com", "pw")).rejects.toMatchObject({
+    await expect(
+      ProfileService.updateEmail(1, "new@x.com", "pw")
+    ).rejects.toMatchObject({
       status: 404,
     });
   });
@@ -70,7 +72,9 @@ describe("ProfileService.updateEmail", () => {
   it("rejects with 401 when current password is wrong", async () => {
     const hash = await bcryptRef.realHash!("correct-pw", 1);
     mockPrisma.user.findUnique.mockResolvedValue({ userId: 1, password: hash });
-    await expect(ProfileService.updateEmail(1, "new@x.com", "wrong-pw")).rejects.toMatchObject({
+    await expect(
+      ProfileService.updateEmail(1, "new@x.com", "wrong-pw")
+    ).rejects.toMatchObject({
       status: 401,
       message: "Invalid password",
     });
@@ -91,9 +95,17 @@ describe("ProfileService.updateEmail", () => {
     mockPrisma.user.findUnique
       .mockResolvedValueOnce({ userId: 1, password: hash })
       .mockResolvedValueOnce(null); // email not taken
-    mockPrisma.user.update.mockResolvedValue({ userId: 1, email: "new@x.com", role: "USER" });
+    mockPrisma.user.update.mockResolvedValue({
+      userId: 1,
+      email: "new@x.com",
+      role: "USER",
+    });
 
-    const result = await ProfileService.updateEmail(1, "new@x.com", "correct-pw");
+    const result = await ProfileService.updateEmail(
+      1,
+      "new@x.com",
+      "correct-pw"
+    );
     expect(result).toMatchObject({ userId: 1, email: "new@x.com" });
     expect(mockPrisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { email: "new@x.com" } })
@@ -117,9 +129,17 @@ describe("ProfileService.updatePassword", () => {
   it("hashes new password and updates user on success", async () => {
     const hash = await bcryptRef.realHash!("correct-pw", 1);
     mockPrisma.user.findUnique.mockResolvedValue({ userId: 2, password: hash });
-    mockPrisma.user.update.mockResolvedValue({ userId: 2, email: "u@x.com", role: "USER" });
+    mockPrisma.user.update.mockResolvedValue({
+      userId: 2,
+      email: "u@x.com",
+      role: "USER",
+    });
 
-    const result = await ProfileService.updatePassword(2, "correct-pw", "NewPass1!");
+    const result = await ProfileService.updatePassword(
+      2,
+      "correct-pw",
+      "NewPass1!"
+    );
     expect(mockPrisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { password: "$new-hashed$" } })
     );
@@ -139,14 +159,20 @@ const makeTx = (overrides: Record<string, unknown> = {}) => ({
   attachment: { deleteMany: vi.fn().mockResolvedValue({}) },
   garantie: { deleteMany: vi.fn().mockResolvedValue({}) },
   article: { deleteMany: vi.fn().mockResolvedValue({}) },
-  user: { delete: vi.fn().mockResolvedValue({}), count: vi.fn().mockResolvedValue(2), ...((overrides.user as object) ?? {}) },
+  user: {
+    delete: vi.fn().mockResolvedValue({}),
+    count: vi.fn().mockResolvedValue(2),
+    ...((overrides.user as object) ?? {}),
+  },
 });
 
 describe("ProfileService.deleteAccount", () => {
   it("rejects with 401 when current password is wrong", async () => {
     const hash = await bcryptRef.realHash!("correct-pw", 1);
     mockPrisma.user.findUnique.mockResolvedValue({ userId: 3, password: hash });
-    await expect(ProfileService.deleteAccount(3, "wrong-pw")).rejects.toMatchObject({
+    await expect(
+      ProfileService.deleteAccount(3, "wrong-pw")
+    ).rejects.toMatchObject({
       status: 401,
     });
   });
@@ -159,7 +185,9 @@ describe("ProfileService.deleteAccount", () => {
       password: hash,
       stripeSubscriptionId: null,
     });
-    mockPrisma.$transaction.mockImplementation(async (cb: Function) => cb(makeTx()));
+    mockPrisma.$transaction.mockImplementation(async (cb: Function) =>
+      cb(makeTx())
+    );
 
     const result = await ProfileService.deleteAccount(3, "correct-pw");
     expect(result).toEqual({ ok: true });
@@ -175,10 +203,16 @@ describe("ProfileService.deleteAccount", () => {
       stripeSubscriptionId: null,
     });
     mockPrisma.$transaction.mockImplementation(async (cb: Function) =>
-      cb(makeTx({ user: { delete: vi.fn(), count: vi.fn().mockResolvedValue(1) } }))
+      cb(
+        makeTx({
+          user: { delete: vi.fn(), count: vi.fn().mockResolvedValue(1) },
+        })
+      )
     );
 
-    await expect(ProfileService.deleteAccount(4, "correct-pw")).rejects.toMatchObject({
+    await expect(
+      ProfileService.deleteAccount(4, "correct-pw")
+    ).rejects.toMatchObject({
       status: 400,
     });
   });
@@ -192,7 +226,14 @@ describe("ProfileService.deleteAccount", () => {
       stripeSubscriptionId: null,
     });
     mockPrisma.$transaction.mockImplementation(async (cb: Function) =>
-      cb(makeTx({ user: { delete: vi.fn().mockResolvedValue({}), count: vi.fn().mockResolvedValue(2) } }))
+      cb(
+        makeTx({
+          user: {
+            delete: vi.fn().mockResolvedValue({}),
+            count: vi.fn().mockResolvedValue(2),
+          },
+        })
+      )
     );
 
     const result = await ProfileService.deleteAccount(5, "correct-pw");

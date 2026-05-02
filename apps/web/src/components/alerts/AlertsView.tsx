@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { TranslationKey } from "../../i18n/translations";
@@ -31,11 +31,16 @@ type Alert = {
 
 function statusBadge(status: AlertStatus) {
   switch (status) {
-    case "SCHEDULED": return "ui-badge-info";
-    case "SENT":      return "ui-badge-success";
-    case "CANCELLED": return "ui-badge";
-    case "FAILED":    return "ui-badge-danger";
-    default:          return "ui-badge";
+    case "SCHEDULED":
+      return "ui-badge-info";
+    case "SENT":
+      return "ui-badge-success";
+    case "CANCELLED":
+      return "ui-badge";
+    case "FAILED":
+      return "ui-badge-danger";
+    default:
+      return "ui-badge";
   }
 }
 
@@ -54,7 +59,7 @@ export default function AlertsView() {
     setError(null);
     try {
       const data = await alertsAPI.getAll(
-        statusFilter === "ALL" ? undefined : statusFilter,
+        statusFilter === "ALL" ? undefined : statusFilter
       );
       setItems(data);
     } catch (e: unknown) {
@@ -62,9 +67,9 @@ export default function AlertsView() {
     } finally {
       setLoading(false);
     }
-  // t is intentionally excluded: translating the fallback error in the closure
-  // is acceptable; excluding it prevents an unnecessary refetch on language change.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // t is intentionally excluded: translating the fallback error in the closure
+    // is acceptable; excluding it prevents an unnecessary refetch on language change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
   useEffect(() => {
@@ -109,7 +114,9 @@ export default function AlertsView() {
           <div className="flex items-center gap-3">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "date" | "status" | "name")}
+              onChange={(e) =>
+                setSortBy(e.target.value as "date" | "status" | "name")
+              }
               className="ui-select px-2 py-1 rounded-md text-sm"
               title={t("alerts.sortBy")}
             >
@@ -128,7 +135,9 @@ export default function AlertsView() {
 
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "ALL" | AlertStatus)}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as "ALL" | AlertStatus)
+              }
               className="ui-select px-2 py-1 rounded-md text-sm"
             >
               <option value="ALL">{t("alerts.filters.all")}</option>
@@ -187,8 +196,8 @@ export default function AlertsView() {
                           onClick={() =>
                             copyToClipboard(
                               String(
-                                a.garantie?.garantieId ?? a.alerteGarantieId,
-                              ),
+                                a.garantie?.garantieId ?? a.alerteGarantieId
+                              )
                             )
                           }
                           className="underline hover:opacity-90"
@@ -204,7 +213,7 @@ export default function AlertsView() {
                           type="button"
                           onClick={() =>
                             copyToClipboard(
-                              String(a.article?.articleId ?? a.alerteArticleId),
+                              String(a.article?.articleId ?? a.alerteArticleId)
                             )
                           }
                           className="underline hover:opacity-90"
@@ -228,10 +237,12 @@ export default function AlertsView() {
 
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge(
-                    a.status,
+                    a.status
                   )}`}
                 >
-                  {t(`alerts.status.${a.status.toLowerCase()}` as TranslationKey)}
+                  {t(
+                    `alerts.status.${a.status.toLowerCase()}` as TranslationKey
+                  )}
                 </span>
               </div>
             </div>

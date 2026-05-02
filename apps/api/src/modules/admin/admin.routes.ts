@@ -101,7 +101,7 @@ router.delete(
         }
         await tx.user.delete({ where: { userId } });
       },
-      { isolationLevel: "Serializable" },
+      { isolationLevel: "Serializable" }
     );
 
     await auditAction(req, {

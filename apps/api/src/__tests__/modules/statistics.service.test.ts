@@ -33,7 +33,10 @@ vi.mock("../../config/logger", () => ({
 }));
 
 import { prisma } from "../../libs/prisma";
-import { getDashboardStatistics, getAdminStatistics } from "../../services/statistics.service";
+import {
+  getDashboardStatistics,
+  getAdminStatistics,
+} from "../../services/statistics.service";
 
 const mockPrisma = prisma as unknown as {
   article: Record<string, ReturnType<typeof vi.fn>>;
@@ -48,7 +51,10 @@ function setupDashboardMocks({
   articlesTotal = 5,
   articlesWithWarranty = 3,
   locations = [] as Array<{ locationId: number; name: string }>,
-  articleCountsByLocation = [] as Array<{ locationId: number; _count: { articleId: number } }>,
+  articleCountsByLocation = [] as Array<{
+    locationId: number;
+    _count: { articleId: number };
+  }>,
   warrantiesTotal = 2,
   warrantiesActive = 1,
   warrantiesExpired = 1,
@@ -59,9 +65,9 @@ function setupDashboardMocks({
   totalSharedArticles = 0,
 } = {}) {
   mockPrisma.article.count
-    .mockResolvedValueOnce(articlesTotal)       // total
+    .mockResolvedValueOnce(articlesTotal) // total
     .mockResolvedValueOnce(articlesWithWarranty) // withWarranty
-    .mockResolvedValueOnce(ownedSharedArticles)  // ownedSharedArticles
+    .mockResolvedValueOnce(ownedSharedArticles) // ownedSharedArticles
     .mockResolvedValueOnce(totalSharedArticles); // totalSharedArticles (if role is POWER_USER)
   mockPrisma.location.findMany.mockResolvedValue(locations);
   mockPrisma.articleLocation.groupBy.mockResolvedValue(articleCountsByLocation);
@@ -117,11 +123,19 @@ describe("getDashboardStatistics", () => {
     const result = await getDashboardStatistics({ userId: 1, role: "USER" });
 
     expect(result.locations.unassigned).toBe(3);
-    expect(result.locations.byLocation[0]).toMatchObject({ locationId: 1, name: "Home", articlesCount: 4 });
+    expect(result.locations.byLocation[0]).toMatchObject({
+      locationId: 1,
+      name: "Home",
+      articlesCount: 4,
+    });
   });
 
   it("does not fetch totalSharedArticles for USER role", async () => {
-    setupDashboardMocks({ articlesTotal: 2, articlesWithWarranty: 1, ownedSharedArticles: 0 });
+    setupDashboardMocks({
+      articlesTotal: 2,
+      articlesWithWarranty: 1,
+      ownedSharedArticles: 0,
+    });
 
     const result = await getDashboardStatistics({ userId: 1, role: "USER" });
 
@@ -130,26 +144,39 @@ describe("getDashboardStatistics", () => {
 
   it("fetches totalSharedArticles for POWER_USER role", async () => {
     mockPrisma.article.count
-      .mockResolvedValueOnce(3)  // total
-      .mockResolvedValueOnce(1)  // withWarranty
-      .mockResolvedValueOnce(1)  // ownedSharedArticles
+      .mockResolvedValueOnce(3) // total
+      .mockResolvedValueOnce(1) // withWarranty
+      .mockResolvedValueOnce(1) // ownedSharedArticles
       .mockResolvedValueOnce(5); // totalSharedArticles
     mockPrisma.location.findMany.mockResolvedValue([]);
     mockPrisma.articleLocation.groupBy.mockResolvedValue([]);
     mockPrisma.garantie.count
-      .mockResolvedValueOnce(0).mockResolvedValueOnce(0).mockResolvedValueOnce(0)
-      .mockResolvedValueOnce(0).mockResolvedValueOnce(0);
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
 
-    const result = await getDashboardStatistics({ userId: 1, role: "POWER_USER" });
+    const result = await getDashboardStatistics({
+      userId: 1,
+      role: "POWER_USER",
+    });
 
     expect(result.sharing.totalSharedArticles).toBe(5);
   });
 
   it("treats unknown role as USER (no totalSharedArticles query)", async () => {
-    setupDashboardMocks({ articlesTotal: 1, articlesWithWarranty: 0, ownedSharedArticles: 0 });
+    setupDashboardMocks({
+      articlesTotal: 1,
+      articlesWithWarranty: 0,
+      ownedSharedArticles: 0,
+    });
 
-    const result = await getDashboardStatistics({ userId: 1, role: "UNKNOWN_ROLE" });
+    const result = await getDashboardStatistics({
+      userId: 1,
+      role: "UNKNOWN_ROLE",
+    });
 
     expect(result.sharing.totalSharedArticles).toBe(0);
   });
@@ -161,9 +188,9 @@ describe("getDashboardStatistics", () => {
     mockPrisma.garantie.count.mockResolvedValue(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
 
-    await expect(getDashboardStatistics({ userId: 1, role: "USER" })).rejects.toThrow(
-      "Failed to fetch dashboard statistics"
-    );
+    await expect(
+      getDashboardStatistics({ userId: 1, role: "USER" })
+    ).rejects.toThrow("Failed to fetch dashboard statistics");
   });
 });
 
@@ -219,17 +246,27 @@ describe("getAdminStatistics", () => {
     const result = await getAdminStatistics();
 
     expect(result.articles.total).toBe(100);
-    expect(result.warranties).toMatchObject({ total: 60, active: 40, expired: 20, withAttachment: 10 });
+    expect(result.warranties).toMatchObject({
+      total: 60,
+      active: 40,
+      expired: 20,
+      withAttachment: 10,
+    });
     expect(result.alerts.total).toBe(8);
     expect(result.sharing.totalSharedArticles).toBe(3);
   });
 
   it("defaults missing role counts to 0", async () => {
     mockPrisma.user.count.mockResolvedValue(1);
-    mockPrisma.user.groupBy.mockResolvedValue([{ role: "ADMIN", _count: { userId: 1 } }]);
+    mockPrisma.user.groupBy.mockResolvedValue([
+      { role: "ADMIN", _count: { userId: 1 } },
+    ]);
     mockPrisma.article.count.mockResolvedValueOnce(0).mockResolvedValueOnce(0);
     mockPrisma.garantie.count
-      .mockResolvedValueOnce(0).mockResolvedValueOnce(0).mockResolvedValueOnce(0).mockResolvedValueOnce(0);
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0)
+      .mockResolvedValueOnce(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
 
     const result = await getAdminStatistics();
@@ -246,6 +283,8 @@ describe("getAdminStatistics", () => {
     mockPrisma.garantie.count.mockResolvedValue(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
 
-    await expect(getAdminStatistics()).rejects.toThrow("Failed to fetch admin statistics");
+    await expect(getAdminStatistics()).rejects.toThrow(
+      "Failed to fetch admin statistics"
+    );
   });
 });

@@ -5,8 +5,13 @@ export const AttachmentCreateSchema = z.object({
   fileName: z.string().min(1).max(255),
   mimeType: z.string().max(100),
   fileSize: z.number().int().positive(),
-  fileUrl: z.string().url().max(500)
-    .refine(u => /^https?:\/\//i.test(u), { message: "fileUrl must be an http(s) URL" }),
+  fileUrl: z
+    .string()
+    .url()
+    .max(500)
+    .refine((u) => /^https?:\/\//i.test(u), {
+      message: "fileUrl must be an http(s) URL",
+    }),
   ownerUserId: z.number().int().positive(),
   articleId: z.number().int().positive().optional(),
   garantieId: z.number().int().positive().optional(),

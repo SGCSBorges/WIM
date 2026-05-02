@@ -12,14 +12,20 @@ export const passwordSchema = z
   );
 
 export const RegisterSchema = z.object({
-  email: z.string().email().transform((s) => s.toLowerCase().trim()),
+  email: z
+    .string()
+    .email()
+    .transform((s) => s.toLowerCase().trim()),
   password: passwordSchema,
   // Public registration is USER-only; POWER_USER/ADMIN are granted via billing/admin.
   role: z.literal("USER").default("USER"),
 });
 
 export const LoginSchema = z.object({
-  email: z.string().email().transform((s) => s.toLowerCase().trim()),
+  email: z
+    .string()
+    .email()
+    .transform((s) => s.toLowerCase().trim()),
   password: z.string().min(1),
 });
 

@@ -88,7 +88,7 @@ const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
 const Dashboard: React.FC = () => {
   const { t } = useI18n();
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(
-    null,
+    null
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

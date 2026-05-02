@@ -18,9 +18,17 @@ export const ShareService = {
       throw createHttpError(400, "You cannot invite yourself");
 
     const existing = await prisma.shareInvite.findFirst({
-      where: { ownerUserId: data.ownerUserId, email: data.email, status: "PENDING" },
+      where: {
+        ownerUserId: data.ownerUserId,
+        email: data.email,
+        status: "PENDING",
+      },
     });
-    if (existing) throw createHttpError(409, "A pending invite for this email already exists");
+    if (existing)
+      throw createHttpError(
+        409,
+        "A pending invite for this email already exists"
+      );
 
     const token = crypto.randomBytes(64).toString("hex");
     return prisma.shareInvite.create({

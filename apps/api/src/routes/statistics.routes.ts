@@ -1,7 +1,10 @@
 import { Router } from "express";
-import { authGuard, requireRole, AuthRequest } from "../modules/auth/auth.middleware";
+import {
+  authGuard,
+  requireRole,
+  AuthRequest,
+} from "../modules/auth/auth.middleware";
 import { asyncHandler } from "../modules/common/http";
-import { logger } from "../config/logger";
 import {
   getDashboardStatistics,
   getBasicStatistics,

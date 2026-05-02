@@ -3,10 +3,26 @@ import { prisma } from "../../libs/prisma";
 
 export type AuditInput = {
   userId?: number | null;
-  action: "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT" | "ACCEPT"
-        | "BILLING_CHECKOUT_STARTED" | "BILLING_PORTAL_OPENED" | "BILLING_CANCEL_REQUESTED";
-  entity: "Article" | "Garantie" | "Alerte" | "User" | "Location"
-        | "Attachment" | "ShareInvite" | "InventoryShare" | "ArticleLocation";
+  action:
+    | "CREATE"
+    | "UPDATE"
+    | "DELETE"
+    | "LOGIN"
+    | "LOGOUT"
+    | "ACCEPT"
+    | "BILLING_CHECKOUT_STARTED"
+    | "BILLING_PORTAL_OPENED"
+    | "BILLING_CANCEL_REQUESTED";
+  entity:
+    | "Article"
+    | "Garantie"
+    | "Alerte"
+    | "User"
+    | "Location"
+    | "Attachment"
+    | "ShareInvite"
+    | "InventoryShare"
+    | "ArticleLocation";
   entityId?: number | null;
   metadata?: Record<string, unknown>;
   ip?: string | null;

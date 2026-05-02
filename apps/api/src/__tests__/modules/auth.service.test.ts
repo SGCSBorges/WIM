@@ -42,10 +42,20 @@ beforeEach(() => {
 
 describe("AuthService.register", () => {
   it("rejects with 409 when email is already registered", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ userId: 1, email: "a@b.com" });
+    mockPrisma.user.findUnique.mockResolvedValue({
+      userId: 1,
+      email: "a@b.com",
+    });
     await expect(
-      AuthService.register({ email: "a@b.com", password: "Pass1!xyz", role: "USER" })
-    ).rejects.toMatchObject({ status: 409, message: "Email already registered" });
+      AuthService.register({
+        email: "a@b.com",
+        password: "Pass1!xyz",
+        role: "USER",
+      })
+    ).rejects.toMatchObject({
+      status: 409,
+      message: "Email already registered",
+    });
     expect(mockPrisma.user.create).not.toHaveBeenCalled();
   });
 
@@ -129,6 +139,10 @@ describe("AuthService.profile", () => {
       role: "USER",
     });
     const result = await AuthService.profile(5);
-    expect(result).toMatchObject({ userId: 5, email: "u@example.com", role: "USER" });
+    expect(result).toMatchObject({
+      userId: 5,
+      email: "u@example.com",
+      role: "USER",
+    });
   });
 });

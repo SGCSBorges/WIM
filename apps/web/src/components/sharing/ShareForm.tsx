@@ -3,14 +3,24 @@ import { useI18n } from "../../i18n/i18n";
 import type { TranslationKey } from "../../i18n/translations";
 
 interface ShareFormProps {
-  onSubmit: (shareData: { email: string; permission: "READ" | "WRITE" }) => void;
+  onSubmit: (shareData: {
+    email: string;
+    permission: "READ" | "WRITE";
+  }) => void;
   onCancel?: () => void;
   isLoading?: boolean;
 }
 
-const ShareForm: React.FC<ShareFormProps> = ({ onSubmit, onCancel, isLoading = false }) => {
+const ShareForm: React.FC<ShareFormProps> = ({
+  onSubmit,
+  onCancel,
+  isLoading = false,
+}) => {
   const { t } = useI18n();
-  const [formData, setFormData] = useState({ email: "", permission: "READ" as "READ" | "WRITE" });
+  const [formData, setFormData] = useState({
+    email: "",
+    permission: "READ" as "READ" | "WRITE",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = (): boolean => {
@@ -36,7 +46,9 @@ const ShareForm: React.FC<ShareFormProps> = ({ onSubmit, onCancel, isLoading = f
 
   return (
     <div className="max-w-md mx-auto p-6 ui-card rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold ui-title mb-6">{t("shareForm.title")}</h2>
+      <h2 className="text-2xl font-bold ui-title mb-6">
+        {t("shareForm.title")}
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -52,11 +64,15 @@ const ShareForm: React.FC<ShareFormProps> = ({ onSubmit, onCancel, isLoading = f
             placeholder={t("shareForm.email.placeholder")}
             disabled={isLoading}
           />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+          {errors.email && (
+            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-3">{t("shareForm.permission")} *</label>
+          <label className="block text-sm font-medium mb-3">
+            {t("shareForm.permission")} *
+          </label>
           <div className="space-y-3">
             {(["READ", "WRITE"] as const).map((perm) => (
               <div key={perm} className="flex items-start">
@@ -66,16 +82,22 @@ const ShareForm: React.FC<ShareFormProps> = ({ onSubmit, onCancel, isLoading = f
                   name="permission"
                   value={perm}
                   checked={formData.permission === perm}
-                  onChange={(e) => handleInputChange("permission", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("permission", e.target.value)
+                  }
                   className="mt-1 h-4 w-4"
                   disabled={isLoading}
                 />
                 <label htmlFor={perm.toLowerCase()} className="ml-3 flex-1">
                   <span className="block text-sm font-medium">
-                    {t(`shareForm.permission.${perm.toLowerCase()}` as TranslationKey)}
+                    {t(
+                      `shareForm.permission.${perm.toLowerCase()}` as TranslationKey
+                    )}
                   </span>
                   <span className="block text-sm ui-text-muted">
-                    {t(`shareForm.permission.${perm.toLowerCase()}.help` as TranslationKey)}
+                    {t(
+                      `shareForm.permission.${perm.toLowerCase()}.help` as TranslationKey
+                    )}
                   </span>
                 </label>
               </div>

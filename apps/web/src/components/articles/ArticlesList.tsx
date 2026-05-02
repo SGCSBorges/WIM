@@ -31,11 +31,23 @@ const ArticlesList: React.FC = () => {
     thirtyDaysFromNow.setDate(now.getDate() + 30);
 
     if (endDate < now) {
-      return { status: "expired", label: t("articles.warranty.expired"), color: "red" };
+      return {
+        status: "expired",
+        label: t("articles.warranty.expired"),
+        color: "red",
+      };
     } else if (endDate <= thirtyDaysFromNow) {
-      return { status: "expiring-soon", label: t("articles.warranty.expiringSoon"), color: "yellow" };
+      return {
+        status: "expiring-soon",
+        label: t("articles.warranty.expiringSoon"),
+        color: "yellow",
+      };
     } else {
-      return { status: "valid", label: t("articles.warranty.valid"), color: "green" };
+      return {
+        status: "valid",
+        label: t("articles.warranty.valid"),
+        color: "green",
+      };
     }
   };
 
@@ -43,17 +55,33 @@ const ArticlesList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editingArticle, setEditingArticle] = useState<FetchedArticle | null>(null);
+  const [editingArticle, setEditingArticle] = useState<FetchedArticle | null>(
+    null
+  );
 
-  const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(null);
-  const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(null);
-  const [shareStatusByArticleId, setShareStatusByArticleId] = useState<Record<number, ArticleShareStatus>>({});
-  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<number | null>(null);
-  const [confirmUnshareArticleId, setConfirmUnshareArticleId] = useState<number | null>(null);
-  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<number | null>(null);
+  const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(
+    null
+  );
+  const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(
+    null
+  );
+  const [shareStatusByArticleId, setShareStatusByArticleId] = useState<
+    Record<number, ArticleShareStatus>
+  >({});
+  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<
+    number | null
+  >(null);
+  const [confirmUnshareArticleId, setConfirmUnshareArticleId] = useState<
+    number | null
+  >(null);
+  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
+    number | null
+  >(null);
 
   const [locations, setLocations] = useState<Location[]>([]);
-  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(undefined);
+  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
+    undefined
+  );
 
   const fetchArticles = useCallback(async () => {
     try {
@@ -71,10 +99,12 @@ const ArticlesList: React.FC = () => {
   const fetchLocations = async () => {
     try {
       const data = await locationsAPI.getAll();
-      const mapped: Location[] = (data || []).map((l: { locationId: number; name: string }) => ({
-        locationId: l.locationId,
-        name: l.name,
-      }));
+      const mapped: Location[] = (data || []).map(
+        (l: { locationId: number; name: string }) => ({
+          locationId: l.locationId,
+          name: l.name,
+        })
+      );
       setLocations(mapped);
     } catch {
       // non-blocking
@@ -84,7 +114,9 @@ const ArticlesList: React.FC = () => {
   const loadShareStatus = async (articleId: number) => {
     setSharesLoadingArticleId(articleId);
     try {
-      const data = await articlesAPI.getShares(articleId) as ArticleShareStatus;
+      const data = (await articlesAPI.getShares(
+        articleId
+      )) as ArticleShareStatus;
       setShareStatusByArticleId((prev) => ({ ...prev, [articleId]: data }));
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
@@ -153,7 +185,9 @@ const ArticlesList: React.FC = () => {
           <select
             value={locationFilterId ?? ""}
             onChange={(e) =>
-              setLocationFilterId(e.target.value ? Number(e.target.value) : undefined)
+              setLocationFilterId(
+                e.target.value ? Number(e.target.value) : undefined
+              )
             }
             className="ui-select px-3 py-2 rounded-md"
           >
@@ -177,7 +211,9 @@ const ArticlesList: React.FC = () => {
       {error && (
         <div role="alert" className="border ui-alert-error rounded-lg p-4">
           <div className="flex items-center">
-            <span className="text-red-400 mr-2" aria-hidden="true">❌</span>
+            <span className="text-red-400 mr-2" aria-hidden="true">
+              ❌
+            </span>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
@@ -200,8 +236,20 @@ const ArticlesList: React.FC = () => {
             <table className="w-full">
               <thead className="ui-panel">
                 <tr>
-                  {[t("articles.table.name"), t("articles.table.model"), t("articles.table.description"), t("articles.table.warranty"), t("articles.table.proof"), t("articles.table.actions")].map((h) => (
-                    <th key={h} className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">{h}</th>
+                  {[
+                    t("articles.table.name"),
+                    t("articles.table.model"),
+                    t("articles.table.description"),
+                    t("articles.table.warranty"),
+                    t("articles.table.proof"),
+                    t("articles.table.actions"),
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -210,7 +258,9 @@ const ArticlesList: React.FC = () => {
                   <tr key={i}>
                     {[60, 40, 80, 24, 24, 48].map((w, j) => (
                       <td key={j} className="px-6 py-4">
-                        <div className={`h-4 animate-pulse rounded ui-panel w-${w}`} />
+                        <div
+                          className={`h-4 animate-pulse rounded ui-panel w-${w}`}
+                        />
                       </td>
                     ))}
                   </tr>
@@ -280,7 +330,9 @@ const ArticlesList: React.FC = () => {
                             red: "ui-badge-danger",
                           };
                           return (
-                            <span className={`px-2 py-1 rounded ${colorClasses[ws.color as keyof typeof colorClasses]}`}>
+                            <span
+                              className={`px-2 py-1 rounded ${colorClasses[ws.color as keyof typeof colorClasses]}`}
+                            >
                               {ws.label}
                             </span>
                           );
@@ -331,7 +383,9 @@ const ArticlesList: React.FC = () => {
                               loadShareStatus(article.articleId);
                             }
                           }}
-                          disabled={sharesLoadingArticleId === article.articleId}
+                          disabled={
+                            sharesLoadingArticleId === article.articleId
+                          }
                           className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider mr-3"
                         >
                           {sharesLoadingArticleId === article.articleId
@@ -343,7 +397,9 @@ const ArticlesList: React.FC = () => {
 
                         {confirmDeleteArticleId === article.articleId ? (
                           <span className="inline-flex items-center gap-2">
-                            <span className="text-xs text-red-700">{t("articles.delete.confirm")}</span>
+                            <span className="text-xs text-red-700">
+                              {t("articles.delete.confirm")}
+                            </span>
                             <button
                               onClick={() => handleDelete(article.articleId)}
                               className="text-xs px-2 py-1 ui-btn-danger rounded"
@@ -359,7 +415,9 @@ const ArticlesList: React.FC = () => {
                           </span>
                         ) : (
                           <button
-                            onClick={() => setConfirmDeleteArticleId(article.articleId)}
+                            onClick={() =>
+                              setConfirmDeleteArticleId(article.articleId)
+                            }
                             className="ui-action-danger"
                           >
                             {t("common.delete")}
@@ -373,7 +431,9 @@ const ArticlesList: React.FC = () => {
                         <td colSpan={6} className="px-6 py-4 text-sm">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                              <div className="font-medium">{t("articles.shares.title")}</div>
+                              <div className="font-medium">
+                                {t("articles.shares.title")}
+                              </div>
                               <div className="text-xs ui-text-muted">
                                 {t("articles.shares.description")}
                               </div>
@@ -382,7 +442,9 @@ const ArticlesList: React.FC = () => {
                               type="button"
                               className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
                               onClick={() => loadShareStatus(article.articleId)}
-                              disabled={sharesLoadingArticleId === article.articleId}
+                              disabled={
+                                sharesLoadingArticleId === article.articleId
+                              }
                             >
                               {sharesLoadingArticleId === article.articleId
                                 ? t("common.loading")
@@ -391,26 +453,36 @@ const ArticlesList: React.FC = () => {
                           </div>
 
                           <div className="mt-3 space-y-2">
-                            {shareStatusByArticleId[article.articleId]?.sharedWithPowerUsers ? (
+                            {shareStatusByArticleId[article.articleId]
+                              ?.sharedWithPowerUsers ? (
                               <div className="flex items-center justify-between gap-3">
                                 <div className="text-sm ui-text-muted">
                                   {t("articles.shares.sharedStatus")}
                                 </div>
-                                {confirmUnshareArticleId === article.articleId ? (
+                                {confirmUnshareArticleId ===
+                                article.articleId ? (
                                   <span className="inline-flex items-center gap-2">
-                                    <span className="text-xs text-red-700">{t("articles.shares.unshareConfirm")}</span>
+                                    <span className="text-xs text-red-700">
+                                      {t("articles.shares.unshareConfirm")}
+                                    </span>
                                     <button
                                       type="button"
                                       className="text-xs px-2 py-1 ui-btn-danger rounded"
-                                      disabled={shareBusyArticleId === article.articleId}
-                                      onClick={() => handleUnshareAll(article.articleId)}
+                                      disabled={
+                                        shareBusyArticleId === article.articleId
+                                      }
+                                      onClick={() =>
+                                        handleUnshareAll(article.articleId)
+                                      }
                                     >
                                       {t("common.yes")}
                                     </button>
                                     <button
                                       type="button"
                                       className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
-                                      onClick={() => setConfirmUnshareArticleId(null)}
+                                      onClick={() =>
+                                        setConfirmUnshareArticleId(null)
+                                      }
                                     >
                                       {t("common.no")}
                                     </button>
@@ -419,8 +491,14 @@ const ArticlesList: React.FC = () => {
                                   <button
                                     type="button"
                                     className="ui-action-danger"
-                                    disabled={shareBusyArticleId === article.articleId}
-                                    onClick={() => setConfirmUnshareArticleId(article.articleId)}
+                                    disabled={
+                                      shareBusyArticleId === article.articleId
+                                    }
+                                    onClick={() =>
+                                      setConfirmUnshareArticleId(
+                                        article.articleId
+                                      )
+                                    }
                                   >
                                     {shareBusyArticleId === article.articleId
                                       ? t("common.loading")

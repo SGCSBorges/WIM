@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -9,7 +9,11 @@ type Props = {
   onShared?: () => void;
 };
 
-export default function ShareArticleButton({ articleId, disabled, onShared }: Props) {
+export default function ShareArticleButton({
+  articleId,
+  disabled,
+  onShared,
+}: Props) {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

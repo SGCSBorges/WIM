@@ -12,7 +12,9 @@ export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
   // cookie-parser populates req.cookies; the type is available via @types/cookie-parser.
   const cookieToken: string | undefined = req.cookies?.wim_token;
   const header = req.headers.authorization;
-  const bearerToken = header?.startsWith("Bearer ") ? header.split(" ")[1] : undefined;
+  const bearerToken = header?.startsWith("Bearer ")
+    ? header.split(" ")[1]
+    : undefined;
   const token = cookieToken ?? bearerToken;
 
   if (!token) return res.status(401).json({ error: "Missing token" });

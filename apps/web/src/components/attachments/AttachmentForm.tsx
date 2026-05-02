@@ -190,9 +190,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                       />
                     </svg>
                     <div>
-                      <p className="text-sm font-medium">
-                        {selectedFile.name}
-                      </p>
+                      <p className="text-sm font-medium">{selectedFile.name}</p>
                       <p className="text-xs ui-text-muted">
                         {formatFileSize(selectedFile.size)}
                       </p>
@@ -263,9 +261,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                 />
               </svg>
               <div>
-                <p className="text-sm font-medium">
-                  {attachment.fileName}
-                </p>
+                <p className="text-sm font-medium">{attachment.fileName}</p>
                 <p className="text-xs ui-text-muted">
                   {formatFileSize(attachment.fileSize)}
                 </p>

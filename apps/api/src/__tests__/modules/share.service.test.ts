@@ -39,7 +39,9 @@ beforeEach(() => {
 describe("ShareService.acceptInvite", () => {
   it("rejects with 400 when token does not exist", async () => {
     mockPrisma.shareInvite.findUnique.mockResolvedValue(null);
-    await expect(ShareService.acceptInvite("bad-token", 2)).rejects.toMatchObject({
+    await expect(
+      ShareService.acceptInvite("bad-token", 2)
+    ).rejects.toMatchObject({
       status: 400,
       message: "Invalid or expired invite token",
     });
@@ -150,13 +152,19 @@ describe("ShareService.createInvite", () => {
         permission: "READ",
         expiresAt: new Date(Date.now() + 86_400_000),
       })
-    ).rejects.toMatchObject({ status: 409, message: "A pending invite for this email already exists" });
+    ).rejects.toMatchObject({
+      status: 409,
+      message: "A pending invite for this email already exists",
+    });
     expect(mockPrisma.shareInvite.create).not.toHaveBeenCalled();
   });
 
   it("creates the invite with a random hex token when no duplicate exists", async () => {
     mockPrisma.shareInvite.findFirst.mockResolvedValue(null);
-    mockPrisma.shareInvite.create.mockResolvedValue({ shareInviteId: 8, token: "abc" });
+    mockPrisma.shareInvite.create.mockResolvedValue({
+      shareInviteId: 8,
+      token: "abc",
+    });
 
     const result = await ShareService.createInvite({
       ownerUserId: 1,
@@ -181,12 +189,18 @@ describe("ShareService.createInvite", () => {
 describe("ShareService.revokeInvite", () => {
   it("rejects with 404 when invite does not belong to the user", async () => {
     mockPrisma.shareInvite.findFirst.mockResolvedValue(null);
-    await expect(ShareService.revokeInvite(99, 1)).rejects.toMatchObject({ status: 404, message: "Invite not found" });
+    await expect(ShareService.revokeInvite(99, 1)).rejects.toMatchObject({
+      status: 404,
+      message: "Invite not found",
+    });
     expect(mockPrisma.shareInvite.update).not.toHaveBeenCalled();
   });
 
   it("marks invite as REVOKED when ownership is confirmed", async () => {
-    mockPrisma.shareInvite.findFirst.mockResolvedValue({ shareInviteId: 5, ownerUserId: 1 });
+    mockPrisma.shareInvite.findFirst.mockResolvedValue({
+      shareInviteId: 5,
+      ownerUserId: 1,
+    });
     mockPrisma.shareInvite.update.mockResolvedValue({});
 
     await ShareService.revokeInvite(5, 1);
@@ -199,12 +213,20 @@ describe("ShareService.revokeInvite", () => {
 describe("ShareService.revokeShare", () => {
   it("rejects with 404 when active share does not exist", async () => {
     mockPrisma.inventoryShare.findFirst.mockResolvedValue(null);
-    await expect(ShareService.revokeShare(1, 2)).rejects.toMatchObject({ status: 404, message: "Share not found" });
+    await expect(ShareService.revokeShare(1, 2)).rejects.toMatchObject({
+      status: 404,
+      message: "Share not found",
+    });
     expect(mockPrisma.inventoryShare.update).not.toHaveBeenCalled();
   });
 
   it("sets active to false on the share when found", async () => {
-    mockPrisma.inventoryShare.findFirst.mockResolvedValue({ inventoryShareId: 11, ownerUserId: 1, targetUserId: 2, active: true });
+    mockPrisma.inventoryShare.findFirst.mockResolvedValue({
+      inventoryShareId: 11,
+      ownerUserId: 1,
+      targetUserId: 2,
+      active: true,
+    });
     mockPrisma.inventoryShare.update.mockResolvedValue({});
 
     await ShareService.revokeShare(1, 2);

@@ -66,7 +66,11 @@ router.delete(
   "/invites/:inviteId",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const inviteId = z.coerce.number().int().positive().parse(req.params.inviteId);
+    const inviteId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(req.params.inviteId);
     await ShareService.revokeInvite(inviteId, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
@@ -93,7 +97,11 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const { page, limit } = paginationQuery.parse(req.query);
-    const rows = await ShareService.listSharesReceived(req.user!.sub, page, limit);
+    const rows = await ShareService.listSharesReceived(
+      req.user!.sub,
+      page,
+      limit
+    );
     res.json(rows);
   })
 );
@@ -105,7 +113,11 @@ router.put(
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
     const { permission } = ShareUpdateSchema.parse(req.body);
-    const targetUserId = z.coerce.number().int().positive().parse(req.params.targetUserId);
+    const targetUserId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(req.params.targetUserId);
     const updated = await ShareService.updateShare(
       req.user!.sub,
       targetUserId,
@@ -127,7 +139,11 @@ router.delete(
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
-    const targetUserId = z.coerce.number().int().positive().parse(req.params.targetUserId);
+    const targetUserId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(req.params.targetUserId);
     await ShareService.revokeShare(req.user!.sub, targetUserId);
     await auditAction(req, {
       action: "DELETE",

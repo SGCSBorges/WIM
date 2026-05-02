@@ -1,6 +1,12 @@
 import React, { Component, ErrorInfo, useEffect, useState } from "react";
 import { getErrorMessage } from "./utils/error";
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import ArticlesList from "./components/articles/ArticlesList";
 import Dashboard from "./components/dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
@@ -15,10 +21,17 @@ import ProfileView from "./components/profile/ProfileView";
 import { useI18n } from "./i18n/i18n";
 import LanguageThemeSelector from "./components/common/LanguageThemeSelector";
 
-interface ErrorBoundaryState { error: Error | null }
-export class ErrorBoundary extends Component<{ children: React.ReactNode }, ErrorBoundaryState> {
+interface ErrorBoundaryState {
+  error: Error | null;
+}
+export class ErrorBoundary extends Component<
+  { children: React.ReactNode },
+  ErrorBoundaryState
+> {
   state: ErrorBoundaryState = { error: null };
-  static getDerivedStateFromError(error: Error) { return { error }; }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[ErrorBoundary]", error, info.componentStack);
   }
@@ -27,11 +40,18 @@ export class ErrorBoundary extends Component<{ children: React.ReactNode }, Erro
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="max-w-md w-full p-8 border ui-alert-error rounded-lg text-center">
-            <h1 className="text-xl font-bold text-red-800 mb-2">Something went wrong</h1>
-            <p className="text-sm text-red-600 mb-4">{this.state.error.message}</p>
+            <h1 className="text-xl font-bold text-red-800 mb-2">
+              Something went wrong
+            </h1>
+            <p className="text-sm text-red-600 mb-4">
+              {this.state.error.message}
+            </p>
             <button
               className="px-4 py-2 ui-btn-danger rounded"
-              onClick={() => { this.setState({ error: null }); window.location.reload(); }}
+              onClick={() => {
+                this.setState({ error: null });
+                window.location.reload();
+              }}
             >
               Reload
             </button>
@@ -49,7 +69,9 @@ export default function App() {
   const location = useLocation();
 
   // 'loading' while we verify the session cookie with /auth/me on mount
-  const [authStatus, setAuthStatus] = useState<"loading" | "authed" | "unauthed">("loading");
+  const [authStatus, setAuthStatus] = useState<
+    "loading" | "authed" | "unauthed"
+  >("loading");
   const [role, setRole] = useState<string | null>(null);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
@@ -57,14 +79,18 @@ export default function App() {
     const url = new URL(window.location.href);
     const stripeResult = url.searchParams.get("stripe");
 
-    authAPI.getMe()
+    authAPI
+      .getMe()
       .then((user) => {
         setRole(user.role);
         setAuthStatus("authed");
 
         if (stripeResult === "success") {
-          billingAPI.refreshRoleFromServer()
-            .then((newRole) => { if (newRole) setRole(newRole); })
+          billingAPI
+            .refreshRoleFromServer()
+            .then((newRole) => {
+              if (newRole) setRole(newRole);
+            })
             .catch(() => {})
             .finally(() => {
               url.searchParams.delete("stripe");
@@ -83,7 +109,10 @@ export default function App() {
   const handleLogin = () => {
     // Role was cached in _cachedRole by authAPI.login/register; read it back
     // then re-verify with server to get the authoritative value
-    profileAPI.getMe().then((user) => setRole(user.role)).catch(() => {});
+    profileAPI
+      .getMe()
+      .then((user) => setRole(user.role))
+      .catch(() => {});
     setAuthStatus("authed");
     navigate("/");
   };
@@ -316,11 +345,7 @@ export default function App() {
           <Route
             path="/admin"
             element={
-              role === "ADMIN" ? (
-                <AdminUsers />
-              ) : (
-                <Navigate to="/" replace />
-              )
+              role === "ADMIN" ? <AdminUsers /> : <Navigate to="/" replace />
             }
           />
           <Route path="*" element={<Navigate to="/" replace />} />

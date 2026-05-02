@@ -15,16 +15,22 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const [invites, setInvites] = useState<ShareInviteItem[]>([]);
   const [activeTab, setActiveTab] = useState<"shares" | "invites">("shares");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [confirmRevokeId, setConfirmRevokeId] = useState<number | null>(null);
-  const [confirmRevokeInviteId, setConfirmRevokeInviteId] = useState<number | null>(null);
+  const [confirmRevokeInviteId, setConfirmRevokeInviteId] = useState<
+    number | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Inline invite form
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [invitePermission, setInvitePermission] = useState<"READ" | "WRITE">("READ");
+  const [invitePermission, setInvitePermission] = useState<"READ" | "WRITE">(
+    "READ"
+  );
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
@@ -49,7 +55,9 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchShares(), fetchInvites()]).finally(() => setLoading(false));
+    Promise.all([fetchShares(), fetchInvites()]).finally(() =>
+      setLoading(false)
+    );
   }, [fetchShares, fetchInvites]);
 
   const handleRevokeShare = async (shareId: number) => {
@@ -80,13 +88,19 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const handleSendInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setInviteError(null);
-    if (!inviteEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)) {
+    if (
+      !inviteEmail.trim() ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)
+    ) {
       setInviteError(t("shareForm.error.emailInvalid"));
       return;
     }
     setInviteBusy(true);
     try {
-      const inv = await sharesAPI.createInvite({ email: inviteEmail.trim(), permission: invitePermission });
+      const inv = await sharesAPI.createInvite({
+        email: inviteEmail.trim(),
+        permission: invitePermission,
+      });
       setInvites((prev) => [inv, ...prev]);
       setInviteEmail("");
       setInvitePermission("READ");
@@ -104,17 +118,24 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PENDING":  return "ui-badge-warning";
-      case "ACCEPTED": return "ui-badge-success";
-      case "REVOKED":  return "ui-badge-danger";
-      default:         return "ui-badge";
+      case "PENDING":
+        return "ui-badge-warning";
+      case "ACCEPTED":
+        return "ui-badge-success";
+      case "REVOKED":
+        return "ui-badge-danger";
+      default:
+        return "ui-badge";
     }
   };
 
-  const isInviteExpired = (expiresAt: string) => new Date(expiresAt) < new Date();
+  const isInviteExpired = (expiresAt: string) =>
+    new Date(expiresAt) < new Date();
 
   const filteredShares = shares.filter((share) => {
-    const matchesSearch = share.target.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = share.target.email
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesFilter =
       filterStatus === "all" ||
       (filterStatus === "active" && share.active) ||
@@ -123,7 +144,9 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   });
 
   const filteredInvites = invites.filter((invite) => {
-    const matchesSearch = invite.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = invite.email
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesFilter =
       filterStatus === "all" ||
       (filterStatus === "active" && invite.status === "PENDING") ||
@@ -154,11 +177,12 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
       </div>
 
       {showInviteForm && (
-        <form onSubmit={handleSendInvite} className="ui-card rounded-lg p-4 space-y-3">
+        <form
+          onSubmit={handleSendInvite}
+          className="ui-card rounded-lg p-4 space-y-3"
+        >
           <h3 className="font-semibold ui-title">{t("shareForm.title")}</h3>
-          {inviteError && (
-            <p className="text-sm text-red-600">{inviteError}</p>
-          )}
+          {inviteError && <p className="text-sm text-red-600">{inviteError}</p>}
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
@@ -172,9 +196,9 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             <select
               value={invitePermission}
               onChange={(e) => {
-              const val = e.target.value;
-              if (val === "READ" || val === "WRITE") setInvitePermission(val);
-            }}
+                const val = e.target.value;
+                if (val === "READ" || val === "WRITE") setInvitePermission(val);
+              }}
               className="ui-select px-3 py-2 rounded"
               disabled={inviteBusy}
             >
@@ -219,7 +243,8 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                 : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
-            {t("shares.tab.pending")} ({invites.filter((i) => i.status === "PENDING").length})
+            {t("shares.tab.pending")} (
+            {invites.filter((i) => i.status === "PENDING").length})
           </button>
         </nav>
       </div>
@@ -235,7 +260,9 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
         />
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+          onChange={(e) =>
+            setFilterStatus(e.target.value as typeof filterStatus)
+          }
           className="ui-select px-3 py-2 rounded-md"
         >
           <option value="all">{t("shares.filter.all")}</option>
@@ -250,33 +277,57 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
           {filteredShares.length === 0 ? (
             <div className="text-center py-12">
               <div className="ui-text-muted mb-4">
-                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                <svg
+                  className="mx-auto h-12 w-12"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium mb-2">{t("shares.none.activeTitle")}</h3>
+              <h3 className="text-lg font-medium mb-2">
+                {t("shares.none.activeTitle")}
+              </h3>
               <p className="ui-text-muted">
-                {searchTerm || filterStatus !== "all" ? t("shares.none.filtered") : t("shares.none.activeEmpty")}
+                {searchTerm || filterStatus !== "all"
+                  ? t("shares.none.filtered")
+                  : t("shares.none.activeEmpty")}
               </p>
             </div>
           ) : (
             filteredShares.map((share) => (
-              <div key={share.inventoryShareId} className="ui-card rounded-lg p-6">
+              <div
+                key={share.inventoryShareId}
+                className="ui-card rounded-lg p-6"
+              >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold">{share.target.email}</h3>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPermissionColor(share.permission)}`}>
+                      <h3 className="text-lg font-semibold">
+                        {share.target.email}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${getPermissionColor(share.permission)}`}
+                      >
                         {share.permission}
                       </span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${share.active ? "ui-badge-success" : "ui-badge-danger"}`}>
-                        {share.active ? t("shares.status.active") : t("shares.status.inactive")}
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${share.active ? "ui-badge-success" : "ui-badge-danger"}`}
+                      >
+                        {share.active
+                          ? t("shares.status.active")
+                          : t("shares.status.inactive")}
                       </span>
                     </div>
                     <p className="text-sm ui-text-muted">
-                      {t("shares.label.sharedOn")} {format(parseISO(share.createdAt), "dd MMM yyyy")}
+                      {t("shares.label.sharedOn")}{" "}
+                      {format(parseISO(share.createdAt), "dd MMM yyyy")}
                     </p>
                   </div>
                   <div className="flex space-x-2 items-center">
@@ -288,22 +339,37 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                         {t("shares.action.edit")}
                       </button>
                     )}
-                    {share.active && (
-                      confirmRevokeId === share.inventoryShareId ? (
+                    {share.active &&
+                      (confirmRevokeId === share.inventoryShareId ? (
                         <>
-                          <span className="text-xs text-red-700">{t("shares.confirmRevoke")}</span>
-                          <button onClick={() => handleRevokeShare(share.inventoryShareId)} className="px-2 py-1 text-xs ui-btn-danger rounded">{t("common.yes")}</button>
-                          <button onClick={() => setConfirmRevokeId(null)} className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded">{t("common.no")}</button>
+                          <span className="text-xs text-red-700">
+                            {t("shares.confirmRevoke")}
+                          </span>
+                          <button
+                            onClick={() =>
+                              handleRevokeShare(share.inventoryShareId)
+                            }
+                            className="px-2 py-1 text-xs ui-btn-danger rounded"
+                          >
+                            {t("common.yes")}
+                          </button>
+                          <button
+                            onClick={() => setConfirmRevokeId(null)}
+                            className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded"
+                          >
+                            {t("common.no")}
+                          </button>
                         </>
                       ) : (
                         <button
-                          onClick={() => setConfirmRevokeId(share.inventoryShareId)}
+                          onClick={() =>
+                            setConfirmRevokeId(share.inventoryShareId)
+                          }
                           className="px-3 py-1 text-sm ui-action-danger rounded"
                         >
                           {t("shares.action.revoke")}
                         </button>
-                      )
-                    )}
+                      ))}
                   </div>
                 </div>
               </div>
@@ -315,39 +381,72 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
           {filteredInvites.length === 0 ? (
             <div className="text-center py-12">
               <div className="ui-text-muted mb-4">
-                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                <svg
+                  className="mx-auto h-12 w-12"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
                     d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium mb-2">{t("shares.none.pendingTitle")}</h3>
+              <h3 className="text-lg font-medium mb-2">
+                {t("shares.none.pendingTitle")}
+              </h3>
               <p className="ui-text-muted">
-                {searchTerm || filterStatus !== "all" ? t("shares.none.filtered") : t("shares.none.pendingEmpty")}
+                {searchTerm || filterStatus !== "all"
+                  ? t("shares.none.filtered")
+                  : t("shares.none.pendingEmpty")}
               </p>
             </div>
           ) : (
             filteredInvites.map((invite) => {
               const isExpired = isInviteExpired(invite.expiresAt);
-              const finalStatus = isExpired && invite.status === "PENDING" ? "EXPIRED" : invite.status;
+              const finalStatus =
+                isExpired && invite.status === "PENDING"
+                  ? "EXPIRED"
+                  : invite.status;
               return (
-                <div key={invite.shareInviteId} className="ui-card rounded-lg p-6">
+                <div
+                  key={invite.shareInviteId}
+                  className="ui-card rounded-lg p-6"
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold">{invite.email}</h3>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPermissionColor(invite.permission)}`}>
+                        <h3 className="text-lg font-semibold">
+                          {invite.email}
+                        </h3>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getPermissionColor(invite.permission)}`}
+                        >
                           {invite.permission}
                         </span>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(finalStatus)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(finalStatus)}`}
+                        >
                           {finalStatus}
                         </span>
                       </div>
                       <div className="text-sm ui-text-muted space-y-1">
-                        <p>{t("shares.label.sentOn")} {format(parseISO(invite.createdAt), "dd MMM yyyy")}</p>
-                        <p>{t("shares.label.expiresOn")} {format(parseISO(invite.expiresAt), "dd MMM yyyy")}</p>
+                        <p>
+                          {t("shares.label.sentOn")}{" "}
+                          {format(parseISO(invite.createdAt), "dd MMM yyyy")}
+                        </p>
+                        <p>
+                          {t("shares.label.expiresOn")}{" "}
+                          {format(parseISO(invite.expiresAt), "dd MMM yyyy")}
+                        </p>
                         {invite.usedAt && (
-                          <p>{t("shares.label.acceptedOn")} {format(parseISO(invite.usedAt), "dd MMM yyyy")}</p>
+                          <p>
+                            {t("shares.label.acceptedOn")}{" "}
+                            {format(parseISO(invite.usedAt), "dd MMM yyyy")}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -355,13 +454,29 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       <div className="flex items-center space-x-2">
                         {confirmRevokeInviteId === invite.shareInviteId ? (
                           <>
-                            <span className="text-xs text-red-700">{t("shares.confirmRevoke")}</span>
-                            <button onClick={() => handleRevokeInvite(invite.shareInviteId)} className="px-2 py-1 text-xs ui-btn-danger rounded">{t("common.yes")}</button>
-                            <button onClick={() => setConfirmRevokeInviteId(null)} className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded">{t("common.no")}</button>
+                            <span className="text-xs text-red-700">
+                              {t("shares.confirmRevoke")}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleRevokeInvite(invite.shareInviteId)
+                              }
+                              className="px-2 py-1 text-xs ui-btn-danger rounded"
+                            >
+                              {t("common.yes")}
+                            </button>
+                            <button
+                              onClick={() => setConfirmRevokeInviteId(null)}
+                              className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded"
+                            >
+                              {t("common.no")}
+                            </button>
                           </>
                         ) : (
                           <button
-                            onClick={() => setConfirmRevokeInviteId(invite.shareInviteId)}
+                            onClick={() =>
+                              setConfirmRevokeInviteId(invite.shareInviteId)
+                            }
                             className="px-3 py-1 text-sm ui-action-danger rounded"
                           >
                             {t("shares.action.revoke")}

@@ -12,11 +12,20 @@ export const InventoryShareUpdateSchema = z.object({
 });
 
 export const ShareInviteCreateSchema = z.object({
-  email: z.string().email().max(255).transform(s => s.toLowerCase()),
+  email: z
+    .string()
+    .email()
+    .max(255)
+    .transform((s) => s.toLowerCase()),
   permission: z.enum(["READ", "WRITE"]).default("READ"),
-  expiresAt: z.coerce.date()
-    .refine(d => d > new Date(), { message: "expiresAt must be in the future" })
-    .refine(d => d < new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), { message: "expiresAt must be within 1 year" }),
+  expiresAt: z.coerce
+    .date()
+    .refine((d) => d > new Date(), {
+      message: "expiresAt must be in the future",
+    })
+    .refine((d) => d < new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), {
+      message: "expiresAt must be within 1 year",
+    }),
   ownerUserId: z.number().int().positive(),
 });
 

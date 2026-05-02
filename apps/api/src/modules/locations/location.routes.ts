@@ -95,7 +95,12 @@ router.get(
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     const { page, limit } = paginationQuery.parse(req.query);
-    const articles = await LocationService.listArticles(id, req.user!.sub, page, limit);
+    const articles = await LocationService.listArticles(
+      id,
+      req.user!.sub,
+      page,
+      limit
+    );
     res.json(articles);
   })
 );

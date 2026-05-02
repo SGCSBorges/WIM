@@ -23,7 +23,7 @@ async function getOrCreateStripeCustomer(
   stripe: Stripe,
   userId: number,
   email: string,
-  stripeCustomerId: string | null,
+  stripeCustomerId: string | null
 ): Promise<string> {
   if (stripeCustomerId) return stripeCustomerId;
   const customer = await stripe.customers.create({
@@ -38,11 +38,12 @@ async function getOrCreateStripeCustomer(
 }
 
 function getAppUrl(): string {
-  const raw =
-    process.env.APP_URL ||
-    process.env.RENDER_EXTERNAL_URL;
+  const raw = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL;
   if (!raw) {
-    throw createHttpError(500, "APP_URL is not configured. Set APP_URL to your frontend origin.");
+    throw createHttpError(
+      500,
+      "APP_URL is not configured. Set APP_URL to your frontend origin."
+    );
   }
   return String(raw).replace(/\/$/, "");
 }
@@ -62,14 +63,14 @@ router.post(
     if (!priceId) {
       throw createHttpError(
         500,
-        "Missing Stripe Price ID for selected plan. Set STRIPE_POWER_USER_PRICE_MONTHLY and STRIPE_POWER_USER_PRICE_YEARLY.",
+        "Missing Stripe Price ID for selected plan. Set STRIPE_POWER_USER_PRICE_MONTHLY and STRIPE_POWER_USER_PRICE_YEARLY."
       );
     }
 
     if (!String(priceId).startsWith("price_")) {
       throw createHttpError(
         500,
-        "Stripe price IDs must start with price_. You currently have amounts instead of Stripe Price IDs.",
+        "Stripe price IDs must start with price_. You currently have amounts instead of Stripe Price IDs."
       );
     }
 
@@ -83,7 +84,10 @@ router.post(
     if (!user) throw createHttpError(404, "User not found");
 
     const stripeCustomerId = await getOrCreateStripeCustomer(
-      stripe, user.userId, user.email, user.stripeCustomerId,
+      stripe,
+      user.userId,
+      user.email,
+      user.stripeCustomerId
     );
 
     const session = await stripe.checkout.sessions.create({
@@ -107,7 +111,8 @@ router.post(
       metadata: { plan, sessionId: session.id },
     });
 
-    if (!session.url) throw createHttpError(500, "Stripe did not return a checkout URL");
+    if (!session.url)
+      throw createHttpError(500, "Stripe did not return a checkout URL");
     return res.json({ url: session.url });
   })
 );
@@ -129,7 +134,8 @@ router.post(
     }
 
     if (!user.stripeSubscriptionId) {
-      throw createHttpError(400,
+      throw createHttpError(
+        400,
         "No Stripe subscription found. If you upgraded recently, try again after the webhook processes your payment."
       );
     }
@@ -173,7 +179,10 @@ router.post(
     if (!user) throw createHttpError(404, "User not found");
 
     const customerId = await getOrCreateStripeCustomer(
-      stripe, user.userId, user.email, user.stripeCustomerId,
+      stripe,
+      user.userId,
+      user.email,
+      user.stripeCustomerId
     );
 
     const session = await stripe.billingPortal.sessions.create({
@@ -188,7 +197,8 @@ router.post(
       metadata: { customerId },
     });
 
-    if (!session.url) throw createHttpError(500, "Stripe did not return a portal URL");
+    if (!session.url)
+      throw createHttpError(500, "Stripe did not return a portal URL");
     return res.json({ url: session.url });
   })
 );

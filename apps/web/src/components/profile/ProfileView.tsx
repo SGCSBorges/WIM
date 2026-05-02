@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { profileAPI, billingAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -35,9 +35,12 @@ export default function ProfileView() {
     successTimerRef.current = setTimeout(() => setSuccess(null), 4000);
   }, []);
 
-  useEffect(() => () => {
-    if (successTimerRef.current) clearTimeout(successTimerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    },
+    []
+  );
 
   const loadMe = useCallback(async () => {
     setLoading(true);
@@ -53,13 +56,18 @@ export default function ProfileView() {
     }
   }, [t]);
 
-  useEffect(() => { loadMe(); }, [loadMe]);
+  useEffect(() => {
+    loadMe();
+  }, [loadMe]);
 
   const updateEmail = async () => {
     setError(null);
     setSaving(true);
     try {
-      const updated = await profileAPI.updateEmail(email, currentPasswordForEmail);
+      const updated = await profileAPI.updateEmail(
+        email,
+        currentPasswordForEmail
+      );
       setMe(updated);
       setCurrentPasswordForEmail("");
       showSuccess(t("profile.email.success"));
@@ -161,13 +169,19 @@ export default function ProfileView() {
       <div className="ui-card rounded-xl p-6 space-y-2">
         <div className="text-sm ui-text-muted">{t("profile.signedInAs")}</div>
         <div className="font-medium">{me?.email}</div>
-        <div className="text-xs ui-text-muted">{t("profile.role")} {me?.role}</div>
+        <div className="text-xs ui-text-muted">
+          {t("profile.role")} {me?.role}
+        </div>
       </div>
 
       {me?.role === "POWER_USER" && (
         <div className="ui-card rounded-xl p-6 space-y-3">
-          <h2 className="font-semibold ui-title">{t("profile.subscription.title")}</h2>
-          <p className="text-sm ui-text-muted">{t("profile.subscription.subtitle")}</p>
+          <h2 className="font-semibold ui-title">
+            {t("profile.subscription.title")}
+          </h2>
+          <p className="text-sm ui-text-muted">
+            {t("profile.subscription.subtitle")}
+          </p>
           <div className="flex flex-wrap items-center gap-3">
             <button
               className="ui-btn-primary px-4 py-2 rounded"
@@ -187,10 +201,22 @@ export default function ProfileView() {
           </div>
           {showCancelConfirm && (
             <div className="mt-3 p-3 border ui-alert-warning rounded-lg space-y-2">
-              <p className="text-sm text-yellow-800">{t("profile.billing.cancelTooltip")}</p>
+              <p className="text-sm text-yellow-800">
+                {t("profile.billing.cancelTooltip")}
+              </p>
               <div className="flex gap-2">
-                <button className="ui-btn-primary px-3 py-1 text-sm rounded" onClick={confirmCancelAtPeriodEnd}>{t("common.yes")}</button>
-                <button className="ui-btn-ghost px-3 py-1 text-sm rounded border ui-divider" onClick={() => setShowCancelConfirm(false)}>{t("common.no")}</button>
+                <button
+                  className="ui-btn-primary px-3 py-1 text-sm rounded"
+                  onClick={confirmCancelAtPeriodEnd}
+                >
+                  {t("common.yes")}
+                </button>
+                <button
+                  className="ui-btn-ghost px-3 py-1 text-sm rounded border ui-divider"
+                  onClick={() => setShowCancelConfirm(false)}
+                >
+                  {t("common.no")}
+                </button>
               </div>
             </div>
           )}
@@ -201,38 +227,94 @@ export default function ProfileView() {
         <h2 className="font-semibold ui-title">{t("profile.email.title")}</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium mb-1">{t("profile.email.new")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
+            <label className="block text-sm font-medium mb-1">
+              {t("profile.email.new")}
+            </label>
+            <input
+              className="w-full ui-input px-3 py-2 rounded"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              required
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{t("profile.email.currentPassword")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={currentPasswordForEmail} onChange={(e) => setCurrentPasswordForEmail(e.target.value)} type="password" required />
+            <label className="block text-sm font-medium mb-1">
+              {t("profile.email.currentPassword")}
+            </label>
+            <input
+              className="w-full ui-input px-3 py-2 rounded"
+              value={currentPasswordForEmail}
+              onChange={(e) => setCurrentPasswordForEmail(e.target.value)}
+              type="password"
+              required
+            />
           </div>
         </div>
-        <button className="ui-btn-primary px-4 py-2 rounded" onClick={updateEmail} disabled={saving || !email || !currentPasswordForEmail}>{saving ? t("common.loading") : t("profile.email.save")}</button>
+        <button
+          className="ui-btn-primary px-4 py-2 rounded"
+          onClick={updateEmail}
+          disabled={saving || !email || !currentPasswordForEmail}
+        >
+          {saving ? t("common.loading") : t("profile.email.save")}
+        </button>
       </div>
 
       <div className="ui-card rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold ui-title">{t("profile.password.title")}</h2>
+        <h2 className="font-semibold ui-title">
+          {t("profile.password.title")}
+        </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium mb-1">{t("profile.password.current")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" required />
+            <label className="block text-sm font-medium mb-1">
+              {t("profile.password.current")}
+            </label>
+            <input
+              className="w-full ui-input px-3 py-2 rounded"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              type="password"
+              required
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{t("profile.password.new")}</label>
-            <input className="w-full ui-input px-3 py-2 rounded" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" minLength={8} required />
+            <label className="block text-sm font-medium mb-1">
+              {t("profile.password.new")}
+            </label>
+            <input
+              className="w-full ui-input px-3 py-2 rounded"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              type="password"
+              minLength={8}
+              required
+            />
           </div>
         </div>
-        <button className="ui-btn-primary px-4 py-2 rounded" onClick={updatePassword} disabled={saving || !currentPassword || !newPassword}>{saving ? t("common.loading") : t("profile.password.save")}</button>
+        <button
+          className="ui-btn-primary px-4 py-2 rounded"
+          onClick={updatePassword}
+          disabled={saving || !currentPassword || !newPassword}
+        >
+          {saving ? t("common.loading") : t("profile.password.save")}
+        </button>
       </div>
 
       <div className="ui-card rounded-xl p-6 space-y-3 border border-red-200">
-        <h2 className="font-semibold text-red-600">{t("profile.danger.title")}</h2>
+        <h2 className="font-semibold text-red-600">
+          {t("profile.danger.title")}
+        </h2>
         <p className="text-sm ui-text-muted">{t("profile.danger.subtitle")}</p>
         <div className="max-w-sm">
-          <label className="block text-sm font-medium mb-1">{t("profile.danger.currentPassword")}</label>
-          <input className="w-full ui-input px-3 py-2 rounded" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} type="password" />
+          <label className="block text-sm font-medium mb-1">
+            {t("profile.danger.currentPassword")}
+          </label>
+          <input
+            className="w-full ui-input px-3 py-2 rounded"
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+            type="password"
+          />
         </div>
         {!showDeleteConfirm ? (
           <button
@@ -243,10 +325,23 @@ export default function ProfileView() {
           </button>
         ) : (
           <div className="p-3 border ui-alert-error rounded-lg space-y-2">
-            <p className="text-sm text-red-800">{t("profile.danger.confirm")}</p>
+            <p className="text-sm text-red-800">
+              {t("profile.danger.confirm")}
+            </p>
             <div className="flex gap-2">
-              <button className="px-3 py-1 text-sm rounded ui-btn-danger" onClick={deleteAccount} disabled={deleting}>{deleting ? t("common.loading") : t("common.yes")}</button>
-              <button className="ui-btn-ghost px-3 py-1 text-sm rounded border ui-divider" onClick={() => setShowDeleteConfirm(false)}>{t("common.no")}</button>
+              <button
+                className="px-3 py-1 text-sm rounded ui-btn-danger"
+                onClick={deleteAccount}
+                disabled={deleting}
+              >
+                {deleting ? t("common.loading") : t("common.yes")}
+              </button>
+              <button
+                className="ui-btn-ghost px-3 py-1 text-sm rounded border ui-divider"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                {t("common.no")}
+              </button>
             </div>
           </div>
         )}

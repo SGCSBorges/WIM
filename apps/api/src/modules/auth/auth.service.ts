@@ -31,7 +31,8 @@ export const AuthService = {
   async login(data: LoginInput) {
     const user = await prisma.user.findUnique({ where: { email: data.email } });
     // Always run bcrypt to prevent timing-based user enumeration.
-    const DUMMY = "$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
+    const DUMMY =
+      "$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
     const valid = await bcrypt.compare(data.password, user?.password ?? DUMMY);
     if (!user || !valid) throw createHttpError(401, "Invalid credentials");
     const token = jwt.sign(

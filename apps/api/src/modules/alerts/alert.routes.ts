@@ -27,7 +27,14 @@ router.get(
     }
 
     const { page, limit } = paginationQuery.parse(req.query);
-    res.json(await AlertService.list(ownerUserId, q.status as AlerteStatus | undefined, page, limit));
+    res.json(
+      await AlertService.list(
+        ownerUserId,
+        q.status as AlerteStatus | undefined,
+        page,
+        limit
+      )
+    );
   })
 );
 

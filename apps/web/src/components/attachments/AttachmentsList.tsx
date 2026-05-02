@@ -52,7 +52,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     "ALL" | "INVOICE" | "WARRANTY" | "OTHER"
   >("ALL");
   const [sortBy, setSortBy] = useState<"name" | "date" | "type" | "size">(
-    "date",
+    "date"
   );
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -109,7 +109,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     if (onDelete) onDelete(attachmentId);
     try {
       await attachmentsAPI.deleteAttachment(attachmentId);
-      setAttachments(attachments.filter((a) => a.attachmentId !== attachmentId));
+      setAttachments(
+        attachments.filter((a) => a.attachmentId !== attachmentId)
+      );
     } catch (e: unknown) {
       setDeleteError(getErrorMessage(e, t("common.errorOccurred")));
     }
@@ -130,7 +132,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             // API_BASE_URL is an absolute URL in dev or can be relative in prod; URL() needs absolute.
             // Using window.location.origin covers deployed web; for Render API we want its host.
             // Since attachment URLs are API-hosted, we can safely reuse pathname and force https.
-            `https://${u.host}`,
+            `https://${u.host}`
           );
           apiOrigin.pathname = u.pathname;
           href = apiOrigin.toString();
@@ -291,7 +293,10 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       {showAddForm && (
         <AttachmentForm
           onSubmit={handleAdd}
-          onCancel={() => { setShowAddForm(false); setUploadError(null); }}
+          onCancel={() => {
+            setShowAddForm(false);
+            setUploadError(null);
+          }}
           isLoading={uploading}
         />
       )}
@@ -445,7 +450,11 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                         // Navigating directly to /api/attachments/:id would fail because the browser
                         // won't send the Authorization header (Token manquant).
                         if (/^https?:\/\//i.test(attachment.fileUrl)) {
-                          window.open(attachment.fileUrl, "_blank", "noopener,noreferrer");
+                          window.open(
+                            attachment.fileUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
                         }
                       }}
                       className="text-xs ui-btn-ghost px-2 py-1 rounded"
@@ -482,7 +491,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                       </>
                     ) : (
                       <button
-                        onClick={() => setConfirmDeleteId(attachment.attachmentId)}
+                        onClick={() =>
+                          setConfirmDeleteId(attachment.attachmentId)
+                        }
                         className="text-xs ui-action-danger px-2 py-1 rounded"
                       >
                         {t("attachments.action.delete")}

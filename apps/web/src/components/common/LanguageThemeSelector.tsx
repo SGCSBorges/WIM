@@ -1,4 +1,3 @@
-import React from "react";
 import { useI18n } from "../../i18n/i18n";
 import { Language } from "../../i18n/translations";
 import { useTheme, Theme } from "../../theme/theme";

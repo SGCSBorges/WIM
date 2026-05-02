@@ -51,10 +51,14 @@ export const ArticleService = {
 
     if (garantie?.garantieImageAttachmentId) {
       const owned = await prisma.attachment.findFirst({
-        where: { attachmentId: garantie.garantieImageAttachmentId, ownerUserId: articleData.ownerUserId },
+        where: {
+          attachmentId: garantie.garantieImageAttachmentId,
+          ownerUserId: articleData.ownerUserId,
+        },
         select: { attachmentId: true },
       });
-      if (!owned) throw createHttpError(403, "Attachment not found or not owned by you");
+      if (!owned)
+        throw createHttpError(403, "Attachment not found or not owned by you");
     }
 
     return prisma.article.create({
@@ -107,11 +111,15 @@ export const ArticleService = {
       throw createHttpError(400, "Article must have at least one location");
 
     // We need current warranty state to decide create vs update vs delete.
-    type ArticleWithGarantie = Prisma.ArticleGetPayload<{ include: { garantie: true } }>;
-    const existing: ArticleWithGarantie | null = await prisma.article.findFirst({
-      where: { articleId: id, ownerUserId },
-      include: { garantie: true },
-    });
+    type ArticleWithGarantie = Prisma.ArticleGetPayload<{
+      include: { garantie: true };
+    }>;
+    const existing: ArticleWithGarantie | null = await prisma.article.findFirst(
+      {
+        where: { articleId: id, ownerUserId },
+        include: { garantie: true },
+      }
+    );
     if (!existing) throw createHttpError(404, "Article not found");
 
     return prisma.$transaction(async (tx) => {
@@ -125,10 +133,17 @@ export const ArticleService = {
       } else if (garantie) {
         if (garantie.garantieImageAttachmentId) {
           const owned = await tx.attachment.findFirst({
-            where: { attachmentId: garantie.garantieImageAttachmentId, ownerUserId },
+            where: {
+              attachmentId: garantie.garantieImageAttachmentId,
+              ownerUserId,
+            },
             select: { attachmentId: true },
           });
-          if (!owned) throw createHttpError(403, "Attachment not found or not owned by you");
+          if (!owned)
+            throw createHttpError(
+              403,
+              "Attachment not found or not owned by you"
+            );
         }
 
         const shouldRecomputeFin =

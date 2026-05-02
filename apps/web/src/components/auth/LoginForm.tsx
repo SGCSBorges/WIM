@@ -105,12 +105,17 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               aria-invalid={emailError ? "true" : undefined}
             />
             {emailError && (
-              <p id="email-error" className="mt-1 text-xs text-red-600">{emailError}</p>
+              <p id="email-error" className="mt-1 text-xs text-red-600">
+                {emailError}
+              </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium mb-1"
+            >
               {t("auth.password")}
             </label>
             <input
@@ -125,12 +130,17 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               aria-invalid={passwordError ? "true" : undefined}
             />
             {passwordError && (
-              <p id="password-error" className="mt-1 text-xs text-red-600">{passwordError}</p>
+              <p id="password-error" className="mt-1 text-xs text-red-600">
+                {passwordError}
+              </p>
             )}
           </div>
 
           {error && (
-            <div role="alert" className="px-4 py-3 rounded-md text-sm border ui-alert-error text-red-700">
+            <div
+              role="alert"
+              className="px-4 py-3 rounded-md text-sm border ui-alert-error text-red-700"
+            >
               {error}
             </div>
           )}
