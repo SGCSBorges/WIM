@@ -74,6 +74,13 @@ export const ProfileService = {
     // Note: Many relations are configured with onDelete: Cascade, but explicit deletions
     // make the behavior predictable and work even if some cascades are missing in DB.
     await prisma.$transaction(async (tx: TxClient) => {
+      // Prevent deleting the last admin account.
+      if (user.role === "ADMIN") {
+        const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+        if (adminCount <= 1)
+          throw createHttpError(400, "Cannot delete the last admin account");
+      }
+
       // 1) Alerts must go before warranties/articles because they reference them.
       await tx.alerte.deleteMany({ where: { ownerUserId: userId } });
 

@@ -126,6 +126,17 @@ describe("ProfileService.updatePassword", () => {
 // deleteAccount
 // ---------------------------------------------------------------------------
 
+const makeTx = (overrides: Record<string, unknown> = {}) => ({
+  alerte: { deleteMany: vi.fn().mockResolvedValue({}) },
+  inventoryShare: { deleteMany: vi.fn().mockResolvedValue({}) },
+  shareInvite: { deleteMany: vi.fn().mockResolvedValue({}) },
+  auditLog: { deleteMany: vi.fn().mockResolvedValue({}) },
+  attachment: { deleteMany: vi.fn().mockResolvedValue({}) },
+  garantie: { deleteMany: vi.fn().mockResolvedValue({}) },
+  article: { deleteMany: vi.fn().mockResolvedValue({}) },
+  user: { delete: vi.fn().mockResolvedValue({}), count: vi.fn().mockResolvedValue(2), ...((overrides.user as object) ?? {}) },
+});
+
 describe("ProfileService.deleteAccount", () => {
   it("rejects with 401 when current password is wrong", async () => {
     const hash = await bcryptRef.realHash!("correct-pw", 1);
@@ -139,27 +150,47 @@ describe("ProfileService.deleteAccount", () => {
     const hash = await bcryptRef.realHash!("correct-pw", 1);
     mockPrisma.user.findUnique.mockResolvedValue({
       userId: 3,
+      role: "USER",
       password: hash,
       stripeSubscriptionId: null,
     });
-
-    // Execute the transaction callback immediately with a fake tx client.
-    mockPrisma.$transaction.mockImplementation(async (cb: Function) => {
-      const tx = {
-        alerte: { deleteMany: vi.fn().mockResolvedValue({}) },
-        inventoryShare: { deleteMany: vi.fn().mockResolvedValue({}) },
-        shareInvite: { deleteMany: vi.fn().mockResolvedValue({}) },
-        auditLog: { deleteMany: vi.fn().mockResolvedValue({}) },
-        attachment: { deleteMany: vi.fn().mockResolvedValue({}) },
-        garantie: { deleteMany: vi.fn().mockResolvedValue({}) },
-        article: { deleteMany: vi.fn().mockResolvedValue({}) },
-        user: { delete: vi.fn().mockResolvedValue({}) },
-      };
-      return cb(tx);
-    });
+    mockPrisma.$transaction.mockImplementation(async (cb: Function) => cb(makeTx()));
 
     const result = await ProfileService.deleteAccount(3, "correct-pw");
     expect(result).toEqual({ ok: true });
     expect(mockPrisma.$transaction).toHaveBeenCalled();
+  });
+
+  it("prevents an admin from deleting their account when they are the last admin", async () => {
+    const hash = await bcryptRef.realHash!("correct-pw", 1);
+    mockPrisma.user.findUnique.mockResolvedValue({
+      userId: 4,
+      role: "ADMIN",
+      password: hash,
+      stripeSubscriptionId: null,
+    });
+    mockPrisma.$transaction.mockImplementation(async (cb: Function) =>
+      cb(makeTx({ user: { delete: vi.fn(), count: vi.fn().mockResolvedValue(1) } }))
+    );
+
+    await expect(ProfileService.deleteAccount(4, "correct-pw")).rejects.toMatchObject({
+      status: 400,
+    });
+  });
+
+  it("allows an admin to delete their account when multiple admins exist", async () => {
+    const hash = await bcryptRef.realHash!("correct-pw", 1);
+    mockPrisma.user.findUnique.mockResolvedValue({
+      userId: 5,
+      role: "ADMIN",
+      password: hash,
+      stripeSubscriptionId: null,
+    });
+    mockPrisma.$transaction.mockImplementation(async (cb: Function) =>
+      cb(makeTx({ user: { delete: vi.fn().mockResolvedValue({}), count: vi.fn().mockResolvedValue(2) } }))
+    );
+
+    const result = await ProfileService.deleteAccount(5, "correct-pw");
+    expect(result).toEqual({ ok: true });
   });
 });
