@@ -4,6 +4,10 @@ on:
     branches: [main, dev]
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,8 +45,24 @@ jobs:
         run: npm run build
 
       - name: Upload web dist artifact
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
         uses: actions/upload-artifact@v4
         with:
           name: web-dist
           path: apps/web/dist
+
+      - name: npm audit (high+, advisory only)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
