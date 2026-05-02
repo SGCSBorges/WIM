@@ -2,11 +2,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../../libs/prisma", () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn(),
+    },
     shareInvite: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     inventoryShare: {
       create: vi.fn(),
@@ -22,6 +26,7 @@ import { ShareService } from "../../modules/shares/share.service";
 import { InviteStatus } from "@prisma/client";
 
 const mockPrisma = prisma as unknown as {
+  user: Record<string, ReturnType<typeof vi.fn>>;
   shareInvite: Record<string, ReturnType<typeof vi.fn>>;
   inventoryShare: Record<string, ReturnType<typeof vi.fn>>;
   $transaction: ReturnType<typeof vi.fn>;
@@ -66,7 +71,22 @@ describe("ShareService.acceptInvite", () => {
     );
   });
 
-  it("runs create+update inside a transaction for valid pending invite", async () => {
+  it("rejects with 400 when acceptor is the invite owner (self-accept)", async () => {
+    mockPrisma.shareInvite.findUnique.mockResolvedValue({
+      token: "t",
+      status: InviteStatus.PENDING,
+      expiresAt: new Date(Date.now() + 100_000),
+      ownerUserId: 1,
+      permission: "READ",
+    });
+    await expect(ShareService.acceptInvite("t", 1)).rejects.toMatchObject({
+      status: 400,
+      message: "You cannot accept your own invite",
+    });
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("runs updateMany+create inside a transaction for valid pending invite", async () => {
     const invite = {
       token: "t",
       status: InviteStatus.PENDING,
@@ -79,7 +99,7 @@ describe("ShareService.acceptInvite", () => {
     const txFn = vi.fn().mockImplementation(async (cb: Function) => {
       const tx = {
         inventoryShare: { create: vi.fn().mockResolvedValue({}) },
-        shareInvite: { update: vi.fn().mockResolvedValue({}) },
+        shareInvite: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       };
       return cb(tx);
     });
@@ -92,6 +112,30 @@ describe("ShareService.acceptInvite", () => {
       ownerUserId: 1,
       targetUserId: 2,
       permission: "READ",
+    });
+  });
+
+  it("rejects with 400 when a concurrent request already claimed the invite", async () => {
+    const invite = {
+      token: "t",
+      status: InviteStatus.PENDING,
+      expiresAt: new Date(Date.now() + 100_000),
+      ownerUserId: 1,
+      permission: "READ" as const,
+    };
+    mockPrisma.shareInvite.findUnique.mockResolvedValue(invite);
+
+    mockPrisma.$transaction.mockImplementation(async (cb: Function) => {
+      const tx = {
+        inventoryShare: { create: vi.fn() },
+        shareInvite: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
+      };
+      return cb(tx);
+    });
+
+    await expect(ShareService.acceptInvite("t", 2)).rejects.toMatchObject({
+      status: 400,
+      message: "Invite was already used or expired",
     });
   });
 });

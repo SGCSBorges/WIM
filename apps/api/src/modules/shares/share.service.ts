@@ -9,6 +9,14 @@ import {
 
 export const ShareService = {
   async createInvite(data: ShareInviteCreateInput) {
+    // Prevent self-invite: load the owner's email and reject if it matches.
+    const owner = await prisma.user.findUnique({
+      where: { userId: data.ownerUserId },
+      select: { email: true },
+    });
+    if (owner?.email === data.email)
+      throw createHttpError(400, "You cannot invite yourself");
+
     const existing = await prisma.shareInvite.findFirst({
       where: { ownerUserId: data.ownerUserId, email: data.email, status: "PENDING" },
     });
@@ -49,20 +57,23 @@ export const ShareService = {
       throw createHttpError(410, "Invite has expired");
     }
 
+    if (invite.ownerUserId === acceptorUserId)
+      throw createHttpError(400, "You cannot accept your own invite");
+
     return prisma.$transaction(async (tx) => {
+      // Atomically claim the invite: only one concurrent request wins.
+      const claimed = await tx.shareInvite.updateMany({
+        where: { token, status: InviteStatus.PENDING },
+        data: { status: InviteStatus.ACCEPTED, usedAt: new Date() },
+      });
+      if (claimed.count === 0)
+        throw createHttpError(400, "Invite was already used or expired");
+
       await tx.inventoryShare.create({
         data: {
           ownerUserId: invite.ownerUserId,
           targetUserId: acceptorUserId,
           permission: invite.permission,
-        },
-      });
-
-      await tx.shareInvite.update({
-        where: { token },
-        data: {
-          status: InviteStatus.ACCEPTED,
-          usedAt: new Date(),
         },
       });
 
