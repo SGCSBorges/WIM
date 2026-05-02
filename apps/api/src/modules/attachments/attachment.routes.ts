@@ -4,6 +4,7 @@ import multer from "multer";
 import { createHttpError } from "../../utils/http-error";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { AttachmentType } from "@prisma/client";
 import { asyncHandler } from "../common/http";
 import { AttachmentService } from "./attachment.service";
@@ -34,12 +35,10 @@ const upload = multer({
   storage: multer.diskStorage({
     destination: (_req: AuthRequest, _file: Express.Multer.File, cb: (err: Error | null, dest: string) => void) => cb(null, UPLOAD_DIR),
     filename: (_req: AuthRequest, file: Express.Multer.File, cb: (err: Error | null, name: string) => void) => {
-      const safeBase = path
-        .basename(file.originalname)
-        .replace(/[^a-zA-Z0-9._-]/g, "_");
-      const ext = path.extname(safeBase);
-      const base = path.basename(safeBase, ext);
-      cb(null, `${base}-${Date.now()}${ext}`);
+      const ext = path.extname(
+        path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, "_")
+      );
+      cb(null, `${crypto.randomBytes(12).toString("hex")}${ext}`);
     },
   }),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB

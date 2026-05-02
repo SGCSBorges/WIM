@@ -32,6 +32,7 @@ export const AlertService = {
         ownerUserId,
         ...(status ? { status } : {}),
       },
+      take: 500,
       orderBy: { alerteDate: "asc" },
       include: {
         garantie: {

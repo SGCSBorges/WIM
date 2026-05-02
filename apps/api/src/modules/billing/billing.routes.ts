@@ -107,6 +107,7 @@ router.post(
       metadata: { plan, sessionId: session.id },
     });
 
+    if (!session.url) throw createHttpError(500, "Stripe did not return a checkout URL");
     return res.json({ url: session.url });
   })
 );

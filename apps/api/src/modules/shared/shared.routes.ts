@@ -26,6 +26,7 @@ router.get(
         // (Owner can still see/manage sharing from their own list.)
         ownerUserId: { not: viewerUserId },
       },
+      take: 500,
       orderBy: { updatedAt: "desc" },
       include: {
         owner: { select: { userId: true, email: true } },
