@@ -492,8 +492,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                         <a
                           className="ui-action-primary hover:underline"
                           href={
-                            warrantyProofAttachment.fileUrl ||
-                            `${API_BASE_URL}/attachments/${warrantyProofAttachment.attachmentId}`
+                            /^https?:\/\//i.test(warrantyProofAttachment.fileUrl || "")
+                              ? warrantyProofAttachment.fileUrl
+                              : `${API_BASE_URL}/attachments/${warrantyProofAttachment.attachmentId}`
                           }
                           target="_blank"
                           rel="noreferrer"
