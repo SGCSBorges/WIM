@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { warrantiesAPI } from "../../services/api";
@@ -20,7 +20,7 @@ export default function WarrantiesView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -31,11 +31,11 @@ export default function WarrantiesView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchAll();
-  }, []);
+  }, [fetchAll]);
 
   const sorted = useMemo(() => {
     return [...items].sort((a, b) => {

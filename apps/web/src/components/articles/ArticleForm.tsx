@@ -200,7 +200,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

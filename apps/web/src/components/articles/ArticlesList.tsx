@@ -3,7 +3,7 @@
  * Display and manage articles
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
 import { articlesAPI, locationsAPI } from "../../services/api";
@@ -55,7 +55,7 @@ const ArticlesList: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationFilterId, setLocationFilterId] = useState<number | undefined>(undefined);
 
-  const fetchArticles = async () => {
+  const fetchArticles = useCallback(async () => {
     try {
       setLoading(true);
       const data = await articlesAPI.getAll(locationFilterId);
@@ -66,7 +66,7 @@ const ArticlesList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [locationFilterId, t]);
 
   const fetchLocations = async () => {
     try {
@@ -139,7 +139,7 @@ const ArticlesList: React.FC = () => {
 
   useEffect(() => {
     fetchArticles();
-  }, [locationFilterId]);
+  }, [fetchArticles]);
 
   return (
     <div className="space-y-6">

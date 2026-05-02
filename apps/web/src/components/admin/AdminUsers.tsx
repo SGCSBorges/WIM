@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { adminAPI, articlesAPI, authAPI, statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -83,7 +83,7 @@ export default function AdminUsers() {
 
   const role = authAPI.getRole();
 
-  const fetchStatistics = async () => {
+  const fetchStatistics = useCallback(async () => {
     setLoadingStats(true);
     setError(null);
     try {
@@ -94,9 +94,9 @@ export default function AdminUsers() {
     } finally {
       setLoadingStats(false);
     }
-  };
+  }, [t]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoadingUsers(true);
     setError(null);
     try {
@@ -107,7 +107,7 @@ export default function AdminUsers() {
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [t]);
 
   const fetchInventory = async (userId: number) => {
     setLoadingInventory(true);
@@ -159,7 +159,7 @@ export default function AdminUsers() {
   useEffect(() => {
     fetchUsers();
     fetchStatistics();
-  }, []);
+  }, [fetchUsers, fetchStatistics]);
 
   if (role !== "ADMIN") {
     return (

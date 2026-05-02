@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchStatistics();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
