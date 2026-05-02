@@ -244,12 +244,16 @@ export const locationsAPI = {
 
 // Attachments API
 export const attachmentsAPI = {
-  async getAll(options?: { articleId?: number; garantieId?: number }) {
+  async getAll(options?: { articleId?: number; garantieId?: number; page?: number; limit?: number }) {
     const url = new URL(`${API_BASE_URL}/attachments`);
     if (options?.articleId)
       url.searchParams.set("articleId", options.articleId.toString());
     if (options?.garantieId)
       url.searchParams.set("garantieId", options.garantieId.toString());
+    if (options?.page != null)
+      url.searchParams.set("page", String(options.page));
+    if (options?.limit != null)
+      url.searchParams.set("limit", String(options.limit));
 
     const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
@@ -296,9 +300,11 @@ export const attachmentsAPI = {
 
 // Alerts API
 export const alertsAPI = {
-  async getAll(status?: string) {
+  async getAll(status?: string, page?: number, limit?: number) {
     const url = new URL(`${API_BASE_URL}/alerts`);
     if (status) url.searchParams.set("status", status);
+    if (page != null) url.searchParams.set("page", String(page));
+    if (limit != null) url.searchParams.set("limit", String(limit));
 
     const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
