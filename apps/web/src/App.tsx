@@ -111,7 +111,7 @@ export default function App() {
     setUpgradeError(null);
     try {
       const { url } = await billingAPI.createPowerUserCheckoutSession(plan);
-      window.location.href = url;
+      if (/^https?:\/\//i.test(url)) window.location.href = url;
     } catch (e: unknown) {
       setUpgradeError(getErrorMessage(e, t("billing.upgradeStartError")));
     }

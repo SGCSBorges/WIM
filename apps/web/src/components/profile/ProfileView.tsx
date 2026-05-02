@@ -109,7 +109,7 @@ export default function ProfileView() {
     setBillingBusy(true);
     try {
       const { url } = await billingAPI.openPortal();
-      window.location.href = url;
+      if (/^https?:\/\//i.test(url)) window.location.href = url;
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
