@@ -1,4 +1,10 @@
-import React, { Component, ErrorInfo, useEffect, useState } from "react";
+import React, {
+  Component,
+  ErrorInfo,
+  Suspense,
+  useEffect,
+  useState,
+} from "react";
 import { getErrorMessage } from "./utils/error";
 import {
   Routes,
@@ -7,19 +13,33 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import ArticlesList from "./components/articles/ArticlesList";
-import Dashboard from "./components/dashboard/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
 import { authAPI, billingAPI, profileAPI } from "./services/api";
-import AdminUsers from "./components/admin/AdminUsers";
-import WarrantiesView from "./components/warranties/WarrantiesView";
-import AttachmentsList from "./components/attachments/AttachmentsList";
-import SharesList from "./components/sharing/SharesList";
-import SharedArticlesView from "./components/sharing/SharedArticlesView";
-import AlertsView from "./components/alerts/AlertsView";
-import ProfileView from "./components/profile/ProfileView";
 import { useI18n } from "./i18n/i18n";
 import LanguageThemeSelector from "./components/common/LanguageThemeSelector";
+
+// Route-level code splitting: each lazy import becomes its own chunk so the
+// initial JS bundle only ships the login flow + shell. The rest is fetched
+// on first navigation.
+const ArticlesList = React.lazy(
+  () => import("./components/articles/ArticlesList")
+);
+const Dashboard = React.lazy(() => import("./components/dashboard/Dashboard"));
+const AdminUsers = React.lazy(() => import("./components/admin/AdminUsers"));
+const WarrantiesView = React.lazy(
+  () => import("./components/warranties/WarrantiesView")
+);
+const AttachmentsList = React.lazy(
+  () => import("./components/attachments/AttachmentsList")
+);
+const SharesList = React.lazy(() => import("./components/sharing/SharesList"));
+const SharedArticlesView = React.lazy(
+  () => import("./components/sharing/SharedArticlesView")
+);
+const AlertsView = React.lazy(() => import("./components/alerts/AlertsView"));
+const ProfileView = React.lazy(
+  () => import("./components/profile/ProfileView")
+);
 
 interface ErrorBoundaryState {
   error: Error | null;
@@ -220,119 +240,127 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <div>
-                <header className="mb-8">
-                  <h1 className="text-3xl font-bold tracking-tight">
-                    {t("home.welcomeTitle")}
-                  </h1>
-                  <p className="ui-text-muted">{t("home.welcomeSubtitle")}</p>
-                </header>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <div>
+                  <header className="mb-8">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                      {t("home.welcomeTitle")}
+                    </h1>
+                    <p className="ui-text-muted">{t("home.welcomeSubtitle")}</p>
+                  </header>
 
-                {role === "USER" && (
-                  <section className="mb-8">
-                    <div className="ui-card rounded-xl p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div>
-                          <h2 className="font-semibold">
-                            {t("home.upgrade.title")}
-                          </h2>
-                          <p className="text-sm ui-text-muted">
-                            {t("home.upgrade.subtitle")}
-                          </p>
+                  {role === "USER" && (
+                    <section className="mb-8">
+                      <div className="ui-card rounded-xl p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div>
+                            <h2 className="font-semibold">
+                              {t("home.upgrade.title")}
+                            </h2>
+                            <p className="text-sm ui-text-muted">
+                              {t("home.upgrade.subtitle")}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => startUpgrade("monthly")}
+                              className="ui-btn-primary px-4 py-2 text-sm rounded"
+                            >
+                              {t("home.upgrade.buyMonthly")}
+                            </button>
+                            <button
+                              onClick={() => startUpgrade("yearly")}
+                              className="ui-btn-primary px-4 py-2 text-sm rounded"
+                            >
+                              {t("home.upgrade.buyYearly")}
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => startUpgrade("monthly")}
-                            className="ui-btn-primary px-4 py-2 text-sm rounded"
-                          >
-                            {t("home.upgrade.buyMonthly")}
-                          </button>
-                          <button
-                            onClick={() => startUpgrade("yearly")}
-                            className="ui-btn-primary px-4 py-2 text-sm rounded"
-                          >
-                            {t("home.upgrade.buyYearly")}
-                          </button>
-                        </div>
+                        {upgradeError && (
+                          <div className="mt-3 px-3 py-2 rounded-md text-sm border ui-alert-error text-red-700">
+                            {upgradeError}
+                          </div>
+                        )}
                       </div>
-                      {upgradeError && (
-                        <div className="mt-3 px-3 py-2 rounded-md text-sm border ui-alert-error text-red-700">
-                          {upgradeError}
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                )}
-
-                <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <HomeCard
-                    onClick={() => navigate("/articles")}
-                    title={`📦 ${t("home.card.inventory.title")}`}
-                    subtitle={t("home.card.inventory.subtitle")}
-                    cta={t("home.card.inventory.cta")}
-                  />
-                  <HomeCard
-                    onClick={() => navigate("/dashboard")}
-                    title={`📊 ${t("home.card.dashboard.title")}`}
-                    subtitle={t("home.card.dashboard.subtitle")}
-                    cta={t("home.card.dashboard.cta")}
-                  />
-                  <HomeCard
-                    onClick={() => navigate("/warranties")}
-                    title={`🛡️ ${t("home.card.warranties.title")}`}
-                    subtitle={t("home.card.warranties.subtitle")}
-                    cta={t("home.card.warranties.cta")}
-                  />
-                  <HomeCard
-                    onClick={() => navigate("/attachments")}
-                    title={`📎 ${t("home.card.attachments.title")}`}
-                    subtitle={t("home.card.attachments.subtitle")}
-                    cta={t("home.card.attachments.cta")}
-                  />
-                  {role === "POWER_USER" && (
-                    <HomeCard
-                      onClick={() => navigate("/sharing")}
-                      title={`🤝 ${t("home.card.sharing.title")}`}
-                      subtitle={t("home.card.sharing.subtitle")}
-                      cta={t("home.card.sharing.cta")}
-                    />
+                    </section>
                   )}
-                </section>
-              </div>
-            }
-          />
 
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/articles" element={<ArticlesList />} />
-          <Route path="/warranties" element={<WarrantiesView />} />
-          <Route path="/attachments" element={<AttachmentsList />} />
-          <Route path="/alerts" element={<AlertsView />} />
-          <Route path="/profile" element={<ProfileView />} />
-          <Route
-            path="/sharing"
-            element={
-              role === "POWER_USER" ? (
-                <div className="space-y-6">
-                  <SharesList />
-                  <SharedArticlesView />
+                  <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <HomeCard
+                      onClick={() => navigate("/articles")}
+                      title={`📦 ${t("home.card.inventory.title")}`}
+                      subtitle={t("home.card.inventory.subtitle")}
+                      cta={t("home.card.inventory.cta")}
+                    />
+                    <HomeCard
+                      onClick={() => navigate("/dashboard")}
+                      title={`📊 ${t("home.card.dashboard.title")}`}
+                      subtitle={t("home.card.dashboard.subtitle")}
+                      cta={t("home.card.dashboard.cta")}
+                    />
+                    <HomeCard
+                      onClick={() => navigate("/warranties")}
+                      title={`🛡️ ${t("home.card.warranties.title")}`}
+                      subtitle={t("home.card.warranties.subtitle")}
+                      cta={t("home.card.warranties.cta")}
+                    />
+                    <HomeCard
+                      onClick={() => navigate("/attachments")}
+                      title={`📎 ${t("home.card.attachments.title")}`}
+                      subtitle={t("home.card.attachments.subtitle")}
+                      cta={t("home.card.attachments.cta")}
+                    />
+                    {role === "POWER_USER" && (
+                      <HomeCard
+                        onClick={() => navigate("/sharing")}
+                        title={`🤝 ${t("home.card.sharing.title")}`}
+                        subtitle={t("home.card.sharing.subtitle")}
+                        cta={t("home.card.sharing.cta")}
+                      />
+                    )}
+                  </section>
                 </div>
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              role === "ADMIN" ? <AdminUsers /> : <Navigate to="/" replace />
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+              }
+            />
+
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/articles" element={<ArticlesList />} />
+            <Route path="/warranties" element={<WarrantiesView />} />
+            <Route path="/attachments" element={<AttachmentsList />} />
+            <Route path="/alerts" element={<AlertsView />} />
+            <Route path="/profile" element={<ProfileView />} />
+            <Route
+              path="/sharing"
+              element={
+                role === "POWER_USER" ? (
+                  <div className="space-y-6">
+                    <SharesList />
+                    <SharedArticlesView />
+                  </div>
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                role === "ADMIN" ? <AdminUsers /> : <Navigate to="/" replace />
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );

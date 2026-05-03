@@ -253,6 +253,20 @@ model ShareInvite {
   @@index([status])
 }
 
+// Persistent record of every Stripe webhook event we have already
+// processed. The webhook handler tries to insert here first; a unique
+// violation on `eventId` is treated as a duplicate delivery and the rest
+// of the handler is skipped. This survives application restarts, unlike
+// the in-row stripeSubscriptionId no-op guard it complements.
+model ProcessedStripeEvent {
+  eventId     String   @id @db.VarChar(255)
+  type        String   @db.VarChar(100)
+  processedAt DateTime @default(now())
+
+  @@index([type])
+  @@index([processedAt])
+}
+
 model AuditLog {
   id        Int      @id @default(autoincrement())
   userId    Int?

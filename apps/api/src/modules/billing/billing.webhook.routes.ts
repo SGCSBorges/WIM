@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import Stripe from "stripe";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 
@@ -41,6 +42,27 @@ router.post(
       return res
         .status(400)
         .send(`Webhook signature verification failed: ${errMsg}`);
+    }
+
+    // Idempotency: record the event id first; if it's already there, this is
+    // a redelivery and we short-circuit. We do this BEFORE any business logic
+    // so a redelivered checkout.session.completed never re-upgrades the user.
+    try {
+      await prisma.processedStripeEvent.create({
+        data: { eventId: event.id, type: event.type },
+      });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        logger.info(
+          { eventId: event.id, type: event.type },
+          "[stripe-webhook] duplicate delivery — skipping"
+        );
+        return res.status(200).json({ received: true, duplicate: true });
+      }
+      throw err;
     }
 
     try {
