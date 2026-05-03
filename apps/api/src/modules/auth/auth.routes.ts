@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service";
 import { RegisterSchema, LoginSchema } from "./auth.schemas";
 import { authGuard, AuthRequest } from "./auth.middleware";
 import { auditAction } from "../common/audit";
+import { denyToken } from "./token-denylist";
 
 const router = Router();
 
@@ -46,10 +47,20 @@ router.post(
   })
 );
 
-router.post("/logout", (_req, res) => {
-  res.clearCookie("wim_token", COOKIE_OPTS);
-  res.status(204).send();
-});
+router.post(
+  "/logout",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    // Add the just-presented token to the denylist for the rest of its
+    // lifetime so a stolen cookie/Authorization header can't be reused.
+    if (req.user?.jti && req.user.exp) {
+      const ttl = req.user.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) await denyToken(req.user.jti, ttl);
+    }
+    res.clearCookie("wim_token", COOKIE_OPTS);
+    res.status(204).send();
+  })
+);
 
 router.get(
   "/me",

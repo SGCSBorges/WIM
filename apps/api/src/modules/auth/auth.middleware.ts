@@ -1,13 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { isTokenDenied } from "./token-denylist";
 
 // JWT_SECRET is guaranteed present by validateEnv() called at startup.
 
 export interface AuthRequest extends Request {
-  user?: { sub: number; role: string };
+  user?: { sub: number; role: string; jti?: string; exp?: number };
 }
 
-export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
+export async function authGuard(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) {
   // Accept token from httpOnly cookie (browser) or Authorization header (API clients).
   // cookie-parser populates req.cookies; the type is available via @types/cookie-parser.
   const cookieToken: string | undefined = req.cookies?.wim_token;
@@ -22,8 +27,18 @@ export function authGuard(req: AuthRequest, res: Response, next: NextFunction) {
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
       sub: number;
       role: string;
+      jti?: string;
+      exp?: number;
     };
-    req.user = { sub: payload.sub, role: payload.role };
+    if (payload.jti && (await isTokenDenied(payload.jti))) {
+      return res.status(401).json({ error: "Token revoked" });
+    }
+    req.user = {
+      sub: payload.sub,
+      role: payload.role,
+      jti: payload.jti,
+      exp: payload.exp,
+    };
     next();
   } catch {
     res.status(401).json({ error: "Invalid or expired token" });
