@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Response } from "express";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import { security } from "./config/security";
@@ -20,8 +20,10 @@ import sharedRoutes from "./modules/shared/shared.routes";
 import profileRoutes from "./modules/profile/profile.routes";
 import statisticsRoutes from "./routes/statistics.routes";
 import path from "path";
+import fs from "fs";
 import { startWorkersOnce } from "./config/jobs";
 import { prisma } from "./libs/prisma";
+import { authGuard, AuthRequest } from "./modules/auth/auth.middleware";
 
 export function createApp() {
   const app = express();
@@ -60,8 +62,50 @@ export function createApp() {
     }
   });
 
-  // Static hosting for uploaded files (local dev)
-  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+  // Authenticated file download. We do NOT serve `uploads/` with
+  // express.static because filenames leak through Referer headers, browser
+  // history and copy-paste, and we want the DB row's ownership rules to
+  // apply to the bytes too — not just the metadata under /api/attachments.
+  const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+  app.get(
+    "/uploads/:storedName",
+    authGuard,
+    async (req: AuthRequest, res: Response) => {
+      const { storedName } = req.params;
+      // The Multer pipeline produces 24 hex chars + a sanitized extension.
+      // Reject anything that doesn't look like our own filenames so we never
+      // even hit the filesystem with arbitrary input.
+      if (!/^[a-zA-Z0-9._-]+$/.test(storedName)) {
+        return res.status(400).json({ error: "Invalid file name" });
+      }
+      const fullPath = path.resolve(UPLOAD_DIR, storedName);
+      if (!fullPath.startsWith(UPLOAD_DIR + path.sep)) {
+        return res.status(400).json({ error: "Invalid file path" });
+      }
+
+      const attachment = await prisma.attachment.findFirst({
+        where: {
+          ownerUserId: req.user!.sub,
+          fileUrl: { endsWith: `/uploads/${storedName}` },
+        },
+        select: { mimeType: true, fileName: true },
+      });
+      if (!attachment) return res.status(404).json({ error: "Not found" });
+
+      if (!fs.existsSync(fullPath)) {
+        return res.status(404).json({ error: "File missing on disk" });
+      }
+      res.setHeader("Content-Type", attachment.mimeType);
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      // Inline display for images and PDFs (the only allowed types); browsers
+      // can render these safely with the explicit MIME type above.
+      res.setHeader(
+        "Content-Disposition",
+        `inline; filename="${attachment.fileName.replace(/"/g, "")}"`
+      );
+      return res.sendFile(fullPath);
+    }
+  );
 
   // Routes
   app.use("/api/articles", articleRoutes);

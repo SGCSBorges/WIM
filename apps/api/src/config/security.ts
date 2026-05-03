@@ -13,6 +13,19 @@ const allowedOrigins =
 export const security = {
   helmet: helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    // The API serves JSON and (for /uploads/*) image/PDF bytes — never HTML
+    // pages. Lock down everything that would allow scripts or inline content
+    // in case a response is ever rendered in a browser tab directly.
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        "default-src": ["'none'"],
+        "img-src": ["'self'", "data:"],
+        "frame-ancestors": ["'none'"],
+        "base-uri": ["'none'"],
+        "form-action": ["'none'"],
+      },
+    },
   }),
   cors: cors({
     origin: allowedOrigins,

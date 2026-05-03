@@ -63,6 +63,32 @@ export class ErrorBoundary extends Component<
   }
 }
 
+function HomeCard({
+  onClick,
+  title,
+  subtitle,
+  cta,
+}: {
+  onClick: () => void;
+  title: string;
+  subtitle: string;
+  cta: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="ui-card rounded-xl p-4 text-left cursor-pointer transition-colors w-full"
+    >
+      <h2 className="font-semibold text-lg mb-2 ui-title">{title}</h2>
+      <p className="text-sm ui-text-muted mb-3">{subtitle}</p>
+      <span className="ui-btn-primary inline-block px-3 py-1 text-sm rounded">
+        {cta}
+      </span>
+    </button>
+  );
+}
+
 export default function App() {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -243,80 +269,37 @@ export default function App() {
                 )}
 
                 <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <div
-                    className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                  <HomeCard
                     onClick={() => navigate("/articles")}
-                  >
-                    <h2 className="font-semibold text-lg mb-2 ui-title">
-                      📦 {t("home.card.inventory.title")}
-                    </h2>
-                    <p className="text-sm ui-text-muted mb-3">
-                      {t("home.card.inventory.subtitle")}
-                    </p>
-                    <button className="ui-btn-primary px-3 py-1 text-sm rounded">
-                      {t("home.card.inventory.cta")}
-                    </button>
-                  </div>
-                  <div
-                    className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                    title={`📦 ${t("home.card.inventory.title")}`}
+                    subtitle={t("home.card.inventory.subtitle")}
+                    cta={t("home.card.inventory.cta")}
+                  />
+                  <HomeCard
                     onClick={() => navigate("/dashboard")}
-                  >
-                    <h2 className="font-semibold text-lg mb-2 ui-title">
-                      📊 {t("home.card.dashboard.title")}
-                    </h2>
-                    <p className="text-sm ui-text-muted mb-3">
-                      {t("home.card.dashboard.subtitle")}
-                    </p>
-                    <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
-                      {t("home.card.dashboard.cta")}
-                    </button>
-                  </div>
-
-                  <div className="ui-card rounded-xl p-4">
-                    <h2 className="font-semibold text-lg mb-2 ui-title">
-                      🛡️ {t("home.card.warranties.title")}
-                    </h2>
-                    <p className="text-sm ui-text-muted mb-3">
-                      {t("home.card.warranties.subtitle")}
-                    </p>
-                    <button
-                      onClick={() => navigate("/warranties")}
-                      className="ui-btn-primary px-3 py-1 text-sm rounded"
-                    >
-                      {t("home.card.warranties.cta")}
-                    </button>
-                  </div>
-
-                  <div
-                    className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                    title={`📊 ${t("home.card.dashboard.title")}`}
+                    subtitle={t("home.card.dashboard.subtitle")}
+                    cta={t("home.card.dashboard.cta")}
+                  />
+                  <HomeCard
+                    onClick={() => navigate("/warranties")}
+                    title={`🛡️ ${t("home.card.warranties.title")}`}
+                    subtitle={t("home.card.warranties.subtitle")}
+                    cta={t("home.card.warranties.cta")}
+                  />
+                  <HomeCard
                     onClick={() => navigate("/attachments")}
-                  >
-                    <h2 className="font-semibold text-lg mb-2 ui-title">
-                      📎 {t("home.card.attachments.title")}
-                    </h2>
-                    <p className="text-sm ui-text-muted mb-3">
-                      {t("home.card.attachments.subtitle")}
-                    </p>
-                    <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
-                      {t("home.card.attachments.cta")}
-                    </button>
-                  </div>
-
+                    title={`📎 ${t("home.card.attachments.title")}`}
+                    subtitle={t("home.card.attachments.subtitle")}
+                    cta={t("home.card.attachments.cta")}
+                  />
                   {role === "POWER_USER" && (
-                    <div
-                      className="ui-card rounded-xl p-4 cursor-pointer transition-colors"
+                    <HomeCard
                       onClick={() => navigate("/sharing")}
-                    >
-                      <h2 className="font-semibold text-lg mb-2 ui-title">
-                        🤝 {t("home.card.sharing.title")}
-                      </h2>
-                      <p className="text-sm ui-text-muted mb-3">
-                        {t("home.card.sharing.subtitle")}
-                      </p>
-                      <button className="ui-btn-primary px-3 py-1 text-sm rounded transition-colors">
-                        {t("home.card.sharing.cta")}
-                      </button>
-                    </div>
+                      title={`🤝 ${t("home.card.sharing.title")}`}
+                      subtitle={t("home.card.sharing.subtitle")}
+                      cta={t("home.card.sharing.cta")}
+                    />
                   )}
                 </section>
               </div>
