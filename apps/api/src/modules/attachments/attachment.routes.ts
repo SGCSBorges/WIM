@@ -16,6 +16,7 @@ import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { idParam, paginationQuery } from "../common/schemas";
 import { logger } from "../../config/logger";
+import { verifyFileSignature } from "../../utils/file-signature";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
 const router = Router();
@@ -140,6 +141,25 @@ router.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const file = req.file;
     if (!file) throw createHttpError(400, "Missing file");
+
+    // Defense-in-depth: the Multer fileFilter trusts the request's
+    // Content-Type header. Re-verify by reading the first bytes off disk and
+    // matching the declared mime's known signature. Mismatch → unlink + 415.
+    const ok = await verifyFileSignature(file.path, file.mimetype);
+    if (!ok) {
+      try {
+        await fs.promises.unlink(file.path);
+      } catch (fsErr) {
+        logger.warn(
+          { err: fsErr, filePath: file.path },
+          "[attachment] failed to unlink rejected upload"
+        );
+      }
+      throw createHttpError(
+        415,
+        `File contents do not match declared type: ${file.mimetype}`
+      );
+    }
 
     const { type } = z
       .object({ type: AttachmentTypeSchema.optional() })
