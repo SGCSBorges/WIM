@@ -2,6 +2,16 @@
 
 Base URL (Render): `https://wimapi.onrender.com/api`
 
+The full machine-readable spec lives at:
+
+- **Swagger UI**: [`/api/docs`](https://wimapi.onrender.com/api/docs) — interactive,
+  generated from the same Zod schemas the API uses for request validation.
+- **Raw OpenAPI 3.1 JSON**: [`/api/openapi.json`](https://wimapi.onrender.com/api/openapi.json)
+
+The auth, articles, locations, and meta routes are documented today. The
+remaining modules can be added incrementally by extending
+`apps/api/src/openapi/document.ts`.
+
 This file is meant to be copy/paste friendly for quick testing and for onboarding.
 
 ## Authentication

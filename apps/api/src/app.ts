@@ -19,6 +19,7 @@ import alertRoutes from "./modules/alerts/alert.routes";
 import sharedRoutes from "./modules/shared/shared.routes";
 import profileRoutes from "./modules/profile/profile.routes";
 import statisticsRoutes from "./routes/statistics.routes";
+import openapiRoutes from "./openapi/openapi.routes";
 import path from "path";
 import fs from "fs";
 import { startWorkersOnce } from "./config/jobs";
@@ -123,6 +124,9 @@ export function createApp() {
   app.use("/api/shared", sharedRoutes);
   app.use("/api/profile", profileRoutes);
   app.use("/api/statistics", statisticsRoutes);
+  // OpenAPI spec + Swagger UI. Public — the document only describes the API
+  // surface; it does not expose data.
+  app.use("/api", openapiRoutes);
 
   // Error handler must be last
   app.use(errorHandler);
