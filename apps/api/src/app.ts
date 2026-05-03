@@ -63,6 +63,10 @@ export function createApp() {
     }
   });
 
+  // Friendly root — most people who hit https://wimapi.../ in a browser are
+  // looking for the API docs, not a 404.
+  app.get("/", (_req, res) => res.redirect(302, "/api/docs"));
+
   // Authenticated file download. We do NOT serve `uploads/` with
   // express.static because filenames leak through Referer headers, browser
   // history and copy-paste, and we want the DB row's ownership rules to

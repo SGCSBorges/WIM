@@ -33,10 +33,13 @@ const getHeaders = (): Record<string, string> => ({
   "Content-Type": "application/json",
 });
 
+// 45s default — generous enough to ride out a Render free-tier cold start
+// (Postgres + API container can take ~30s to wake) without leaving real
+// hangs unbounded. Override per-call when the endpoint is known to be fast.
 const fetchWithTimeout = async (
   input: RequestInfo | URL,
   init?: RequestInit,
-  timeoutMs: number = 15000
+  timeoutMs: number = 45000
 ): Promise<Response> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);

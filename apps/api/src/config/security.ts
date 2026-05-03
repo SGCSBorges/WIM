@@ -2,7 +2,12 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 
-const rawOrigin = process.env.CORS_ORIGIN?.split(",").map((s) => s.trim());
+// Browsers send the Origin header WITHOUT a trailing slash, so any trailing
+// slash on CORS_ORIGIN values would silently break the match (and thereby
+// reject the auth cookie). Be lenient and strip them.
+const rawOrigin = process.env.CORS_ORIGIN?.split(",")
+  .map((s) => s.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
 const allowedOrigins =
   rawOrigin && rawOrigin.length > 0
     ? rawOrigin
