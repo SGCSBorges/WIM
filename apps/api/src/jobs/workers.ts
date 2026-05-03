@@ -13,9 +13,8 @@ export function startWorkers() {
   const worker = new Worker<WarrantyReminderJobPayload>(
     ALERT_QUEUE_NAME,
     async (job) => {
-      const mod = (await import(
-        "./processors/reminder.processor"
-      )) as typeof import("./processors/reminder.processor");
+      const mod =
+        (await import("./processors/reminder.processor")) as typeof import("./processors/reminder.processor");
       await mod.ReminderProcessor.handle(job);
     },
     { connection: createRedisConnection() }
