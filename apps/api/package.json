@@ -14,6 +14,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:deploy:retry": "ts-node src/scripts/prisma-migrate-deploy-retry.ts",
     "db:lock": "ts-node src/scripts/db-check-advisory-lock.ts",
+    "promote:admin": "ts-node src/scripts/promote-to-admin.ts",
     "render-build": "npm run prisma:generate && npm run prisma:deploy:retry && npm run build",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node prisma/seed.ts",

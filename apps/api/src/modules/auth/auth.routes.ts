@@ -8,10 +8,24 @@ import { denyToken } from "./token-denylist";
 
 const router = Router();
 
+// Cookie attributes:
+// - httpOnly:  JS can't read the cookie (defends against XSS exfiltration).
+// - secure:    only sent over HTTPS in production.
+// - sameSite:
+//     dev (NODE_ENV !== "production"): "lax" so localhost web can talk to
+//       localhost API on a different port.
+//     prod: "none" so the web app at https://wim.example.com can include
+//       the cookie when calling https://wimapi.example.com from XHR/fetch.
+//       "none" requires secure=true (it does in prod). CSRF risk is bounded
+//       by the CORS allowlist (CORS_ORIGIN env var) — only origins on that
+//       list can issue credentialed cross-origin requests at all.
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
+  sameSite:
+    process.env.NODE_ENV === "production"
+      ? ("none" as const)
+      : ("lax" as const),
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 

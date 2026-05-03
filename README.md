@@ -118,6 +118,21 @@ VITE_API_BASE_URL=http://localhost:3000/api
 | `POWER_USER` | Paid tier — all USER features + inventory sharing with other POWER_USERs |
 | `ADMIN` | Internal — user management and audit log access |
 
+Public registration always creates a `USER`. To bootstrap the first ADMIN
+(or promote any user later), run the helper script with a `DATABASE_URL`
+pointing at the target environment:
+
+```bash
+# Local dev DB:
+npm --workspace apps/api run promote:admin -- you@example.com
+
+# Production (e.g. on the Render API service shell):
+node dist/scripts/promote-to-admin.js you@example.com
+```
+
+The script no-ops if the user is already ADMIN. After promotion, log out
+and back in so the new role is reflected in your session.
+
 ---
 
 ## API reference
