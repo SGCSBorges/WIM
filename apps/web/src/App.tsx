@@ -120,6 +120,12 @@ export default function App() {
   >("loading");
   const [role, setRole] = useState<string | null>(null);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Auto-close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -203,39 +209,80 @@ export default function App() {
     </button>
   );
 
+  const primaryNavLinks = (
+    <>
+      {navLink("/", t("nav.home"))}
+      {navLink("/dashboard", t("nav.dashboard"))}
+      {navLink("/articles", t("nav.articles"))}
+      {navLink("/warranties", t("nav.warranties"))}
+      {navLink("/attachments", t("nav.attachments"))}
+      {navLink("/alerts", t("nav.alerts"))}
+      {navLink("/profile", t("nav.profile"))}
+      {role === "POWER_USER" && navLink("/sharing", t("nav.sharing"))}
+      {role === "ADMIN" && navLink("/admin", t("nav.admin"))}
+    </>
+  );
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
       <nav aria-label="Main navigation" className="ui-nav shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold">{t("app.title")}</h1>
-              <div className="flex space-x-4">
-                {navLink("/", t("nav.home"))}
-                {navLink("/dashboard", t("nav.dashboard"))}
-                {navLink("/articles", t("nav.articles"))}
-                {navLink("/warranties", t("nav.warranties"))}
-                {navLink("/attachments", t("nav.attachments"))}
-                {navLink("/alerts", t("nav.alerts"))}
-                {navLink("/profile", t("nav.profile"))}
-                {role === "POWER_USER" && navLink("/sharing", t("nav.sharing"))}
-              </div>
+          <div className="flex justify-between items-center gap-3 h-16">
+            <h1 className="text-lg sm:text-xl font-semibold whitespace-nowrap">
+              {t("app.title")}
+            </h1>
+
+            {/* Desktop links — hidden on mobile, scrollable on medium */}
+            <div className="hidden md:flex flex-1 items-center justify-center gap-1 lg:gap-2 overflow-x-auto">
+              {primaryNavLinks}
             </div>
 
-            <div className="flex items-center gap-3">
-              <LanguageThemeSelector />
-
-              {role === "ADMIN" && navLink("/admin", t("nav.admin"))}
-
+            <div className="flex items-center gap-2">
+              <div className="hidden lg:block">
+                <LanguageThemeSelector />
+              </div>
               <button
+                type="button"
                 onClick={handleLogout}
-                className="px-3 py-2 text-sm ui-btn-ghost rounded-md"
+                className="hidden md:inline-flex px-3 py-2 text-sm ui-btn-ghost rounded-md"
               >
                 {t("nav.logout")}
               </button>
+
+              {/* Mobile menu toggle */}
+              <button
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded={mobileNavOpen}
+                aria-controls="mobile-nav"
+                onClick={() => setMobileNavOpen((o) => !o)}
+                className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-md ui-btn-ghost"
+              >
+                <span aria-hidden="true">{mobileNavOpen ? "✕" : "☰"}</span>
+              </button>
             </div>
           </div>
+
+          {/* Mobile drawer */}
+          {mobileNavOpen && (
+            <div
+              id="mobile-nav"
+              className="md:hidden pb-4 pt-2 border-t ui-divider flex flex-col gap-1"
+            >
+              {primaryNavLinks}
+              <div className="mt-3 pt-3 border-t ui-divider flex flex-wrap items-center gap-3 justify-between">
+                <LanguageThemeSelector />
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="px-3 py-2 text-sm ui-btn-ghost rounded-md"
+                >
+                  {t("nav.logout")}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 

@@ -540,15 +540,18 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               {t("articleForm.locations.none")}
             </p>
           ) : (
-            <div className="border ui-divider rounded-md p-3 space-y-2 max-h-40 overflow-auto">
+            <div className="ui-panel rounded-md p-3 space-y-2 max-h-40 overflow-auto">
               {locations.map((loc) => (
-                <label key={loc.locationId} className="flex items-center gap-2">
+                <label
+                  key={loc.locationId}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <input
                     type="checkbox"
                     checked={selectedSet.has(loc.locationId)}
                     onChange={() => toggleLocation(loc.locationId)}
                   />
-                  <span className="text-sm">{loc.name}</span>
+                  <span className="text-sm ui-title">{loc.name}</span>
                 </label>
               ))}
             </div>
