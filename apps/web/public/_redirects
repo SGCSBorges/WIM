@@ -1,0 +1,10 @@
+# SPA fallback: every unknown path serves the React entry so client-side
+# routing (React Router) can take over. The 200 status keeps it a regular
+# response — not a redirect — so URLs stay intact and the browser doesn't
+# show a 3xx flash.
+#
+# This file is read by Render Static Sites and Netlify. Vite copies it from
+# public/ into dist/ verbatim during build. The Docker/nginx build already
+# does the same via try_files, so the live site behaves the same regardless
+# of which deploy target serves it.
+/*    /index.html   200
