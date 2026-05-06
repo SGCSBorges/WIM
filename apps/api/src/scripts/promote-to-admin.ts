@@ -37,7 +37,9 @@ async function main() {
     data: { role: "ADMIN" },
   });
 
-  console.log(`Promoted ${email} (userId=${user.userId}) ${user.role} → ADMIN.`);
+  console.log(
+    `Promoted ${email} (userId=${user.userId}) ${user.role} → ADMIN.`
+  );
 }
 
 main()
