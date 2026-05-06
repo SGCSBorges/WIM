@@ -1,0 +1,44 @@
+# render.yaml — Render Blueprint
+#
+# https://render.com/docs/blueprint-spec
+#
+# This file lets Render configure the deploy from the repo instead of the
+# dashboard. Once "Sync from render.yaml" is enabled on the service (or a
+# new service is created via "New Blueprint Instance"), every deploy uses
+# the rules below — including the SPA rewrite that fixes deep-link 404s.
+#
+# Set VITE_API_BASE_URL in the dashboard to point at the API
+# (e.g. https://wimapi.onrender.com/api).
+
+services:
+  - type: web
+    name: wim-web
+    runtime: static
+    rootDir: .
+    buildCommand: npm run render-build:web
+    staticPublishPath: ./apps/web/dist
+    pullRequestPreviewsEnabled: false
+
+    # SPA fallback — every unknown path serves /index.html with a 200,
+    # so React Router can take over. This is the Render-native equivalent
+    # of the public/_redirects file (which we keep as a fallback for
+    # non-Render hosts).
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false
