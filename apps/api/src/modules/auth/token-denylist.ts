@@ -17,6 +17,20 @@ import { logger } from "../../config/logger";
 
 const KEY_PREFIX = "auth:denylist:";
 
+// Hard upper bound for the denylist check on the authGuard hot path. Even
+// with ioredis's commandTimeout, an unreachable Redis can stall the event
+// loop briefly while the connection state churns; race against this so
+// authed requests never visibly hang.
+const DENYLIST_CHECK_TIMEOUT_MS = 500;
+
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let t: NodeJS.Timeout | undefined;
+  const timer = new Promise<T>((resolve) => {
+    t = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([p.finally(() => t && clearTimeout(t)), timer]);
+}
+
 export async function denyToken(
   jti: string,
   ttlSeconds: number
@@ -34,7 +48,12 @@ export async function isTokenDenied(jti: string): Promise<boolean> {
   const redis = getRedis();
   if (!redis) return false;
   try {
-    return (await redis.exists(KEY_PREFIX + jti)) === 1;
+    const result = await withTimeout(
+      redis.exists(KEY_PREFIX + jti),
+      DENYLIST_CHECK_TIMEOUT_MS,
+      0
+    );
+    return result === 1;
   } catch (err) {
     logger.error({ err, jti }, "[auth] denylist check failed — failing open");
     return false;

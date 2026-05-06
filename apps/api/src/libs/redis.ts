@@ -25,7 +25,16 @@ export function getRedis(): Redis | null {
     return cached;
   }
   try {
-    cached = new IORedis(config);
+    // Tight timeouts so a misconfigured / far-away Redis can't take a hot
+    // request path (e.g. authGuard's denylist check) hostage. ioredis's
+    // defaults are unbounded retries with a 10s connect timeout, which is
+    // way too long for an inline auth check.
+    cached = new IORedis({
+      ...config,
+      connectTimeout: 2000,
+      commandTimeout: 800,
+      maxRetriesPerRequest: 1,
+    });
     cached.on("error", (err) => {
       logger.error({ err }, "[redis] connection error");
     });
