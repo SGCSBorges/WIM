@@ -45,7 +45,28 @@ function getAppUrl(): string {
       "APP_URL is not configured. Set APP_URL to your frontend origin."
     );
   }
-  return String(raw).replace(/\/$/, "");
+  // Be defensive about misconfiguration: APP_URL is a single origin, but a
+  // user copying their CORS_ORIGIN value here might paste a comma-separated
+  // list. Take the first entry, strip whitespace, and validate it parses
+  // as a real URL — otherwise Stripe redirects users into a broken host.
+  const first = String(raw).split(",")[0]?.trim().replace(/\/+$/, "") ?? "";
+  let parsed: URL;
+  try {
+    parsed = new URL(first);
+  } catch {
+    throw createHttpError(
+      500,
+      `APP_URL is not a valid URL: ${JSON.stringify(raw)}. ` +
+        `It must be a single origin like https://app.example.com (no trailing slash, no comma-separated list).`
+    );
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw createHttpError(
+      500,
+      `APP_URL must use http(s); got ${parsed.protocol}`
+    );
+  }
+  return parsed.origin;
 }
 
 router.post(
