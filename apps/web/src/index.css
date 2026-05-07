@@ -279,6 +279,10 @@ body {
 .ui-badge-warning { background: rgba(202, 138, 4, 0.12); border: 1px solid rgba(202, 138, 4, 0.25); }
 .ui-badge-danger  { background: rgba(220, 38, 38, 0.12); border: 1px solid rgba(220, 38, 38, 0.25); }
 
+/* Role badges shown next to the WIM wordmark in the navbar. */
+.ui-badge-power { background: linear-gradient(90deg, #f59e0b, #f97316); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+.ui-badge-admin { background: linear-gradient(90deg, #6366f1, #8b5cf6); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+
 /* Active underline tab — uses theme primary so it adapts (e.g. teal in ocean) */
 .ui-tab-active { color: var(--primary); border-color: var(--primary); }
 

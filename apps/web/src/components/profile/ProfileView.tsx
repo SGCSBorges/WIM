@@ -1,17 +1,39 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { profileAPI, billingAPI } from "../../services/api";
+import {
+  profileAPI,
+  billingAPI,
+  type BillingSubscription,
+} from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 
 type Me = { userId: number; email: string; role: string };
+
+function formatDate(unixSeconds: number | null, language: string): string {
+  if (!unixSeconds) return "—";
+  return new Date(unixSeconds * 1000).toLocaleDateString(language, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function daysFromNow(unixSeconds: number | null): number | null {
+  if (!unixSeconds) return null;
+  const ms = unixSeconds * 1000 - Date.now();
+  return Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
+}
 
 function disconnectAndRedirect() {
   window.location.href = "/";
 }
 
 export default function ProfileView() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
+  const [subscription, setSubscription] = useState<BillingSubscription | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -49,6 +71,13 @@ export default function ProfileView() {
       const data = await profileAPI.getMe();
       setMe(data);
       setEmail(data.email);
+      // Pull subscription details from the billing endpoint in parallel —
+      // it's a separate Stripe round-trip on the server and we don't want
+      // to block first paint of the profile on it.
+      billingAPI
+        .getBillingMe()
+        .then((b) => setSubscription(b.subscription))
+        .catch(() => setSubscription(null));
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
@@ -116,7 +145,7 @@ export default function ProfileView() {
     setError(null);
     setBillingBusy(true);
     try {
-      const { url } = await billingAPI.openPortal();
+      const { url } = await billingAPI.openPortal(language);
       if (/^https?:\/\//i.test(url)) window.location.href = url;
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
@@ -182,6 +211,80 @@ export default function ProfileView() {
           <p className="text-sm ui-text-muted">
             {t("profile.subscription.subtitle")}
           </p>
+
+          {/* Status: next billing or end-of-access date */}
+          {subscription &&
+            (subscription.cancelAtPeriodEnd ||
+            subscription.status === "canceled" ? (
+              <div className="border ui-alert-warning rounded-md p-3 text-sm">
+                <p className="font-medium text-yellow-900">
+                  {t("profile.billing.cancelScheduled")}
+                </p>
+                <p className="text-yellow-800 mt-1">
+                  {t("profile.billing.accessEndsOn")}{" "}
+                  <strong>
+                    {formatDate(
+                      subscription.cancelAt ??
+                        subscription.endedAt ??
+                        subscription.currentPeriodEnd,
+                      language
+                    )}
+                  </strong>
+                  {(() => {
+                    const days = daysFromNow(
+                      subscription.cancelAt ??
+                        subscription.endedAt ??
+                        subscription.currentPeriodEnd
+                    );
+                    return days !== null
+                      ? ` (${t("profile.billing.daysLeft").replace(
+                          "{days}",
+                          String(days)
+                        )}).`
+                      : ".";
+                  })()}{" "}
+                  {t("profile.billing.afterCancelRevert")}
+                </p>
+              </div>
+            ) : (
+              <div className="border ui-divider rounded-md p-3 text-sm">
+                <p>
+                  <span className="ui-text-muted">
+                    {t("profile.billing.plan")}:
+                  </span>{" "}
+                  <strong>
+                    {subscription.plan === "yearly"
+                      ? t("profile.billing.plan.yearly")
+                      : subscription.plan === "monthly"
+                        ? t("profile.billing.plan.monthly")
+                        : "—"}
+                  </strong>
+                </p>
+                <p className="mt-1">
+                  <span className="ui-text-muted">
+                    {t("profile.billing.nextBilling")}:
+                  </span>{" "}
+                  <strong>
+                    {formatDate(subscription.currentPeriodEnd, language)}
+                  </strong>
+                  {(() => {
+                    const days = daysFromNow(subscription.currentPeriodEnd);
+                    return days !== null ? (
+                      <span className="ui-text-muted">
+                        {" "}
+                        (
+                        {t("profile.billing.daysUntil").replace(
+                          "{days}",
+                          String(days)
+                        )}
+                        )
+                      </span>
+                    ) : null;
+                  })()}
+                </p>
+              </div>
+            ))}
+
           <div className="flex flex-wrap items-center gap-3">
             <button
               className="ui-btn-primary px-4 py-2 rounded"
@@ -190,14 +293,16 @@ export default function ProfileView() {
             >
               {billingBusy ? t("common.loading") : t("profile.billing.manage")}
             </button>
-            <button
-              className="ui-btn-ghost px-4 py-2 rounded border ui-divider"
-              onClick={() => setShowCancelConfirm(true)}
-              disabled={billingBusy}
-              title={t("profile.billing.cancelTooltip")}
-            >
-              {t("profile.billing.cancelAtPeriodEnd")}
-            </button>
+            {!subscription?.cancelAtPeriodEnd && (
+              <button
+                className="ui-btn-ghost px-4 py-2 rounded border ui-divider"
+                onClick={() => setShowCancelConfirm(true)}
+                disabled={billingBusy}
+                title={t("profile.billing.cancelTooltip")}
+              >
+                {t("profile.billing.cancelAtPeriodEnd")}
+              </button>
+            )}
           </div>
           {showCancelConfirm && (
             <div className="mt-3 p-3 border ui-alert-warning rounded-lg space-y-2">

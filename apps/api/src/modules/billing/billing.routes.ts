@@ -7,7 +7,13 @@ import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
 import { auditAction } from "../common/audit";
 
-const PlanSchema = z.object({ plan: z.enum(["monthly", "yearly"]).optional() });
+const PlanSchema = z.object({
+  plan: z.enum(["monthly", "yearly"]).optional(),
+  // i18n hint from the frontend so Stripe Checkout renders in the same
+  // language as the WIM UI. We accept just the languages we support;
+  // anything else falls through to "auto".
+  locale: z.enum(["en", "fr", "pt"]).optional(),
+});
 
 const router = Router();
 
@@ -75,7 +81,7 @@ router.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const appUrl = getAppUrl();
 
-    const { plan = "monthly" } = PlanSchema.parse(req.body);
+    const { plan = "monthly", locale } = PlanSchema.parse(req.body);
 
     const monthlyPriceId = process.env.STRIPE_POWER_USER_PRICE_MONTHLY;
     const yearlyPriceId = process.env.STRIPE_POWER_USER_PRICE_YEARLY;
@@ -115,6 +121,10 @@ router.post(
       mode: "subscription",
       customer: stripeCustomerId,
       line_items: [{ price: String(priceId), quantity: 1 }],
+      // Stripe accepts ISO 639 language codes; "auto" detects from the
+      // browser, which is what we fall back to when the user hasn't picked
+      // a language in WIM.
+      locale: locale ?? "auto",
       success_url: `${appUrl}/?stripe=success`,
       cancel_url: `${appUrl}/?stripe=cancel`,
       metadata: {
@@ -185,6 +195,10 @@ router.post(
   })
 );
 
+const PortalSchema = z.object({
+  locale: z.enum(["en", "fr", "pt"]).optional(),
+});
+
 router.post(
   "/portal",
   authGuard,
@@ -192,6 +206,7 @@ router.post(
     const appUrl = getAppUrl();
     const userId = req.user!.sub;
     const stripe = getStripe();
+    const { locale } = PortalSchema.parse(req.body ?? {});
 
     const user = await prisma.user.findUnique({
       where: { userId },
@@ -208,6 +223,7 @@ router.post(
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
+      locale: locale ?? "auto",
       return_url: `${appUrl}/?billing=return`,
     });
 

@@ -110,6 +110,24 @@ export const translations = {
     "home.upgrade.buyMonthly": "Buy €2.99/mo",
     "home.upgrade.buyYearly": "Buy €29/yr",
     "billing.upgradeStartError": "Failed to start upgrade",
+    "billing.upgradeSuccess":
+      "Welcome, Power User! Your subscription is active.",
+
+    "nav.badge.powerUser": "Power",
+    "nav.badge.powerUser.tooltip": "Power User",
+    "nav.badge.admin": "Admin",
+    "nav.badge.admin.tooltip": "Administrator",
+
+    "profile.billing.plan": "Plan",
+    "profile.billing.plan.monthly": "Monthly",
+    "profile.billing.plan.yearly": "Yearly",
+    "profile.billing.nextBilling": "Next billing",
+    "profile.billing.daysUntil": "in {days} day(s)",
+    "profile.billing.cancelScheduled": "Cancellation scheduled",
+    "profile.billing.accessEndsOn": "Power User access ends on",
+    "profile.billing.daysLeft": "{days} day(s) left",
+    "profile.billing.afterCancelRevert":
+      "After this date you'll revert to a regular User.",
 
     "home.card.inventory.title": "Inventory",
     "home.card.inventory.subtitle": "List and details of your articles.",
@@ -559,6 +577,24 @@ export const translations = {
     "home.upgrade.buyMonthly": "Acheter 2,99€/mois",
     "home.upgrade.buyYearly": "Acheter 29€/an",
     "billing.upgradeStartError": "Impossible de démarrer la mise à niveau",
+    "billing.upgradeSuccess":
+      "Bienvenue, Power User ! Votre abonnement est actif.",
+
+    "nav.badge.powerUser": "Power",
+    "nav.badge.powerUser.tooltip": "Power User",
+    "nav.badge.admin": "Admin",
+    "nav.badge.admin.tooltip": "Administrateur",
+
+    "profile.billing.plan": "Formule",
+    "profile.billing.plan.monthly": "Mensuel",
+    "profile.billing.plan.yearly": "Annuel",
+    "profile.billing.nextBilling": "Prochain paiement",
+    "profile.billing.daysUntil": "dans {days} jour(s)",
+    "profile.billing.cancelScheduled": "Résiliation programmée",
+    "profile.billing.accessEndsOn": "L'accès Power User se termine le",
+    "profile.billing.daysLeft": "{days} jour(s) restant(s)",
+    "profile.billing.afterCancelRevert":
+      "Après cette date, vous redeviendrez un utilisateur standard.",
 
     "home.card.inventory.title": "Inventaire",
     "home.card.inventory.subtitle": "Liste et détail des articles.",
@@ -1013,6 +1049,24 @@ export const translations = {
     "home.upgrade.buyMonthly": "Comprar €2,99/mês",
     "home.upgrade.buyYearly": "Comprar €29/ano",
     "billing.upgradeStartError": "Falha ao iniciar a atualização",
+    "billing.upgradeSuccess":
+      "Bem-vindo, Power User! A sua subscrição está ativa.",
+
+    "nav.badge.powerUser": "Power",
+    "nav.badge.powerUser.tooltip": "Power User",
+    "nav.badge.admin": "Admin",
+    "nav.badge.admin.tooltip": "Administrador",
+
+    "profile.billing.plan": "Plano",
+    "profile.billing.plan.monthly": "Mensal",
+    "profile.billing.plan.yearly": "Anual",
+    "profile.billing.nextBilling": "Próximo pagamento",
+    "profile.billing.daysUntil": "dentro de {days} dia(s)",
+    "profile.billing.cancelScheduled": "Cancelamento agendado",
+    "profile.billing.accessEndsOn": "O acesso Power User termina a",
+    "profile.billing.daysLeft": "{days} dia(s) restantes",
+    "profile.billing.afterCancelRevert":
+      "Após esta data, voltará a ser utilizador normal.",
 
     "home.card.inventory.title": "Inventário",
     "home.card.inventory.subtitle": "Lista e detalhe dos artigos.",

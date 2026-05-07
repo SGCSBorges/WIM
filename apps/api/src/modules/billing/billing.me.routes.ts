@@ -14,7 +14,61 @@ function getStripe() {
   return new Stripe(key);
 }
 
-// Handy endpoint so the frontend can refresh user role after returning from Stripe.
+type SubSummary = {
+  status: Stripe.Subscription.Status;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: number | null; // unix seconds
+  cancelAt: number | null;
+  endedAt: number | null;
+  plan: "monthly" | "yearly" | null;
+};
+
+function summarizeSubscription(sub: Stripe.Subscription): SubSummary {
+  const interval = sub.items.data[0]?.price?.recurring?.interval;
+  const plan: "monthly" | "yearly" | null =
+    interval === "month" ? "monthly" : interval === "year" ? "yearly" : null;
+  return {
+    status: sub.status,
+    cancelAtPeriodEnd: sub.cancel_at_period_end,
+    currentPeriodEnd: sub.current_period_end ?? null,
+    cancelAt: sub.cancel_at ?? null,
+    endedAt: sub.ended_at ?? null,
+    plan,
+  };
+}
+
+async function fetchSubscriptionForUser(
+  user: {
+    stripeCustomerId: string | null;
+    stripeSubscriptionId: string | null;
+  } | null
+): Promise<SubSummary | null> {
+  if (!user || !user.stripeCustomerId) return null;
+  const stripe = getStripe();
+
+  // Prefer the recorded subscription id; fall back to listing customer subs.
+  try {
+    if (user.stripeSubscriptionId) {
+      const sub = await stripe.subscriptions.retrieve(
+        user.stripeSubscriptionId
+      );
+      return summarizeSubscription(sub);
+    }
+    const subs = await stripe.subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: "all",
+      limit: 5,
+    });
+    const live = subs.data.find(
+      (s) => s.status === "active" || s.status === "trialing"
+    );
+    return live ? summarizeSubscription(live) : null;
+  } catch (err) {
+    logger.error({ err }, "[billing/me] failed to fetch subscription");
+    return null;
+  }
+}
+
 router.get(
   "/me",
   authGuard,
@@ -22,11 +76,30 @@ router.get(
     const userId = req.user!.sub;
     const user = await prisma.user.findUnique({
       where: { userId },
-      select: { userId: true, email: true, role: true },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
+      },
     });
 
     if (!user) throw createHttpError(404, "User not found");
-    res.json(user);
+
+    // Only ask Stripe for details when the user actually has billing state.
+    // Saves a Stripe API call per /billing/me poll for free users.
+    const subscription =
+      user.role === "POWER_USER" || user.stripeSubscriptionId
+        ? await fetchSubscriptionForUser(user)
+        : null;
+
+    res.json({
+      userId: user.userId,
+      email: user.email,
+      role: user.role,
+      subscription,
+    });
   })
 );
 

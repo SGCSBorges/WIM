@@ -111,7 +111,7 @@ function HomeCard({
 }
 
 export default function App() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -121,6 +121,7 @@ export default function App() {
   >("loading");
   const [role, setRole] = useState<string | null>(null);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
+  const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Auto-close the mobile drawer whenever the route changes.
@@ -146,7 +147,12 @@ export default function App() {
           billingAPI
             .syncFromStripe()
             .then((newRole) => {
-              if (newRole) setRole(newRole);
+              if (newRole) {
+                setRole(newRole);
+                if (newRole === "POWER_USER" || newRole === "ADMIN") {
+                  setUpgradeSuccess(t("billing.upgradeSuccess"));
+                }
+              }
             })
             .catch(() => {})
             .finally(() => {
@@ -161,6 +167,10 @@ export default function App() {
       .catch(() => {
         setAuthStatus("unauthed");
       });
+    // Run once on mount: this kicks off the session check + Stripe-return
+    // handling. We intentionally don't re-run when t/language change — the
+    // success copy is fine in whatever language is active at landing time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLogin = () => {
@@ -196,7 +206,10 @@ export default function App() {
   const startUpgrade = async (plan: "monthly" | "yearly") => {
     setUpgradeError(null);
     try {
-      const { url } = await billingAPI.createPowerUserCheckoutSession(plan);
+      const { url } = await billingAPI.createPowerUserCheckoutSession(
+        plan,
+        language
+      );
       if (/^https?:\/\//i.test(url)) window.location.href = url;
     } catch (e: unknown) {
       setUpgradeError(getErrorMessage(e, t("billing.upgradeStartError")));
@@ -234,8 +247,24 @@ export default function App() {
       <nav aria-label="Main navigation" className="ui-nav shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center gap-3 h-16">
-            <h1 className="text-lg sm:text-xl font-semibold whitespace-nowrap">
+            <h1 className="text-lg sm:text-xl font-semibold whitespace-nowrap flex items-center gap-2">
               {t("app.title")}
+              {role === "POWER_USER" && (
+                <span
+                  className="text-[10px] tracking-wide font-bold uppercase px-1.5 py-0.5 rounded ui-badge-power"
+                  title={t("nav.badge.powerUser.tooltip")}
+                >
+                  {t("nav.badge.powerUser")}
+                </span>
+              )}
+              {role === "ADMIN" && (
+                <span
+                  className="text-[10px] tracking-wide font-bold uppercase px-1.5 py-0.5 rounded ui-badge-admin"
+                  title={t("nav.badge.admin.tooltip")}
+                >
+                  {t("nav.badge.admin")}
+                </span>
+              )}
             </h1>
 
             {/* Desktop links — hidden on mobile, scrollable on medium */}
@@ -292,6 +321,23 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {upgradeSuccess && (
+          <div
+            className="mb-6 border ui-alert-success rounded-lg p-4 flex items-start justify-between gap-3"
+            role="status"
+          >
+            <p className="text-sm text-green-800">🎉 {upgradeSuccess}</p>
+            <button
+              type="button"
+              onClick={() => setUpgradeSuccess(null)}
+              className="text-green-700 hover:opacity-70"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         <Suspense
           fallback={
             <div className="flex items-center justify-center h-64">

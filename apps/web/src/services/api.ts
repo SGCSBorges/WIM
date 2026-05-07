@@ -772,16 +772,26 @@ export const sharedAPI = {
 };
 
 // Billing / Stripe
+export type BillingSubscription = {
+  status: string;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: number | null;
+  cancelAt: number | null;
+  endedAt: number | null;
+  plan: "monthly" | "yearly" | null;
+};
+
 export const billingAPI = {
   async createPowerUserCheckoutSession(
-    plan: "monthly" | "yearly"
+    plan: "monthly" | "yearly",
+    locale?: "en" | "fr" | "pt"
   ): Promise<{ url: string }> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/billing/upgrade/power-user/checkout`,
       {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, locale }),
       }
     );
 
@@ -795,10 +805,11 @@ export const billingAPI = {
     return response.json();
   },
 
-  async openPortal(): Promise<{ url: string }> {
+  async openPortal(locale?: "en" | "fr" | "pt"): Promise<{ url: string }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/billing/portal`, {
       method: "POST",
       headers: getHeaders(),
+      body: JSON.stringify({ locale }),
     });
     if (!response.ok)
       throw new Error(
@@ -834,6 +845,22 @@ export const billingAPI = {
     } catch {
       return _cachedRole;
     }
+  },
+
+  async getBillingMe(): Promise<{
+    userId: number;
+    email: string;
+    role: string;
+    subscription: BillingSubscription | null;
+  }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/billing/me`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to load billing info")
+      );
+    return response.json();
   },
 
   // Asks the API to query Stripe directly for the current subscription and
