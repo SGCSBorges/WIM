@@ -10,6 +10,7 @@ export type AuditInput = {
     | "LOGIN"
     | "LOGOUT"
     | "ACCEPT"
+    | "FORCE_LOGOUT"
     | "BILLING_CHECKOUT_STARTED"
     | "BILLING_PORTAL_OPENED"
     | "BILLING_CANCEL_REQUESTED";

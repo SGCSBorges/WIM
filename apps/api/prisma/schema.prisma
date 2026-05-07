@@ -61,6 +61,11 @@ model User {
   password  String
   role      Role     @default(USER)
 
+  // Bumped on admin "force-logout": existing JWTs carry the version they
+  // were issued with; auth middleware rejects any token whose version is
+  // older than the current value.
+  tokenVersion Int   @default(0)
+
   // Billing (Stripe)
   // Used to manage subscription lifecycle (cancel at period end, etc.)
   stripeCustomerId     String? @unique @db.VarChar(80)

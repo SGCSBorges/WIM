@@ -523,6 +523,97 @@ export const adminAPI = {
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to delete user"));
   },
+
+  async createUser(input: {
+    email: string;
+    password: string;
+    role: "USER" | "POWER_USER" | "ADMIN";
+  }) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/users`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(input),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to create user"));
+    return response.json();
+  },
+
+  async updateUser(
+    userId: number,
+    input: { email?: string; role?: "USER" | "POWER_USER" | "ADMIN" }
+  ) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/users/${userId}`,
+      {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(input),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update user"));
+    return response.json();
+  },
+
+  async resetPassword(userId: number, password: string) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/users/${userId}/reset-password`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ password }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to reset password"));
+  },
+
+  async forceLogout(userId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/users/${userId}/force-logout`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to force logout"));
+  },
+
+  async listAuditLog(params: {
+    userId?: number;
+    action?: string;
+    entity?: string;
+    limit?: number;
+    cursor?: number;
+  }) {
+    const qs = new URLSearchParams();
+    if (params.userId !== undefined) qs.set("userId", String(params.userId));
+    if (params.action) qs.set("action", params.action);
+    if (params.entity) qs.set("entity", params.entity);
+    if (params.limit !== undefined) qs.set("limit", String(params.limit));
+    if (params.cursor !== undefined) qs.set("cursor", String(params.cursor));
+    const url = `${API_BASE_URL}/admin/audit-log${qs.toString() ? `?${qs}` : ""}`;
+    const response = await fetchWithTimeout(url, { headers: getHeaders() });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch audit log")
+      );
+    return response.json() as Promise<{
+      entries: Array<{
+        id: number;
+        userId: number | null;
+        action: string;
+        entity: string;
+        entityId: number | null;
+        method: string | null;
+        path: string | null;
+        status: number | null;
+        metadata: unknown;
+        createdAt: string;
+        user: { email: string } | null;
+      }>;
+      nextCursor: number | null;
+    }>;
+  },
 };
 
 export interface WarrantyItem {

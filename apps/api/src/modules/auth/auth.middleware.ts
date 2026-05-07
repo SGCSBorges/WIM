@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { isTokenDenied } from "./token-denylist";
+import { prisma } from "../../libs/prisma";
 
 // JWT_SECRET is guaranteed present by validateEnv() called at startup.
 
@@ -27,15 +28,27 @@ export async function authGuard(
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
       sub: number;
       role: string;
+      v?: number;
       jti?: string;
       exp?: number;
     };
     if (payload.jti && (await isTokenDenied(payload.jti))) {
       return res.status(401).json({ error: "Token revoked" });
     }
+    // Force-logout check: if the user's tokenVersion has been bumped since
+    // this token was issued, treat it as revoked. One DB hit per request,
+    // selecting only the version column.
+    const fresh = await prisma.user.findUnique({
+      where: { userId: payload.sub },
+      select: { tokenVersion: true, role: true },
+    });
+    if (!fresh) return res.status(401).json({ error: "User no longer exists" });
+    if ((payload.v ?? 0) < fresh.tokenVersion) {
+      return res.status(401).json({ error: "Session revoked" });
+    }
     req.user = {
       sub: payload.sub,
-      role: payload.role,
+      role: fresh.role,
       jti: payload.jti,
       exp: payload.exp,
     };

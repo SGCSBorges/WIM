@@ -8,10 +8,12 @@ import { createHttpError } from "../../utils/http-error";
 // JWT_SECRET is guaranteed present by validateEnv() called at startup.
 const JWT_EXPIRES = "7d";
 
-function signToken(userId: number, role: string): string {
+function signToken(userId: number, role: string, tokenVersion: number): string {
   return jwt.sign(
     // `jti` lets us address a specific token in the Redis denylist on logout.
-    { sub: userId, role, jti: crypto.randomUUID() },
+    // `v` is the user's tokenVersion at issue time — admin "force-logout"
+    // bumps the user's version, invalidating any older token.
+    { sub: userId, role, v: tokenVersion, jti: crypto.randomUUID() },
     process.env.JWT_SECRET!,
     { expiresIn: JWT_EXPIRES }
   );
@@ -27,7 +29,7 @@ export const AuthService = {
     const user = await prisma.user.create({
       data: { email: data.email, password: hashed, role: data.role },
     });
-    const token = signToken(user.userId, user.role);
+    const token = signToken(user.userId, user.role, user.tokenVersion);
     return {
       user: { userId: user.userId, email: user.email, role: user.role },
       token,
@@ -41,7 +43,7 @@ export const AuthService = {
       "$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
     const valid = await bcrypt.compare(data.password, user?.password ?? DUMMY);
     if (!user || !valid) throw createHttpError(401, "Invalid credentials");
-    const token = signToken(user.userId, user.role);
+    const token = signToken(user.userId, user.role, user.tokenVersion);
     return {
       user: { userId: user.userId, email: user.email, role: user.role },
       token,

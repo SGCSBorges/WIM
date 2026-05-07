@@ -7,6 +7,11 @@ import {
 } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import CreateUserModal from "./CreateUserModal";
+import ResetPasswordModal from "./ResetPasswordModal";
+import AuditLogTab from "./AuditLogTab";
+
+type Role = "USER" | "POWER_USER" | "ADMIN";
 
 type UserRow = {
   userId: number;
@@ -79,9 +84,9 @@ export default function AdminUsers() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "users">(
-    "dashboard"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "users" | "auditLog"
+  >("dashboard");
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
@@ -91,6 +96,16 @@ export default function AdminUsers() {
   const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
     number | null
   >(null);
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [resetPwTarget, setResetPwTarget] = useState<UserRow | null>(null);
+  const [confirmForceLogoutUserId, setConfirmForceLogoutUserId] = useState<
+    number | null
+  >(null);
+  const [editingRoleUserId, setEditingRoleUserId] = useState<number | null>(
+    null
+  );
+  const [editingRoleValue, setEditingRoleValue] = useState<Role>("USER");
 
   const role = authAPI.getRole();
 
@@ -146,6 +161,46 @@ export default function AdminUsers() {
       await fetchUsers();
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("admin.error.deleteUser")));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const startEditRole = (u: UserRow) => {
+    setEditingRoleUserId(u.userId);
+    setEditingRoleValue(u.role);
+  };
+
+  const cancelEditRole = () => {
+    setEditingRoleUserId(null);
+  };
+
+  const saveRole = async (u: UserRow) => {
+    if (editingRoleValue === u.role) {
+      setEditingRoleUserId(null);
+      return;
+    }
+    setActionLoading(`role:${u.userId}`);
+    setError(null);
+    try {
+      await adminAPI.updateUser(u.userId, { role: editingRoleValue });
+      setEditingRoleUserId(null);
+      await fetchUsers();
+    } catch (e) {
+      setError(getErrorMessage(e, t("admin.error.updateUser")));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const forceLogout = async (userId: number) => {
+    setConfirmForceLogoutUserId(null);
+    setActionLoading(`force-logout:${userId}`);
+    setError(null);
+    try {
+      await adminAPI.forceLogout(userId);
+    } catch (e) {
+      setError(getErrorMessage(e, t("admin.error.forceLogout")));
     } finally {
       setActionLoading(null);
     }
@@ -219,6 +274,16 @@ export default function AdminUsers() {
             }`}
           >
             {t("admin.users")}
+          </button>
+          <button
+            onClick={() => setActiveTab("auditLog")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "auditLog"
+                ? "ui-tab-active"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
+            }`}
+          >
+            {t("admin.auditLog")}
           </button>
         </nav>
       </div>
@@ -314,65 +379,154 @@ export default function AdminUsers() {
       {activeTab === "users" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="ui-card rounded-lg">
-            <div className="p-4 border-b ui-divider flex items-center justify-between">
+            <div className="p-4 border-b ui-divider flex items-center justify-between gap-2">
               <h2 className="font-semibold">{t("admin.users")}</h2>
-              {loadingUsers && (
-                <span className="text-xs ui-text-muted">
-                  {t("common.loading")}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {loadingUsers && (
+                  <span className="text-xs ui-text-muted">
+                    {t("common.loading")}
+                  </span>
+                )}
+                <button
+                  onClick={() => setCreateOpen(true)}
+                  className="text-sm px-3 py-1.5 ui-btn-primary rounded"
+                >
+                  + {t("admin.createUser.button")}
+                </button>
+              </div>
             </div>
             <div className="divide-y">
               {users.map((u) => (
                 <div
                   key={u.userId}
-                  className={`p-4 flex items-center justify-between gap-3 ${
+                  className={`p-4 space-y-2 ${
                     selectedUser?.userId === u.userId ? "ui-panel" : ""
                   }`}
                 >
-                  <button
-                    onClick={() => {
-                      setSelectedUser(u);
-                      fetchInventory(u.userId);
-                    }}
-                    className="text-left flex-1 min-w-0"
-                  >
-                    <div className="font-medium truncate">{u.email}</div>
-                    <div className="text-xs ui-text-muted">
-                      {t("admin.roleLabel")}: {u.role}
-                    </div>
-                  </button>
+                  <div className="flex items-start justify-between gap-3">
+                    <button
+                      onClick={() => {
+                        setSelectedUser(u);
+                        fetchInventory(u.userId);
+                      }}
+                      className="text-left flex-1 min-w-0"
+                    >
+                      <div className="font-medium truncate">{u.email}</div>
+                      <div className="text-xs ui-text-muted">
+                        ID #{u.userId}
+                      </div>
+                    </button>
 
-                  {confirmDeleteUserId === u.userId ? (
+                    {/* Inline role editor */}
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-red-700">
-                        {t("admin.confirmDeleteUser")}
+                      {editingRoleUserId === u.userId ? (
+                        <>
+                          <select
+                            value={editingRoleValue}
+                            onChange={(e) =>
+                              setEditingRoleValue(e.target.value as Role)
+                            }
+                            className="ui-input text-xs px-2 py-1 rounded"
+                          >
+                            <option value="USER">USER</option>
+                            <option value="POWER_USER">POWER_USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                          </select>
+                          <button
+                            onClick={() => saveRole(u)}
+                            className="text-xs px-2 py-1 ui-btn-primary rounded"
+                            disabled={actionLoading === `role:${u.userId}`}
+                          >
+                            {t("common.save")}
+                          </button>
+                          <button
+                            onClick={cancelEditRole}
+                            className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                          >
+                            {t("common.cancel")}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => startEditRole(u)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                          title={t("admin.editRole")}
+                        >
+                          {u.role} ✎
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action row: reset pw / force logout / delete */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setResetPwTarget(u)}
+                      className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                    >
+                      🔑 {t("admin.resetPassword.button")}
+                    </button>
+
+                    {confirmForceLogoutUserId === u.userId ? (
+                      <span className="flex items-center gap-1">
+                        <span className="text-xs text-red-700">
+                          {t("admin.confirmForceLogout")}
+                        </span>
+                        <button
+                          onClick={() => forceLogout(u.userId)}
+                          className="text-xs px-2 py-1 ui-btn-danger rounded"
+                          disabled={
+                            actionLoading === `force-logout:${u.userId}`
+                          }
+                        >
+                          {t("common.yes")}
+                        </button>
+                        <button
+                          onClick={() => setConfirmForceLogoutUserId(null)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        >
+                          {t("common.no")}
+                        </button>
                       </span>
+                    ) : (
                       <button
-                        onClick={() => deleteUser(u.userId)}
-                        className="text-xs px-2 py-1 ui-btn-danger rounded"
+                        onClick={() => setConfirmForceLogoutUserId(u.userId)}
+                        className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        disabled={actionLoading === `force-logout:${u.userId}`}
+                      >
+                        🚪 {t("admin.forceLogout")}
+                      </button>
+                    )}
+
+                    {confirmDeleteUserId === u.userId ? (
+                      <span className="flex items-center gap-1">
+                        <span className="text-xs text-red-700">
+                          {t("admin.confirmDeleteUser")}
+                        </span>
+                        <button
+                          onClick={() => deleteUser(u.userId)}
+                          className="text-xs px-2 py-1 ui-btn-danger rounded"
+                          disabled={actionLoading === `user:${u.userId}`}
+                        >
+                          {t("common.yes")}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteUserId(null)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        >
+                          {t("common.no")}
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteUserId(u.userId)}
+                        className="ui-action-danger text-xs"
                         disabled={actionLoading === `user:${u.userId}`}
                       >
-                        {t("common.yes")}
+                        🗑 {t("admin.delete")}
                       </button>
-                      <button
-                        onClick={() => setConfirmDeleteUserId(null)}
-                        className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
-                      >
-                        {t("common.no")}
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setConfirmDeleteUserId(u.userId)}
-                      className="ui-action-danger text-sm shrink-0"
-                      disabled={actionLoading === `user:${u.userId}`}
-                    >
-                      {actionLoading === `user:${u.userId}`
-                        ? t("admin.deleting")
-                        : t("admin.delete")}
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
               ))}
               {!loadingUsers && users.length === 0 && (
@@ -514,6 +668,27 @@ export default function AdminUsers() {
             )}
           </div>
         </div>
+      )}
+
+      {activeTab === "auditLog" && <AuditLogTab />}
+
+      {createOpen && (
+        <CreateUserModal
+          onClose={() => setCreateOpen(false)}
+          onCreated={() => {
+            fetchUsers();
+            fetchStatistics();
+          }}
+        />
+      )}
+
+      {resetPwTarget && (
+        <ResetPasswordModal
+          userId={resetPwTarget.userId}
+          email={resetPwTarget.email}
+          onClose={() => setResetPwTarget(null)}
+          onDone={() => undefined}
+        />
       )}
     </div>
   );
