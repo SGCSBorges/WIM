@@ -133,8 +133,7 @@ export const translations = {
     "auth.error.passwordTooShort": "Password must be at least 8 characters",
     "auth.loading": "Please wait...",
     "pwa.install": "Install app",
-    "pwa.install.ios":
-      "On iPhone/iPad, tap Share, then “Add to Home Screen”.",
+    "pwa.install.ios": "On iPhone/iPad, tap Share, then “Add to Home Screen”.",
 
     "common.errorOccurred": "An error occurred",
     "common.for": "for",
