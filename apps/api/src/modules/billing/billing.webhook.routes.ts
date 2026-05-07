@@ -83,18 +83,22 @@ router.post(
         }
 
         if (targetRole === "POWER_USER") {
-          // Use updateMany with a NOT guard so that replaying the same event
-          // (same subscriptionId already stored) is a no-op rather than a
-          // redundant write that could re-upgrade a since-cancelled user.
-          await prisma.user.updateMany({
-            where: {
-              userId,
-              ...(subscriptionId
-                ? { NOT: { stripeSubscriptionId: subscriptionId } }
-                : {}),
-            },
+          // Idempotency is already enforced via ProcessedStripeEvent above —
+          // any redelivered event short-circuits before reaching here, so
+          // we don't need extra guards on the update itself. Don't demote
+          // ADMIN; just record the subscription id for the cancel/portal
+          // flows.
+          const target = await prisma.user.findUnique({
+            where: { userId },
+            select: { role: true },
+          });
+          if (!target) {
+            return res.status(200).json({ received: true });
+          }
+          await prisma.user.update({
+            where: { userId },
             data: {
-              role: "POWER_USER",
+              ...(target.role === "ADMIN" ? {} : { role: "POWER_USER" }),
               ...(subscriptionId
                 ? { stripeSubscriptionId: subscriptionId }
                 : {}),

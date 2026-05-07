@@ -835,4 +835,25 @@ export const billingAPI = {
       return _cachedRole;
     }
   },
+
+  // Asks the API to query Stripe directly for the current subscription and
+  // reconcile the user's role + stripeSubscriptionId. Use this on return
+  // from Stripe Checkout so the user doesn't have to wait for the webhook.
+  async syncFromStripe(): Promise<string | null> {
+    try {
+      const response = await fetchWithTimeout(`${API_BASE_URL}/billing/sync`, {
+        method: "POST",
+        headers: getHeaders(),
+      });
+      if (!response.ok) return _cachedRole;
+      const data = await response.json();
+      if (data?.role) {
+        _cachedRole = data.role;
+        return data.role;
+      }
+      return _cachedRole;
+    } catch {
+      return _cachedRole;
+    }
+  },
 };

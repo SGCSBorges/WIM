@@ -139,8 +139,12 @@ export default function App() {
         setAuthStatus("authed");
 
         if (stripeResult === "success") {
+          // syncFromStripe queries Stripe directly (no webhook dependency)
+          // and updates the user's role server-side, then returns the new
+          // role. This makes the upgrade visible immediately even when
+          // webhook delivery is lagging or not configured.
           billingAPI
-            .refreshRoleFromServer()
+            .syncFromStripe()
             .then((newRole) => {
               if (newRole) setRole(newRole);
             })
