@@ -144,12 +144,18 @@ export default function App() {
           // and updates the user's role server-side, then returns the new
           // role. This makes the upgrade visible immediately even when
           // webhook delivery is lagging or not configured.
+          const previousRole = user.role;
           billingAPI
             .syncFromStripe()
             .then((newRole) => {
               if (newRole) {
                 setRole(newRole);
-                if (newRole === "POWER_USER" || newRole === "ADMIN") {
+                // Only celebrate when the sync produced an actual upgrade
+                // (USER → POWER_USER). A user landing on ?stripe=success
+                // without a real subscription change (refresh, shared URL,
+                // already-power-user, admin, etc.) shouldn't see the
+                // welcome banner.
+                if (previousRole === "USER" && newRole === "POWER_USER") {
                   setUpgradeSuccess(t("billing.upgradeSuccess"));
                 }
               }
@@ -247,7 +253,12 @@ export default function App() {
       <nav aria-label="Main navigation" className="ui-nav shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center gap-3 h-16">
-            <h1 className="text-lg sm:text-xl font-semibold whitespace-nowrap flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="text-lg sm:text-xl font-semibold whitespace-nowrap flex items-center gap-2 hover:opacity-80 transition-opacity"
+              aria-label={t("nav.home")}
+            >
               {t("app.title")}
               {role === "POWER_USER" && (
                 <span
@@ -265,7 +276,7 @@ export default function App() {
                   {t("nav.badge.admin")}
                 </span>
               )}
-            </h1>
+            </button>
 
             {/* Desktop links — hidden on mobile, scrollable on medium */}
             <div className="hidden md:flex flex-1 items-center justify-center gap-1 lg:gap-2 overflow-x-auto">
