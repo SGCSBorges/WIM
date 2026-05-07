@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
+import InstallPwaButton from "../common/InstallPwaButton";
 import { useApiForm } from "../../hooks/useApiForm";
 
 interface LoginFormProps {
@@ -164,7 +165,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t ui-divider flex justify-center">
+        <div className="mt-6 pt-4 border-t ui-divider flex flex-col items-center gap-3">
+          <InstallPwaButton />
           <LanguageThemeSelector />
         </div>
       </div>

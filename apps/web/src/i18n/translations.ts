@@ -132,6 +132,9 @@ export const translations = {
     "auth.error.emailInvalid": "Please enter a valid email address",
     "auth.error.passwordTooShort": "Password must be at least 8 characters",
     "auth.loading": "Please wait...",
+    "pwa.install": "Install app",
+    "pwa.install.ios":
+      "On iPhone/iPad, tap Share, then “Add to Home Screen”.",
 
     "common.errorOccurred": "An error occurred",
     "common.for": "for",
@@ -544,6 +547,9 @@ export const translations = {
     "auth.error.passwordTooShort":
       "Le mot de passe doit comporter au moins 8 caractères",
     "auth.loading": "Veuillez patienter…",
+    "pwa.install": "Installer l'application",
+    "pwa.install.ios":
+      "Sur iPhone/iPad, touchez Partager, puis « Sur l'écran d'accueil ».",
 
     "common.errorOccurred": "Une erreur s'est produite",
     "common.for": "pour",
@@ -958,6 +964,9 @@ export const translations = {
     "auth.error.passwordTooShort":
       "A password deve ter pelo menos 8 caracteres",
     "auth.loading": "Por favor aguarde…",
+    "pwa.install": "Instalar aplicação",
+    "pwa.install.ios":
+      "No iPhone/iPad, toque em Partilhar e depois em «Adicionar ao ecrã principal».",
 
     "common.errorOccurred": "Ocorreu um erro",
     "common.for": "para",

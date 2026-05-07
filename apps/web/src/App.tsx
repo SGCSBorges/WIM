@@ -17,6 +17,7 @@ import LoginForm from "./components/auth/LoginForm";
 import { authAPI, billingAPI, profileAPI } from "./services/api";
 import { useI18n } from "./i18n/i18n";
 import LanguageThemeSelector from "./components/common/LanguageThemeSelector";
+import InstallPwaButton from "./components/common/InstallPwaButton";
 
 // Route-level code splitting: each lazy import becomes its own chunk so the
 // initial JS bundle only ships the login flow + shell. The rest is fetched
@@ -299,11 +300,16 @@ export default function App() {
               path="/"
               element={
                 <div>
-                  <header className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight">
-                      {t("home.welcomeTitle")}
-                    </h1>
-                    <p className="ui-text-muted">{t("home.welcomeSubtitle")}</p>
+                  <header className="mb-8 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h1 className="text-3xl font-bold tracking-tight">
+                        {t("home.welcomeTitle")}
+                      </h1>
+                      <p className="ui-text-muted">
+                        {t("home.welcomeSubtitle")}
+                      </p>
+                    </div>
+                    <InstallPwaButton />
                   </header>
 
                   {role === "USER" && (
