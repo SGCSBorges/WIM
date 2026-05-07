@@ -5,6 +5,7 @@ import { RegisterSchema, LoginSchema } from "./auth.schemas";
 import { authGuard, AuthRequest } from "./auth.middleware";
 import { auditAction } from "../common/audit";
 import { denyToken } from "./token-denylist";
+import { prisma } from "../../libs/prisma";
 
 const router = Router();
 
@@ -82,6 +83,46 @@ router.get(
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const profile = await AuthService.profile(req.user!.sub);
     res.json(profile);
+  })
+);
+
+// One-shot admin bootstrap. Promotes the well-known seed account
+// (admin@admin.com) to ADMIN — but only if no ADMIN exists yet. After the
+// first ADMIN is created, this endpoint always returns 409, so leaving it
+// (or its frontend trigger) in place doesn't open a backdoor.
+//
+// Intended to be removed once the seed admin is in place.
+router.post(
+  "/bootstrap-admin",
+  asyncHandler(async (_req: Request, res: Response) => {
+    const SEED_EMAIL = "admin@admin.com";
+
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      select: { userId: true },
+    });
+    if (existingAdmin) {
+      res
+        .status(409)
+        .json({ error: "An admin already exists; bootstrap is disabled." });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: SEED_EMAIL },
+      select: { userId: true, email: true, role: true },
+    });
+    if (!user) {
+      res.status(404).json({ error: `Seed account ${SEED_EMAIL} not found.` });
+      return;
+    }
+
+    await prisma.user.update({
+      where: { userId: user.userId },
+      data: { role: "ADMIN" },
+    });
+
+    res.json({ ok: true, email: user.email, role: "ADMIN" });
   })
 );
 

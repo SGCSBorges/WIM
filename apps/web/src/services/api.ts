@@ -121,6 +121,19 @@ export const authAPI = {
   getRole(): string | null {
     return _cachedRole;
   },
+
+  // Temporary helper: hits the one-shot bootstrap endpoint that promotes
+  // admin@admin.com to ADMIN if no admin exists yet. Remove this once the
+  // seed admin is in place.
+  async bootstrapAdmin(): Promise<{ ok: true; email: string; role: string }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/bootstrap-admin`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Bootstrap failed"));
+    return response.json();
+  },
 };
 
 // Articles API

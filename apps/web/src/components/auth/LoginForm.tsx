@@ -54,6 +54,25 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     clearSubmissionError();
   };
 
+  // Temporary one-shot helper to promote admin@admin.com to ADMIN.
+  // Remove this button (and the matching API endpoint) once the seed admin
+  // account exists. The endpoint refuses to run after the first admin is
+  // created, so leaving this in is bounded — but please clean it up.
+  const [testAdminMsg, setTestAdminMsg] = useState<string | null>(null);
+  const [testAdminBusy, setTestAdminBusy] = useState(false);
+  const runTestAdmin = async () => {
+    setTestAdminMsg(null);
+    setTestAdminBusy(true);
+    try {
+      const res = await authAPI.bootstrapAdmin();
+      setTestAdminMsg(`✓ ${res.email} is now ${res.role}. Log in to use it.`);
+    } catch (e) {
+      setTestAdminMsg(e instanceof Error ? e.message : "Bootstrap failed");
+    } finally {
+      setTestAdminBusy(false);
+    }
+  };
+
   // Zod resolver returns the message string we put in the schema; for i18n we
   // store the translation key there and translate at render time.
   const fieldError = (key?: string) => (key ? t(key as never) : undefined);
@@ -168,6 +187,23 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         <div className="mt-6 pt-4 border-t ui-divider flex flex-col items-center gap-3">
           <InstallPwaButton />
           <LanguageThemeSelector />
+
+          {/* TEMPORARY: bootstrap admin@admin.com to ADMIN. Remove once done. */}
+          <div className="w-full text-center">
+            <button
+              type="button"
+              onClick={runTestAdmin}
+              disabled={testAdminBusy}
+              className={`px-3 py-2 text-sm rounded-md ui-btn-ghost border ${
+                testAdminBusy ? "opacity-70 cursor-not-allowed" : ""
+              }`}
+            >
+              {testAdminBusy ? "Working…" : "TestAdmin"}
+            </button>
+            {testAdminMsg && (
+              <p className="mt-2 text-xs ui-text-muted">{testAdminMsg}</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
