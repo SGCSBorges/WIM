@@ -37,6 +37,9 @@ const SharesList = React.lazy(() => import("./components/sharing/SharesList"));
 const SharedArticlesView = React.lazy(
   () => import("./components/sharing/SharedArticlesView")
 );
+const AcceptInviteForm = React.lazy(
+  () => import("./components/sharing/AcceptInviteForm")
+);
 const AlertsView = React.lazy(() => import("./components/alerts/AlertsView"));
 const ProfileView = React.lazy(
   () => import("./components/profile/ProfileView")
@@ -462,6 +465,21 @@ export default function App() {
               element={
                 role === "POWER_USER" ? (
                   <div className="space-y-6">
+                    <AcceptInviteForm />
+                    <SharesList />
+                    <SharedArticlesView />
+                  </div>
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
+              path="/sharing/accept"
+              element={
+                role === "POWER_USER" ? (
+                  <div className="space-y-6">
+                    <AcceptInviteForm />
                     <SharesList />
                     <SharedArticlesView />
                   </div>

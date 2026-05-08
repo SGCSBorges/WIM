@@ -10,6 +10,7 @@ import { articlesAPI, locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location } from "../../types";
 import { getErrorMessage } from "../../utils/error";
+import ArticleThumb from "./ArticleThumb";
 
 type ArticleShareStatus = {
   articleId: number;
@@ -237,6 +238,7 @@ const ArticlesList: React.FC = () => {
               <thead className="ui-panel">
                 <tr>
                   {[
+                    t("articles.table.image"),
                     t("articles.table.name"),
                     t("articles.table.model"),
                     t("articles.table.description"),
@@ -256,7 +258,7 @@ const ArticlesList: React.FC = () => {
               <tbody className="divide-y ui-divider">
                 {[1, 2, 3, 4].map((i) => (
                   <tr key={i}>
-                    {[60, 40, 80, 24, 24, 48].map((w, j) => (
+                    {[12, 60, 40, 80, 24, 24, 48].map((w, j) => (
                       <td key={j} className="px-6 py-4">
                         <div
                           className={`h-4 animate-pulse rounded ui-panel w-${w}`}
@@ -288,6 +290,9 @@ const ArticlesList: React.FC = () => {
               <thead className="ui-panel">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
+                    {t("articles.table.image")}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.name")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
@@ -311,6 +316,12 @@ const ArticlesList: React.FC = () => {
                 {articles.map((article) => (
                   <React.Fragment key={article.articleId}>
                     <tr className="hover-surface">
+                      <td className="px-6 py-4">
+                        <ArticleThumb
+                          src={article.productImageUrl}
+                          alt={article.articleNom}
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {article.articleNom}
                       </td>
@@ -428,7 +439,7 @@ const ArticlesList: React.FC = () => {
 
                     {openSharesArticleId === article.articleId && (
                       <tr className="ui-panel">
-                        <td colSpan={6} className="px-6 py-4 text-sm">
+                        <td colSpan={7} className="px-6 py-4 text-sm">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
                               <div className="font-medium">
