@@ -81,7 +81,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     <div className="min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full ui-card rounded-lg shadow p-8">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold">WIM</h1>
+          <img
+            src="/logo.png"
+            alt="WIM — Warranty & Inventory Manager"
+            className="mx-auto h-16 w-auto mb-3"
+          />
           <p className="ui-text-muted">{t("auth.subtitle")}</p>
         </div>
 

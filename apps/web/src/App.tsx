@@ -256,10 +256,14 @@ export default function App() {
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="text-lg sm:text-xl font-semibold whitespace-nowrap flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               aria-label={t("nav.home")}
             >
-              {t("app.title")}
+              <img
+                src="/logo.png"
+                alt="WIM — Warranty & Inventory Manager"
+                className="h-8 sm:h-10 w-auto"
+              />
               {role === "POWER_USER" && (
                 <span
                   className="text-[10px] tracking-wide font-bold uppercase px-1.5 py-0.5 rounded ui-badge-power"
