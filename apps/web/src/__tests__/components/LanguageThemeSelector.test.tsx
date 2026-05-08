@@ -28,7 +28,7 @@ describe("<LanguageThemeSelector />", () => {
 
     expect(
       Array.from(themeSelect.querySelectorAll("option")).map((o) => o.value)
-    ).toEqual(["light", "dark", "ocean"]);
+    ).toEqual(["light", "dark", "ocean", "cyber"]);
   });
 
   it("persists language selection to localStorage", async () => {
