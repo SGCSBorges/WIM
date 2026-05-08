@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 
-export type Theme = "light" | "dark" | "ocean";
+export type Theme = "light" | "dark" | "ocean" | "cyber";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -19,7 +19,14 @@ const STORAGE_KEY = "wim.theme";
 
 function detectInitialTheme(): Theme {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved === "light" || saved === "dark" || saved === "ocean") return saved;
+  if (
+    saved === "light" ||
+    saved === "dark" ||
+    saved === "ocean" ||
+    saved === "cyber"
+  ) {
+    return saved;
+  }
 
   // Default to system preference when possible.
   if (

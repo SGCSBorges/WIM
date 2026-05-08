@@ -28,6 +28,7 @@ export default function LanguageThemeSelector() {
         <option value="light">{t("theme.light")}</option>
         <option value="dark">{t("theme.dark")}</option>
         <option value="ocean">{t("theme.ocean")}</option>
+        <option value="cyber">{t("theme.cyber")}</option>
       </select>
     </div>
   );

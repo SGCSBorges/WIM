@@ -32,6 +32,8 @@ export const extras = {
       "Invite accepted. You now have {permission} access.",
     "acceptInvite.error.tokenRequired": "Token is required.",
     "acceptInvite.error.default": "Could not accept this invite.",
+
+    "theme.cyber": "Cyber",
   },
   fr: {
     "articles.table.image": "Image",
@@ -58,6 +60,8 @@ export const extras = {
       "Invitation acceptée. Vous avez maintenant un accès {permission}.",
     "acceptInvite.error.tokenRequired": "Le jeton est requis.",
     "acceptInvite.error.default": "Impossible d'accepter cette invitation.",
+
+    "theme.cyber": "Cyber",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -83,6 +87,8 @@ export const extras = {
     "acceptInvite.success": "Convite aceite. Tem agora acesso {permission}.",
     "acceptInvite.error.tokenRequired": "O token é obrigatório.",
     "acceptInvite.error.default": "Não foi possível aceitar este convite.",
+
+    "theme.cyber": "Cyber",
   },
 } as const;
 
