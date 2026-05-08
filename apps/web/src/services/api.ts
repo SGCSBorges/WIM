@@ -726,16 +726,40 @@ export const sharesAPI = {
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to revoke invite"));
   },
+
+  // Redeem a token-based invite. The server creates an active
+  // InventoryShare from the invite's owner to the calling user.
+  async acceptInvite(token: string): Promise<{
+    ownerUserId: number;
+    targetUserId: number;
+    permission: "READ" | "WRITE";
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/shares/invites/accept`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ token }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to accept invite"));
+    return response.json();
+  },
 };
 
 export interface SharedArticleRow {
   rowId: number;
+  /** "user" = via per-user InventoryShare; "global" = via owner toggling sharedWithPowerUsers. */
+  source: "user" | "global";
+  permission: "READ" | "WRITE";
   owner: { userId: number; email: string };
   article: {
     articleId: number;
     articleNom: string;
     articleModele: string;
     articleDescription?: string | null;
+    productImageUrl?: string | null;
     createdAt: string;
     updatedAt: string;
     garantie?: {
@@ -766,6 +790,32 @@ export const sharedAPI = {
     if (!response.ok)
       throw new Error(
         await extractError(response, "Failed to fetch shared articles")
+      );
+    return response.json();
+  },
+
+  // PUT /shared/articles/:id — only valid when caller has a WRITE
+  // InventoryShare from the article's owner. Server enforces.
+  async updateSharedArticle(
+    articleId: number,
+    patch: {
+      articleNom?: string;
+      articleModele?: string;
+      articleDescription?: string | null;
+      productImageUrl?: string | null;
+    }
+  ) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/shared/articles/${articleId}`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify(patch),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update shared article")
       );
     return response.json();
   },
