@@ -22,8 +22,11 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      # `npm install` (not `npm ci`) so a stale package-lock.json doesn't
+      # block CI when a dependency is added or bumped. Render's
+      # render-build:web does the same, so dev/CI/prod stay aligned.
       - name: Install dependencies
-        run: npm ci --workspaces --include-workspace-root
+        run: npm install --workspaces --include-workspace-root --include=optional
 
       - name: Lint (all workspaces)
         run: npm run lint
