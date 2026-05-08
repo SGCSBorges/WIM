@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { Language, TranslationKey, translations } from "./translations";
+import { extras, ExtrasKey } from "./translations.extras";
+
+// `t` accepts both keys baked into the main dict and keys added later
+// via translations.extras. Lookups prefer extras (so copy fixes there
+// override the main file), then fall back through the language chain.
+type AnyKey = TranslationKey | ExtrasKey;
 
 type I18nContextValue = {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: TranslationKey) => string;
+  t: (key: AnyKey) => string;
 };
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -35,10 +41,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return {
       language,
       setLanguage,
-      t: (key: TranslationKey) => {
-        const dict = translations[language] as Record<string, string>;
+      t: (key: AnyKey) => {
+        const eDict = extras[language] as Record<string, string>;
+        const mDict = translations[language] as Record<string, string>;
         return (
-          dict[key] ?? (translations.en as Record<string, string>)[key] ?? key
+          eDict[key] ??
+          mDict[key] ??
+          (extras.en as Record<string, string>)[key] ??
+          (translations.en as Record<string, string>)[key] ??
+          key
         );
       },
     };
