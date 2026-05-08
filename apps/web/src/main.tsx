@@ -14,6 +14,18 @@ window.addEventListener("unhandledrejection", (event) => {
   console.error("[unhandledrejection]", event.reason);
 });
 
+// Register the service worker so Chrome treats the site as PWA-installable.
+// Skipped on dev (vite serves over HTTP on localhost without a stable SW
+// scope) and quietly logged on failure — install is best-effort.
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((err) => {
+      // eslint-disable-next-line no-console
+      console.warn("[sw] registration failed", err);
+    });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
