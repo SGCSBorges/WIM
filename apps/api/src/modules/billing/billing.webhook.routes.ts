@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
+import { ShareService } from "../shares/share.service";
 
 const router = Router();
 
@@ -129,9 +130,31 @@ router.post(
         // If subscription is deleted, Stripe will send customer.subscription.deleted.
         // If it's updated to canceled at period end, we wait until it becomes canceled.
         if (shouldDowngrade) {
-          await prisma.user.updateMany({
-            where: { stripeSubscriptionId: subscriptionId },
-            data: { role: "USER" },
+          // Find all users that match this subscription FIRST so we can
+          // run share-cleanup per-user inside the same transaction. Most
+          // of the time this resolves to 0 or 1 row, but updateMany
+          // semantics keep us safe if Stripe ever attaches the same sub
+          // id to multiple records.
+          const affected = await prisma.user.findMany({
+            where: { stripeSubscriptionId: subscriptionId, role: "POWER_USER" },
+            select: { userId: true },
+          });
+
+          await prisma.$transaction(async (tx) => {
+            await tx.user.updateMany({
+              where: { stripeSubscriptionId: subscriptionId },
+              data: { role: "USER" },
+            });
+            for (const u of affected) {
+              const counts = await ShareService.cleanupSharingForUser(
+                u.userId,
+                tx
+              );
+              logger.info(
+                { userId: u.userId, ...counts, reason: "stripe-cancel" },
+                "[stripe-webhook] downgrade cleanup"
+              );
+            }
           });
         } else if (cancelAtPeriodEnd) {
           // Ensure we at least store the subscription id if we didn't yet.

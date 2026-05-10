@@ -34,10 +34,14 @@ router.post(
   })
 );
 
-// accepter une invitation (token)
+// accepter une invitation (token). Inventory shares are POWER_USER-only
+// on both sides — the createInvite path enforces it for the recipient at
+// invite time, but a previously-power-user could lose the role between
+// invite and accept; the route guard catches that.
 router.post(
   "/invites/accept",
   authGuard,
+  requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
     const { token } = ShareInviteAcceptSchema.parse(req.body);
     const result = await ShareService.acceptInvite(token, req.user!.sub);

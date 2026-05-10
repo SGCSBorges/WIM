@@ -7,6 +7,60 @@ import { idParam } from "../common/schemas";
 
 const router = Router();
 
+// GET /api/articles/shared-public — list of *my* publicly-shared articles
+// for the profile "Articles you've shared publicly" panel. Same shape as
+// the regular article list to keep frontend code reusable.
+//
+// IMPORTANT: this must be registered BEFORE the routes that match
+// "/:articleId/..." so Express doesn't try to parse "shared-public" as
+// an article id.
+router.get(
+  "/shared-public",
+  authGuard,
+  requireRole("POWER_USER"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const ownerUserId = req.user!.sub;
+    const articles = await prisma.article.findMany({
+      where: { ownerUserId, sharedWithPowerUsers: true },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        garantie: true,
+        locations: {
+          select: {
+            locationId: true,
+            location: { select: { name: true } },
+          },
+        },
+      },
+    });
+    return res.json(articles);
+  })
+);
+
+// POST /api/articles/unshare-all — kill switch on the public-share toggle.
+// Sets `sharedWithPowerUsers=false` for every article the caller owns
+// where it was true. Returns the count for the UI to confirm.
+router.post(
+  "/unshare-all",
+  authGuard,
+  requireRole("POWER_USER"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const ownerUserId = req.user!.sub;
+    const result = await prisma.article.updateMany({
+      where: { ownerUserId, sharedWithPowerUsers: true },
+      data: { sharedWithPowerUsers: false },
+    });
+
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      metadata: { unshareAll: true, count: result.count },
+    });
+
+    return res.json({ count: result.count });
+  })
+);
+
 // POWER_USER owner shares a specific article with *all* POWER_USERs.
 // Simplest model: Article.sharedWithPowerUsers boolean.
 

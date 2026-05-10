@@ -5,6 +5,7 @@ import { asyncHandler } from "../common/http";
 import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
+import { ShareService } from "../shares/share.service";
 
 const router = Router();
 
@@ -171,13 +172,24 @@ router.post(
     const needsUpdate =
       nextRole !== user.role ||
       activeSubscriptionId !== user.stripeSubscriptionId;
+    const isDowngrade = user.role === "POWER_USER" && nextRole === "USER";
+
     if (needsUpdate) {
-      await prisma.user.update({
-        where: { userId },
-        data: {
-          role: nextRole,
-          stripeSubscriptionId: activeSubscriptionId,
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { userId },
+          data: {
+            role: nextRole,
+            stripeSubscriptionId: activeSubscriptionId,
+          },
+        });
+        if (isDowngrade) {
+          const counts = await ShareService.cleanupSharingForUser(userId, tx);
+          logger.info(
+            { userId, ...counts, reason: "billing-sync" },
+            "[billing/sync] downgrade cleanup"
+          );
+        }
       });
     }
 

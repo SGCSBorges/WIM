@@ -1,11 +1,16 @@
 import crypto from "crypto";
-import { SharePermission, InviteStatus } from "@prisma/client";
+import { Prisma, SharePermission, InviteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import {
   InventoryShareCreateInput,
   ShareInviteCreateInput,
 } from "./share.schemas";
+
+// Either a transaction client or the regular prisma client. Helpers that
+// take this can be called standalone or inside a caller-managed transaction
+// (e.g. so a role downgrade + share cleanup land atomically).
+type Db = Prisma.TransactionClient | typeof prisma;
 
 export const ShareService = {
   async createInvite(data: ShareInviteCreateInput) {
@@ -16,6 +21,25 @@ export const ShareService = {
     });
     if (owner?.email === data.email)
       throw createHttpError(400, "You cannot invite yourself");
+
+    // Inventory invites are POWER_USER-only on both ends. Reject early if
+    // the invitee isn't a registered power user — accepting later would
+    // also fail (the accept route requires POWER_USER), so failing fast
+    // here keeps the owner from sending dead invites.
+    //
+    // We deliberately use the same error for "no such user" and "user
+    // exists but isn't a power user" to avoid leaking which emails are
+    // registered.
+    const invitee = await prisma.user.findUnique({
+      where: { email: data.email },
+      select: { role: true },
+    });
+    if (!invitee || invitee.role !== "POWER_USER") {
+      throw createHttpError(
+        400,
+        "That email isn't a Power User. Inventory invites can only go to existing Power Users."
+      );
+    }
 
     const existing = await prisma.shareInvite.findFirst({
       where: {
@@ -38,6 +62,46 @@ export const ShareService = {
         permission: data.permission.toUpperCase() as SharePermission,
       },
     });
+  },
+
+  /**
+   * Drops every outgoing sharing artefact for `userId`. Called whenever a
+   * POWER_USER is demoted (subscription cancel, admin demote, manual
+   * billing/sync). Idempotent — running twice produces zero rows on the
+   * second call.
+   *
+   * Accepts an optional transaction client so the caller can roll back
+   * the role change if cleanup fails.
+   */
+  async cleanupSharingForUser(
+    userId: number,
+    tx: Db = prisma
+  ): Promise<{
+    articlesUnshared: number;
+    sharesRevoked: number;
+    invitesRevoked: number;
+  }> {
+    const [articlesUnshared, sharesRevoked, invitesRevoked] = await Promise.all(
+      [
+        tx.article.updateMany({
+          where: { ownerUserId: userId, sharedWithPowerUsers: true },
+          data: { sharedWithPowerUsers: false },
+        }),
+        tx.inventoryShare.updateMany({
+          where: { ownerUserId: userId, active: true },
+          data: { active: false },
+        }),
+        tx.shareInvite.updateMany({
+          where: { ownerUserId: userId, status: "PENDING" },
+          data: { status: "REVOKED" },
+        }),
+      ]
+    );
+    return {
+      articlesUnshared: articlesUnshared.count,
+      sharesRevoked: sharesRevoked.count,
+      invitesRevoked: invitesRevoked.count,
+    };
   },
 
   async createDirectShare(data: InventoryShareCreateInput) {
