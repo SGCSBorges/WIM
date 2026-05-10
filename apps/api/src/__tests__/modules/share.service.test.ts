@@ -143,7 +143,64 @@ describe("ShareService.acceptInvite", () => {
 });
 
 describe("ShareService.createInvite", () => {
+  // user.findUnique is called twice in createInvite: first to resolve the
+  // owner's email (self-invite check), then to resolve the invitee's role.
+  // Tests stub both sequentially.
+  function mockOwnerThenInvitee(opts: {
+    ownerEmail: string;
+    inviteeRole: "USER" | "POWER_USER" | "ADMIN" | null;
+  }) {
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce({ email: opts.ownerEmail })
+      .mockResolvedValueOnce(
+        opts.inviteeRole === null ? null : { role: opts.inviteeRole }
+      );
+  }
+
+  it("rejects with 400 when invitee email isn't a registered Power User", async () => {
+    mockOwnerThenInvitee({
+      ownerEmail: "owner@x.com",
+      inviteeRole: "USER",
+    });
+    await expect(
+      ShareService.createInvite({
+        ownerUserId: 1,
+        email: "target@x.com",
+        permission: "READ",
+        expiresAt: new Date(Date.now() + 86_400_000),
+      })
+    ).rejects.toMatchObject({
+      status: 400,
+      message:
+        "That email isn't a Power User. Inventory invites can only go to existing Power Users.",
+    });
+    expect(mockPrisma.shareInvite.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects with 400 with the same error when invitee email isn't registered (no enumeration)", async () => {
+    mockOwnerThenInvitee({
+      ownerEmail: "owner@x.com",
+      inviteeRole: null,
+    });
+    await expect(
+      ShareService.createInvite({
+        ownerUserId: 1,
+        email: "ghost@x.com",
+        permission: "READ",
+        expiresAt: new Date(Date.now() + 86_400_000),
+      })
+    ).rejects.toMatchObject({
+      status: 400,
+      message:
+        "That email isn't a Power User. Inventory invites can only go to existing Power Users.",
+    });
+  });
+
   it("rejects with 409 when a pending invite already exists for the email", async () => {
+    mockOwnerThenInvitee({
+      ownerEmail: "owner@x.com",
+      inviteeRole: "POWER_USER",
+    });
     mockPrisma.shareInvite.findFirst.mockResolvedValue({ shareInviteId: 7 });
     await expect(
       ShareService.createInvite({
@@ -160,6 +217,10 @@ describe("ShareService.createInvite", () => {
   });
 
   it("creates the invite with a random hex token when no duplicate exists", async () => {
+    mockOwnerThenInvitee({
+      ownerEmail: "owner@x.com",
+      inviteeRole: "POWER_USER",
+    });
     mockPrisma.shareInvite.findFirst.mockResolvedValue(null);
     mockPrisma.shareInvite.create.mockResolvedValue({
       shareInviteId: 8,
@@ -183,6 +244,39 @@ describe("ShareService.createInvite", () => {
       })
     );
     expect(result).toMatchObject({ shareInviteId: 8 });
+  });
+});
+
+describe("ShareService.cleanupSharingForUser", () => {
+  it("flips public articles, deactivates outgoing shares, revokes pending invites", async () => {
+    const tx = {
+      article: { updateMany: vi.fn().mockResolvedValue({ count: 3 }) },
+      inventoryShare: { updateMany: vi.fn().mockResolvedValue({ count: 2 }) },
+      shareInvite: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+    };
+
+    const result = await ShareService.cleanupSharingForUser(
+      42,
+      tx as unknown as typeof prisma
+    );
+
+    expect(tx.article.updateMany).toHaveBeenCalledWith({
+      where: { ownerUserId: 42, sharedWithPowerUsers: true },
+      data: { sharedWithPowerUsers: false },
+    });
+    expect(tx.inventoryShare.updateMany).toHaveBeenCalledWith({
+      where: { ownerUserId: 42, active: true },
+      data: { active: false },
+    });
+    expect(tx.shareInvite.updateMany).toHaveBeenCalledWith({
+      where: { ownerUserId: 42, status: "PENDING" },
+      data: { status: "REVOKED" },
+    });
+    expect(result).toEqual({
+      articlesUnshared: 3,
+      sharesRevoked: 2,
+      invitesRevoked: 1,
+    });
   });
 });
 

@@ -8,6 +8,7 @@ import { auditAction } from "../common/audit";
 import { createHttpError } from "../../utils/http-error";
 import { idParam } from "../common/schemas";
 import { passwordSchema } from "../auth/auth.schemas";
+import { ShareService } from "../shares/share.service";
 
 const router = Router();
 
@@ -209,6 +210,13 @@ router.patch(
     // Last-admin protection: if we're demoting an ADMIN, make sure another
     // ADMIN exists. Wrap in a serializable transaction so two concurrent
     // demotion requests can't both pass the check.
+    //
+    // We also clean up sharing artefacts when a POWER_USER drops to a
+    // non-POWER role — orphaned shares would otherwise keep publishing
+    // the demoted user's inventory to others.
+    let downgradeCleanupCounts: Awaited<
+      ReturnType<typeof ShareService.cleanupSharingForUser>
+    > | null = null;
     const updated = await prisma.$transaction(
       async (tx) => {
         if (
@@ -230,7 +238,7 @@ router.patch(
             throw createHttpError(409, "Email already registered");
         }
 
-        return tx.user.update({
+        const result = await tx.user.update({
           where: { userId },
           data: {
             ...(data.email !== undefined ? { email: data.email } : {}),
@@ -244,6 +252,19 @@ router.patch(
             updatedAt: true,
           },
         });
+
+        if (
+          target.role === "POWER_USER" &&
+          data.role !== undefined &&
+          data.role !== "POWER_USER"
+        ) {
+          downgradeCleanupCounts = await ShareService.cleanupSharingForUser(
+            userId,
+            tx
+          );
+        }
+
+        return result;
       },
       { isolationLevel: "Serializable" }
     );
@@ -256,6 +277,9 @@ router.patch(
       metadata: {
         before: { email: target.email, role: target.role },
         after: { email: updated.email, role: updated.role },
+        ...(downgradeCleanupCounts
+          ? { downgradeCleanup: downgradeCleanupCounts }
+          : {}),
       },
     });
 
