@@ -182,6 +182,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
           className="ui-card rounded-lg p-4 space-y-3"
         >
           <h3 className="font-semibold ui-title">{t("shareForm.title")}</h3>
+          <p className="text-xs ui-text-muted">{t("shareForm.email.note")}</p>
           {inviteError && <p className="text-sm text-red-600">{inviteError}</p>}
           <div className="flex flex-col sm:flex-row gap-3">
             <input

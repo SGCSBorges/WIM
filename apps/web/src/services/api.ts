@@ -1,4 +1,4 @@
-import type { Article } from "../types";
+import type { Article, FetchedArticle } from "../types";
 
 // API base URL strategy:
 // - In development, default to the local API.
@@ -232,6 +232,35 @@ export const articlesAPI = {
         )
       );
     return null;
+  },
+
+  // GET /api/articles/shared-public — caller's articles where
+  // sharedWithPowerUsers = true. Used by the Profile view's
+  // "Articles you've shared publicly" panel.
+  async getMySharedPublic(): Promise<FetchedArticle[]> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/shared-public`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch shared articles")
+      );
+    return response.json();
+  },
+
+  // POST /api/articles/unshare-all — kill switch on the public-share
+  // toggle for every article the caller owns. Returns the count.
+  async unshareAll(): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/unshare-all`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to unshare all articles")
+      );
+    return response.json();
   },
 };
 

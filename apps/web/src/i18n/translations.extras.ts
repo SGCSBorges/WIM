@@ -34,6 +34,23 @@ export const extras = {
     "acceptInvite.error.default": "Could not accept this invite.",
 
     "theme.cyber": "Cyber",
+
+    "profile.share.public.title": "Articles you've shared publicly",
+    "profile.share.public.subtitle":
+      "Visible read-only to every Power User. Unshare any article (or all of them) here.",
+    "profile.share.public.empty": "You haven't shared any articles publicly.",
+    "profile.share.public.unshareOne": "Unshare",
+    "profile.share.public.unshareAll": "Unshare all my articles",
+    "profile.share.public.unshareAllConfirm":
+      "Stop sharing every article publicly?",
+    "profile.share.public.unshareAllSuccess": "Unshared {count} article(s).",
+    "profile.share.invited.title": "People you've invited",
+    "profile.share.invited.empty": "You haven't invited anyone yet.",
+    "profile.share.invited.activeHeading": "Active access",
+    "profile.share.invited.pendingHeading": "Pending invites",
+    "profile.share.invited.onlyPowerUsersNote":
+      "Inventory invites can only go to existing Power Users. They must accept before getting access.",
+    "shareForm.email.note": "Invitee must already be a Power User to accept.",
   },
   fr: {
     "articles.table.image": "Image",
@@ -62,6 +79,25 @@ export const extras = {
     "acceptInvite.error.default": "Impossible d'accepter cette invitation.",
 
     "theme.cyber": "Cyber",
+
+    "profile.share.public.title": "Articles partagés publiquement",
+    "profile.share.public.subtitle":
+      "Visibles en lecture seule par tous les Power Users. Vous pouvez les retirer un par un ou tous d'un coup.",
+    "profile.share.public.empty":
+      "Vous n'avez partagé aucun article publiquement.",
+    "profile.share.public.unshareOne": "Retirer",
+    "profile.share.public.unshareAll": "Tout retirer du partage public",
+    "profile.share.public.unshareAllConfirm":
+      "Arrêter de partager tous les articles publiquement ?",
+    "profile.share.public.unshareAllSuccess":
+      "{count} article(s) retiré(s) du partage.",
+    "profile.share.invited.title": "Personnes que vous avez invitées",
+    "profile.share.invited.empty": "Vous n'avez encore invité personne.",
+    "profile.share.invited.activeHeading": "Accès actifs",
+    "profile.share.invited.pendingHeading": "Invitations en attente",
+    "profile.share.invited.onlyPowerUsersNote":
+      "Les invitations d'inventaire ne peuvent aller qu'à des Power Users existants. Ils doivent les accepter avant d'avoir accès.",
+    "shareForm.email.note": "L'invité doit déjà être Power User pour accepter.",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -89,6 +125,24 @@ export const extras = {
     "acceptInvite.error.default": "Não foi possível aceitar este convite.",
 
     "theme.cyber": "Cyber",
+
+    "profile.share.public.title": "Artigos partilhados publicamente",
+    "profile.share.public.subtitle":
+      "Visíveis em apenas leitura por todos os Power Users. Pode cancelar individualmente ou todos de uma vez.",
+    "profile.share.public.empty": "Não partilhou nenhum artigo publicamente.",
+    "profile.share.public.unshareOne": "Cancelar partilha",
+    "profile.share.public.unshareAll": "Cancelar partilha de tudo",
+    "profile.share.public.unshareAllConfirm":
+      "Cancelar a partilha pública de todos os artigos?",
+    "profile.share.public.unshareAllSuccess":
+      "Partilha cancelada para {count} artigo(s).",
+    "profile.share.invited.title": "Pessoas que convidou",
+    "profile.share.invited.empty": "Ainda não convidou ninguém.",
+    "profile.share.invited.activeHeading": "Acessos ativos",
+    "profile.share.invited.pendingHeading": "Convites pendentes",
+    "profile.share.invited.onlyPowerUsersNote":
+      "Os convites de inventário só podem ser enviados a Power Users existentes. Têm de aceitar antes de obter acesso.",
+    "shareForm.email.note": "O convidado tem de ser Power User para aceitar.",
   },
 } as const;
 
