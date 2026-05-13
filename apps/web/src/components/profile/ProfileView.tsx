@@ -12,6 +12,7 @@ import type { FetchedArticle } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "../articles/ArticleThumb";
+import { useToast } from "../common/Toast";
 
 type Me = { userId: number; email: string; role: string };
 
@@ -36,6 +37,7 @@ function disconnectAndRedirect() {
 
 export default function ProfileView() {
   const { t, language } = useI18n();
+  const toast = useToast();
   const [me, setMe] = useState<Me | null>(null);
   const [subscription, setSubscription] = useState<BillingSubscription | null>(
     null
@@ -66,11 +68,25 @@ export default function ProfileView() {
 
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showSuccess = useCallback((msg: string) => {
-    if (successTimerRef.current) clearTimeout(successTimerRef.current);
-    setSuccess(msg);
-    successTimerRef.current = setTimeout(() => setSuccess(null), 4000);
-  }, []);
+  const showSuccess = useCallback(
+    (msg: string) => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+      setSuccess(msg);
+      successTimerRef.current = setTimeout(() => setSuccess(null), 4000);
+      toast.show(msg, { kind: "success" });
+    },
+    [toast]
+  );
+
+  // Surface a submit failure both inline (existing setError) and as a toast
+  // so users get immediate feedback even if the inline banner is off-screen.
+  const showFailure = useCallback(
+    (msg: string) => {
+      setError(msg);
+      toast.show(msg, { kind: "error" });
+    },
+    [toast]
+  );
 
   useEffect(
     () => () => {
@@ -116,7 +132,7 @@ export default function ProfileView() {
       setCurrentPasswordForEmail("");
       showSuccess(t("profile.email.success"));
     } catch (e: unknown) {
-      setError(getErrorMessage(e, t("common.errorOccurred")));
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setSaving(false);
     }
@@ -131,7 +147,7 @@ export default function ProfileView() {
       setNewPassword("");
       showSuccess(t("profile.password.success"));
     } catch (e: unknown) {
-      setError(getErrorMessage(e, t("common.errorOccurred")));
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setSaving(false);
     }
@@ -149,7 +165,7 @@ export default function ProfileView() {
         disconnectAndRedirect();
         return;
       }
-      setError(msg || t("common.errorOccurred"));
+      showFailure(msg || t("common.errorOccurred"));
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);

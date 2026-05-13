@@ -3,11 +3,12 @@
  * Form for creating and editing articles
  */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { attachmentsAPI, locationsAPI, API_BASE_URL } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, Location } from "../../types";
 import { getErrorMessage } from "../../utils/error";
+import { useToast } from "../common/Toast";
 
 interface ArticleFormProps {
   article?: Article;
@@ -21,6 +22,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   onCancel,
 }) => {
   const { t } = useI18n();
+  const toast = useToast();
+  const formErrorRef = useRef<HTMLDivElement | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [locationsError, setLocationsError] = useState<string | null>(null);
@@ -257,11 +260,24 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     try {
       await onSubmit(submitData);
     } catch (err) {
-      setFormError(getErrorMessage(err, t("common.errorOccurred")));
+      const msg = getErrorMessage(err, t("common.errorOccurred"));
+      setFormError(msg);
+      toast.show(msg, { kind: "error" });
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Scroll the inline error block into view whenever a new error appears
+  // (the toast already announces it; this gives long forms a focal point).
+  useEffect(() => {
+    if (formError && formErrorRef.current) {
+      formErrorRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [formError]);
 
   const toggleLocation = (id: number) => {
     setSelectedLocationIds((prev) =>
@@ -582,7 +598,15 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           )}
         </div>
 
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
+        {formError && (
+          <p
+            ref={formErrorRef}
+            role="alert"
+            className="text-sm text-red-600"
+          >
+            {formError}
+          </p>
+        )}
 
         <div className="flex gap-3 pt-4">
           <button
