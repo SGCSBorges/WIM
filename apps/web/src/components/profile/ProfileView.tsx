@@ -2,10 +2,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   profileAPI,
   billingAPI,
+  articlesAPI,
+  sharesAPI,
   type BillingSubscription,
+  type ShareItem,
+  type ShareInviteItem,
 } from "../../services/api";
+import type { FetchedArticle } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import ArticleThumb from "../articles/ArticleThumb";
 
 type Me = { userId: number; email: string; role: string };
 
@@ -48,6 +54,15 @@ export default function ProfileView() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
+
+  // Sharing-panel state. Both lists load lazily after first paint via the
+  // same refresh function so unsharing/revoking can refetch in one place.
+  const [sharedPublic, setSharedPublic] = useState<FetchedArticle[]>([]);
+  const [sharesOwned, setSharesOwned] = useState<ShareItem[]>([]);
+  const [invitesSent, setInvitesSent] = useState<ShareInviteItem[]>([]);
+  const [sharingLoaded, setSharingLoaded] = useState(false);
+  const [sharingBusy, setSharingBusy] = useState<string | null>(null);
+  const [showUnshareAllConfirm, setShowUnshareAllConfirm] = useState(false);
 
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -166,6 +181,89 @@ export default function ProfileView() {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setBillingBusy(false);
+    }
+  };
+
+  // Sharing-panel data fetch. Pulls all three lists in parallel — none
+  // depends on the others, and they're small enough that paginating
+  // would add complexity for no real win.
+  const loadSharing = useCallback(async () => {
+    try {
+      const [pub, owned, sent] = await Promise.all([
+        articlesAPI.getMySharedPublic(),
+        sharesAPI.getOwned(),
+        sharesAPI.getSentInvites(),
+      ]);
+      setSharedPublic(pub);
+      setSharesOwned(owned);
+      setInvitesSent(sent);
+      setSharingLoaded(true);
+    } catch {
+      // Failure here is non-fatal — the rest of the profile keeps working.
+      setSharingLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (me?.role === "POWER_USER") loadSharing();
+  }, [me?.role, loadSharing]);
+
+  const unshareOne = async (articleId: number) => {
+    setSharingBusy(`article:${articleId}`);
+    setError(null);
+    try {
+      await articlesAPI.removeShare(articleId);
+      await loadSharing();
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setSharingBusy(null);
+    }
+  };
+
+  const unshareAll = async () => {
+    setSharingBusy("unshare-all");
+    setShowUnshareAllConfirm(false);
+    setError(null);
+    try {
+      const { count } = await articlesAPI.unshareAll();
+      showSuccess(
+        t("profile.share.public.unshareAllSuccess").replace(
+          "{count}",
+          String(count)
+        )
+      );
+      await loadSharing();
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setSharingBusy(null);
+    }
+  };
+
+  const revokeShareWith = async (targetUserId: number) => {
+    setSharingBusy(`share:${targetUserId}`);
+    setError(null);
+    try {
+      await sharesAPI.revoke(targetUserId);
+      await loadSharing();
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setSharingBusy(null);
+    }
+  };
+
+  const revokeInvite = async (inviteId: number) => {
+    setSharingBusy(`invite:${inviteId}`);
+    setError(null);
+    try {
+      await sharesAPI.revokeInvite(inviteId);
+      await loadSharing();
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setSharingBusy(null);
     }
   };
 
@@ -323,6 +421,204 @@ export default function ProfileView() {
                   {t("common.no")}
                 </button>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* "Articles you've shared publicly" — POWER_USER only. Lists every
+          article the user flipped sharedWithPowerUsers=true on, with a
+          per-row Unshare and a single Unshare-all kill switch. */}
+      {me?.role === "POWER_USER" && (
+        <div className="ui-card rounded-xl p-6 space-y-3">
+          <div>
+            <h2 className="font-semibold ui-title">
+              {t("profile.share.public.title")}
+            </h2>
+            <p className="text-sm ui-text-muted">
+              {t("profile.share.public.subtitle")}
+            </p>
+          </div>
+
+          {!sharingLoaded ? (
+            <p className="text-sm ui-text-muted">{t("common.loading")}</p>
+          ) : sharedPublic.length === 0 ? (
+            <p className="text-sm ui-text-muted">
+              {t("profile.share.public.empty")}
+            </p>
+          ) : (
+            <ul className="divide-y ui-divider">
+              {sharedPublic.map((a) => (
+                <li key={a.articleId} className="flex items-center gap-3 py-3">
+                  <ArticleThumb
+                    src={a.productImageUrl}
+                    alt={a.articleNom}
+                    size={40}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium truncate">{a.articleNom}</div>
+                    <div className="text-xs ui-text-muted truncate">
+                      {a.articleModele}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => unshareOne(a.articleId)}
+                    disabled={sharingBusy === `article:${a.articleId}`}
+                    className="ui-btn-ghost px-3 py-1.5 text-sm rounded border ui-divider"
+                  >
+                    {sharingBusy === `article:${a.articleId}`
+                      ? t("common.loading")
+                      : t("profile.share.public.unshareOne")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {sharedPublic.length > 0 && (
+            <div className="pt-3 border-t ui-divider">
+              {showUnshareAllConfirm ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-red-700">
+                    {t("profile.share.public.unshareAllConfirm")}
+                  </span>
+                  <button
+                    onClick={unshareAll}
+                    disabled={sharingBusy === "unshare-all"}
+                    className="ui-btn-danger px-3 py-1.5 text-sm rounded"
+                  >
+                    {sharingBusy === "unshare-all"
+                      ? t("common.loading")
+                      : t("common.yes")}
+                  </button>
+                  <button
+                    onClick={() => setShowUnshareAllConfirm(false)}
+                    className="ui-btn-ghost px-3 py-1.5 text-sm rounded border ui-divider"
+                  >
+                    {t("common.no")}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowUnshareAllConfirm(true)}
+                  className="ui-action-danger text-sm"
+                >
+                  {t("profile.share.public.unshareAll")}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* "People you've invited" — POWER_USER only. Merges the active
+          per-user shares (InventoryShare with active=true) and the still-
+          pending invites (ShareInvite with status=PENDING) so the user
+          can see exactly who can reach their inventory and revoke from
+          one place. */}
+      {me?.role === "POWER_USER" && (
+        <div className="ui-card rounded-xl p-6 space-y-4">
+          <div>
+            <h2 className="font-semibold ui-title">
+              {t("profile.share.invited.title")}
+            </h2>
+            <p className="text-sm ui-text-muted">
+              {t("profile.share.invited.onlyPowerUsersNote")}
+            </p>
+          </div>
+
+          {!sharingLoaded ? (
+            <p className="text-sm ui-text-muted">{t("common.loading")}</p>
+          ) : sharesOwned.length === 0 &&
+            invitesSent.filter((i) => i.status === "PENDING").length === 0 ? (
+            <p className="text-sm ui-text-muted">
+              {t("profile.share.invited.empty")}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {sharesOwned.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium mb-2 ui-text-muted">
+                    {t("profile.share.invited.activeHeading")}
+                  </h3>
+                  <ul className="divide-y ui-divider">
+                    {sharesOwned.map((s) => (
+                      <li
+                        key={s.inventoryShareId}
+                        className="flex items-center gap-3 py-2"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium truncate">
+                            {s.target.email}
+                          </div>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded ${
+                            s.permission === "WRITE"
+                              ? "ui-badge-warning"
+                              : "ui-badge-success"
+                          }`}
+                        >
+                          {s.permission}
+                        </span>
+                        <button
+                          onClick={() => revokeShareWith(s.target.userId)}
+                          disabled={sharingBusy === `share:${s.target.userId}`}
+                          className="ui-action-danger text-sm"
+                        >
+                          {sharingBusy === `share:${s.target.userId}`
+                            ? t("common.loading")
+                            : t("shares.action.revoke")}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {invitesSent.some((i) => i.status === "PENDING") && (
+                <div>
+                  <h3 className="text-sm font-medium mb-2 ui-text-muted">
+                    {t("profile.share.invited.pendingHeading")}
+                  </h3>
+                  <ul className="divide-y ui-divider">
+                    {invitesSent
+                      .filter((i) => i.status === "PENDING")
+                      .map((i) => (
+                        <li
+                          key={i.shareInviteId}
+                          className="flex items-center gap-3 py-2"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium truncate">
+                              {i.email}
+                            </div>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded ${
+                              i.permission === "WRITE"
+                                ? "ui-badge-warning"
+                                : "ui-badge-success"
+                            }`}
+                          >
+                            {i.permission}
+                          </span>
+                          <button
+                            onClick={() => revokeInvite(i.shareInviteId)}
+                            disabled={
+                              sharingBusy === `invite:${i.shareInviteId}`
+                            }
+                            className="ui-action-danger text-sm"
+                          >
+                            {sharingBusy === `invite:${i.shareInviteId}`
+                              ? t("common.loading")
+                              : t("shares.action.revoke")}
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </div>
