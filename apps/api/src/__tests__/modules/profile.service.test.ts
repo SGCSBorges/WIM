@@ -4,23 +4,33 @@ const bcryptRef = vi.hoisted(() => ({
   realHash: null as null | ((data: string, rounds: number) => Promise<string>),
 }));
 
-vi.mock("../../libs/prisma", () => ({
-  prisma: {
-    user: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
+// Chunked-delete service touches prisma.<model>.count and findMany directly
+// (not through the tx). Default each table to "nothing to delete" so the
+// loops terminate immediately in tests that don't customise them.
+vi.mock("../../libs/prisma", () => {
+  const empty = () => ({
+    count: vi.fn().mockResolvedValue(0),
+    findMany: vi.fn().mockResolvedValue([]),
+    deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+  });
+  return {
+    prisma: {
+      user: {
+        findUnique: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn().mockResolvedValue({}),
+      },
+      $transaction: vi.fn(),
+      alerte: empty(),
+      inventoryShare: empty(),
+      shareInvite: empty(),
+      auditLog: empty(),
+      attachment: empty(),
+      garantie: empty(),
+      article: empty(),
     },
-    $transaction: vi.fn(),
-    alerte: { deleteMany: vi.fn() },
-    inventoryShare: { deleteMany: vi.fn() },
-    shareInvite: { deleteMany: vi.fn() },
-    auditLog: { deleteMany: vi.fn() },
-    attachment: { deleteMany: vi.fn() },
-    garantie: { deleteMany: vi.fn() },
-    article: { deleteMany: vi.fn() },
-  },
-}));
+  };
+});
 
 vi.mock("bcrypt", async (importOriginal) => {
   const actual = await importOriginal<typeof import("bcrypt")>();

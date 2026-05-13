@@ -7,6 +7,36 @@ import { AlertService } from "../alerts/alert.service";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
+const DELETE_CHUNK_SIZE = 1000;
+
+/**
+ * Delete in batches to avoid statement-timeout / lock-bloat on large accounts.
+ * Each batch is a separate transaction so we don't hold one huge lock and
+ * users with tens of thousands of articles can still self-delete.
+ */
+async function chunkedDelete(
+  label: string,
+  count: () => Promise<number>,
+  deleteBatch: () => Promise<{ count: number }>,
+  userId: number
+) {
+  let remaining = await count();
+  if (remaining === 0) return;
+  while (remaining > 0) {
+    const before = remaining;
+    const res = await deleteBatch();
+    if (res.count === 0) break;
+    remaining = await count();
+    if (remaining >= before) {
+      logger.warn(
+        { userId, label, remaining },
+        "[profile] chunked delete made no progress — aborting"
+      );
+      break;
+    }
+  }
+}
+
 export const ProfileService = {
   async get(userId: number) {
     return prisma.user.findUnique({
@@ -85,38 +115,137 @@ export const ProfileService = {
       );
     }
 
-    // Delete in a safe order to avoid FK constraint issues.
-    // Note: Many relations are configured with onDelete: Cascade, but explicit deletions
-    // make the behavior predictable and work even if some cascades are missing in DB.
-    await prisma.$transaction(async (tx: TxClient) => {
-      // Prevent deleting the last admin account.
-      if (user.role === "ADMIN") {
-        const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
-        if (adminCount <= 1)
-          throw createHttpError(400, "Cannot delete the last admin account");
-      }
+    // Last-admin guard runs first, in its own tx, before any destructive work.
+    await prisma.$transaction(
+      async (tx: TxClient) => {
+        if (user.role === "ADMIN") {
+          const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+          if (adminCount <= 1)
+            throw createHttpError(400, "Cannot delete the last admin account");
+        }
+      },
+      { isolationLevel: "Serializable" }
+    );
 
-      // 1) Alerts must go before warranties/articles because they reference them.
-      await tx.alerte.deleteMany({ where: { ownerUserId: userId } });
+    // Delete dependent rows in chunks (each chunk is its own short tx) so a
+    // user with tens of thousands of articles / attachments / alerts does
+    // not time out a single mega-transaction. Order matters: child rows
+    // before parents, even though most relations cascade — explicit deletes
+    // remain predictable if cascades drift.
+    await chunkedDelete(
+      "alerte",
+      () => prisma.alerte.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.alerte.findMany({
+          where: { ownerUserId: userId },
+          select: { alerteId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.alerte.deleteMany({
+          where: { alerteId: { in: ids.map((r) => r.alerteId) } },
+        });
+      },
+      userId
+    );
 
-      // 2) Shares/invites/audit logs can reference the user.
-      await tx.inventoryShare.deleteMany({ where: { ownerUserId: userId } });
-      await tx.inventoryShare.deleteMany({ where: { targetUserId: userId } });
-      await tx.shareInvite.deleteMany({ where: { ownerUserId: userId } });
-      await tx.auditLog.deleteMany({ where: { userId } });
+    await chunkedDelete(
+      "inventoryShare.owner",
+      () => prisma.inventoryShare.count({ where: { ownerUserId: userId } }),
+      () =>
+        prisma.inventoryShare.deleteMany({
+          where: { ownerUserId: userId },
+        }) as Promise<{ count: number }>,
+      userId
+    );
+    await chunkedDelete(
+      "inventoryShare.target",
+      () => prisma.inventoryShare.count({ where: { targetUserId: userId } }),
+      () =>
+        prisma.inventoryShare.deleteMany({
+          where: { targetUserId: userId },
+        }) as Promise<{ count: number }>,
+      userId
+    );
+    await chunkedDelete(
+      "shareInvite",
+      () => prisma.shareInvite.count({ where: { ownerUserId: userId } }),
+      () =>
+        prisma.shareInvite.deleteMany({
+          where: { ownerUserId: userId },
+        }) as Promise<{ count: number }>,
+      userId
+    );
+    await chunkedDelete(
+      "auditLog",
+      () => prisma.auditLog.count({ where: { userId } }),
+      async () => {
+        const rows = await prisma.auditLog.findMany({
+          where: { userId },
+          select: { id: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (rows.length === 0) return { count: 0 };
+        return prisma.auditLog.deleteMany({
+          where: { id: { in: rows.map((r) => r.id) } },
+        });
+      },
+      userId
+    );
 
-      // 3) Attachments can reference articles/warranties.
-      await tx.attachment.deleteMany({ where: { ownerUserId: userId } });
+    await chunkedDelete(
+      "attachment",
+      () => prisma.attachment.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.attachment.findMany({
+          where: { ownerUserId: userId },
+          select: { attachmentId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.attachment.deleteMany({
+          where: { attachmentId: { in: ids.map((r) => r.attachmentId) } },
+        });
+      },
+      userId
+    );
 
-      // 4) Warranties can reference attachments (garantieImageAttachmentId) and articles.
-      await tx.garantie.deleteMany({ where: { ownerUserId: userId } });
+    await chunkedDelete(
+      "garantie",
+      () => prisma.garantie.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.garantie.findMany({
+          where: { ownerUserId: userId },
+          select: { garantieId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.garantie.deleteMany({
+          where: { garantieId: { in: ids.map((r) => r.garantieId) } },
+        });
+      },
+      userId
+    );
 
-      // 5) Articles are last.
-      await tx.article.deleteMany({ where: { ownerUserId: userId } });
+    await chunkedDelete(
+      "article",
+      () => prisma.article.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.article.findMany({
+          where: { ownerUserId: userId },
+          select: { articleId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.article.deleteMany({
+          where: { articleId: { in: ids.map((r) => r.articleId) } },
+        });
+      },
+      userId
+    );
 
-      // 6) Finally delete the user.
-      await tx.user.delete({ where: { userId } });
-    });
+    // Finally, the user row itself.
+    await prisma.user.delete({ where: { userId } });
 
     return { ok: true };
   },

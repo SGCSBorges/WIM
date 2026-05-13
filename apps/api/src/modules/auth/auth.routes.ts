@@ -6,29 +6,9 @@ import { authGuard, AuthRequest } from "./auth.middleware";
 import { auditAction } from "../common/audit";
 import { denyToken } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
+import { cookieOptsFor } from "./cookies";
 
 const router = Router();
-
-// Cookie attributes:
-// - httpOnly:  JS can't read the cookie (defends against XSS exfiltration).
-// - secure:    only sent over HTTPS in production.
-// - sameSite:
-//     dev (NODE_ENV !== "production"): "lax" so localhost web can talk to
-//       localhost API on a different port.
-//     prod: "none" so the web app at https://wim.example.com can include
-//       the cookie when calling https://wimapi.example.com from XHR/fetch.
-//       "none" requires secure=true (it does in prod). CSRF risk is bounded
-//       by the CORS allowlist (CORS_ORIGIN env var) — only origins on that
-//       list can issue credentialed cross-origin requests at all.
-const COOKIE_OPTS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite:
-    process.env.NODE_ENV === "production"
-      ? ("none" as const)
-      : ("lax" as const),
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
 
 router.post(
   "/register",
@@ -41,7 +21,7 @@ router.post(
       entity: "User",
       entityId: result.user.userId,
     });
-    res.cookie("wim_token", result.token, COOKIE_OPTS);
+    res.cookie("wim_token", result.token, cookieOptsFor(req));
     res.status(201).json({ user: result.user });
   })
 );
@@ -57,7 +37,7 @@ router.post(
       entity: "User",
       entityId: result.user.userId,
     });
-    res.cookie("wim_token", result.token, COOKIE_OPTS);
+    res.cookie("wim_token", result.token, cookieOptsFor(req));
     res.json({ user: result.user });
   })
 );
@@ -72,7 +52,7 @@ router.post(
       const ttl = req.user.exp - Math.floor(Date.now() / 1000);
       if (ttl > 0) await denyToken(req.user.jti, ttl);
     }
-    res.clearCookie("wim_token", COOKIE_OPTS);
+    res.clearCookie("wim_token", cookieOptsFor(req));
     res.status(204).send();
   })
 );
