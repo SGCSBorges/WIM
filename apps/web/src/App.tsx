@@ -18,6 +18,7 @@ import { authAPI, billingAPI, profileAPI } from "./services/api";
 import { useI18n } from "./i18n/i18n";
 import LanguageThemeSelector from "./components/common/LanguageThemeSelector";
 import InstallPwaButton from "./components/common/InstallPwaButton";
+import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 
 // Route-level code splitting: each lazy import becomes its own chunk so the
 // initial JS bundle only ships the login flow + shell. The rest is fetched
@@ -364,13 +365,7 @@ export default function App() {
           </div>
         )}
 
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-            </div>
-          }
-        >
+        <Suspense fallback={<RouteFallbackSkeleton />}>
           <Routes>
             <Route
               path="/"

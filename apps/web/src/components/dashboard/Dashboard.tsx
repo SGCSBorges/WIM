@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 
 interface DashboardStatistics {
   articles: {
@@ -111,8 +112,25 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label={t("dashboard.title")}
+        className="space-y-6"
+      >
+        <div className="space-y-2">
+          <Skeleton height={32} width="35%" />
+          <Skeleton height={16} width="55%" />
+        </div>
+        <DashboardStatsSkeleton cards={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="ui-card rounded-lg shadow p-6 space-y-3">
+              <Skeleton height={20} width="40%" />
+              <Skeleton height={160} />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
