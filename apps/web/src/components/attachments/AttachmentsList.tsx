@@ -4,6 +4,7 @@ import { useI18n } from "../../i18n/i18n";
 import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
+import { ErrorBanner } from "../common/States";
 
 interface Attachment {
   attachmentId: number;
@@ -300,21 +301,15 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
           isLoading={uploading}
         />
       )}
-      {uploadError && (
-        <div className="border ui-alert-error rounded-lg p-3">
-          <p className="text-sm text-red-700">{uploadError}</p>
-        </div>
-      )}
+      {uploadError && <ErrorBanner message={uploadError} />}
       {fetchError && (
-        <div className="border ui-alert-error rounded-lg p-3">
-          <p className="text-sm text-red-700">{fetchError}</p>
-        </div>
+        <ErrorBanner
+          message={fetchError}
+          onRetry={fetchAttachments}
+          retryLabel={t("common.retry")}
+        />
       )}
-      {deleteError && (
-        <div className="border ui-alert-error rounded-lg p-3">
-          <p className="text-sm text-red-700">{deleteError}</p>
-        </div>
-      )}
+      {deleteError && <ErrorBanner message={deleteError} />}
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-4">

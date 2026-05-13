@@ -3,6 +3,7 @@ import { sharedAPI, SharedArticleRow } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "../articles/ArticleThumb";
+import { ErrorBanner } from "../common/States";
 
 type EditDraft = {
   articleNom: string;
@@ -101,9 +102,11 @@ export default function SharedArticlesView() {
       </div>
 
       {error && (
-        <div className="border ui-alert-error rounded-lg p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
+        <ErrorBanner
+          message={error}
+          onRetry={fetchRows}
+          retryLabel={t("common.retry")}
+        />
       )}
 
       {rows.length === 0 ? (

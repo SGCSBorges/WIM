@@ -11,6 +11,7 @@ import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "./ArticleThumb";
+import { ErrorBanner } from "../common/States";
 
 type ArticleShareStatus = {
   articleId: number;
@@ -210,14 +211,11 @@ const ArticlesList: React.FC = () => {
       </div>
 
       {error && (
-        <div role="alert" className="border ui-alert-error rounded-lg p-4">
-          <div className="flex items-center">
-            <span className="text-red-400 mr-2" aria-hidden="true">
-              ❌
-            </span>
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
-        </div>
+        <ErrorBanner
+          message={error}
+          onRetry={fetchArticles}
+          retryLabel={t("common.retry")}
+        />
       )}
 
       {showForm && (

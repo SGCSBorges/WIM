@@ -4,6 +4,7 @@ import { useI18n } from "../../i18n/i18n";
 import { TranslationKey } from "../../i18n/translations";
 import { alertsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
+import { ErrorBanner } from "../common/States";
 
 type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
 
@@ -164,9 +165,11 @@ export default function AlertsView() {
 
         {error && (
           <div className="p-4">
-            <div className="border ui-alert-error rounded-lg p-4">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
+            <ErrorBanner
+              message={error}
+              onRetry={fetchAll}
+              retryLabel={t("common.retry")}
+            />
           </div>
         )}
 
