@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const fakeRedis = {
   set: vi.fn(),
@@ -9,14 +9,20 @@ vi.mock("../../libs/redis", () => ({
   getRedis: vi.fn(() => fakeRedis),
 }));
 
+vi.mock("../../config/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
+
 import {
   denyToken,
   isTokenDenied,
   _denylistKey,
 } from "../../modules/auth/token-denylist";
 import { getRedis } from "../../libs/redis";
+import { logger } from "../../config/logger";
 
 const mockGetRedis = getRedis as unknown as ReturnType<typeof vi.fn>;
+const mockLoggerError = logger.error as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -74,5 +80,57 @@ describe("isTokenDenied", () => {
   it("fails open when the redis call rejects", async () => {
     fakeRedis.exists.mockRejectedValueOnce(new Error("timeout"));
     expect(await isTokenDenied("abc-123")).toBe(false);
+  });
+});
+
+describe("error log throttling", () => {
+  // The throttle bookkeeping (lastLoggedAt Map, suppressedSinceLast counter)
+  // lives at module scope and persists across tests in a single process. Each
+  // test below jumps the fake clock far past any timestamps recorded earlier
+  // in this file — equivalent to a per-test reset without re-importing.
+  let nextEpochOffset = 1;
+  let baseTime: number;
+  beforeEach(() => {
+    baseTime = Date.now() + nextEpochOffset * 24 * 60 * 60 * 1000;
+    nextEpochOffset += 1;
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(baseTime));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("logs once then suppresses repeats inside the throttle window, and re-logs after it elapses with the suppressed count", async () => {
+    fakeRedis.set.mockRejectedValue(new Error("connection refused"));
+
+    await denyToken("a", 60);
+    await denyToken("b", 60);
+    await denyToken("c", 60);
+    expect(mockLoggerError).toHaveBeenCalledTimes(1);
+
+    vi.setSystemTime(new Date(baseTime + 61_000));
+    await denyToken("d", 60);
+
+    expect(mockLoggerError).toHaveBeenCalledTimes(2);
+    const second = mockLoggerError.mock.calls[1][0] as {
+      suppressedSinceLast: number;
+    };
+    expect(second.suppressedSinceLast).toBe(2);
+  });
+
+  it("throttles denyToken and isTokenDenied independently (separate kinds)", async () => {
+    fakeRedis.set.mockRejectedValue(new Error("set failed"));
+    fakeRedis.exists.mockRejectedValue(new Error("exists failed"));
+
+    await denyToken("a", 60);
+    await isTokenDenied("a");
+
+    expect(mockLoggerError).toHaveBeenCalledTimes(2);
+    const kinds = mockLoggerError.mock.calls.map(
+      (c) => (c[0] as { kind: string }).kind
+    );
+    expect(kinds).toEqual(
+      expect.arrayContaining(["denyToken", "isTokenDenied"])
+    );
   });
 });
