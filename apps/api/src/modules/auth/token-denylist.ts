@@ -23,6 +23,32 @@ const KEY_PREFIX = "auth:denylist:";
 // authed requests never visibly hang.
 const DENYLIST_CHECK_TIMEOUT_MS = 500;
 
+// During a Redis outage every authed request will trip the same error,
+// flooding logs (and log-bill). Throttle to one error log per kind per minute
+// plus a final "still broken" beacon every 5 minutes.
+const LOG_THROTTLE_MS = 60_000;
+const lastLoggedAt = new Map<string, number>();
+let suppressedSinceLast = 0;
+
+function logThrottled(
+  kind: string,
+  err: unknown,
+  fields: Record<string, unknown>
+) {
+  const now = Date.now();
+  const last = lastLoggedAt.get(kind) ?? 0;
+  if (now - last >= LOG_THROTTLE_MS) {
+    lastLoggedAt.set(kind, now);
+    logger.error(
+      { err, kind, suppressedSinceLast, ...fields },
+      "[auth] redis denylist error"
+    );
+    suppressedSinceLast = 0;
+  } else {
+    suppressedSinceLast++;
+  }
+}
+
 function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
   let t: NodeJS.Timeout | undefined;
   const timer = new Promise<T>((resolve) => {
@@ -40,7 +66,7 @@ export async function denyToken(
   try {
     await redis.set(KEY_PREFIX + jti, "1", "EX", ttlSeconds);
   } catch (err) {
-    logger.error({ err, jti }, "[auth] failed to deny token");
+    logThrottled("denyToken", err, { jti });
   }
 }
 
@@ -55,7 +81,7 @@ export async function isTokenDenied(jti: string): Promise<boolean> {
     );
     return result === 1;
   } catch (err) {
-    logger.error({ err, jti }, "[auth] denylist check failed — failing open");
+    logThrottled("isTokenDenied", err, { jti });
     return false;
   }
 }
