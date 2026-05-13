@@ -112,6 +112,8 @@ export const translations = {
     "billing.upgradeStartError": "Failed to start upgrade",
     "billing.upgradeSuccess":
       "Welcome, Power User! Your subscription is active.",
+    "billing.upgradeError":
+      "We couldn't confirm your subscription. Please reload — if the problem persists, contact support.",
 
     "nav.badge.powerUser": "Power",
     "nav.badge.powerUser.tooltip": "Power User",
@@ -579,6 +581,8 @@ export const translations = {
     "billing.upgradeStartError": "Impossible de démarrer la mise à niveau",
     "billing.upgradeSuccess":
       "Bienvenue, Power User ! Votre abonnement est actif.",
+    "billing.upgradeError":
+      "Impossible de confirmer votre abonnement. Veuillez recharger — si le problème persiste, contactez le support.",
 
     "nav.badge.powerUser": "Power",
     "nav.badge.powerUser.tooltip": "Power User",
@@ -1051,6 +1055,8 @@ export const translations = {
     "billing.upgradeStartError": "Falha ao iniciar a atualização",
     "billing.upgradeSuccess":
       "Bem-vindo, Power User! A sua subscrição está ativa.",
+    "billing.upgradeError":
+      "Não foi possível confirmar a sua subscrição. Atualize a página — se o problema continuar, contacte o suporte.",
 
     "nav.badge.powerUser": "Power",
     "nav.badge.powerUser.tooltip": "Power User",
@@ -1374,12 +1380,12 @@ export const translations = {
     "profile.role": "Função:",
     "profile.subscription.title": "Subscrição",
     "profile.subscription.subtitle": "Gira a sua subscrição Power User.",
-    "profile.billing.manage": "Gerir faturação",
+    "profile.billing.manage": "Gerir facturação",
     "profile.billing.cancelAtPeriodEnd": "Cancelar no fim do período",
     "profile.billing.cancelTooltip":
       "A sua subscrição permanecerá ativa até ao fim do período atual e não será renovada.",
     "profile.billing.cancelSuccess":
-      "A subscrição será cancelada no fim do período de faturação.",
+      "A subscrição será cancelada no fim do período de facturação.",
     "profile.email.title": "Alterar Email",
     "profile.email.new": "Novo endereço de email",
     "profile.email.currentPassword": "Password atual",
@@ -1413,5 +1419,3 @@ export const translations = {
       "Remover a partilha deste artigo para todos os Power Users?",
   },
 } as const;
-
-export type TranslationKey = keyof (typeof translations)["en"];

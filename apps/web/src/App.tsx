@@ -163,7 +163,15 @@ export default function App() {
                 }
               }
             })
-            .catch(() => {})
+            .catch((err) => {
+              // Surface sync failures so the user isn't stuck on a stale
+              // role with no feedback after a real Stripe payment.
+              const msg =
+                err instanceof Error ? err.message : String(err ?? "");
+              setUpgradeError(
+                msg || t("billing.upgradeError") || "Subscription sync failed"
+              );
+            })
             .finally(() => {
               url.searchParams.delete("stripe");
               window.history.replaceState({}, document.title, url.toString());
