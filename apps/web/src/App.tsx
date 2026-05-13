@@ -3,6 +3,7 @@ import React, {
   ErrorInfo,
   Suspense,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { getErrorMessage } from "./utils/error";
@@ -127,11 +128,40 @@ export default function App() {
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileToggleRef = useRef<HTMLButtonElement | null>(null);
+  const drawerFirstLinkRef = useRef<HTMLButtonElement | null>(null);
 
   // Auto-close the mobile drawer whenever the route changes.
   useEffect(() => {
     setMobileNavOpen(false);
   }, [location.pathname]);
+
+  // Drawer side-effects: Esc closes, body scroll locks, focus moves into
+  // the drawer on open and back to the toggle button on close. Skipped on
+  // desktop because the drawer never opens there.
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileNavOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+
+    // Defer focus shift until after the slide-in transition starts so the
+    // first link is in the DOM and visible to the focus ring.
+    const focusTimer = window.setTimeout(() => {
+      drawerFirstLinkRef.current?.focus();
+    }, 0);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+      window.clearTimeout(focusTimer);
+      mobileToggleRef.current?.focus();
+    };
+  }, [mobileNavOpen]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -259,6 +289,42 @@ export default function App() {
     </>
   );
 
+  // Drawer-specific list: larger touch targets, full-width rows. The first
+  // link is attached to a ref so we can move focus there when the drawer
+  // opens (the toggle button takes focus back on close, in the effect above).
+  const drawerLinks: { path: string; label: string; show: boolean }[] = [
+    { path: "/", label: t("nav.home"), show: true },
+    { path: "/dashboard", label: t("nav.dashboard"), show: true },
+    { path: "/articles", label: t("nav.articles"), show: true },
+    { path: "/warranties", label: t("nav.warranties"), show: true },
+    { path: "/attachments", label: t("nav.attachments"), show: true },
+    { path: "/alerts", label: t("nav.alerts"), show: true },
+    { path: "/profile", label: t("nav.profile"), show: true },
+    {
+      path: "/sharing",
+      label: t("nav.sharing"),
+      show: role === "POWER_USER",
+    },
+    { path: "/admin", label: t("nav.admin"), show: role === "ADMIN" },
+  ].filter((l) => l.show);
+
+  const drawerRow = (
+    path: string,
+    label: string,
+    isFirst: boolean
+  ) => (
+    <button
+      key={path}
+      ref={isFirst ? drawerFirstLinkRef : undefined}
+      onClick={() => navigate(path)}
+      className={`block w-full text-left px-4 py-3 rounded-md text-base font-medium transition-colors ${
+        location.pathname === path ? "ui-nav-item-active" : "ui-btn-ghost"
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -313,39 +379,93 @@ export default function App() {
 
               {/* Mobile menu toggle */}
               <button
+                ref={mobileToggleRef}
                 type="button"
-                aria-label="Toggle navigation"
+                aria-label={
+                  mobileNavOpen
+                    ? "Close navigation"
+                    : "Open navigation"
+                }
                 aria-expanded={mobileNavOpen}
                 aria-controls="mobile-nav"
                 onClick={() => setMobileNavOpen((o) => !o)}
                 className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-md ui-btn-ghost"
               >
-                <span aria-hidden="true">{mobileNavOpen ? "✕" : "☰"}</span>
+                <span aria-hidden="true" className="text-xl leading-none">
+                  {mobileNavOpen ? "✕" : "☰"}
+                </span>
               </button>
             </div>
           </div>
-
-          {/* Mobile drawer */}
-          {mobileNavOpen && (
-            <div
-              id="mobile-nav"
-              className="md:hidden pb-4 pt-2 border-t ui-divider flex flex-col gap-1"
-            >
-              {primaryNavLinks}
-              <div className="mt-3 pt-3 border-t ui-divider flex flex-wrap items-center gap-3 justify-between">
-                <LanguageThemeSelector />
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="px-3 py-2 text-sm ui-btn-ghost rounded-md"
-                >
-                  {t("nav.logout")}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </nav>
+
+      {/* Mobile drawer — slide-in from right with backdrop. Rendered outside
+          the <nav> so it can cover the full viewport height. The element
+          stays mounted in the DOM so the transition runs in both
+          directions; pointer-events are disabled when closed so it never
+          intercepts clicks behind it. */}
+      <div
+        className={`md:hidden fixed inset-0 z-50 ${
+          mobileNavOpen ? "" : "pointer-events-none"
+        }`}
+        aria-hidden={!mobileNavOpen}
+      >
+        <button
+          type="button"
+          tabIndex={mobileNavOpen ? 0 : -1}
+          aria-label="Close navigation"
+          onClick={() => setMobileNavOpen(false)}
+          className={`ui-drawer-backdrop absolute inset-0 w-full h-full ${
+            mobileNavOpen ? "open" : ""
+          }`}
+        />
+        <aside
+          id="mobile-nav"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("nav.home")}
+          className={`ui-drawer absolute top-0 right-0 h-full w-72 max-w-[85vw] shadow-2xl flex flex-col ${
+            mobileNavOpen ? "open" : ""
+          }`}
+        >
+          <div className="flex items-center justify-between px-4 h-16 border-b ui-divider shrink-0">
+            <img
+              src="/logo.png"
+              alt="WIM"
+              className="h-8 w-auto"
+            />
+            <button
+              type="button"
+              aria-label="Close navigation"
+              onClick={() => setMobileNavOpen(false)}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-md ui-btn-ghost"
+            >
+              <span aria-hidden="true" className="text-xl leading-none">
+                ✕
+              </span>
+            </button>
+          </div>
+          <nav
+            aria-label="Mobile navigation"
+            className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1"
+          >
+            {drawerLinks.map((l, i) =>
+              drawerRow(l.path, l.label, i === 0)
+            )}
+          </nav>
+          <div className="px-3 py-3 border-t ui-divider flex flex-wrap items-center gap-3 justify-between shrink-0">
+            <LanguageThemeSelector />
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="px-3 py-2 text-sm ui-btn-ghost rounded-md"
+            >
+              {t("nav.logout")}
+            </button>
+          </div>
+        </aside>
+      </div>
 
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {upgradeSuccess && (

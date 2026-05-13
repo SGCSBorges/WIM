@@ -523,3 +523,30 @@ body {
     animation: none;
   }
 }
+
+/* Mobile nav drawer — slides in from the right.
+   The base position is off-screen; .open adds the on-screen transform. */
+.ui-drawer {
+  background: var(--nav-bg);
+  border-left: 1px solid var(--nav-border);
+  color: var(--nav-text);
+  transform: translateX(100%);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+.ui-drawer.open {
+  transform: translateX(0);
+}
+.ui-drawer-backdrop {
+  background: rgba(0, 0, 0, 0);
+  transition: background-color 0.22s ease;
+}
+.ui-drawer-backdrop.open {
+  background: rgba(0, 0, 0, 0.45);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-drawer,
+  .ui-drawer-backdrop {
+    transition: none;
+  }
+}
