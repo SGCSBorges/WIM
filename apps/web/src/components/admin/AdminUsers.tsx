@@ -10,6 +10,7 @@ import { getErrorMessage } from "../../utils/error";
 import CreateUserModal from "./CreateUserModal";
 import ResetPasswordModal from "./ResetPasswordModal";
 import AuditLogTab from "./AuditLogTab";
+import { DashboardStatsSkeleton } from "../common/Skeleton";
 
 type Role = "USER" | "POWER_USER" | "ADMIN";
 
@@ -297,9 +298,7 @@ export default function AdminUsers() {
       {activeTab === "dashboard" && (
         <div>
           {loadingStats ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
+            <DashboardStatsSkeleton cards={4} />
           ) : statistics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="ui-card rounded-lg shadow p-6">
