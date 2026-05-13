@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { warrantiesAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
+import { ErrorBanner } from "../common/States";
 
 type Warranty = {
   garantieId: number;
@@ -61,9 +62,11 @@ export default function WarrantiesView() {
       </div>
 
       {error && (
-        <div role="alert" className="border ui-alert-error rounded-lg p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
+        <ErrorBanner
+          message={error}
+          onRetry={fetchAll}
+          retryLabel={t("common.retry")}
+        />
       )}
 
       <div className="ui-card rounded-lg">

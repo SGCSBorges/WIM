@@ -3,6 +3,7 @@ import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
+import { ErrorBanner } from "../common/States";
 
 interface DashboardStatistics {
   articles: {
@@ -94,21 +95,22 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        setLoading(true);
-        const data = await statisticsAPI.getDashboard();
-        setStatistics(data);
-      } catch (err) {
-        setError(getErrorMessage(err, t("common.errorOccurred")));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStatistics();
+  const fetchStatistics = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await statisticsAPI.getDashboard();
+      setStatistics(data);
+      setError(null);
+    } catch (err) {
+      setError(getErrorMessage(err, t("common.errorOccurred")));
+    } finally {
+      setLoading(false);
+    }
   }, [t]);
+
+  useEffect(() => {
+    fetchStatistics();
+  }, [fetchStatistics]);
 
   if (loading) {
     return (
@@ -137,14 +139,11 @@ const Dashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="border ui-alert-error rounded-lg p-4">
-        <div className="flex items-center">
-          <span className="text-red-400 mr-2">❌</span>
-          <p className="text-sm text-red-700">
-            {t("dashboard.errorLoading")} {error}
-          </p>
-        </div>
-      </div>
+      <ErrorBanner
+        message={`${t("dashboard.errorLoading")} ${error}`}
+        onRetry={fetchStatistics}
+        retryLabel={t("common.retry")}
+      />
     );
   }
 

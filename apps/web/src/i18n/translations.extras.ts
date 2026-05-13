@@ -51,6 +51,9 @@ export const extras = {
     "profile.share.invited.onlyPowerUsersNote":
       "Inventory invites can only go to existing Power Users. They must accept before getting access.",
     "shareForm.email.note": "Invitee must already be a Power User to accept.",
+
+    "common.retry": "Retry",
+    "common.tryAgain": "Try again",
   },
   fr: {
     "articles.table.image": "Image",
@@ -98,6 +101,9 @@ export const extras = {
     "profile.share.invited.onlyPowerUsersNote":
       "Les invitations d'inventaire ne peuvent aller qu'à des Power Users existants. Ils doivent les accepter avant d'avoir accès.",
     "shareForm.email.note": "L'invité doit déjà être Power User pour accepter.",
+
+    "common.retry": "Réessayer",
+    "common.tryAgain": "Réessayer",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -143,6 +149,9 @@ export const extras = {
     "profile.share.invited.onlyPowerUsersNote":
       "Os convites de inventário só podem ser enviados a Power Users existentes. Têm de aceitar antes de obter acesso.",
     "shareForm.email.note": "O convidado tem de ser Power User para aceitar.",
+
+    "common.retry": "Tentar novamente",
+    "common.tryAgain": "Tentar novamente",
   },
 } as const;
 
