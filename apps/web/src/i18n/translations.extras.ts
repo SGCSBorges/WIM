@@ -54,6 +54,20 @@ export const extras = {
 
     "common.retry": "Retry",
     "common.tryAgain": "Try again",
+
+    "articles.bulk.selectionLabel": "Bulk selection actions",
+    "articles.bulk.selected": "{count} selected",
+    "articles.bulk.share": "Share publicly",
+    "articles.bulk.shareTooltip":
+      "Make every selected article visible to all Power Users",
+    "articles.bulk.unshare": "Unshare",
+    "articles.bulk.delete": "Delete selected",
+    "articles.bulk.deleteConfirm":
+      "Delete {count} article(s)? This cannot be undone.",
+    "articles.bulk.deleteSuccess": "Deleted {count} article(s).",
+    "articles.bulk.shareSuccess": "Updated sharing on {count} article(s).",
+    "articles.bulk.clear": "Clear selection",
+    "articles.bulk.selectAll": "Select all on page",
   },
   fr: {
     "articles.table.image": "Image",
@@ -104,6 +118,21 @@ export const extras = {
 
     "common.retry": "Réessayer",
     "common.tryAgain": "Réessayer",
+
+    "articles.bulk.selectionLabel": "Actions sur la sélection",
+    "articles.bulk.selected": "{count} sélectionné(s)",
+    "articles.bulk.share": "Partager publiquement",
+    "articles.bulk.shareTooltip":
+      "Rendre tous les articles sélectionnés visibles aux Power Users",
+    "articles.bulk.unshare": "Retirer du partage",
+    "articles.bulk.delete": "Supprimer la sélection",
+    "articles.bulk.deleteConfirm":
+      "Supprimer {count} article(s) ? Cette action est irréversible.",
+    "articles.bulk.deleteSuccess": "{count} article(s) supprimé(s).",
+    "articles.bulk.shareSuccess":
+      "Partage mis à jour sur {count} article(s).",
+    "articles.bulk.clear": "Effacer la sélection",
+    "articles.bulk.selectAll": "Tout sélectionner sur cette page",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -152,6 +181,21 @@ export const extras = {
 
     "common.retry": "Tentar novamente",
     "common.tryAgain": "Tentar novamente",
+
+    "articles.bulk.selectionLabel": "Ações na seleção",
+    "articles.bulk.selected": "{count} selecionado(s)",
+    "articles.bulk.share": "Partilhar publicamente",
+    "articles.bulk.shareTooltip":
+      "Tornar todos os artigos selecionados visíveis para os Power Users",
+    "articles.bulk.unshare": "Cancelar partilha",
+    "articles.bulk.delete": "Eliminar seleção",
+    "articles.bulk.deleteConfirm":
+      "Eliminar {count} artigo(s)? Esta ação é irreversível.",
+    "articles.bulk.deleteSuccess": "{count} artigo(s) eliminado(s).",
+    "articles.bulk.shareSuccess":
+      "Partilha atualizada em {count} artigo(s).",
+    "articles.bulk.clear": "Limpar seleção",
+    "articles.bulk.selectAll": "Selecionar tudo nesta página",
   },
 } as const;
 

@@ -4,10 +4,18 @@ import { asyncHandler } from "../common/http";
 import { ArticleService } from "./article.service";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
-import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { authGuard, AuthRequest, requireRole } from "../auth/auth.middleware";
 import { idParam, paginationQuery } from "../common/schemas";
 
 const router = Router();
+
+// Cap the per-request bulk size so a runaway client can't ask us to load
+// 50k rows into memory at once. The UI ships a single "Select all" that's
+// scoped to the current page (50 articles by default), so 500 is a healthy
+// safety margin without being a real limit users will hit organically.
+const BulkIdsSchema = z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(500),
+});
 
 /** GET tous les articles */
 router.get(
@@ -94,6 +102,51 @@ router.delete(
       entityId: id,
     });
     res.status(204).send();
+  })
+);
+
+/**
+ * Bulk delete articles owned by the caller. Returns { count } of rows
+ * actually removed (ids the user doesn't own are silently skipped).
+ */
+router.post(
+  "/bulk-delete",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { ids } = BulkIdsSchema.parse(req.body);
+    const { count } = await ArticleService.bulkRemove(ids, req.user!.sub);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "Article",
+      metadata: { bulk: true, requested: ids.length, deleted: count },
+    });
+    res.json({ count });
+  })
+);
+
+/**
+ * Bulk set `sharedWithPowerUsers` on every requested article the caller
+ * owns. Power-user-only since public sharing is a power-user surface.
+ * Accepts `{ ids: number[], shared: boolean }`.
+ */
+router.post(
+  "/bulk-share",
+  authGuard,
+  requireRole("POWER_USER"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const schema = BulkIdsSchema.extend({ shared: z.boolean() });
+    const { ids, shared } = schema.parse(req.body);
+    const { count } = await ArticleService.bulkSetSharedWithPowerUsers(
+      ids,
+      req.user!.sub,
+      shared
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      metadata: { bulk: true, shared, requested: ids.length, updated: count },
+    });
+    res.json({ count });
   })
 );
 

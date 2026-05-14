@@ -252,4 +252,60 @@ export const ArticleService = {
 
     return prisma.article.delete({ where: { articleId: id } });
   },
+
+  /**
+   * Bulk delete articles owned by the user. Silently skips ids that don't
+   * belong to the caller (no separate error per row — the user shouldn't
+   * have those ids in their UI anyway, and exposing which-ids-existed leaks
+   * info). Cancels related warranty alerts before delete.
+   *
+   * Returns { count } so the caller can render "Deleted N article(s)".
+   */
+  bulkRemove: async (ids: number[], ownerUserId: number) => {
+    if (ids.length === 0) return { count: 0 };
+
+    const owned = await prisma.article.findMany({
+      where: { articleId: { in: ids }, ownerUserId },
+      select: {
+        articleId: true,
+        garantie: { select: { garantieId: true } },
+      },
+    });
+    if (owned.length === 0) return { count: 0 };
+
+    for (const a of owned) {
+      if (a.garantie) {
+        await AlertService.cancelForWarranty({
+          ownerUserId,
+          garantieId: a.garantie.garantieId,
+        });
+      }
+    }
+
+    const result = await prisma.article.deleteMany({
+      where: {
+        articleId: { in: owned.map((a) => a.articleId) },
+        ownerUserId,
+      },
+    });
+    return { count: result.count };
+  },
+
+  /**
+   * Bulk set the `sharedWithPowerUsers` flag on every article in `ids` that
+   * the caller owns. Used by the bulk-share UI on the Articles list (power
+   * users only — route layer enforces the role).
+   */
+  bulkSetSharedWithPowerUsers: async (
+    ids: number[],
+    ownerUserId: number,
+    shared: boolean
+  ): Promise<{ count: number }> => {
+    if (ids.length === 0) return { count: 0 };
+    const result = await prisma.article.updateMany({
+      where: { articleId: { in: ids }, ownerUserId },
+      data: { sharedWithPowerUsers: shared },
+    });
+    return { count: result.count };
+  },
 };
