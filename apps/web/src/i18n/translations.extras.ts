@@ -76,6 +76,23 @@ export const extras = {
     "export.target.warranties": "Warranties",
     "export.target.attachments": "Attachments",
     "export.success": "Exported {target} as {format}.",
+
+    "nav.locations": "Locations",
+    "locations.title": "Locations",
+    "locations.subtitle":
+      "Create, rename, or delete the places your articles live.",
+    "locations.createTitle": "Create a location",
+    "locations.allTitle": "All locations",
+    "locations.placeholder.name": "Name (e.g. Garage, Office)",
+    "locations.placeholder.description": "Description (optional)",
+    "locations.create": "Create location",
+    "locations.none": "No locations yet.",
+    "locations.articleCount": "{count} article(s)",
+    "locations.deleteConfirm":
+      "Delete this location? Articles will lose this assignment.",
+    "locations.created": "Location created.",
+    "locations.updated": "Location updated.",
+    "locations.deleted": "Location deleted.",
   },
   fr: {
     "articles.table.image": "Image",
@@ -137,8 +154,7 @@ export const extras = {
     "articles.bulk.deleteConfirm":
       "Supprimer {count} article(s) ? Cette action est irréversible.",
     "articles.bulk.deleteSuccess": "{count} article(s) supprimé(s).",
-    "articles.bulk.shareSuccess":
-      "Partage mis à jour sur {count} article(s).",
+    "articles.bulk.shareSuccess": "Partage mis à jour sur {count} article(s).",
     "articles.bulk.clear": "Effacer la sélection",
     "articles.bulk.selectAll": "Tout sélectionner sur cette page",
 
@@ -149,6 +165,23 @@ export const extras = {
     "export.target.warranties": "Garanties",
     "export.target.attachments": "Pièces jointes",
     "export.success": "{target} exportés en {format}.",
+
+    "nav.locations": "Lieux",
+    "locations.title": "Lieux",
+    "locations.subtitle":
+      "Créez, renommez ou supprimez les endroits où vivent vos articles.",
+    "locations.createTitle": "Créer un lieu",
+    "locations.allTitle": "Tous les lieux",
+    "locations.placeholder.name": "Nom (ex. Garage, Bureau)",
+    "locations.placeholder.description": "Description (optionnel)",
+    "locations.create": "Créer le lieu",
+    "locations.none": "Aucun lieu pour le moment.",
+    "locations.articleCount": "{count} article(s)",
+    "locations.deleteConfirm":
+      "Supprimer ce lieu ? Les articles perdront cette assignation.",
+    "locations.created": "Lieu créé.",
+    "locations.updated": "Lieu mis à jour.",
+    "locations.deleted": "Lieu supprimé.",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -208,8 +241,7 @@ export const extras = {
     "articles.bulk.deleteConfirm":
       "Eliminar {count} artigo(s)? Esta ação é irreversível.",
     "articles.bulk.deleteSuccess": "{count} artigo(s) eliminado(s).",
-    "articles.bulk.shareSuccess":
-      "Partilha atualizada em {count} artigo(s).",
+    "articles.bulk.shareSuccess": "Partilha atualizada em {count} artigo(s).",
     "articles.bulk.clear": "Limpar seleção",
     "articles.bulk.selectAll": "Selecionar tudo nesta página",
 
@@ -220,6 +252,23 @@ export const extras = {
     "export.target.warranties": "Garantias",
     "export.target.attachments": "Anexos",
     "export.success": "{target} exportados em {format}.",
+
+    "nav.locations": "Locais",
+    "locations.title": "Locais",
+    "locations.subtitle":
+      "Crie, renomeie ou elimine os locais onde os seus artigos estão.",
+    "locations.createTitle": "Criar um local",
+    "locations.allTitle": "Todos os locais",
+    "locations.placeholder.name": "Nome (ex. Garagem, Escritório)",
+    "locations.placeholder.description": "Descrição (opcional)",
+    "locations.create": "Criar local",
+    "locations.none": "Ainda não há locais.",
+    "locations.articleCount": "{count} artigo(s)",
+    "locations.deleteConfirm":
+      "Eliminar este local? Os artigos vão perder esta atribuição.",
+    "locations.created": "Local criado.",
+    "locations.updated": "Local atualizado.",
+    "locations.deleted": "Local eliminado.",
   },
 } as const;
 

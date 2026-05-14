@@ -46,6 +46,9 @@ const AlertsView = React.lazy(() => import("./components/alerts/AlertsView"));
 const ProfileView = React.lazy(
   () => import("./components/profile/ProfileView")
 );
+const LocationsView = React.lazy(
+  () => import("./components/locations/LocationsView")
+);
 
 interface ErrorBoundaryState {
   error: Error | null;
@@ -159,6 +162,12 @@ export default function App() {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
       window.clearTimeout(focusTimer);
+      // Restoring focus to whatever the toggle is at cleanup time is the
+      // correct behavior — the button is stable and always mounted, so
+      // reading `.current` here is intentional. ESLint's generic warning
+      // assumes the ref might point at something unmounted, which doesn't
+      // apply here.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       mobileToggleRef.current?.focus();
     };
   }, [mobileNavOpen]);
@@ -282,6 +291,7 @@ export default function App() {
       {navLink("/articles", t("nav.articles"))}
       {navLink("/warranties", t("nav.warranties"))}
       {navLink("/attachments", t("nav.attachments"))}
+      {navLink("/locations", t("nav.locations"))}
       {navLink("/alerts", t("nav.alerts"))}
       {navLink("/profile", t("nav.profile"))}
       {role === "POWER_USER" && navLink("/sharing", t("nav.sharing"))}
@@ -298,6 +308,7 @@ export default function App() {
     { path: "/articles", label: t("nav.articles"), show: true },
     { path: "/warranties", label: t("nav.warranties"), show: true },
     { path: "/attachments", label: t("nav.attachments"), show: true },
+    { path: "/locations", label: t("nav.locations"), show: true },
     { path: "/alerts", label: t("nav.alerts"), show: true },
     { path: "/profile", label: t("nav.profile"), show: true },
     {
@@ -308,11 +319,7 @@ export default function App() {
     { path: "/admin", label: t("nav.admin"), show: role === "ADMIN" },
   ].filter((l) => l.show);
 
-  const drawerRow = (
-    path: string,
-    label: string,
-    isFirst: boolean
-  ) => (
+  const drawerRow = (path: string, label: string, isFirst: boolean) => (
     <button
       key={path}
       ref={isFirst ? drawerFirstLinkRef : undefined}
@@ -382,9 +389,7 @@ export default function App() {
                 ref={mobileToggleRef}
                 type="button"
                 aria-label={
-                  mobileNavOpen
-                    ? "Close navigation"
-                    : "Open navigation"
+                  mobileNavOpen ? "Close navigation" : "Open navigation"
                 }
                 aria-expanded={mobileNavOpen}
                 aria-controls="mobile-nav"
@@ -430,11 +435,7 @@ export default function App() {
           }`}
         >
           <div className="flex items-center justify-between px-4 h-16 border-b ui-divider shrink-0">
-            <img
-              src="/logo.png"
-              alt="WIM"
-              className="h-8 w-auto"
-            />
+            <img src="/logo.png" alt="WIM" className="h-8 w-auto" />
             <button
               type="button"
               aria-label="Close navigation"
@@ -450,9 +451,7 @@ export default function App() {
             aria-label="Mobile navigation"
             className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-1"
           >
-            {drawerLinks.map((l, i) =>
-              drawerRow(l.path, l.label, i === 0)
-            )}
+            {drawerLinks.map((l, i) => drawerRow(l.path, l.label, i === 0))}
           </nav>
           <div className="px-3 py-3 border-t ui-divider flex flex-wrap items-center gap-3 justify-between shrink-0">
             <LanguageThemeSelector />
@@ -581,6 +580,7 @@ export default function App() {
             <Route path="/articles" element={<ArticlesList />} />
             <Route path="/warranties" element={<WarrantiesView />} />
             <Route path="/attachments" element={<AttachmentsList />} />
+            <Route path="/locations" element={<LocationsView />} />
             <Route path="/alerts" element={<AlertsView />} />
             <Route path="/profile" element={<ProfileView />} />
             <Route

@@ -264,9 +264,7 @@ export const articlesAPI = {
       }
     );
     if (!response.ok)
-      throw new Error(
-        await extractError(response, "Failed to update sharing")
-      );
+      throw new Error(await extractError(response, "Failed to update sharing"));
     return response.json();
   },
 
@@ -328,6 +326,48 @@ export const locationsAPI = {
           response,
           `Failed to create location (${response.status})`
         )
+      );
+    return response.json();
+  },
+
+  async update(
+    locationId: number,
+    data: { name?: string; description?: string | null }
+  ) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/locations/${locationId}`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update location")
+      );
+    return response.json();
+  },
+
+  async delete(locationId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/locations/${locationId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to delete location")
+      );
+  },
+
+  async listArticles(locationId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/locations/${locationId}/articles`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch location articles")
       );
     return response.json();
   },
