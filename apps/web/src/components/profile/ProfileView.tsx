@@ -540,6 +540,9 @@ export default function ProfileView() {
               {t("profile.share.invited.title")}
             </h2>
             <p className="text-sm ui-text-muted">
+              {t("profile.share.invited.scopeNote")}
+            </p>
+            <p className="text-xs ui-text-muted mt-1">
               {t("profile.share.invited.onlyPowerUsersNote")}
             </p>
           </div>

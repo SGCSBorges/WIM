@@ -42,6 +42,9 @@ const SharedArticlesView = React.lazy(
 const AcceptInviteForm = React.lazy(
   () => import("./components/sharing/AcceptInviteForm")
 );
+const MySharedArticlesView = React.lazy(
+  () => import("./components/sharing/MySharedArticlesView")
+);
 const AlertsView = React.lazy(() => import("./components/alerts/AlertsView"));
 const ProfileView = React.lazy(
   () => import("./components/profile/ProfileView")
@@ -588,6 +591,7 @@ export default function App() {
               element={
                 role === "POWER_USER" ? (
                   <div className="space-y-6">
+                    <MySharedArticlesView />
                     <AcceptInviteForm />
                     <SharesList />
                     <SharedArticlesView />
@@ -602,6 +606,7 @@ export default function App() {
               element={
                 role === "POWER_USER" ? (
                   <div className="space-y-6">
+                    <MySharedArticlesView />
                     <AcceptInviteForm />
                     <SharesList />
                     <SharedArticlesView />
