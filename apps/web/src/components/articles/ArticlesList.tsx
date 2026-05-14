@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
-import { articlesAPI, locationsAPI } from "../../services/api";
+import { articlesAPI, locationsAPI, authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location } from "../../types";
 import { getErrorMessage } from "../../utils/error";
@@ -14,7 +14,6 @@ import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
 import { useToast } from "../common/Toast";
-import { authAPI } from "../../services/api";
 
 type ArticleShareStatus = {
   articleId: number;
@@ -132,8 +131,7 @@ const ArticlesList: React.FC = () => {
   };
 
   const allPageSelected =
-    articles.length > 0 &&
-    articles.every((a) => selectedIds.has(a.articleId));
+    articles.length > 0 && articles.every((a) => selectedIds.has(a.articleId));
 
   const toggleSelectAll = () => {
     setSelectedIds((prev) => {

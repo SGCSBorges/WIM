@@ -25,12 +25,16 @@ export default function DataExportPanel() {
     setBusy(`${target}:${format}`);
     try {
       const stamp = formatDateForFilename(new Date());
-      let filename = `wim-${target}-${stamp}.${format}`;
+      const filename = `wim-${target}-${stamp}.${format}`;
 
       if (target === "articles") {
         const rows = await articlesAPI.getAll(undefined, 1, 1000);
         if (format === "json") {
-          downloadFile(filename, JSON.stringify(rows, null, 2), "application/json");
+          downloadFile(
+            filename,
+            JSON.stringify(rows, null, 2),
+            "application/json"
+          );
         } else {
           const csv = toCSV(
             rows.map(
@@ -85,7 +89,11 @@ export default function DataExportPanel() {
       } else if (target === "warranties") {
         const rows = await warrantiesAPI.getAll(1, 1000);
         if (format === "json") {
-          downloadFile(filename, JSON.stringify(rows, null, 2), "application/json");
+          downloadFile(
+            filename,
+            JSON.stringify(rows, null, 2),
+            "application/json"
+          );
         } else {
           const csv = toCSV(
             rows.map((r) => ({
@@ -112,7 +120,11 @@ export default function DataExportPanel() {
       } else {
         const rows = await attachmentsAPI.getAll({ page: 1, limit: 1000 });
         if (format === "json") {
-          downloadFile(filename, JSON.stringify(rows, null, 2), "application/json");
+          downloadFile(
+            filename,
+            JSON.stringify(rows, null, 2),
+            "application/json"
+          );
         } else {
           const csv = toCSV(
             rows.map(

@@ -599,11 +599,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         </div>
 
         {formError && (
-          <p
-            ref={formErrorRef}
-            role="alert"
-            className="text-sm text-red-600"
-          >
+          <p ref={formErrorRef} role="alert" className="text-sm text-red-600">
             {formError}
           </p>
         )}
