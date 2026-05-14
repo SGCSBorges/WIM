@@ -234,6 +234,42 @@ export const articlesAPI = {
     return null;
   },
 
+  // Bulk operations on the caller's owned articles.
+  async bulkDelete(ids: number[]): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/bulk-delete`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to delete articles")
+      );
+    return response.json();
+  },
+
+  async bulkSetSharedWithPowerUsers(
+    ids: number[],
+    shared: boolean
+  ): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/bulk-share`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids, shared }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update sharing")
+      );
+    return response.json();
+  },
+
   // GET /api/articles/shared-public — caller's articles where
   // sharedWithPowerUsers = true. Used by the Profile view's
   // "Articles you've shared publicly" panel.

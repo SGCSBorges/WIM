@@ -12,6 +12,9 @@ import type { Article, FetchedArticle, Location } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner } from "../common/States";
+import BulkActionBar from "./BulkActionBar";
+import { useToast } from "../common/Toast";
+import { authAPI } from "../../services/api";
 
 type ArticleShareStatus = {
   articleId: number;
@@ -21,6 +24,9 @@ type ArticleShareStatus = {
 
 const ArticlesList: React.FC = () => {
   const { t } = useI18n();
+  const toast = useToast();
+  const role = authAPI.getRole();
+  const isPowerUser = role === "POWER_USER" || role === "ADMIN";
 
   const getWarrantyStatus = (garantie: Article["garantie"]) => {
     if (!garantie || !garantie.garantieFin) {
@@ -85,18 +91,110 @@ const ArticlesList: React.FC = () => {
     undefined
   );
 
+  // Bulk selection: ids of articles currently checked. Cleared on refetch
+  // so the bar doesn't keep references to articles that just left the page.
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
   const fetchArticles = useCallback(async () => {
     try {
       setLoading(true);
       const data = await articlesAPI.getAll(locationFilterId);
       setArticles(data);
       setError(null);
+      // Drop any selections whose article no longer appears in the list
+      // (filter changed, item was deleted/moved). Avoids the BulkActionBar
+      // counting articles that aren't visible anymore.
+      setSelectedIds((prev) => {
+        if (prev.size === 0) return prev;
+        const visible = new Set(data.map((a) => a.articleId));
+        const next = new Set<number>();
+        prev.forEach((id) => {
+          if (visible.has(id)) next.add(id);
+        });
+        return next.size === prev.size ? prev : next;
+      });
     } catch (err) {
       setError(getErrorMessage(err, t("common.errorOccurred")));
     } finally {
       setLoading(false);
     }
   }, [locationFilterId, t]);
+
+  const toggleSelected = (articleId: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(articleId)) next.delete(articleId);
+      else next.add(articleId);
+      return next;
+    });
+  };
+
+  const allPageSelected =
+    articles.length > 0 &&
+    articles.every((a) => selectedIds.has(a.articleId));
+
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      if (allPageSelected) {
+        // unselect every article on the current page
+        const next = new Set(prev);
+        articles.forEach((a) => next.delete(a.articleId));
+        return next;
+      }
+      const next = new Set(prev);
+      articles.forEach((a) => next.add(a.articleId));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const bulkDelete = async () => {
+    setShowBulkDeleteConfirm(false);
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { count } = await articlesAPI.bulkDelete(ids);
+      toast.show(
+        t("articles.bulk.deleteSuccess").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+      clearSelection();
+      await fetchArticles();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkShare = async (shared: boolean) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { count } = await articlesAPI.bulkSetSharedWithPowerUsers(
+        ids,
+        shared
+      );
+      toast.show(
+        t("articles.bulk.shareSuccess").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+      await fetchArticles();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
 
   const fetchLocations = async () => {
     try {
@@ -218,6 +316,43 @@ const ArticlesList: React.FC = () => {
         />
       )}
 
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        canShare={isPowerUser}
+        busy={bulkBusy}
+        onClear={clearSelection}
+        onDelete={() => setShowBulkDeleteConfirm(true)}
+        onShare={() => bulkShare(true)}
+        onUnshare={() => bulkShare(false)}
+      />
+
+      {showBulkDeleteConfirm && (
+        <div className="border ui-alert-error rounded-lg p-4 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-red-700 flex-1">
+            {t("articles.bulk.deleteConfirm").replace(
+              "{count}",
+              String(selectedIds.size)
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={bulkDelete}
+            disabled={bulkBusy}
+            className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+          >
+            {t("common.yes")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowBulkDeleteConfirm(false)}
+            disabled={bulkBusy}
+            className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+          >
+            {t("common.no")}
+          </button>
+        </div>
+      )}
+
       {showForm && (
         <ArticleForm
           article={editingArticle || undefined}
@@ -235,6 +370,14 @@ const ArticlesList: React.FC = () => {
             <table className="w-full">
               <thead className="ui-panel">
                 <tr>
+                  <th className="px-3 py-3 w-10" aria-hidden="true">
+                    <input
+                      type="checkbox"
+                      disabled
+                      aria-hidden="true"
+                      tabIndex={-1}
+                    />
+                  </th>
                   {[
                     t("articles.table.image"),
                     t("articles.table.name"),
@@ -256,6 +399,9 @@ const ArticlesList: React.FC = () => {
               <tbody className="divide-y ui-divider">
                 {[1, 2, 3, 4].map((i) => (
                   <tr key={i}>
+                    <td className="px-3 py-4 w-10">
+                      <div className="h-4 w-4 animate-pulse rounded ui-panel" />
+                    </td>
                     {[12, 60, 40, 80, 24, 24, 48].map((w, j) => (
                       <td key={j} className="px-6 py-4">
                         <div
@@ -287,6 +433,14 @@ const ArticlesList: React.FC = () => {
             <table className="w-full">
               <thead className="ui-panel">
                 <tr>
+                  <th className="px-3 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      aria-label={t("articles.bulk.selectAll")}
+                      checked={allPageSelected}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.image")}
                   </th>
@@ -314,6 +468,14 @@ const ArticlesList: React.FC = () => {
                 {articles.map((article) => (
                   <React.Fragment key={article.articleId}>
                     <tr className="hover-surface">
+                      <td className="px-3 py-4">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${article.articleNom}`}
+                          checked={selectedIds.has(article.articleId)}
+                          onChange={() => toggleSelected(article.articleId)}
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <ArticleThumb
                           src={article.productImageUrl}
@@ -437,7 +599,7 @@ const ArticlesList: React.FC = () => {
 
                     {openSharesArticleId === article.articleId && (
                       <tr className="ui-panel">
-                        <td colSpan={7} className="px-6 py-4 text-sm">
+                        <td colSpan={8} className="px-6 py-4 text-sm">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
                               <div className="font-medium">
