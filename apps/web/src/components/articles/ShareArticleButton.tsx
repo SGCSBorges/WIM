@@ -2,47 +2,89 @@ import { useState } from "react";
 import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { useToast } from "../common/Toast";
 
 type Props = {
   articleId: number;
+  sharedWithPowerUsers: boolean;
+  isPowerUser: boolean;
   disabled?: boolean;
-  onShared?: () => void;
+  onChanged?: () => void;
 };
 
+/**
+ * State-aware share toggle.
+ *
+ * - Hidden entirely for non-POWER_USER (the backend rejects them with 403,
+ *   so showing a button that's guaranteed to fail is worse than no button).
+ * - Renders one of two visual states driven by `sharedWithPowerUsers`:
+ *   not shared → ghost "Share publicly" button;
+ *   shared     → success-styled "🌐 Shared" + inline "Unshare".
+ * - Success/error feedback routes through the project toast system.
+ */
 export default function ShareArticleButton({
   articleId,
+  sharedWithPowerUsers,
+  isPowerUser,
   disabled,
-  onShared,
+  onChanged,
 }: Props) {
   const { t } = useI18n();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
 
-  const share = async () => {
-    setLoading(true);
-    setError(null);
+  if (!isPowerUser) return null;
+
+  const toggle = async (next: boolean) => {
+    setBusy(true);
     try {
-      await articlesAPI.setSharedWithPowerUsers(articleId, true);
-      onShared?.();
+      await articlesAPI.setSharedWithPowerUsers(articleId, next);
+      toast.show(
+        next
+          ? t("articles.share.state.public")
+          : t("articles.share.state.unshared"),
+        { kind: "success" }
+      );
+      onChanged?.();
     } catch (e: unknown) {
-      setError(getErrorMessage(e, t("common.errorOccurred")));
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
-  return (
-    <span className="inline-flex flex-col items-start gap-1">
+  if (!sharedWithPowerUsers) {
+    return (
       <button
         type="button"
-        onClick={share}
-        disabled={disabled || loading}
+        onClick={() => toggle(true)}
+        disabled={disabled || busy}
         className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
         title={t("articles.share.tooltip")}
       >
-        {loading ? t("common.loading") : t("articles.share.button")}
+        {busy ? t("common.loading") : t("articles.share.button")}
       </button>
-      {error && <span className="text-xs text-red-600">{error}</span>}
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span
+        className="px-2 py-1 rounded text-xs font-medium ui-badge-success"
+        title={t("articles.shares.sharedStatus")}
+      >
+        🌐 {t("articles.share.state.publicLabel")}
+      </span>
+      <button
+        type="button"
+        onClick={() => toggle(false)}
+        disabled={disabled || busy}
+        className="text-xs ui-action-danger"
+      >
+        {busy ? t("common.loading") : t("articles.share.unshare")}
+      </button>
     </span>
   );
 }

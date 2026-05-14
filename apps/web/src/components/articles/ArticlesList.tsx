@@ -15,12 +15,6 @@ import { ErrorBanner } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
 import { useToast } from "../common/Toast";
 
-type ArticleShareStatus = {
-  articleId: number;
-  sharedWithPowerUsers: boolean;
-  updatedAt: string;
-} | null;
-
 const ArticlesList: React.FC = () => {
   const { t } = useI18n();
   const toast = useToast();
@@ -66,21 +60,6 @@ const ArticlesList: React.FC = () => {
     null
   );
 
-  const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(
-    null
-  );
-  const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(
-    null
-  );
-  const [shareStatusByArticleId, setShareStatusByArticleId] = useState<
-    Record<number, ArticleShareStatus>
-  >({});
-  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<
-    number | null
-  >(null);
-  const [confirmUnshareArticleId, setConfirmUnshareArticleId] = useState<
-    number | null
-  >(null);
   const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
     number | null
   >(null);
@@ -206,33 +185,6 @@ const ArticlesList: React.FC = () => {
       setLocations(mapped);
     } catch {
       // non-blocking
-    }
-  };
-
-  const loadShareStatus = async (articleId: number) => {
-    setSharesLoadingArticleId(articleId);
-    try {
-      const data = (await articlesAPI.getShares(
-        articleId
-      )) as ArticleShareStatus;
-      setShareStatusByArticleId((prev) => ({ ...prev, [articleId]: data }));
-    } catch (e: unknown) {
-      setError(getErrorMessage(e, t("common.errorOccurred")));
-    } finally {
-      setSharesLoadingArticleId(null);
-    }
-  };
-
-  const handleUnshareAll = async (articleId: number) => {
-    setConfirmUnshareArticleId(null);
-    setShareBusyArticleId(articleId);
-    try {
-      await articlesAPI.setSharedWithPowerUsers(articleId, false);
-      await loadShareStatus(articleId);
-    } catch (e: unknown) {
-      setError(getErrorMessage(e, t("common.errorOccurred")));
-    } finally {
-      setShareBusyArticleId(null);
     }
   };
 
@@ -383,6 +335,7 @@ const ArticlesList: React.FC = () => {
                     t("articles.table.description"),
                     t("articles.table.warranty"),
                     t("articles.table.proof"),
+                    t("articles.table.shared"),
                     t("articles.table.actions"),
                   ].map((h) => (
                     <th
@@ -400,7 +353,7 @@ const ArticlesList: React.FC = () => {
                     <td className="px-3 py-4 w-10">
                       <div className="h-4 w-4 animate-pulse rounded ui-panel" />
                     </td>
-                    {[12, 60, 40, 80, 24, 24, 48].map((w, j) => (
+                    {[12, 60, 40, 80, 24, 24, 16, 48].map((w, j) => (
                       <td key={j} className="px-6 py-4">
                         <div
                           className={`h-4 animate-pulse rounded ui-panel w-${w}`}
@@ -456,6 +409,9 @@ const ArticlesList: React.FC = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.proof")}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
+                    {t("articles.table.shared")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.actions")}
@@ -518,6 +474,18 @@ const ArticlesList: React.FC = () => {
                           </span>
                         )}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {article.sharedWithPowerUsers ? (
+                          <span
+                            className="px-2 py-1 rounded ui-badge-info"
+                            title={t("articles.share.state.publicTooltip")}
+                          >
+                            🌐 {t("articles.share.state.publicLabel")}
+                          </span>
+                        ) : (
+                          <span className="ui-text-muted">—</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => {
@@ -532,37 +500,13 @@ const ArticlesList: React.FC = () => {
                         <span className="inline-block mr-3 align-middle">
                           <ShareArticleButton
                             articleId={article.articleId}
-                            onShared={() => {
-                              if (openSharesArticleId === article.articleId) {
-                                loadShareStatus(article.articleId);
-                              }
-                            }}
+                            sharedWithPowerUsers={Boolean(
+                              article.sharedWithPowerUsers
+                            )}
+                            isPowerUser={isPowerUser}
+                            onChanged={fetchArticles}
                           />
                         </span>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next =
-                              openSharesArticleId === article.articleId
-                                ? null
-                                : article.articleId;
-                            setOpenSharesArticleId(next);
-                            if (next != null) {
-                              loadShareStatus(article.articleId);
-                            }
-                          }}
-                          disabled={
-                            sharesLoadingArticleId === article.articleId
-                          }
-                          className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider mr-3"
-                        >
-                          {sharesLoadingArticleId === article.articleId
-                            ? t("common.loading")
-                            : openSharesArticleId === article.articleId
-                              ? t("articles.shares.hideButton")
-                              : t("articles.shares.button")}
-                        </button>
 
                         {confirmDeleteArticleId === article.articleId ? (
                           <span className="inline-flex items-center gap-2">
@@ -594,96 +538,6 @@ const ArticlesList: React.FC = () => {
                         )}
                       </td>
                     </tr>
-
-                    {openSharesArticleId === article.articleId && (
-                      <tr className="ui-panel">
-                        <td colSpan={8} className="px-6 py-4 text-sm">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <div className="font-medium">
-                                {t("articles.shares.title")}
-                              </div>
-                              <div className="text-xs ui-text-muted">
-                                {t("articles.shares.description")}
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-                              onClick={() => loadShareStatus(article.articleId)}
-                              disabled={
-                                sharesLoadingArticleId === article.articleId
-                              }
-                            >
-                              {sharesLoadingArticleId === article.articleId
-                                ? t("common.loading")
-                                : t("common.refresh")}
-                            </button>
-                          </div>
-
-                          <div className="mt-3 space-y-2">
-                            {shareStatusByArticleId[article.articleId]
-                              ?.sharedWithPowerUsers ? (
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="text-sm ui-text-muted">
-                                  {t("articles.shares.sharedStatus")}
-                                </div>
-                                {confirmUnshareArticleId ===
-                                article.articleId ? (
-                                  <span className="inline-flex items-center gap-2">
-                                    <span className="text-xs text-red-700">
-                                      {t("articles.shares.unshareConfirm")}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      className="text-xs px-2 py-1 ui-btn-danger rounded"
-                                      disabled={
-                                        shareBusyArticleId === article.articleId
-                                      }
-                                      onClick={() =>
-                                        handleUnshareAll(article.articleId)
-                                      }
-                                    >
-                                      {t("common.yes")}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
-                                      onClick={() =>
-                                        setConfirmUnshareArticleId(null)
-                                      }
-                                    >
-                                      {t("common.no")}
-                                    </button>
-                                  </span>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="ui-action-danger"
-                                    disabled={
-                                      shareBusyArticleId === article.articleId
-                                    }
-                                    onClick={() =>
-                                      setConfirmUnshareArticleId(
-                                        article.articleId
-                                      )
-                                    }
-                                  >
-                                    {shareBusyArticleId === article.articleId
-                                      ? t("common.loading")
-                                      : t("articles.shares.unshareButton")}
-                                  </button>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="text-sm ui-text-muted">
-                                {t("articles.shares.notSharedStatus")}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
                   </React.Fragment>
                 ))}
               </tbody>

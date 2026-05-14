@@ -93,6 +93,24 @@ export const extras = {
     "locations.created": "Location created.",
     "locations.updated": "Location updated.",
     "locations.deleted": "Location deleted.",
+
+    "articles.table.shared": "Shared",
+    "articles.share.unshare": "Unshare",
+    "articles.share.state.public":
+      "Article is now shared with all Power Users.",
+    "articles.share.state.unshared": "Article is no longer publicly shared.",
+    "articles.share.state.publicLabel": "Public",
+    "articles.share.state.publicTooltip":
+      "Every Power User can read this article.",
+
+    "mySharedArticles.title": "Articles I'm sharing publicly",
+    "mySharedArticles.subtitle":
+      "Every Power User can read these articles. Toggle one off below or from the Articles list.",
+    "mySharedArticles.empty":
+      "You aren't sharing any articles publicly yet. Open an article from the Articles page and press Share to make it visible to every Power User.",
+
+    "profile.share.invited.scopeNote":
+      "These people have READ or WRITE access to your entire inventory — every article, not just one.",
   },
   fr: {
     "articles.table.image": "Image",
@@ -182,6 +200,25 @@ export const extras = {
     "locations.created": "Lieu créé.",
     "locations.updated": "Lieu mis à jour.",
     "locations.deleted": "Lieu supprimé.",
+
+    "articles.table.shared": "Partagé",
+    "articles.share.unshare": "Retirer du partage",
+    "articles.share.state.public":
+      "L'article est maintenant partagé avec tous les Power Users.",
+    "articles.share.state.unshared":
+      "L'article n'est plus partagé publiquement.",
+    "articles.share.state.publicLabel": "Public",
+    "articles.share.state.publicTooltip":
+      "Tous les Power Users peuvent lire cet article.",
+
+    "mySharedArticles.title": "Articles que je partage publiquement",
+    "mySharedArticles.subtitle":
+      "Tous les Power Users peuvent lire ces articles. Désactivez l'un d'eux ci-dessous ou depuis la liste des articles.",
+    "mySharedArticles.empty":
+      "Vous ne partagez aucun article publiquement. Ouvrez un article depuis la page Articles et cliquez sur Partager pour le rendre visible à tous les Power Users.",
+
+    "profile.share.invited.scopeNote":
+      "Ces personnes ont un accès LECTURE ou ÉCRITURE à tout votre inventaire — chaque article, pas juste un.",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -269,6 +306,25 @@ export const extras = {
     "locations.created": "Local criado.",
     "locations.updated": "Local atualizado.",
     "locations.deleted": "Local eliminado.",
+
+    "articles.table.shared": "Partilhado",
+    "articles.share.unshare": "Cancelar partilha",
+    "articles.share.state.public":
+      "O artigo está agora partilhado com todos os Power Users.",
+    "articles.share.state.unshared":
+      "O artigo já não está partilhado publicamente.",
+    "articles.share.state.publicLabel": "Público",
+    "articles.share.state.publicTooltip":
+      "Todos os Power Users podem ler este artigo.",
+
+    "mySharedArticles.title": "Artigos que estou a partilhar publicamente",
+    "mySharedArticles.subtitle":
+      "Todos os Power Users podem ler estes artigos. Cancele a partilha de um abaixo ou na lista de Artigos.",
+    "mySharedArticles.empty":
+      "Ainda não está a partilhar nenhum artigo publicamente. Abra um artigo na página Artigos e carregue em Partilhar para o tornar visível a todos os Power Users.",
+
+    "profile.share.invited.scopeNote":
+      "Estas pessoas têm acesso de LEITURA ou ESCRITA a todo o seu inventário — cada artigo, não apenas um.",
   },
 } as const;
 
