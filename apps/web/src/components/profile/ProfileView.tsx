@@ -13,6 +13,7 @@ import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "../articles/ArticleThumb";
 import { useToast } from "../common/Toast";
+import DataExportPanel from "./DataExportPanel";
 
 type Me = { userId: number; email: string; role: string };
 
@@ -639,6 +640,8 @@ export default function ProfileView() {
           )}
         </div>
       )}
+
+      <DataExportPanel />
 
       <div className="ui-card rounded-xl p-6 space-y-4">
         <h2 className="font-semibold ui-title">{t("profile.email.title")}</h2>

@@ -68,6 +68,14 @@ export const extras = {
     "articles.bulk.shareSuccess": "Updated sharing on {count} article(s).",
     "articles.bulk.clear": "Clear selection",
     "articles.bulk.selectAll": "Select all on page",
+
+    "export.title": "Export your data",
+    "export.subtitle":
+      "Download your inventory in CSV (spreadsheet-friendly) or JSON.",
+    "export.target.articles": "Articles",
+    "export.target.warranties": "Warranties",
+    "export.target.attachments": "Attachments",
+    "export.success": "Exported {target} as {format}.",
   },
   fr: {
     "articles.table.image": "Image",
@@ -133,6 +141,14 @@ export const extras = {
       "Partage mis à jour sur {count} article(s).",
     "articles.bulk.clear": "Effacer la sélection",
     "articles.bulk.selectAll": "Tout sélectionner sur cette page",
+
+    "export.title": "Exporter vos données",
+    "export.subtitle":
+      "Téléchargez votre inventaire en CSV (compatible tableur) ou JSON.",
+    "export.target.articles": "Articles",
+    "export.target.warranties": "Garanties",
+    "export.target.attachments": "Pièces jointes",
+    "export.success": "{target} exportés en {format}.",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -196,6 +212,14 @@ export const extras = {
       "Partilha atualizada em {count} artigo(s).",
     "articles.bulk.clear": "Limpar seleção",
     "articles.bulk.selectAll": "Selecionar tudo nesta página",
+
+    "export.title": "Exportar os seus dados",
+    "export.subtitle":
+      "Descarregue o seu inventário em CSV (compatível com folha de cálculo) ou JSON.",
+    "export.target.articles": "Artigos",
+    "export.target.warranties": "Garantias",
+    "export.target.attachments": "Anexos",
+    "export.success": "{target} exportados em {format}.",
   },
 } as const;
 
