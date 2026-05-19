@@ -4,6 +4,7 @@ import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { denyToken } from "../auth/token-denylist";
 import { cookieOptsFor } from "../auth/cookies";
+import { signToken } from "../auth/auth.service";
 import {
   DeleteAccountSchema,
   UpdateEmailSchema,
@@ -71,7 +72,22 @@ router.put(
       metadata: { field: "password" },
     });
 
-    res.json(updated);
+    // Service bumped tokenVersion to kill every previously issued JWT
+    // (other devices, leaked cookies). Belt-and-braces: deny the current
+    // jti in Redis too, then mint a fresh token at the new version so the
+    // calling device stays logged in without a re-login round trip.
+    if (req.user?.jti && req.user.exp) {
+      const ttl = req.user.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) await denyToken(req.user.jti, ttl);
+    }
+    const fresh = signToken(updated.userId, updated.role, updated.tokenVersion);
+    res.cookie("wim_token", fresh, cookieOptsFor(req));
+
+    res.json({
+      userId: updated.userId,
+      email: updated.email,
+      role: updated.role,
+    });
   })
 );
 

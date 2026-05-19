@@ -13,6 +13,9 @@ vi.mock("../../libs/prisma", () => ({
     garantie: {
       findFirst: vi.fn(),
     },
+    article: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 
@@ -22,6 +25,7 @@ import { AttachmentService } from "../../modules/attachments/attachment.service"
 const mockPrisma = prisma as unknown as {
   attachment: Record<string, ReturnType<typeof vi.fn>>;
   garantie: Record<string, ReturnType<typeof vi.fn>>;
+  article: Record<string, ReturnType<typeof vi.fn>>;
 };
 
 beforeEach(() => {
@@ -95,5 +99,47 @@ describe("AttachmentService.create", () => {
     mockPrisma.attachment.create.mockResolvedValue(created);
     const result = await AttachmentService.create(data);
     expect(result).toEqual(created);
+  });
+
+  it("rejects when articleId belongs to a different user", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(null);
+    await expect(
+      AttachmentService.create({
+        ownerUserId: 1,
+        articleId: 99,
+        fileName: "f.pdf",
+        mimeType: "application/pdf",
+        fileSize: 1,
+        fileUrl: "http://x/f.pdf",
+        type: "OTHER",
+      })
+    ).rejects.toMatchObject({ status: 403 });
+    expect(mockPrisma.attachment.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects when garantieId belongs to a different user", async () => {
+    mockPrisma.garantie.findFirst.mockResolvedValue(null);
+    await expect(
+      AttachmentService.create({
+        ownerUserId: 1,
+        garantieId: 99,
+        fileName: "f.pdf",
+        mimeType: "application/pdf",
+        fileSize: 1,
+        fileUrl: "http://x/f.pdf",
+        type: "OTHER",
+      })
+    ).rejects.toMatchObject({ status: 403 });
+    expect(mockPrisma.attachment.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("AttachmentService.update", () => {
+  it("rejects update that retargets to another user's article", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(null);
+    await expect(
+      AttachmentService.update(1, 1, { articleId: 99 })
+    ).rejects.toMatchObject({ status: 403 });
+    expect(mockPrisma.attachment.updateMany).not.toHaveBeenCalled();
   });
 });

@@ -8,7 +8,11 @@ import { createHttpError } from "../../utils/http-error";
 // JWT_SECRET is guaranteed present by validateEnv() called at startup.
 const JWT_EXPIRES = "7d";
 
-function signToken(userId: number, role: string, tokenVersion: number): string {
+export function signToken(
+  userId: number,
+  role: string,
+  tokenVersion: number
+): string {
   return jwt.sign(
     // `jti` lets us address a specific token in the Redis denylist on logout.
     // `v` is the user's tokenVersion at issue time — admin "force-logout"

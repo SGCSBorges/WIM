@@ -76,11 +76,21 @@ export const ProfileService = {
 
     const hashed = await bcrypt.hash(newPassword, 10);
 
-    return prisma.user.update({
+    // Bumping tokenVersion invalidates every JWT issued before this point —
+    // any stolen cookie / leaked session is killed when the user rotates
+    // their password. The route layer reissues a fresh token to the current
+    // request so the caller stays logged in on the current device.
+    const updated = await prisma.user.update({
       where: { userId },
-      data: { password: hashed },
-      select: { userId: true, email: true, role: true },
+      data: { password: hashed, tokenVersion: { increment: 1 } },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        tokenVersion: true,
+      },
     });
+    return updated;
   },
 
   async deleteAccount(userId: number, currentPassword: string) {

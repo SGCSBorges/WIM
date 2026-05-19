@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import { security } from "./config/security";
 import { errorHandler } from "./middlewares/error";
+import { csrfGuard } from "./middlewares/csrf";
 import articleRoutes from "./modules/articles/article.routes";
 import articleShareRoutes from "./modules/articles/article.share.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
@@ -46,6 +47,11 @@ export function createApp() {
   app.use(security.rateLimiter);
 
   app.use(cookieParser());
+  // CSRF defence runs after cookieParser (it inspects req.cookies.wim_token)
+  // and BEFORE every mutating route. Stripe webhook is already mounted
+  // above so it isn't covered — it uses raw-body HMAC signature verification
+  // instead of cookies.
+  app.use(csrfGuard);
   app.use(express.json({ limit: "1mb" }));
   app.use(
     pinoHttp({

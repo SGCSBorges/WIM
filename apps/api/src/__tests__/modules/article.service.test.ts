@@ -4,7 +4,14 @@ vi.mock("../../libs/prisma", () => ({
   prisma: {
     article: {
       findFirst: vi.fn(),
+      create: vi.fn(),
       delete: vi.fn(),
+    },
+    attachment: {
+      findFirst: vi.fn(),
+    },
+    location: {
+      count: vi.fn(),
     },
   },
 }));
@@ -21,6 +28,8 @@ import { ArticleService } from "../../modules/articles/article.service";
 
 const mockPrisma = prisma as unknown as {
   article: Record<string, ReturnType<typeof vi.fn>>;
+  attachment: Record<string, ReturnType<typeof vi.fn>>;
+  location: Record<string, ReturnType<typeof vi.fn>>;
 };
 
 beforeEach(() => {
@@ -68,5 +77,20 @@ describe("ArticleService.remove", () => {
     expect(mockPrisma.article.delete).toHaveBeenCalledWith({
       where: { articleId: 7 },
     });
+  });
+});
+
+describe("ArticleService.create — location ownership", () => {
+  it("rejects when any locationId is not owned by the caller", async () => {
+    mockPrisma.location.count.mockResolvedValue(1); // owns only 1 of the 2 ids
+    await expect(
+      ArticleService.create({
+        ownerUserId: 1,
+        articleNom: "A",
+        articleModele: "M",
+        locationIds: [10, 99],
+      })
+    ).rejects.toMatchObject({ status: 403 });
+    expect(mockPrisma.article.create).not.toHaveBeenCalled();
   });
 });

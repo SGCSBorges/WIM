@@ -5,6 +5,24 @@ import { addMonths } from "../common/date";
 import { createHttpError } from "../../utils/http-error";
 import { AlertService } from "../alerts/alert.service";
 
+// Reject a create/update that references location rows the caller does not own.
+// A single round trip: count owned rows in the requested set and compare. Any
+// missing id is treated as "not yours" — same 403 either way to avoid leaking
+// which ids exist under other accounts.
+async function assertLocationsOwned(
+  ownerUserId: number,
+  locationIds: number[]
+) {
+  if (locationIds.length === 0) return;
+  const unique = Array.from(new Set(locationIds));
+  const owned = await prisma.location.count({
+    where: { locationId: { in: unique }, ownerUserId },
+  });
+  if (owned !== unique.length) {
+    throw createHttpError(403, "One or more locations are not owned by you");
+  }
+}
+
 export const ArticleService = {
   list: (ownerUserId: number, locationId?: number, page = 1, limit = 50) =>
     prisma.article.findMany({
@@ -48,6 +66,8 @@ export const ArticleService = {
 
   create: async (data: ArticleCreateInput) => {
     const { locationIds, garantie, ...articleData } = data;
+
+    await assertLocationsOwned(articleData.ownerUserId, locationIds);
 
     if (garantie?.garantieImageAttachmentId) {
       const owned = await prisma.attachment.findFirst({
@@ -109,6 +129,10 @@ export const ArticleService = {
     // If updating locations, enforce at least one.
     if (locationIds && Array.isArray(locationIds) && locationIds.length === 0)
       throw createHttpError(400, "Article must have at least one location");
+
+    if (locationIds && locationIds.length > 0) {
+      await assertLocationsOwned(ownerUserId, locationIds);
+    }
 
     // We need current warranty state to decide create vs update vs delete.
     type ArticleWithGarantie = Prisma.ArticleGetPayload<{

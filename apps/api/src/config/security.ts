@@ -15,6 +15,12 @@ const allowedOrigins =
       ? true // dev convenience: allow all origins when CORS_ORIGIN not set
       : []; // production: block all cross-origin requests if not configured
 
+// Exposed so the CSRF middleware can reuse the same allowlist for Origin
+// header validation on cookie-authenticated mutating requests. `true` means
+// "any origin" (dev convenience) and the CSRF middleware will likewise
+// accept anything.
+export const csrfAllowedOrigins = allowedOrigins;
+
 export const security = {
   helmet: helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
