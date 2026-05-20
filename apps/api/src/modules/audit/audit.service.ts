@@ -13,7 +13,9 @@ export type AuditInput = {
     | "FORCE_LOGOUT"
     | "BILLING_CHECKOUT_STARTED"
     | "BILLING_PORTAL_OPENED"
-    | "BILLING_CANCEL_REQUESTED";
+    | "BILLING_CANCEL_REQUESTED"
+    | "DB_EXPORT"
+    | "DB_IMPORT";
   entity:
     | "Article"
     | "Garantie"
@@ -23,7 +25,8 @@ export type AuditInput = {
     | "Attachment"
     | "ShareInvite"
     | "InventoryShare"
-    | "ArticleLocation";
+    | "ArticleLocation"
+    | "Database";
   entityId?: number | null;
   metadata?: Record<string, unknown>;
   ip?: string | null;
