@@ -10,6 +10,7 @@ import { getErrorMessage } from "../../utils/error";
 import CreateUserModal from "./CreateUserModal";
 import ResetPasswordModal from "./ResetPasswordModal";
 import AuditLogTab from "./AuditLogTab";
+import AdminDbBackup from "./AdminDbBackup";
 import { DashboardStatsSkeleton } from "../common/Skeleton";
 
 type Role = "USER" | "POWER_USER" | "ADMIN";
@@ -372,6 +373,9 @@ export default function AdminUsers() {
               </p>
             </div>
           )}
+          <div className="mt-6">
+            <AdminDbBackup />
+          </div>
         </div>
       )}
 

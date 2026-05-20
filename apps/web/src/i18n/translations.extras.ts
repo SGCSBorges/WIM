@@ -111,6 +111,24 @@ export const extras = {
 
     "profile.share.invited.scopeNote":
       "These people have READ or WRITE access to your entire inventory — every article, not just one.",
+
+    "admin.db.title": "Database backup & restore",
+    "admin.db.subtitle":
+      "Export every row of every table as a single JSON file, or import a previous dump to migrate this site to a different database provider.",
+    "admin.db.exportButton": "Export full database",
+    "admin.db.exporting": "Exporting…",
+    "admin.db.exportSuccess": "Database export downloaded.",
+    "admin.db.chooseFile": "Import full database…",
+    "admin.db.importing": "Importing — do not close this tab…",
+    "admin.db.importSuccess":
+      "Import succeeded. Signing you out — log back in with the imported credentials.",
+    "admin.db.confirmTitle": "This will replace every row in the database.",
+    "admin.db.confirmBody":
+      "About to import {file}. The current Users, Articles, Warranties, Attachments, Locations, Alerts, Shares, Invites, Audit logs and Stripe-event records will be PERMANENTLY DELETED and replaced with the contents of the file. This action cannot be undone.",
+    "admin.db.confirmReplace": "Yes, replace the database",
+    "admin.db.invalidJson": "That file is not valid JSON.",
+    "admin.db.uploadsNote":
+      "Note: files uploaded to /uploads/ are stored on disk, not in the database. Copy that directory separately when migrating providers.",
   },
   fr: {
     "articles.table.image": "Image",
@@ -120,7 +138,7 @@ export const extras = {
     "shared.permission.read.tooltip":
       "Lecture seule. Seul le propriétaire peut modifier cet article.",
     "shared.permission.write.tooltip":
-      "Le propriétaire vous a accordé un accès en écriture ; vos modifications sont enregistrées dans son inventaire.",
+      "Le propriétaire vous a accordé un accès en écriture ; vos modifications sont enregistrées dans son inventaire.",
     "shared.source.user": "Direct",
     "shared.source.user.tooltip":
       "Partagé spécifiquement avec vous par le propriétaire.",
@@ -128,7 +146,7 @@ export const extras = {
     "shared.source.global.tooltip":
       "Le propriétaire a rendu cet article visible à tous les Power Users.",
 
-    "acceptInvite.title": "Vous avez une invitation ?",
+    "acceptInvite.title": "Vous avez une invitation ?",
     "acceptInvite.subtitle":
       "Collez un jeton d'invitation pour accéder à l'inventaire de quelqu'un d'autre.",
     "acceptInvite.placeholder": "Collez le jeton ici…",
@@ -148,7 +166,7 @@ export const extras = {
     "profile.share.public.unshareOne": "Retirer",
     "profile.share.public.unshareAll": "Tout retirer du partage public",
     "profile.share.public.unshareAllConfirm":
-      "Arrêter de partager tous les articles publiquement ?",
+      "Arrêter de partager tous les articles publiquement ?",
     "profile.share.public.unshareAllSuccess":
       "{count} article(s) retiré(s) du partage.",
     "profile.share.invited.title": "Personnes que vous avez invitées",
@@ -170,7 +188,7 @@ export const extras = {
     "articles.bulk.unshare": "Retirer du partage",
     "articles.bulk.delete": "Supprimer la sélection",
     "articles.bulk.deleteConfirm":
-      "Supprimer {count} article(s) ? Cette action est irréversible.",
+      "Supprimer {count} article(s) ? Cette action est irréversible.",
     "articles.bulk.deleteSuccess": "{count} article(s) supprimé(s).",
     "articles.bulk.shareSuccess": "Partage mis à jour sur {count} article(s).",
     "articles.bulk.clear": "Effacer la sélection",
@@ -196,7 +214,7 @@ export const extras = {
     "locations.none": "Aucun lieu pour le moment.",
     "locations.articleCount": "{count} article(s)",
     "locations.deleteConfirm":
-      "Supprimer ce lieu ? Les articles perdront cette assignation.",
+      "Supprimer ce lieu ? Les articles perdront cette assignation.",
     "locations.created": "Lieu créé.",
     "locations.updated": "Lieu mis à jour.",
     "locations.deleted": "Lieu supprimé.",
@@ -219,6 +237,25 @@ export const extras = {
 
     "profile.share.invited.scopeNote":
       "Ces personnes ont un accès LECTURE ou ÉCRITURE à tout votre inventaire — chaque article, pas juste un.",
+
+    "admin.db.title": "Sauvegarde et restauration de la base",
+    "admin.db.subtitle":
+      "Exportez chaque ligne de chaque table dans un fichier JSON unique, ou importez un export précédent pour migrer ce site vers un autre fournisseur de base de données.",
+    "admin.db.exportButton": "Exporter la base complète",
+    "admin.db.exporting": "Export en cours…",
+    "admin.db.exportSuccess": "Export téléchargé.",
+    "admin.db.chooseFile": "Importer la base complète…",
+    "admin.db.importing": "Import en cours — ne fermez pas cet onglet…",
+    "admin.db.importSuccess":
+      "Import réussi. Déconnexion en cours — reconnectez-vous avec les identifiants importés.",
+    "admin.db.confirmTitle":
+      "Cette action va remplacer chaque ligne de la base.",
+    "admin.db.confirmBody":
+      "Sur le point d'importer {file}. Les Utilisateurs, Articles, Garanties, Pièces jointes, Emplacements, Alertes, Partages, Invitations, Journaux d'audit et événements Stripe actuels seront DÉFINITIVEMENT SUPPRIMÉS et remplacés par le contenu du fichier. Cette action est irréversible.",
+    "admin.db.confirmReplace": "Oui, remplacer la base",
+    "admin.db.invalidJson": "Ce fichier n'est pas un JSON valide.",
+    "admin.db.uploadsNote":
+      "Remarque : les fichiers téléversés dans /uploads/ sont stockés sur le disque, pas en base. Copiez ce dossier séparément lors d'une migration.",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -325,6 +362,25 @@ export const extras = {
 
     "profile.share.invited.scopeNote":
       "Estas pessoas têm acesso de LEITURA ou ESCRITA a todo o seu inventário — cada artigo, não apenas um.",
+
+    "admin.db.title": "Cópia de segurança e restauro da base",
+    "admin.db.subtitle":
+      "Exporta todas as linhas de todas as tabelas para um único ficheiro JSON, ou importa uma cópia anterior para migrar este site para outro fornecedor de base de dados.",
+    "admin.db.exportButton": "Exportar base completa",
+    "admin.db.exporting": "A exportar…",
+    "admin.db.exportSuccess": "Exportação descarregada.",
+    "admin.db.chooseFile": "Importar base completa…",
+    "admin.db.importing": "A importar — não feche este separador…",
+    "admin.db.importSuccess":
+      "Importação concluída. A terminar a sua sessão — inicie sessão novamente com as credenciais importadas.",
+    "admin.db.confirmTitle":
+      "Esta ação vai substituir todas as linhas da base de dados.",
+    "admin.db.confirmBody":
+      "Prestes a importar {file}. Os Utilizadores, Artigos, Garantias, Anexos, Localizações, Alertas, Partilhas, Convites, Registos de auditoria e eventos Stripe atuais serão PERMANENTEMENTE ELIMINADOS e substituídos pelo conteúdo do ficheiro. Esta ação não pode ser revertida.",
+    "admin.db.confirmReplace": "Sim, substituir a base",
+    "admin.db.invalidJson": "Esse ficheiro não é JSON válido.",
+    "admin.db.uploadsNote":
+      "Nota: os ficheiros enviados para /uploads/ são guardados em disco, não na base. Copie esse diretório à parte ao migrar de fornecedor.",
   },
 } as const;
 
