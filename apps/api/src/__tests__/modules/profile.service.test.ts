@@ -2,8 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Stub bcrypt before importing the service so we can control compare/hash.
 // Keep a handle on the *real* hash function so each test can build a hash
-// that matches the password it claims to test against.
-const bcryptRef: { realHash?: (s: string, n: number) => Promise<string> } = {};
+// that matches the password it claims to test against. vi.hoisted runs
+// before vi.mock factories so the ref is safe to close over.
+const { bcryptRef } = vi.hoisted(() => ({
+  bcryptRef: {} as { realHash?: (s: string, n: number) => Promise<string> },
+}));
 
 vi.mock("bcrypt", async () => {
   const actual = await vi.importActual<typeof import("bcrypt")>("bcrypt");
