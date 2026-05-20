@@ -719,6 +719,50 @@ export const adminAPI = {
       nextCursor: number | null;
     }>;
   },
+
+  // Full-database export: returns the raw JSON blob so the caller can save
+  // it to disk. No type because the shape is opaque to the client — the
+  // import endpoint round-trips it as-is.
+  async exportDatabase(): Promise<{ blob: Blob; filename: string }> {
+    // 5 minutes: large dumps + cold-start API + slow connection can stack up.
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/db/export`,
+      { headers: getHeaders() },
+      5 * 60 * 1000
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to export database")
+      );
+    const disposition = response.headers.get("Content-Disposition") ?? "";
+    const match = /filename="([^"]+)"/.exec(disposition);
+    const filename = match?.[1] ?? `wim-backup-${Date.now()}.json`;
+    const blob = await response.blob();
+    return { blob, filename };
+  },
+
+  // Full-database import: send the previously exported JSON back. The
+  // server replaces every row. Caller MUST treat this as a destructive
+  // logout — the calling admin's User row was rewritten.
+  async importDatabase(payload: unknown): Promise<{
+    counts: Record<string, number>;
+    sessionInvalidated: boolean;
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/db/import`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ confirm: "REPLACE", payload }),
+      },
+      5 * 60 * 1000
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to import database")
+      );
+    return response.json();
+  },
 };
 
 export interface WarrantyItem {

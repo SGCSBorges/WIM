@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { prisma } from "../../libs/prisma";
@@ -9,6 +9,7 @@ import { createHttpError } from "../../utils/http-error";
 import { idParam } from "../common/schemas";
 import { passwordSchema } from "../auth/auth.schemas";
 import { ShareService } from "../shares/share.service";
+import { AdminDbService, ImportPayloadSchema } from "./admin.db.service";
 
 const router = Router();
 
@@ -438,6 +439,91 @@ router.get(
       email: user.email,
       articlesOwned: user.articlesOwned,
       warrantiesOwned: user.warrantiesOwned,
+    });
+  })
+);
+
+/**
+ * GET /api/admin/db/export
+ *
+ * Streams the full database as a single JSON document for migration to
+ * another provider. ADMIN only. Audited as DB_EXPORT.
+ */
+router.get(
+  "/db/export",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const dump = await AdminDbService.exportAll();
+    await auditAction(req, {
+      userId: req.user!.sub,
+      action: "DB_EXPORT",
+      entity: "Database",
+      metadata: { counts: dump.counts },
+    });
+    const filename = `wim-backup-${new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")}.json`;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(JSON.stringify(dump));
+  })
+);
+
+// Dedicated JSON parser for /db/import. The global parser caps at 1mb so
+// every other endpoint stays cheap; a full-DB dump can easily exceed that.
+const importBodyParser = express.json({ limit: "100mb" });
+
+/**
+ * POST /api/admin/db/import
+ *
+ * Replaces every row in the database with the contents of the uploaded
+ * JSON dump. ADMIN only. Requires `confirm: "REPLACE"` to be set on the
+ * payload (defence against accidental overwrite). The calling admin's
+ * session is force-invalidated afterwards because their User row was
+ * just replaced — they'll need to log back in.
+ */
+router.post(
+  "/db/import",
+  authGuard,
+  requireRole("ADMIN"),
+  importBodyParser,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const ConfirmedSchema = z.object({
+      confirm: z.literal("REPLACE"),
+      payload: ImportPayloadSchema,
+    });
+    const parsed = ConfirmedSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw createHttpError(
+        400,
+        `Invalid import payload: ${parsed.error.issues
+          .slice(0, 5)
+          .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+          .join("; ")}`
+      );
+    }
+
+    const result = await AdminDbService.importAll(parsed.data.payload);
+
+    // Audit before we lose the admin's session. The audit row references
+    // the *current* User row, which is in the freshly imported dump — so
+    // the userId we record is only meaningful if that user survived the
+    // import. We log defensively.
+    await auditAction(req, {
+      userId: req.user!.sub,
+      action: "DB_IMPORT",
+      entity: "Database",
+      metadata: { counts: result.counts },
+    });
+
+    res.json({
+      ok: true,
+      counts: result.counts,
+      // Client should treat this as a hard logout — the user table has
+      // been wiped and re-seeded, the caller's tokenVersion is no longer
+      // authoritative.
+      sessionInvalidated: true,
     });
   })
 );
