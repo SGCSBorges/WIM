@@ -21,7 +21,9 @@ const ArticlesList: React.FC = () => {
   const role = authAPI.getRole();
   const isPowerUser = role === "POWER_USER" || role === "ADMIN";
 
-  const getDaysUntilExpiry = (garantieFin: string | Date | null | undefined) => {
+  const getDaysUntilExpiry = (
+    garantieFin: string | Date | null | undefined
+  ) => {
     if (!garantieFin) return null;
     const end = new Date(garantieFin);
     const now = new Date();

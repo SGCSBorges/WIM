@@ -12,7 +12,7 @@ function filterArticles(articles: Article[], query: string): Article[] {
   return articles.filter(
     (a) =>
       a.articleNom.toLowerCase().includes(q) ||
-      a.articleModele.toLowerCase().includes(q),
+      a.articleModele.toLowerCase().includes(q)
   );
 }
 

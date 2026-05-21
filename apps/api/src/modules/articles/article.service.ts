@@ -168,13 +168,15 @@ export const ArticleService = {
       });
     }
 
-    // Track post-transaction alert work: scheduleForWarranty or rescheduleForWarranty.
-    let alertAction:
-      | { kind: "schedule"; garantieId: number; garantieFin: Date }
-      | { kind: "reschedule"; garantieId: number; garantieFin: Date }
-      | null = null;
+    // Run the DB changes and collect the alert side-effect inside the transaction
+    // so TypeScript can properly infer the pendingAlert return type (not a let-mutation).
+    const { article, pendingAlert } = await prisma.$transaction(async (tx) => {
+      type PendingAlert =
+        | { kind: "schedule"; garantieId: number; garantieFin: Date }
+        | { kind: "reschedule"; garantieId: number; garantieFin: Date }
+        | null;
+      let pending: PendingAlert = null;
 
-    const result = await prisma.$transaction(async (tx) => {
       // Apply warranty changes (if any) before updating the article itself.
       if (removeGarantie) {
         if (existing.garantie?.garantieId) {
@@ -220,7 +222,7 @@ export const ArticleService = {
             },
           });
           if (newFin) {
-            alertAction = {
+            pending = {
               kind: "reschedule",
               garantieId: existing.garantie.garantieId,
               garantieFin: newFin,
@@ -254,7 +256,7 @@ export const ArticleService = {
                 garantieIsValide: true,
               },
             });
-            alertAction = {
+            pending = {
               kind: "schedule",
               garantieId: created.garantieId,
               garantieFin,
@@ -268,7 +270,7 @@ export const ArticleService = {
         }
       }
 
-      return tx.article.update({
+      const article = await tx.article.update({
         where: { articleId: id },
         data: {
           ...patch,
@@ -294,28 +296,29 @@ export const ArticleService = {
           },
         },
       });
+      return { article, pendingAlert: pending };
     });
 
     // Post-transaction: schedule or reschedule BullMQ warranty reminders.
-    if (alertAction) {
-      if (alertAction.kind === "schedule") {
+    if (pendingAlert) {
+      if (pendingAlert.kind === "schedule") {
         await AlertService.scheduleForWarranty({
           ownerUserId,
-          garantieId: alertAction.garantieId,
+          garantieId: pendingAlert.garantieId,
           articleId: id,
-          garantieFin: alertAction.garantieFin,
+          garantieFin: pendingAlert.garantieFin,
         });
       } else {
         await AlertService.rescheduleForWarranty({
           ownerUserId,
-          garantieId: alertAction.garantieId,
+          garantieId: pendingAlert.garantieId,
           articleId: id,
-          garantieFin: alertAction.garantieFin,
+          garantieFin: pendingAlert.garantieFin,
         });
       }
     }
 
-    return result;
+    return article;
   },
 
   remove: async (id: number, ownerUserId: number) => {
