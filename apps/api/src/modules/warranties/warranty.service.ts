@@ -107,12 +107,10 @@ export const WarrantyService = {
       err.status = 404;
       throw err;
     }
-    if (current) {
-      await AlertService.cancelForWarranty({
-        ownerUserId: current.ownerUserId,
-        garantieId: current.garantieId,
-      });
-    }
+    await AlertService.cancelForWarranty({
+      ownerUserId: current.ownerUserId,
+      garantieId: current.garantieId,
+    });
     return prisma.garantie.delete({ where: { garantieId: id } });
   },
 };

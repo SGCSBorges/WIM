@@ -1,6 +1,7 @@
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";
 import { addMonths } from "../common/date";
+import { AlertService } from "../alerts/alert.service";
 
 export const ArticleService = {
   list: (ownerUserId: number, locationId?: number) =>
@@ -83,6 +84,18 @@ export const ArticleService = {
         },
       } as any,
     });
+
+    // Schedule warranty reminders if a warranty was created inline.
+    if (created.garantie) {
+      await AlertService.scheduleForWarranty({
+        ownerUserId: created.ownerUserId,
+        garantieId: (created.garantie as any).garantieId,
+        articleId: created.articleId,
+        garantieFin: (created.garantie as any).garantieFin,
+      });
+    }
+
+    return created;
   },
 
   update: async (id: number, ownerUserId: number, data: ArticleUpdateInput) => {
@@ -144,7 +157,11 @@ export const ArticleService = {
           garantie.garantieDateAchat &&
           garantie.garantieDuration
         ) {
-          await prisma.garantie.create({
+          const garantieFin = addMonths(
+            new Date(garantie.garantieDateAchat),
+            garantie.garantieDuration
+          );
+          const created = await prisma.garantie.create({
             data: {
               ownerUserId,
               garantieArticleId: id,
@@ -157,12 +174,15 @@ export const ArticleService = {
                       garantie.garantieImageAttachmentId,
                   }
                 : {}),
-              garantieFin: addMonths(
-                new Date(garantie.garantieDateAchat),
-                garantie.garantieDuration
-              ),
+              garantieFin,
               garantieIsValide: true,
             },
+          });
+          await AlertService.scheduleForWarranty({
+            ownerUserId,
+            garantieId: created.garantieId,
+            articleId: id,
+            garantieFin: created.garantieFin,
           });
         } else {
           const err: any = new Error(

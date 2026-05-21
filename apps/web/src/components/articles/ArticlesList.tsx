@@ -76,11 +76,57 @@ const ArticlesList: React.FC = () => {
       };
     }
   };
+  const getDaysUntilExpiry = (garantie: Article["garantie"]): number | null => {
+    if (!garantie?.garantieFin) return null;
+    const msPerDay = 1000 * 60 * 60 * 24;
+    return Math.ceil(
+      (new Date(garantie.garantieFin).getTime() - Date.now()) / msPerDay,
+    );
+  };
+
+  const exportToCsv = () => {
+    const rows = filteredArticles.map((a) => {
+      const ws = getWarrantyStatus(a.garantie);
+      const days = getDaysUntilExpiry(a.garantie);
+      return [
+        a.articleNom,
+        a.articleModele,
+        a.articleDescription ?? "",
+        ws.label,
+        a.garantie?.garantieFin
+          ? new Date(a.garantie.garantieFin).toLocaleDateString()
+          : "",
+        days !== null ? String(days) : "",
+        a.locations?.map((l) => l.location?.name ?? "").join("; ") ?? "",
+      ];
+    });
+    const header = [
+      "Name",
+      "Model",
+      "Description",
+      "Warranty Status",
+      "Warranty Expiry",
+      "Days Until Expiry",
+      "Locations",
+    ];
+    const csv = [header, ...rows]
+      .map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "articles.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(
     null,
@@ -153,7 +199,7 @@ const ArticlesList: React.FC = () => {
   };
 
   const handleUnshareAll = async (articleId: number) => {
-    if (!confirm("Unshare this article from all POWER_USERs?")) {
+    if (!confirm(t("articles.sharing.confirmUnshare"))) {
       return;
     }
 
@@ -217,6 +263,16 @@ const ArticlesList: React.FC = () => {
     }
   };
 
+  const filteredArticles = searchQuery.trim()
+    ? articles.filter((a) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          a.articleNom.toLowerCase().includes(q) ||
+          a.articleModele.toLowerCase().includes(q)
+        );
+      })
+    : articles;
+
   // Load articles on component mount
   useEffect(() => {
     fetchLocations();
@@ -244,7 +300,15 @@ const ArticlesList: React.FC = () => {
           <p className="text-gray-600">{t("articles.subtitle")}</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("articles.search.placeholder")}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm w-48"
+          />
+
           <select
             value={locationFilterId ?? ""}
             onChange={(e) =>
@@ -261,6 +325,13 @@ const ArticlesList: React.FC = () => {
               </option>
             ))}
           </select>
+
+          <button
+            onClick={exportToCsv}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm"
+          >
+            {t("articles.export.csv")}
+          </button>
 
           <button
             onClick={() => setShowForm(true)}
@@ -324,6 +395,9 @@ const ArticlesList: React.FC = () => {
                     {t("articles.table.warranty")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {t("articles.table.expiresIn")}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t("articles.table.proof")}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -332,7 +406,7 @@ const ArticlesList: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {articles.map((article) => (
+                {filteredArticles.map((article) => (
                   <React.Fragment key={article.articleId}>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -362,6 +436,35 @@ const ArticlesList: React.FC = () => {
                               className={`px-2 py-1 rounded border ${colorClasses[warrantyStatus.color as keyof typeof colorClasses]}`}
                             >
                               {warrantyStatus.label}
+                            </span>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {(() => {
+                          const days = getDaysUntilExpiry(article.garantie);
+                          if (days === null) return "-";
+                          if (days < 0)
+                            return (
+                              <span className="text-red-600 font-medium">
+                                {t("articles.warranty.expired")}
+                              </span>
+                            );
+                          if (days === 0)
+                            return (
+                              <span className="text-red-500 font-medium">
+                                {t("articles.warranty.expiresIn")} 0{" "}
+                                {t("articles.warranty.daysLeft")}
+                              </span>
+                            );
+                          return (
+                            <span
+                              className={
+                                days <= 30 ? "text-yellow-600" : "text-gray-600"
+                              }
+                            >
+                              {t("articles.warranty.expiresIn")} {days}{" "}
+                              {t("articles.warranty.daysLeft")}
                             </span>
                           );
                         })()}
@@ -415,13 +518,13 @@ const ArticlesList: React.FC = () => {
                             sharesLoadingArticleId === article.articleId
                           }
                           className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider mr-3"
-                          title="Manage sharing (owner-only)"
+                          title={t("articles.sharing.manageTitle")}
                         >
                           {sharesLoadingArticleId === article.articleId
                             ? t("common.loading")
                             : openSharesArticleId === article.articleId
-                              ? "Hide shares"
-                              : "Shares"}
+                              ? t("articles.sharing.hideShares")
+                              : t("articles.sharing.showShares")}
                         </button>
 
                         <button
@@ -435,13 +538,14 @@ const ArticlesList: React.FC = () => {
 
                     {openSharesArticleId === article.articleId && (
                       <tr className="bg-gray-50">
-                        <td colSpan={6} className="px-6 py-4 text-sm">
+                        <td colSpan={7} className="px-6 py-4 text-sm">
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                              <div className="font-medium">Sharing</div>
+                              <div className="font-medium">
+                                {t("articles.sharing.title")}
+                              </div>
                               <div className="text-xs ui-text-muted">
-                                Owner-only. Sharing makes this article visible
-                                to all POWER_USER accounts (read-only).
+                                {t("articles.sharing.description")}
                               </div>
                             </div>
                             <button
@@ -463,7 +567,7 @@ const ArticlesList: React.FC = () => {
                               ?.sharedWithPowerUsers ? (
                               <div className="flex items-center justify-between gap-3">
                                 <div className="text-sm ui-text-muted">
-                                  Shared with all POWER_USERs.
+                                  {t("articles.sharing.sharedAll")}
                                 </div>
                                 <button
                                   type="button"
@@ -477,12 +581,12 @@ const ArticlesList: React.FC = () => {
                                 >
                                   {shareBusyArticleId === article.articleId
                                     ? t("common.loading")
-                                    : "Unshare"}
+                                    : t("articles.sharing.unshare")}
                                 </button>
                               </div>
                             ) : (
                               <div className="text-sm ui-text-muted">
-                                Not shared.
+                                {t("articles.sharing.notShared")}
                               </div>
                             )}
                           </div>
