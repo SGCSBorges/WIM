@@ -468,12 +468,6 @@ export const translations = {
     "articles.shares.unshareButton": "Unshare",
     "articles.shares.unshareConfirm":
       "Unshare this article from all Power Users?",
-
-    "articles.search.placeholder": "Search by name or model…",
-    "articles.export.csv": "Export CSV",
-    "articles.table.expiresIn": "Expires in",
-    "articles.warranty.daysLeft": "days left",
-    "articles.warranty.expiresIn": "in",
   },
 
   fr: {
@@ -952,12 +946,6 @@ export const translations = {
     "articles.shares.unshareButton": "Dé-partager",
     "articles.shares.unshareConfirm":
       "Retirer le partage de cet article pour tous les Power Users ?",
-
-    "articles.search.placeholder": "Rechercher par nom ou modèle…",
-    "articles.export.csv": "Exporter CSV",
-    "articles.table.expiresIn": "Expire dans",
-    "articles.warranty.daysLeft": "jours restants",
-    "articles.warranty.expiresIn": "dans",
   },
 
   pt: {
@@ -1429,11 +1417,5 @@ export const translations = {
     "articles.shares.unshareButton": "Remover partilha",
     "articles.shares.unshareConfirm":
       "Remover a partilha deste artigo para todos os Power Users?",
-
-    "articles.search.placeholder": "Pesquisar por nome ou modelo…",
-    "articles.export.csv": "Exportar CSV",
-    "articles.table.expiresIn": "Expira em",
-    "articles.warranty.daysLeft": "dias restantes",
-    "articles.warranty.expiresIn": "em",
   },
 } as const;

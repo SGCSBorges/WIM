@@ -21,6 +21,42 @@ const ArticlesList: React.FC = () => {
   const role = authAPI.getRole();
   const isPowerUser = role === "POWER_USER" || role === "ADMIN";
 
+  const getDaysUntilExpiry = (garantieFin: string | Date | null | undefined) => {
+    if (!garantieFin) return null;
+    const end = new Date(garantieFin);
+    const now = new Date();
+    return Math.floor((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const exportToCsv = () => {
+    const headers = [
+      t("articles.table.name"),
+      t("articles.table.model"),
+      t("articles.table.description"),
+      t("articles.table.warranty"),
+      t("articles.table.expiresIn"),
+    ];
+    const rows = articles.map((a) => {
+      const ws = getWarrantyStatus(a.garantie);
+      const days = getDaysUntilExpiry(a.garantie?.garantieFin);
+      return [
+        a.articleNom,
+        a.articleModele,
+        a.articleDescription ?? "",
+        ws.label,
+        days !== null ? `${days} ${t("articles.warranty.daysLeft")}` : "",
+      ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
+    });
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "articles.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const getWarrantyStatus = (garantie: Article["garantie"]) => {
     if (!garantie || !garantie.garantieFin) {
       return { status: "none", label: t("common.no"), color: "gray" };
@@ -52,14 +88,6 @@ const ArticlesList: React.FC = () => {
     }
   };
 
-  const getDaysUntilExpiry = (garantie: Article["garantie"]): number | null => {
-    if (!garantie?.garantieFin) return null;
-    const msPerDay = 1000 * 60 * 60 * 24;
-    return Math.ceil(
-      (new Date(garantie.garantieFin).getTime() - Date.now()) / msPerDay
-    );
-  };
-
   const [articles, setArticles] = useState<FetchedArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,11 +95,12 @@ const ArticlesList: React.FC = () => {
   const [editingArticle, setEditingArticle] = useState<FetchedArticle | null>(
     null
   );
-  const [searchQuery, setSearchQuery] = useState("");
 
   const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
     number | null
   >(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
@@ -83,6 +112,16 @@ const ArticlesList: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
+  const filteredArticles = searchQuery.trim()
+    ? articles.filter((a) => {
+        const q = searchQuery.trim().toLowerCase();
+        return (
+          a.articleNom.toLowerCase().includes(q) ||
+          (a.articleModele ?? "").toLowerCase().includes(q)
+        );
+      })
+    : articles;
 
   const fetchArticles = useCallback(async () => {
     try {
@@ -119,18 +158,18 @@ const ArticlesList: React.FC = () => {
   };
 
   const allPageSelected =
-    articles.length > 0 && articles.every((a) => selectedIds.has(a.articleId));
+    filteredArticles.length > 0 &&
+    filteredArticles.every((a) => selectedIds.has(a.articleId));
 
   const toggleSelectAll = () => {
     setSelectedIds((prev) => {
       if (allPageSelected) {
-        // unselect every article on the current page
         const next = new Set(prev);
-        articles.forEach((a) => next.delete(a.articleId));
+        filteredArticles.forEach((a) => next.delete(a.articleId));
         return next;
       }
       const next = new Set(prev);
-      articles.forEach((a) => next.add(a.articleId));
+      filteredArticles.forEach((a) => next.add(a.articleId));
       return next;
     });
   };
@@ -224,53 +263,6 @@ const ArticlesList: React.FC = () => {
     }
   };
 
-  const filteredArticles = searchQuery.trim()
-    ? articles.filter((a) => {
-        const q = searchQuery.toLowerCase();
-        return (
-          a.articleNom.toLowerCase().includes(q) ||
-          a.articleModele.toLowerCase().includes(q)
-        );
-      })
-    : articles;
-
-  const exportToCsv = () => {
-    const rows = filteredArticles.map((a) => {
-      const ws = getWarrantyStatus(a.garantie);
-      const days = getDaysUntilExpiry(a.garantie);
-      return [
-        a.articleNom,
-        a.articleModele,
-        a.articleDescription ?? "",
-        ws.label,
-        a.garantie?.garantieFin
-          ? new Date(a.garantie.garantieFin).toLocaleDateString()
-          : "",
-        days !== null ? String(days) : "",
-        a.locations?.map((l: any) => l.location?.name ?? "").join("; ") ?? "",
-      ];
-    });
-    const header = [
-      "Name",
-      "Model",
-      "Description",
-      "Warranty Status",
-      "Warranty Expiry",
-      "Days Until Expiry",
-      "Locations",
-    ];
-    const csv = [header, ...rows]
-      .map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "articles.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   useEffect(() => {
     fetchLocations();
   }, []);
@@ -289,11 +281,11 @@ const ArticlesList: React.FC = () => {
 
         <div className="flex items-center gap-3 flex-wrap">
           <input
-            type="text"
+            type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("articles.search.placeholder")}
-            className="ui-input px-3 py-2 rounded-md text-sm w-48"
+            className="ui-input px-3 py-2 rounded-md text-sm w-52"
           />
 
           <select
@@ -315,6 +307,7 @@ const ArticlesList: React.FC = () => {
 
           <button
             onClick={exportToCsv}
+            disabled={articles.length === 0}
             className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
           >
             {t("articles.export.csv")}
@@ -405,6 +398,7 @@ const ArticlesList: React.FC = () => {
                     t("articles.table.model"),
                     t("articles.table.description"),
                     t("articles.table.warranty"),
+                    t("articles.table.expiresIn"),
                     t("articles.table.proof"),
                     t("articles.table.shared"),
                     t("articles.table.actions"),
@@ -424,7 +418,7 @@ const ArticlesList: React.FC = () => {
                     <td className="px-3 py-4 w-10">
                       <div className="h-4 w-4 animate-pulse rounded ui-panel" />
                     </td>
-                    {[12, 60, 40, 80, 24, 24, 16, 48].map((w, j) => (
+                    {[12, 60, 40, 80, 24, 20, 24, 16, 48].map((w, j) => (
                       <td key={j} className="px-6 py-4">
                         <div
                           className={`h-4 animate-pulse rounded ui-panel w-${w}`}
@@ -449,6 +443,10 @@ const ArticlesList: React.FC = () => {
             >
               {t("articles.create")}
             </button>
+          </div>
+        ) : filteredArticles.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="ui-text-muted">{t("articles.search.placeholder")}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -479,10 +477,10 @@ const ArticlesList: React.FC = () => {
                     {t("articles.table.warranty")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                    {t("articles.table.proof")}
+                    {t("articles.table.expiresIn")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                    {t("articles.table.expiresIn")}
+                    {t("articles.table.proof")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.shared")}
@@ -538,6 +536,34 @@ const ArticlesList: React.FC = () => {
                         })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {(() => {
+                          if (!article.garantie?.garantieFin)
+                            return <span className="ui-text-muted">—</span>;
+                          const days = getDaysUntilExpiry(
+                            article.garantie.garantieFin
+                          );
+                          if (days === null)
+                            return <span className="ui-text-muted">—</span>;
+                          if (days < 0)
+                            return (
+                              <span className="text-red-600 font-medium">
+                                {t("articles.warranty.expired")}
+                              </span>
+                            );
+                          return (
+                            <span
+                              className={
+                                days <= 30
+                                  ? "text-yellow-600 font-medium"
+                                  : "ui-text-muted"
+                              }
+                            >
+                              {days} {t("articles.warranty.daysLeft")}
+                            </span>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {article.garantie?.garantieImageAttachmentId ? (
                           <span className="px-2 py-1 rounded ui-badge-success">
                             {t("common.yes")}
@@ -547,28 +573,6 @@ const ArticlesList: React.FC = () => {
                             {t("common.no")}
                           </span>
                         )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
-                        {(() => {
-                          const days = getDaysUntilExpiry(article.garantie);
-                          if (days === null) return "—";
-                          if (days < 0)
-                            return (
-                              <span className="text-red-500 font-medium">
-                                {t("articles.warranty.expired")}
-                              </span>
-                            );
-                          return (
-                            <span
-                              className={
-                                days <= 30 ? "text-yellow-600 font-medium" : ""
-                              }
-                            >
-                              {t("articles.warranty.expiresIn")} {days}{" "}
-                              {t("articles.warranty.daysLeft")}
-                            </span>
-                          );
-                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {article.sharedWithPowerUsers ? (

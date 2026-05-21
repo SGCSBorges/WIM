@@ -129,6 +129,11 @@ export const extras = {
     "admin.db.invalidJson": "That file is not valid JSON.",
     "admin.db.uploadsNote":
       "Note: files uploaded to /uploads/ are stored on disk, not in the database. Copy that directory separately when migrating providers.",
+
+    "articles.search.placeholder": "Search by name or model…",
+    "articles.export.csv": "Export CSV",
+    "articles.table.expiresIn": "Expires in",
+    "articles.warranty.daysLeft": "days",
   },
   fr: {
     "articles.table.image": "Image",
@@ -256,6 +261,11 @@ export const extras = {
     "admin.db.invalidJson": "Ce fichier n'est pas un JSON valide.",
     "admin.db.uploadsNote":
       "Remarque : les fichiers téléversés dans /uploads/ sont stockés sur le disque, pas en base. Copiez ce dossier séparément lors d'une migration.",
+
+    "articles.search.placeholder": "Rechercher par nom ou modèle…",
+    "articles.export.csv": "Exporter CSV",
+    "articles.table.expiresIn": "Expire dans",
+    "articles.warranty.daysLeft": "jours",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -381,6 +391,11 @@ export const extras = {
     "admin.db.invalidJson": "Esse ficheiro não é JSON válido.",
     "admin.db.uploadsNote":
       "Nota: os ficheiros enviados para /uploads/ são guardados em disco, não na base. Copie esse diretório à parte ao migrar de fornecedor.",
+
+    "articles.search.placeholder": "Pesquisar por nome ou modelo…",
+    "articles.export.csv": "Exportar CSV",
+    "articles.table.expiresIn": "Expira em",
+    "articles.warranty.daysLeft": "dias",
   },
 } as const;
 

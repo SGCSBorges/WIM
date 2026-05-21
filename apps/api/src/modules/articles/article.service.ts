@@ -159,6 +159,15 @@ export const ArticleService = {
     );
     if (!existing) throw createHttpError(404, "Article not found");
 
+    // Cancel existing warranty jobs before the transaction if removing the warranty,
+    // so BullMQ jobs don't fire against a gone warranty row after the DB delete.
+    if (removeGarantie && existing.garantie?.garantieId) {
+      await AlertService.cancelForWarranty({
+        ownerUserId,
+        garantieId: existing.garantie.garantieId,
+      });
+    }
+
     // Track post-transaction alert work: scheduleForWarranty or rescheduleForWarranty.
     let alertAction:
       | { kind: "schedule"; garantieId: number; garantieFin: Date }
@@ -169,12 +178,6 @@ export const ArticleService = {
       // Apply warranty changes (if any) before updating the article itself.
       if (removeGarantie) {
         if (existing.garantie?.garantieId) {
-          // Cancel BullMQ jobs before DB delete so the jobs don't fire against a
-          // gone warranty row. Must run outside the tx (Redis, not Postgres).
-          await AlertService.cancelForWarranty({
-            ownerUserId,
-            garantieId: existing.garantie.garantieId,
-          });
           await tx.garantie.delete({
             where: { garantieId: existing.garantie.garantieId },
           });
