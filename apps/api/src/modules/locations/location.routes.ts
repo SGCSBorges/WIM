@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { asyncHandler } from "../common/http";
-import { authGuard } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
 import {
   LocationAssignArticleSchema,
@@ -8,14 +8,16 @@ import {
   LocationUpdateSchema,
 } from "./location.schemas";
 import { LocationService } from "./location.service";
+import { idParam, paginationQuery } from "../common/schemas";
 
 const router = Router();
 
 router.get(
   "/",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const locations = await LocationService.list(req.user.sub);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { page, limit } = paginationQuery.parse(req.query);
+    const locations = await LocationService.list(req.user!.sub, page, limit);
     res.json(locations);
   })
 );
@@ -23,9 +25,9 @@ router.get(
 router.get(
   "/:id",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const id = Number(req.params.id);
-    const location = await LocationService.get(id, req.user.sub);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const location = await LocationService.get(id, req.user!.sub);
     if (!location) return res.status(404).json({ error: "Location not found" });
     res.json(location);
   })
@@ -34,13 +36,13 @@ router.get(
 router.post(
   "/",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = LocationCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
     const created = await LocationService.create({
       ...bodyData,
-      ownerUserId: req.user.sub,
+      ownerUserId: req.user!.sub,
     });
     await auditAction(req, {
       action: "CREATE",
@@ -55,12 +57,12 @@ router.post(
 router.put(
   "/:id",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const id = Number(req.params.id);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
     const bodyData = LocationUpdateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
-    const updated = await LocationService.update(id, req.user.sub, bodyData);
+    const updated = await LocationService.update(id, req.user!.sub, bodyData);
     await auditAction(req, {
       action: "UPDATE",
       entity: "Location",
@@ -74,15 +76,15 @@ router.put(
 router.delete(
   "/:id",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const id = Number(req.params.id);
-    await LocationService.remove(id, req.user.sub);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    await LocationService.remove(id, req.user!.sub);
     await auditAction(req, {
       action: "DELETE",
       entity: "Location",
       entityId: id,
     });
-    res.status(204).end();
+    res.status(204).send();
   })
 );
 
@@ -90,9 +92,15 @@ router.delete(
 router.get(
   "/:id/articles",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const id = Number(req.params.id);
-    const articles = await LocationService.listArticles(id, req.user.sub);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const articles = await LocationService.listArticles(
+      id,
+      req.user!.sub,
+      page,
+      limit
+    );
     res.json(articles);
   })
 );
@@ -101,12 +109,12 @@ router.get(
 router.post(
   "/:id/articles",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const id = Number(req.params.id);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
     const body = LocationAssignArticleSchema.parse(req.body);
     const row = await LocationService.addArticle(
       id,
-      req.user.sub,
+      req.user!.sub,
       body.articleId
     );
     await auditAction(req, {
@@ -123,17 +131,17 @@ router.post(
 router.delete(
   "/:id/articles/:articleId",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const id = Number(req.params.id);
-    const articleId = Number(req.params.articleId);
-    await LocationService.removeArticle(id, req.user.sub, articleId);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const articleId = idParam.parse(req.params.articleId);
+    await LocationService.removeArticle(id, req.user!.sub, articleId);
     await auditAction(req, {
       action: "DELETE",
       entity: "ArticleLocation",
       entityId: undefined,
       metadata: { locationId: id, articleId },
     });
-    res.status(204).end();
+    res.status(204).send();
   })
 );
 

@@ -4,6 +4,7 @@
  */
 
 import { prisma } from "../libs/prisma";
+import { logger } from "../config/logger";
 
 type UserRole = "USER" | "POWER_USER" | "ADMIN";
 
@@ -76,31 +77,67 @@ export async function getDashboardStatistics(
 ): Promise<DashboardStatistics> {
   try {
     const ownerUserId = Number(params.userId);
-    const role = String(params.role || "USER") as UserRole;
+    const VALID_ROLES = ["USER", "POWER_USER", "ADMIN"] as const;
+    const rawRole = String(params.role || "USER");
+    const role: UserRole = (VALID_ROLES as readonly string[]).includes(rawRole)
+      ? (rawRole as UserRole)
+      : "USER";
 
-    // Articles (owner-scoped)
-    const articlesTotal = await prisma.article.count({
-      where: { ownerUserId },
-    });
-    const articlesWithWarranty = await prisma.article.count({
-      where: { ownerUserId, garantie: { isNot: null } },
-    });
+    const currentDate = new Date();
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(currentDate.getDate() + 30);
+
+    // Fire all independent counts concurrently.
+    const [
+      articlesTotal,
+      articlesWithWarranty,
+      locations,
+      articleCountsByLocation,
+      warrantiesTotal,
+      warrantiesActive,
+      warrantiesExpired,
+      warrantiesExpiringSoon,
+      warrantiesWithAttachment,
+      alertsTotal,
+      ownedSharedArticles,
+    ] = await Promise.all([
+      prisma.article.count({ where: { ownerUserId } }),
+      prisma.article.count({
+        where: { ownerUserId, garantie: { isNot: null } },
+      }),
+      prisma.location.findMany({
+        where: { ownerUserId },
+        select: { locationId: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.articleLocation.groupBy({
+        by: ["locationId"],
+        where: { article: { ownerUserId } },
+        _count: { articleId: true },
+      }),
+      prisma.garantie.count({ where: { ownerUserId } }),
+      prisma.garantie.count({
+        where: { ownerUserId, garantieFin: { gte: currentDate } },
+      }),
+      prisma.garantie.count({
+        where: { ownerUserId, garantieFin: { lt: currentDate } },
+      }),
+      prisma.garantie.count({
+        where: {
+          ownerUserId,
+          garantieFin: { gte: currentDate, lte: thirtyDaysFromNow },
+        },
+      }),
+      prisma.garantie.count({
+        where: { ownerUserId, garantieImageAttachmentId: { not: null } },
+      }),
+      prisma.alerte.count({ where: { ownerUserId } }),
+      prisma.article.count({
+        where: { ownerUserId, sharedWithPowerUsers: true },
+      }),
+    ]);
+
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
-
-    // Articles by location (only the user's locations)
-    const locations = await prisma.location.findMany({
-      where: { ownerUserId },
-      select: { locationId: true, name: true },
-      orderBy: { name: "asc" },
-    });
-
-    const articleCountsByLocation = await prisma.articleLocation.groupBy({
-      by: ["locationId"],
-      where: {
-        article: { ownerUserId },
-      },
-      _count: { articleId: true },
-    });
 
     const countMap = new Map<number, number>();
     for (const row of articleCountsByLocation) {
@@ -121,65 +158,6 @@ export async function getDashboardStatistics(
       0
     );
     const unassigned = Math.max(0, articlesTotal - locationsAssignedTotal);
-
-    // Warranties (owner-scoped)
-    const warrantiesTotal = await prisma.garantie.count({
-      where: { ownerUserId },
-    });
-    const currentDate = new Date();
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(currentDate.getDate() + 30);
-
-    const warrantiesActive = await prisma.garantie.count({
-      where: {
-        ownerUserId,
-        garantieFin: {
-          gte: currentDate,
-        },
-        garantieIsValide: true,
-      },
-    });
-
-    const warrantiesExpired = await prisma.garantie.count({
-      where: {
-        ownerUserId,
-        OR: [
-          {
-            garantieFin: {
-              lt: currentDate,
-            },
-          },
-          {
-            garantieIsValide: false,
-          },
-        ],
-      },
-    });
-
-    const warrantiesExpiringSoon = await prisma.garantie.count({
-      where: {
-        ownerUserId,
-        garantieFin: {
-          gte: currentDate,
-          lte: thirtyDaysFromNow,
-        },
-        garantieIsValide: true,
-      },
-    });
-
-    const warrantiesWithAttachment = await prisma.garantie.count({
-      where: { ownerUserId, garantieImageAttachmentId: { not: null } },
-    });
-
-    // Alerts (owner-scoped)
-    const alertsTotal = await prisma.alerte.count({
-      where: { ownerUserId },
-    });
-
-    // Sharing counts
-    const ownedSharedArticles = await prisma.article.count({
-      where: { ownerUserId, sharedWithPowerUsers: true },
-    });
 
     // Total shared articles of all users (only meaningful for POWER_USER)
     const totalSharedArticles =
@@ -218,9 +196,9 @@ export async function getDashboardStatistics(
       },
     };
   } catch (error) {
-    console.error(
-      "[Statistics Service] Error fetching dashboard statistics:",
-      error
+    logger.error(
+      { err: error },
+      "[statistics] failed to fetch dashboard statistics"
     );
     throw new Error("Failed to fetch dashboard statistics");
   }
@@ -231,60 +209,37 @@ export async function getDashboardStatistics(
  */
 export async function getAdminStatistics(): Promise<AdminStatistics> {
   try {
-    // Users
-    const totalUsers = await prisma.user.count();
-    const usersByRole = await prisma.user.groupBy({
-      by: ["role"],
-      _count: { userId: true },
-    });
-    const roleCounts = {
-      USER: 0,
-      POWER_USER: 0,
-      ADMIN: 0,
-    };
-    for (const row of usersByRole) {
-      roleCounts[row.role as keyof typeof roleCounts] = row._count.userId;
-    }
-
-    // Articles (global)
-    const totalArticles = await prisma.article.count();
-
-    // Warranties (global)
-    const totalWarranties = await prisma.garantie.count();
     const currentDate = new Date();
-    const warrantiesActive = await prisma.garantie.count({
-      where: {
-        garantieFin: {
-          gte: currentDate,
-        },
-        garantieIsValide: true,
-      },
-    });
-    const warrantiesExpired = await prisma.garantie.count({
-      where: {
-        OR: [
-          {
-            garantieFin: {
-              lt: currentDate,
-            },
-          },
-          {
-            garantieIsValide: false,
-          },
-        ],
-      },
-    });
-    const warrantiesWithAttachment = await prisma.garantie.count({
-      where: { garantieImageAttachmentId: { not: null } },
-    });
+    const [
+      totalUsers,
+      usersByRole,
+      totalArticles,
+      totalWarranties,
+      warrantiesActive,
+      warrantiesExpired,
+      warrantiesWithAttachment,
+      totalAlerts,
+      totalSharedArticles,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.groupBy({ by: ["role"], _count: { userId: true } }),
+      prisma.article.count(),
+      prisma.garantie.count(),
+      prisma.garantie.count({ where: { garantieFin: { gte: currentDate } } }),
+      prisma.garantie.count({ where: { garantieFin: { lt: currentDate } } }),
+      prisma.garantie.count({
+        where: { garantieImageAttachmentId: { not: null } },
+      }),
+      prisma.alerte.count(),
+      prisma.article.count({ where: { sharedWithPowerUsers: true } }),
+    ]);
 
-    // Alerts (global)
-    const totalAlerts = await prisma.alerte.count();
-
-    // Sharing (global)
-    const totalSharedArticles = await prisma.article.count({
-      where: { sharedWithPowerUsers: true },
-    });
+    const roleCounts = { USER: 0, POWER_USER: 0, ADMIN: 0 };
+    for (const row of usersByRole) {
+      if (row.role in roleCounts) {
+        roleCounts[row.role as keyof typeof roleCounts] = row._count.userId;
+      }
+    }
 
     return {
       users: {
@@ -308,9 +263,9 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
       },
     };
   } catch (error) {
-    console.error(
-      "[Statistics Service] Error fetching admin statistics:",
-      error
+    logger.error(
+      { err: error },
+      "[statistics] failed to fetch admin statistics"
     );
     throw new Error("Failed to fetch admin statistics");
   }
@@ -331,9 +286,9 @@ export async function getBasicStatistics(params: { userId: number }) {
       alerts: alertsCount,
     };
   } catch (error) {
-    console.error(
-      "[Statistics Service] Error fetching basic statistics:",
-      error
+    logger.error(
+      { err: error },
+      "[statistics] failed to fetch basic statistics"
     );
     throw new Error("Failed to fetch basic statistics");
   }

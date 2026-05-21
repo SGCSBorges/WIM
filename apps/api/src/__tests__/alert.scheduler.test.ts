@@ -47,13 +47,13 @@ describe("computeWarrantyReminderSchedule", () => {
     expect(result).toHaveLength(0);
   });
 
-  it("excludes a reminder scheduled exactly at now (not strictly future)", () => {
-    // J1 falls exactly on `now`
+  it("includes a reminder scheduled exactly at now (not strictly past)", () => {
+    // J1 falls exactly on `now`; !isBefore(now, now) = true so it IS included
     const garantieFin = new Date("2024-06-02T12:00:00Z");
     const result = computeWarrantyReminderSchedule({ garantieFin, now });
-    // J1 = garantieFin - 1 day = 2024-06-01T12:00:00Z = now → excluded
+    // J1 = garantieFin - 1 day = 2024-06-01T12:00:00Z = now → included (>= now)
     const j1 = result.find((r) => r.reminderKind === "J1");
-    expect(j1).toBeUndefined();
+    expect(j1).toBeDefined();
   });
 
   it("uses current time as default for now", () => {

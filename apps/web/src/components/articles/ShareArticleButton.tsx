@@ -1,56 +1,90 @@
-import React, { useState } from "react";
-import { API_BASE_URL } from "../../services/api";
+import { useState } from "react";
+import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { getErrorMessage } from "../../utils/error";
+import { useToast } from "../common/Toast";
 
 type Props = {
   articleId: number;
+  sharedWithPowerUsers: boolean;
+  isPowerUser: boolean;
   disabled?: boolean;
-  onShared?: () => void;
+  onChanged?: () => void;
 };
 
+/**
+ * State-aware share toggle.
+ *
+ * - Hidden entirely for non-POWER_USER (the backend rejects them with 403,
+ *   so showing a button that's guaranteed to fail is worse than no button).
+ * - Renders one of two visual states driven by `sharedWithPowerUsers`:
+ *   not shared → ghost "Share publicly" button;
+ *   shared     → success-styled "🌐 Shared" + inline "Unshare".
+ * - Success/error feedback routes through the project toast system.
+ */
 export default function ShareArticleButton({
   articleId,
+  sharedWithPowerUsers,
+  isPowerUser,
   disabled,
-  onShared,
+  onChanged,
 }: Props) {
   const { t } = useI18n();
-  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
 
-  const share = async () => {
-    const token = localStorage.getItem("token");
-    setLoading(true);
+  if (!isPowerUser) return null;
+
+  const toggle = async (next: boolean) => {
+    setBusy(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/share`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
+      await articlesAPI.setSharedWithPowerUsers(articleId, next);
+      toast.show(
+        next
+          ? t("articles.share.state.public")
+          : t("articles.share.state.unshared"),
+        { kind: "success" }
+      );
+      onChanged?.();
+    } catch (e: unknown) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
       });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Share failed (${res.status})`);
-      }
-
-      alert("Shared");
-      onShared?.();
-    } catch (e: any) {
-      alert(e?.message || "Share failed");
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
+  if (!sharedWithPowerUsers) {
+    return (
+      <button
+        type="button"
+        onClick={() => toggle(true)}
+        disabled={disabled || busy}
+        className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
+        title={t("articles.share.tooltip")}
+      >
+        {busy ? t("common.loading") : t("articles.share.button")}
+      </button>
+    );
+  }
+
   return (
-    <button
-      type="button"
-      onClick={share}
-      disabled={disabled || loading}
-      className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-      title="Share this article with all POWER_USER accounts"
-    >
-      {loading ? t("common.loading") : "Share"}
-    </button>
+    <span className="inline-flex items-center gap-2">
+      <span
+        className="px-2 py-1 rounded text-xs font-medium ui-badge-success"
+        title={t("articles.shares.sharedStatus")}
+      >
+        🌐 {t("articles.share.state.publicLabel")}
+      </span>
+      <button
+        type="button"
+        onClick={() => toggle(false)}
+        disabled={disabled || busy}
+        className="text-xs ui-action-danger"
+      >
+        {busy ? t("common.loading") : t("articles.share.unshare")}
+      </button>
+    </span>
   );
 }

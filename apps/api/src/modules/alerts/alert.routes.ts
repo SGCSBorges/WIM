@@ -1,8 +1,10 @@
 import { Router } from "express";
+import { AlerteStatus } from "@prisma/client";
 import { asyncHandler } from "../common/http";
-import { authGuard, requireRole } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { AlertService } from "./alert.service";
 import { AlertListQuerySchema } from "./alert.schemas";
+import { paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -10,13 +12,13 @@ const router = Router();
 router.get(
   "/",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const q = AlertListQuerySchema.parse(req.query);
 
     // Only admins can specify ownerUserId to view other users' alerts
-    let ownerUserId = req.user.userId;
+    let ownerUserId = req.user!.sub;
     if (q.ownerUserId) {
-      if (req.user.role !== "ADMIN") {
+      if (req.user!.role !== "ADMIN") {
         return res.status(403).json({
           error: "Only administrators can view alerts for other users",
         });
@@ -24,7 +26,15 @@ router.get(
       ownerUserId = q.ownerUserId;
     }
 
-    res.json(await AlertService.list(ownerUserId, q.status));
+    const { page, limit } = paginationQuery.parse(req.query);
+    res.json(
+      await AlertService.list(
+        ownerUserId,
+        q.status as AlerteStatus | undefined,
+        page,
+        limit
+      )
+    );
   })
 );
 

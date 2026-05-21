@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
+import { getErrorMessage } from "../../utils/error";
+import { ErrorBanner } from "../common/States";
 
 interface Attachment {
   attachmentId: number;
@@ -50,66 +53,68 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     "ALL" | "INVOICE" | "WARRANTY" | "OTHER"
   >("ALL");
   const [sortBy, setSortBy] = useState<"name" | "date" | "type" | "size">(
-    "date",
+    "date"
   );
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchAttachments();
-  }, [articleId, garantieId]);
-
-  const fetchAttachments = async () => {
+  const fetchAttachments = useCallback(async () => {
+    setFetchError(null);
     try {
       const data = await attachmentsAPI.getAll({
         articleId: articleId || undefined,
         garantieId: garantieId || undefined,
       });
       setAttachments(data);
-    } catch (error) {
-      console.error("Failed to fetch attachments:", error);
+    } catch (e: unknown) {
+      setFetchError(getErrorMessage(e, t("common.errorOccurred")));
     }
-  };
+  }, [articleId, garantieId, t]);
+
+  useEffect(() => {
+    fetchAttachments();
+  }, [fetchAttachments]);
 
   const handleAdd = async (formData: FormData) => {
     const file = formData.get("file");
-    const type = String(formData.get("type") || "OTHER") as
-      | "INVOICE"
-      | "WARRANTY"
-      | "OTHER";
+    const rawType = String(formData.get("type") || "OTHER");
+    const type: "INVOICE" | "WARRANTY" | "OTHER" =
+      rawType === "INVOICE" || rawType === "WARRANTY" ? rawType : "OTHER";
 
     if (!(file instanceof File)) {
-      alert(t("attachments.form.error.fileRequired"));
+      setUploadError(t("attachments.form.error.fileRequired"));
       return;
     }
 
     try {
       setUploading(true);
+      setUploadError(null);
       await attachmentsAPI.uploadFile(file, type);
       setShowAddForm(false);
       await fetchAttachments();
     } catch (e) {
-      alert(e instanceof Error ? e.message : t("common.errorOccurred"));
+      setUploadError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (attachmentId: number) => {
-    if (window.confirm(t("attachments.confirmDelete"))) {
-      if (onDelete) {
-        onDelete(attachmentId);
-      }
-
-      try {
-        await attachmentsAPI.deleteAttachment(attachmentId);
-        setAttachments(
-          attachments.filter((a) => a.attachmentId !== attachmentId),
-        );
-      } catch (error) {
-        console.error("Failed to delete attachment:", error);
-      }
+    setConfirmDeleteId(null);
+    setDeleteError(null);
+    if (onDelete) onDelete(attachmentId);
+    try {
+      await attachmentsAPI.deleteAttachment(attachmentId);
+      setAttachments(
+        attachments.filter((a) => a.attachmentId !== attachmentId)
+      );
+    } catch (e: unknown) {
+      setDeleteError(getErrorMessage(e, t("common.errorOccurred")));
     }
   };
 
@@ -128,7 +133,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             // API_BASE_URL is an absolute URL in dev or can be relative in prod; URL() needs absolute.
             // Using window.location.origin covers deployed web; for Render API we want its host.
             // Since attachment URLs are API-hosted, we can safely reuse pathname and force https.
-            `https://${u.host}`,
+            `https://${u.host}`
           );
           apiOrigin.pathname = u.pathname;
           href = apiOrigin.toString();
@@ -137,6 +142,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         // ignore URL parse errors; keep original href
       }
 
+      if (!/^https?:\/\//i.test(href)) return;
+
       const a = document.createElement("a");
       a.href = href;
       a.download = attachment.fileName;
@@ -144,8 +151,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch (error) {
-      console.error("Failed to download attachment:", error);
+    } catch {
+      // Download errors are browser-level; nothing meaningful to surface
     }
   };
 
@@ -193,7 +200,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     } else {
       return (
         <svg
-          className="h-8 w-8 text-gray-500"
+          className="h-8 w-8 ui-text-muted"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -212,13 +219,13 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   const getTypeColor = (type: string) => {
     switch (type) {
       case "INVOICE":
-        return "bg-blue-100 text-blue-800";
+        return "ui-badge-info";
       case "WARRANTY":
-        return "bg-green-100 text-green-800";
+        return "ui-badge-success";
       case "OTHER":
-        return "bg-gray-100 text-gray-800";
+        return "ui-badge";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "ui-badge";
     }
   };
 
@@ -278,7 +285,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             if (onAdd) onAdd();
             setShowAddForm((v) => !v);
           }}
-          className="ui-btn-primary px-4 py-2 rounded-md transition-colors"
+          className="ui-btn-primary px-4 py-2 rounded-md"
         >
           {showAddForm ? t("common.cancel") : t("attachments.add")}
         </button>
@@ -287,10 +294,22 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       {showAddForm && (
         <AttachmentForm
           onSubmit={handleAdd}
-          onCancel={() => setShowAddForm(false)}
+          onCancel={() => {
+            setShowAddForm(false);
+            setUploadError(null);
+          }}
           isLoading={uploading}
         />
       )}
+      {uploadError && <ErrorBanner message={uploadError} />}
+      {fetchError && (
+        <ErrorBanner
+          message={fetchError}
+          onRetry={fetchAttachments}
+          retryLabel={t("common.retry")}
+        />
+      )}
+      {deleteError && <ErrorBanner message={deleteError} />}
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-4">
@@ -386,7 +405,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     </p>
 
                     <p className="text-xs ui-text-muted">
-                      {new Date(attachment.createdAt).toLocaleDateString()}
+                      {format(parseISO(attachment.createdAt), "dd MMM yyyy")}
                     </p>
 
                     {/* Linked entities */}
@@ -413,7 +432,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleDownload(attachment)}
-                      className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
+                      className="text-xs ui-btn-ghost px-2 py-1 rounded"
                       title={t("attachments.action.download")}
                     >
                       {t("attachments.action.download")}
@@ -425,13 +444,15 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                         // Default behavior: open the attachment URL.
                         // Navigating directly to /api/attachments/:id would fail because the browser
                         // won't send the Authorization header (Token manquant).
-                        window.open(
-                          attachment.fileUrl,
-                          "_blank",
-                          "noopener,noreferrer",
-                        );
+                        if (/^https?:\/\//i.test(attachment.fileUrl)) {
+                          window.open(
+                            attachment.fileUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
+                        }
                       }}
-                      className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
+                      className="text-xs ui-btn-ghost px-2 py-1 rounded"
                       title={t("attachments.action.view")}
                     >
                       {t("attachments.action.view")}
@@ -442,18 +463,37 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     {onEdit && (
                       <button
                         onClick={() => onEdit(attachment)}
-                        className="text-xs ui-btn-ghost px-2 py-1 rounded transition-colors"
+                        className="text-xs ui-btn-ghost px-2 py-1 rounded"
                       >
                         {t("attachments.action.edit")}
                       </button>
                     )}
 
-                    <button
-                      onClick={() => handleDelete(attachment.attachmentId)}
-                      className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded transition-colors"
-                    >
-                      {t("attachments.action.delete")}
-                    </button>
+                    {confirmDeleteId === attachment.attachmentId ? (
+                      <>
+                        <button
+                          onClick={() => handleDelete(attachment.attachmentId)}
+                          className="text-xs px-2 py-1 ui-btn-danger rounded"
+                        >
+                          {t("common.yes")}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        >
+                          {t("common.no")}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          setConfirmDeleteId(attachment.attachmentId)
+                        }
+                        className="text-xs ui-action-danger px-2 py-1 rounded"
+                      >
+                        {t("attachments.action.delete")}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

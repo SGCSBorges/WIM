@@ -28,5 +28,5 @@ export function computeWarrantyReminderSchedule(input: {
 
   if (includePast) return items;
 
-  return items.filter((i) => i.executeAt > now);
+  return items.filter((i) => !isBefore(i.executeAt, now));
 }

@@ -1,11 +1,9 @@
-/**
- * Dashboard Component
- * Main dashboard page showing inventory statistics and overview
- */
-
 import React, { useState, useEffect } from "react";
 import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { getErrorMessage } from "../../utils/error";
+import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
+import { ErrorBanner } from "../common/States";
 
 interface DashboardStatistics {
   articles: {
@@ -52,12 +50,12 @@ const StatCard: React.FC<StatCardProps> = ({
   color,
   subtitle,
 }) => (
-  <div className="bg-white rounded-lg shadow p-6">
+  <div className="ui-card rounded-lg shadow p-6">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-gray-600">{title}</p>
-        <p className="text-3xl font-semibold text-gray-900">{value}</p>
-        {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        <p className="text-sm font-medium ui-text-muted">{title}</p>
+        <p className="text-3xl font-semibold">{value}</p>
+        {subtitle && <p className="text-sm ui-text-muted mt-1">{subtitle}</p>}
       </div>
       <div
         className={`p-3 rounded-full ${color} text-white text-2xl flex items-center justify-center w-12 h-12`}
@@ -74,15 +72,13 @@ interface DetailCardProps {
 }
 
 const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
-  <div className="bg-white rounded-lg shadow p-6">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+  <div className="ui-card rounded-lg shadow p-6">
+    <h3 className="text-lg font-semibold mb-4">{title}</h3>
     <div className="space-y-3">
       {data.map((item, index) => (
         <div key={index} className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">{item.label}</span>
-          <span
-            className={`text-sm font-medium ${item.color || "text-gray-900"}`}
-          >
+          <span className="text-sm ui-text-muted">{item.label}</span>
+          <span className={`text-sm font-medium ${item.color || ""}`}>
             {item.value}
           </span>
         </div>
@@ -94,54 +90,66 @@ const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
 const Dashboard: React.FC = () => {
   const { t } = useI18n();
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(
-    null,
+    null
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        setLoading(true);
-        const data = await statisticsAPI.getDashboard();
-        setStatistics(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : t("common.errorOccurred"),
-        );
-        console.error("Error fetching statistics:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchStatistics = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await statisticsAPI.getDashboard();
+      setStatistics(data);
+      setError(null);
+    } catch (err) {
+      setError(getErrorMessage(err, t("common.errorOccurred")));
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
 
+  useEffect(() => {
     fetchStatistics();
-  }, []);
+  }, [fetchStatistics]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label={t("dashboard.title")}
+        className="space-y-6"
+      >
+        <div className="space-y-2">
+          <Skeleton height={32} width="35%" />
+          <Skeleton height={16} width="55%" />
+        </div>
+        <DashboardStatsSkeleton cards={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="ui-card rounded-lg shadow p-6 space-y-3">
+              <Skeleton height={20} width="40%" />
+              <Skeleton height={160} />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <span className="text-red-400 mr-2">❌</span>
-          <p className="text-sm text-red-700">
-            {t("dashboard.errorLoading")} {error}
-          </p>
-        </div>
-      </div>
+      <ErrorBanner
+        message={`${t("dashboard.errorLoading")} ${error}`}
+        onRetry={fetchStatistics}
+        retryLabel={t("common.retry")}
+      />
     );
   }
 
   if (!statistics) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+      <div className="border ui-alert-warning rounded-lg p-4">
         <div className="flex items-center">
           <span className="text-yellow-400 mr-2">⚠️</span>
           <p className="text-sm text-yellow-700">{t("dashboard.noStats")}</p>
@@ -153,10 +161,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t("dashboard.title")}
-        </h1>
-        <p className="text-gray-600">{t("dashboard.subtitle")}</p>
+        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+        <p className="ui-text-muted">{t("dashboard.subtitle")}</p>
       </div>
 
       {/* Main Stats Grid */}
@@ -165,7 +171,7 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.totalArticles")}
           value={statistics.articles.total}
           icon="📦"
-          color="bg-blue-500"
+          color="ui-icon-primary"
           subtitle={`${statistics.articles.withWarranty} ${t("dashboard.withWarranty")}`}
         />
 
@@ -173,7 +179,7 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.activeWarranties")}
           value={statistics.warranties.active}
           icon="🛡️"
-          color="bg-green-500"
+          color="ui-icon-success"
           subtitle={`${statistics.warranties.expiringSoon} ${t("dashboard.expiringSoon")}`}
         />
 
@@ -181,15 +187,15 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.sharedByMe")}
           value={statistics.sharing.ownedSharedArticles}
           icon="📤"
-          color="bg-purple-500"
+          color="ui-icon-purple"
           subtitle={t("dashboard.ownedArticlesShared")}
         />
 
         <StatCard
           title={t("dashboard.sharedWithMe")}
           value={statistics.sharing.totalSharedArticles}
-          icon="�"
-          color="bg-orange-500"
+          icon="📥"
+          color="ui-icon-warning"
           subtitle={t("dashboard.availableInSharedView")}
         />
       </div>
@@ -242,7 +248,7 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.unassigned"),
               value: statistics.locations.unassigned,
-              color: "text-gray-600",
+              color: "ui-text-muted",
             },
           ]}
         />
@@ -279,14 +285,14 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Quick Actions or Additional Info */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="ui-card rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">
           {t("dashboard.systemHealth")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center">
             <span className="text-green-500 mr-2">✅</span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm ui-text-muted">
               {(statistics.warranties.total
                 ? (statistics.warranties.active / statistics.warranties.total) *
                   100
@@ -298,7 +304,7 @@ const Dashboard: React.FC = () => {
 
           <div className="flex items-center">
             <span className="text-blue-500 mr-2">📈</span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm ui-text-muted">
               {(statistics.articles.total
                 ? (statistics.articles.withWarranty /
                     statistics.articles.total) *
@@ -311,7 +317,7 @@ const Dashboard: React.FC = () => {
 
           <div className="flex items-center">
             <span className="text-orange-500 mr-2">⏰</span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm ui-text-muted">
               {statistics.warranties.expiringSoon}{" "}
               {t("dashboard.warrantiesNeedAttention")}
             </span>

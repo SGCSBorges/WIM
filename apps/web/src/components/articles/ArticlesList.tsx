@@ -3,49 +3,24 @@
  * Display and manage articles
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
-import { API_BASE_URL, articlesAPI, locationsAPI } from "../../services/api";
+import { articlesAPI, locationsAPI, authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-
-type ArticleShareStatus = {
-  articleId: number;
-  sharedWithPowerUsers: boolean;
-  updatedAt: string;
-} | null;
-
-interface Article {
-  articleId: number;
-  articleNom: string;
-  articleModele: string;
-  articleDescription?: string | null;
-  productImageUrl?: string | null;
-  sharedWithPowerUsers?: boolean;
-  garantie?: {
-    garantieId: number;
-    garantieNom: string;
-    garantieDateAchat?: string;
-    garantieDuration?: number;
-    garantieFin?: string;
-    garantieIsValide?: boolean;
-    garantieImageAttachmentId?: number | null;
-  } | null;
-  locations?: Array<{
-    locationId: number;
-    location?: { name: string };
-  }>;
-}
-
-interface Location {
-  locationId: number;
-  name: string;
-}
+import type { Article, FetchedArticle, Location } from "../../types";
+import { getErrorMessage } from "../../utils/error";
+import ArticleThumb from "./ArticleThumb";
+import { ErrorBanner } from "../common/States";
+import BulkActionBar from "./BulkActionBar";
+import { useToast } from "../common/Toast";
 
 const ArticlesList: React.FC = () => {
   const { t } = useI18n();
+  const toast = useToast();
+  const role = authAPI.getRole();
+  const isPowerUser = role === "POWER_USER" || role === "ADMIN";
 
-  // Helper function to determine warranty status
   const getWarrantyStatus = (garantie: Article["garantie"]) => {
     if (!garantie || !garantie.garantieFin) {
       return { status: "none", label: t("common.no"), color: "gray" };
@@ -76,13 +51,188 @@ const ArticlesList: React.FC = () => {
       };
     }
   };
+
   const getDaysUntilExpiry = (garantie: Article["garantie"]): number | null => {
     if (!garantie?.garantieFin) return null;
     const msPerDay = 1000 * 60 * 60 * 24;
     return Math.ceil(
-      (new Date(garantie.garantieFin).getTime() - Date.now()) / msPerDay,
+      (new Date(garantie.garantieFin).getTime() - Date.now()) / msPerDay
     );
   };
+
+  const [articles, setArticles] = useState<FetchedArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<FetchedArticle | null>(
+    null
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
+    number | null
+  >(null);
+
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
+    undefined
+  );
+
+  // Bulk selection: ids of articles currently checked. Cleared on refetch
+  // so the bar doesn't keep references to articles that just left the page.
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
+  const fetchArticles = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await articlesAPI.getAll(locationFilterId);
+      setArticles(data);
+      setError(null);
+      // Drop any selections whose article no longer appears in the list
+      // (filter changed, item was deleted/moved). Avoids the BulkActionBar
+      // counting articles that aren't visible anymore.
+      setSelectedIds((prev) => {
+        if (prev.size === 0) return prev;
+        const visible = new Set(data.map((a) => a.articleId));
+        const next = new Set<number>();
+        prev.forEach((id) => {
+          if (visible.has(id)) next.add(id);
+        });
+        return next.size === prev.size ? prev : next;
+      });
+    } catch (err) {
+      setError(getErrorMessage(err, t("common.errorOccurred")));
+    } finally {
+      setLoading(false);
+    }
+  }, [locationFilterId, t]);
+
+  const toggleSelected = (articleId: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(articleId)) next.delete(articleId);
+      else next.add(articleId);
+      return next;
+    });
+  };
+
+  const allPageSelected =
+    articles.length > 0 && articles.every((a) => selectedIds.has(a.articleId));
+
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      if (allPageSelected) {
+        // unselect every article on the current page
+        const next = new Set(prev);
+        articles.forEach((a) => next.delete(a.articleId));
+        return next;
+      }
+      const next = new Set(prev);
+      articles.forEach((a) => next.add(a.articleId));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const bulkDelete = async () => {
+    setShowBulkDeleteConfirm(false);
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { count } = await articlesAPI.bulkDelete(ids);
+      toast.show(
+        t("articles.bulk.deleteSuccess").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+      clearSelection();
+      await fetchArticles();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkShare = async (shared: boolean) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { count } = await articlesAPI.bulkSetSharedWithPowerUsers(
+        ids,
+        shared
+      );
+      toast.show(
+        t("articles.bulk.shareSuccess").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+      await fetchArticles();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const fetchLocations = async () => {
+    try {
+      const data = await locationsAPI.getAll();
+      const mapped: Location[] = (data || []).map(
+        (l: { locationId: number; name: string }) => ({
+          locationId: l.locationId,
+          name: l.name,
+        })
+      );
+      setLocations(mapped);
+    } catch {
+      // non-blocking
+    }
+  };
+
+  const handleSubmit = async (articleData: Omit<Article, "articleId">) => {
+    setError(null);
+    try {
+      if (editingArticle) {
+        await articlesAPI.update(editingArticle.articleId, articleData);
+      } else {
+        await articlesAPI.create(articleData);
+      }
+      await fetchArticles();
+      setShowForm(false);
+      setEditingArticle(null);
+    } catch (err) {
+      setError(getErrorMessage(err, t("common.errorOccurred")));
+    }
+  };
+
+  const handleDelete = async (articleId: number) => {
+    setConfirmDeleteArticleId(null);
+    setError(null);
+    try {
+      await articlesAPI.delete(articleId);
+      await fetchArticles();
+    } catch (err) {
+      setError(getErrorMessage(err, t("common.errorOccurred")));
+    }
+  };
+
+  const filteredArticles = searchQuery.trim()
+    ? articles.filter((a) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          a.articleNom.toLowerCase().includes(q) ||
+          a.articleModele.toLowerCase().includes(q)
+        );
+      })
+    : articles;
 
   const exportToCsv = () => {
     const rows = filteredArticles.map((a) => {
@@ -97,7 +247,7 @@ const ArticlesList: React.FC = () => {
           ? new Date(a.garantie.garantieFin).toLocaleDateString()
           : "",
         days !== null ? String(days) : "",
-        a.locations?.map((l) => l.location?.name ?? "").join("; ") ?? "",
+        a.locations?.map((l: any) => l.location?.name ?? "").join("; ") ?? "",
       ];
     });
     const header = [
@@ -121,183 +271,20 @@ const ArticlesList: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const [shareBusyArticleId, setShareBusyArticleId] = useState<number | null>(
-    null,
-  );
-
-  const [openSharesArticleId, setOpenSharesArticleId] = useState<number | null>(
-    null,
-  );
-  const [shareStatusByArticleId, setShareStatusByArticleId] = useState<
-    Record<number, ArticleShareStatus>
-  >({});
-  const [sharesLoadingArticleId, setSharesLoadingArticleId] = useState<
-    number | null
-  >(null);
-
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
-    undefined,
-  );
-
-  // Fetch articles from API
-  const fetchArticles = async () => {
-    try {
-      setLoading(true);
-      const data = await articlesAPI.getAll(locationFilterId);
-      setArticles(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
-      console.error("Error fetching articles:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchLocations = async () => {
-    try {
-      const data = await locationsAPI.getAll();
-      const mapped: Location[] = (data || []).map((l: any) => ({
-        locationId: l.locationId,
-        name: l.name,
-      }));
-      setLocations(mapped);
-    } catch {
-      // non-blocking
-    }
-  };
-
-  const loadShareStatus = async (articleId: number) => {
-    const token = localStorage.getItem("token");
-    setSharesLoadingArticleId(articleId);
-    try {
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/shares`, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Failed to load shares (${res.status})`);
-      }
-
-      const data = (await res.json()) as ArticleShareStatus;
-      setShareStatusByArticleId((prev) => ({ ...prev, [articleId]: data }));
-    } catch (e: any) {
-      alert(e?.message || "Failed to load shares");
-    } finally {
-      setSharesLoadingArticleId(null);
-    }
-  };
-
-  const handleUnshareAll = async (articleId: number) => {
-    if (!confirm(t("articles.sharing.confirmUnshare"))) {
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    setShareBusyArticleId(articleId);
-    try {
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}/share/0`, {
-        method: "DELETE",
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Unshare failed (${res.status})`);
-      }
-
-      await loadShareStatus(articleId);
-    } catch (e: any) {
-      alert(e?.message || "Unshare failed");
-    } finally {
-      setShareBusyArticleId(null);
-    }
-  };
-
-  // Create or update article
-  const handleSubmit = async (articleData: Omit<Article, "articleId">) => {
-    try {
-      if (editingArticle) {
-        await articlesAPI.update(editingArticle.articleId, articleData);
-      } else {
-        await articlesAPI.create(articleData);
-      }
-
-      // Refresh articles list
-      await fetchArticles();
-
-      // Reset form
-      setShowForm(false);
-      setEditingArticle(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
-      console.error("Error submitting article:", err);
-    }
-  };
-
-  // Delete article
-  const handleDelete = async (articleId: number) => {
-    if (!confirm(t("articles.delete.confirm"))) {
-      return;
-    }
-
-    try {
-      await articlesAPI.delete(articleId);
-      // Refresh articles list
-      await fetchArticles();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("common.errorOccurred"));
-      console.error("Error deleting article:", err);
-    }
-  };
-
-  const filteredArticles = searchQuery.trim()
-    ? articles.filter((a) => {
-        const q = searchQuery.toLowerCase();
-        return (
-          a.articleNom.toLowerCase().includes(q) ||
-          a.articleModele.toLowerCase().includes(q)
-        );
-      })
-    : articles;
-
-  // Load articles on component mount
   useEffect(() => {
     fetchLocations();
   }, []);
 
   useEffect(() => {
     fetchArticles();
-  }, [locationFilterId]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  }, [fetchArticles]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {t("articles.title")}
-          </h1>
-          <p className="text-gray-600">{t("articles.subtitle")}</p>
+          <h1 className="text-2xl font-bold">{t("articles.title")}</h1>
+          <p className="ui-text-muted">{t("articles.subtitle")}</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
@@ -306,17 +293,17 @@ const ArticlesList: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("articles.search.placeholder")}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm w-48"
+            className="ui-input px-3 py-2 rounded-md text-sm w-48"
           />
 
           <select
             value={locationFilterId ?? ""}
             onChange={(e) =>
               setLocationFilterId(
-                e.target.value ? Number(e.target.value) : undefined,
+                e.target.value ? Number(e.target.value) : undefined
               )
             }
-            className="px-3 py-2 border border-gray-300 rounded-md"
+            className="ui-select px-3 py-2 rounded-md"
           >
             <option value="">{t("common.allLocations")}</option>
             {locations.map((l) => (
@@ -328,14 +315,14 @@ const ArticlesList: React.FC = () => {
 
           <button
             onClick={exportToCsv}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm"
+            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
           >
             {t("articles.export.csv")}
           </button>
 
           <button
             onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            className="ui-btn-primary px-4 py-2 rounded-md"
           >
             {t("articles.create")}
           </button>
@@ -343,11 +330,47 @@ const ArticlesList: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <span className="text-red-400 mr-2">❌</span>
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
+        <ErrorBanner
+          message={error}
+          onRetry={fetchArticles}
+          retryLabel={t("common.retry")}
+        />
+      )}
+
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        canShare={isPowerUser}
+        busy={bulkBusy}
+        onClear={clearSelection}
+        onDelete={() => setShowBulkDeleteConfirm(true)}
+        onShare={() => bulkShare(true)}
+        onUnshare={() => bulkShare(false)}
+      />
+
+      {showBulkDeleteConfirm && (
+        <div className="border ui-alert-error rounded-lg p-4 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-red-700 flex-1">
+            {t("articles.bulk.deleteConfirm").replace(
+              "{count}",
+              String(selectedIds.size)
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={bulkDelete}
+            disabled={bulkBusy}
+            className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+          >
+            {t("common.yes")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowBulkDeleteConfirm(false)}
+            disabled={bulkBusy}
+            className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+          >
+            {t("common.no")}
+          </button>
         </div>
       )}
 
@@ -362,17 +385,67 @@ const ArticlesList: React.FC = () => {
         />
       )}
 
-      <div className="bg-white rounded-lg shadow">
-        {articles.length === 0 ? (
+      <div className="ui-card rounded-lg shadow">
+        {loading ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="ui-panel">
+                <tr>
+                  <th className="px-3 py-3 w-10" aria-hidden="true">
+                    <input
+                      type="checkbox"
+                      disabled
+                      aria-hidden="true"
+                      tabIndex={-1}
+                    />
+                  </th>
+                  {[
+                    t("articles.table.image"),
+                    t("articles.table.name"),
+                    t("articles.table.model"),
+                    t("articles.table.description"),
+                    t("articles.table.warranty"),
+                    t("articles.table.proof"),
+                    t("articles.table.shared"),
+                    t("articles.table.actions"),
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y ui-divider">
+                {[1, 2, 3, 4].map((i) => (
+                  <tr key={i}>
+                    <td className="px-3 py-4 w-10">
+                      <div className="h-4 w-4 animate-pulse rounded ui-panel" />
+                    </td>
+                    {[12, 60, 40, 80, 24, 24, 16, 48].map((w, j) => (
+                      <td key={j} className="px-6 py-4">
+                        <div
+                          className={`h-4 animate-pulse rounded ui-panel w-${w}`}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : articles.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="text-gray-400 text-6xl mb-4">📦</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="ui-text-muted text-6xl mb-4">📦</div>
+            <h3 className="text-lg font-semibold mb-2">
               {t("articles.none.title")}
             </h3>
-            <p className="text-gray-600 mb-4">{t("articles.none.subtitle")}</p>
+            <p className="ui-text-muted mb-4">{t("articles.none.subtitle")}</p>
             <button
               onClick={() => setShowForm(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="ui-btn-primary px-4 py-2 rounded-md"
             >
               {t("articles.create")}
             </button>
@@ -380,87 +453,115 @@ const ArticlesList: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="ui-panel">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      aria-label={t("articles.bulk.selectAll")}
+                      checked={allPageSelected}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
+                    {t("articles.table.image")}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.name")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.model")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.description")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.warranty")}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t("articles.table.expiresIn")}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.proof")}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
+                    {t("articles.table.expiresIn")}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
+                    {t("articles.table.shared")}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.actions")}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y ui-divider">
                 {filteredArticles.map((article) => (
                   <React.Fragment key={article.articleId}>
-                    <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr className="hover-surface">
+                      <td className="px-3 py-4">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${article.articleNom}`}
+                          checked={selectedIds.has(article.articleId)}
+                          onChange={() => toggleSelected(article.articleId)}
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <ArticleThumb
+                          src={article.productImageUrl}
+                          alt={article.articleNom}
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {article.articleNom}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
                         {article.articleModele}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm ui-text-muted">
                         {article.articleDescription || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {(() => {
-                          const warrantyStatus = getWarrantyStatus(
-                            article.garantie,
-                          );
+                          const ws = getWarrantyStatus(article.garantie);
                           const colorClasses = {
-                            gray: "bg-gray-50 text-gray-600 border-gray-200",
-                            green:
-                              "bg-green-50 text-green-700 border-green-200",
-                            yellow:
-                              "bg-yellow-50 text-yellow-700 border-yellow-200",
-                            red: "bg-red-50 text-red-700 border-red-200",
+                            gray: "ui-badge",
+                            green: "ui-badge-success",
+                            yellow: "ui-badge-warning",
+                            red: "ui-badge-danger",
                           };
                           return (
                             <span
-                              className={`px-2 py-1 rounded border ${colorClasses[warrantyStatus.color as keyof typeof colorClasses]}`}
+                              className={`px-2 py-1 rounded ${colorClasses[ws.color as keyof typeof colorClasses]}`}
                             >
-                              {warrantyStatus.label}
+                              {ws.label}
                             </span>
                           );
                         })()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {article.garantie?.garantieImageAttachmentId ? (
+                          <span className="px-2 py-1 rounded ui-badge-success">
+                            {t("common.yes")}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded ui-badge">
+                            {t("common.no")}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
                         {(() => {
                           const days = getDaysUntilExpiry(article.garantie);
-                          if (days === null) return "-";
+                          if (days === null) return "—";
                           if (days < 0)
                             return (
-                              <span className="text-red-600 font-medium">
-                                {t("articles.warranty.expired")}
-                              </span>
-                            );
-                          if (days === 0)
-                            return (
                               <span className="text-red-500 font-medium">
-                                {t("articles.warranty.expiresIn")} 0{" "}
-                                {t("articles.warranty.daysLeft")}
+                                {t("articles.warranty.expired")}
                               </span>
                             );
                           return (
                             <span
                               className={
-                                days <= 30 ? "text-yellow-600" : "text-gray-600"
+                                days <= 30 ? "text-yellow-600 font-medium" : ""
                               }
                             >
                               {t("articles.warranty.expiresIn")} {days}{" "}
@@ -470,14 +571,15 @@ const ArticlesList: React.FC = () => {
                         })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {article.garantie?.garantieImageAttachmentId ? (
-                          <span className="px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200">
-                            {t("common.yes")}
+                        {article.sharedWithPowerUsers ? (
+                          <span
+                            className="px-2 py-1 rounded ui-badge-info"
+                            title={t("articles.share.state.publicTooltip")}
+                          >
+                            🌐 {t("articles.share.state.publicLabel")}
                           </span>
                         ) : (
-                          <span className="px-2 py-1 rounded bg-gray-50 text-gray-600 border border-gray-200">
-                            {t("common.no")}
-                          </span>
+                          <span className="ui-text-muted">—</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -486,7 +588,7 @@ const ArticlesList: React.FC = () => {
                             setEditingArticle(article);
                             setShowForm(true);
                           }}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
+                          className="ui-action-primary mr-3"
                         >
                           {t("common.edit")}
                         </button>
@@ -494,105 +596,44 @@ const ArticlesList: React.FC = () => {
                         <span className="inline-block mr-3 align-middle">
                           <ShareArticleButton
                             articleId={article.articleId}
-                            onShared={() => {
-                              if (openSharesArticleId === article.articleId) {
-                                loadShareStatus(article.articleId);
-                              }
-                            }}
+                            sharedWithPowerUsers={Boolean(
+                              article.sharedWithPowerUsers
+                            )}
+                            isPowerUser={isPowerUser}
+                            onChanged={fetchArticles}
                           />
                         </span>
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next =
-                              openSharesArticleId === article.articleId
-                                ? null
-                                : article.articleId;
-                            setOpenSharesArticleId(next);
-                            if (next != null) {
-                              loadShareStatus(article.articleId);
+                        {confirmDeleteArticleId === article.articleId ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span className="text-xs text-red-700">
+                              {t("articles.delete.confirm")}
+                            </span>
+                            <button
+                              onClick={() => handleDelete(article.articleId)}
+                              className="text-xs px-2 py-1 ui-btn-danger rounded"
+                            >
+                              {t("common.yes")}
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteArticleId(null)}
+                              className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                            >
+                              {t("common.no")}
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              setConfirmDeleteArticleId(article.articleId)
                             }
-                          }}
-                          disabled={
-                            sharesLoadingArticleId === article.articleId
-                          }
-                          className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider mr-3"
-                          title={t("articles.sharing.manageTitle")}
-                        >
-                          {sharesLoadingArticleId === article.articleId
-                            ? t("common.loading")
-                            : openSharesArticleId === article.articleId
-                              ? t("articles.sharing.hideShares")
-                              : t("articles.sharing.showShares")}
-                        </button>
-
-                        <button
-                          onClick={() => handleDelete(article.articleId)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          {t("common.delete")}
-                        </button>
+                            className="ui-action-danger"
+                          >
+                            {t("common.delete")}
+                          </button>
+                        )}
                       </td>
                     </tr>
-
-                    {openSharesArticleId === article.articleId && (
-                      <tr className="bg-gray-50">
-                        <td colSpan={7} className="px-6 py-4 text-sm">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <div className="font-medium">
-                                {t("articles.sharing.title")}
-                              </div>
-                              <div className="text-xs ui-text-muted">
-                                {t("articles.sharing.description")}
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
-                              onClick={() => loadShareStatus(article.articleId)}
-                              disabled={
-                                sharesLoadingArticleId === article.articleId
-                              }
-                            >
-                              {sharesLoadingArticleId === article.articleId
-                                ? t("common.loading")
-                                : t("common.refresh")}
-                            </button>
-                          </div>
-
-                          <div className="mt-3 space-y-2">
-                            {shareStatusByArticleId[article.articleId]
-                              ?.sharedWithPowerUsers ? (
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="text-sm ui-text-muted">
-                                  {t("articles.sharing.sharedAll")}
-                                </div>
-                                <button
-                                  type="button"
-                                  className="text-red-600 hover:text-red-900"
-                                  disabled={
-                                    shareBusyArticleId === article.articleId
-                                  }
-                                  onClick={() =>
-                                    handleUnshareAll(article.articleId)
-                                  }
-                                >
-                                  {shareBusyArticleId === article.articleId
-                                    ? t("common.loading")
-                                    : t("articles.sharing.unshare")}
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="text-sm ui-text-muted">
-                                {t("articles.sharing.notShared")}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
                   </React.Fragment>
                 ))}
               </tbody>

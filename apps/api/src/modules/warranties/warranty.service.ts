@@ -1,12 +1,16 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";
 import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
+import { createHttpError } from "../../utils/http-error";
 
 export const WarrantyService = {
-  list: (ownerUserId: number) =>
+  list: (ownerUserId: number, page = 1, limit = 50) =>
     prisma.garantie.findMany({
       where: { ownerUserId },
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { garantieId: "desc" },
     }),
   get: (id: number, ownerUserId: number) =>
@@ -19,15 +23,24 @@ export const WarrantyService = {
       data.garantieDuration
     );
 
+    // Ensure the article belongs to the requesting user before attaching a warranty.
+    if (data.garantieArticleId != null) {
+      const article = await prisma.article.findFirst({
+        where: {
+          articleId: data.garantieArticleId,
+          ownerUserId: data.ownerUserId,
+        },
+      });
+      if (!article)
+        throw createHttpError(403, "Article not found or not owned by you");
+    }
+
     // 1–1 : vérifier qu'il n'existe pas déjà une garantie pour l'article
     const existing = await prisma.garantie.findUnique({
       where: { garantieArticleId: data.garantieArticleId },
     });
-    if (existing) {
-      const err: any = new Error("Une garantie existe déjà pour cet article");
-      err.status = 409;
-      throw err;
-    }
+    if (existing)
+      throw createHttpError(409, "A warranty already exists for this article");
 
     // Créer la garantie une seule fois
     const created = await prisma.garantie.create({
@@ -61,13 +74,29 @@ export const WarrantyService = {
     const current = await prisma.garantie.findFirst({
       where: { garantieId: id, ownerUserId },
     });
-    if (!current) {
-      const err: any = new Error("Garantie non trouvée");
-      err.status = 404;
-      throw err;
+    if (!current) throw createHttpError(404, "Warranty not found");
+
+    if (
+      data.garantieArticleId != null &&
+      data.garantieArticleId !== current.garantieArticleId
+    ) {
+      const article = await prisma.article.findFirst({
+        where: { articleId: data.garantieArticleId, ownerUserId },
+      });
+      if (!article)
+        throw createHttpError(403, "Article not found or not owned by you");
+
+      const conflict = await prisma.garantie.findUnique({
+        where: { garantieArticleId: data.garantieArticleId },
+      });
+      if (conflict)
+        throw createHttpError(
+          409,
+          "A warranty already exists for this article"
+        );
     }
 
-    const patch: any = { ...data };
+    const patch: Prisma.GarantieUpdateInput = { ...data };
     // Recalculate fin if either dateAchat or duration changes (use current for missing)
     if (data.garantieDateAchat || data.garantieDuration) {
       const dateAchat = data.garantieDateAchat
@@ -102,11 +131,7 @@ export const WarrantyService = {
     const current = await prisma.garantie.findFirst({
       where: { garantieId: id, ownerUserId },
     });
-    if (!current) {
-      const err: any = new Error("Garantie non trouvée");
-      err.status = 404;
-      throw err;
-    }
+    if (!current) throw createHttpError(404, "Warranty not found");
     await AlertService.cancelForWarranty({
       ownerUserId: current.ownerUserId,
       garantieId: current.garantieId,

@@ -1,7 +1,41 @@
 import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
+import Stripe from "stripe";
+import { createHttpError } from "../../utils/http-error";
+import { logger } from "../../config/logger";
+import { AlertService } from "../alerts/alert.service";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+const DELETE_CHUNK_SIZE = 1000;
+
+/**
+ * Delete in batches to avoid statement-timeout / lock-bloat on large accounts.
+ * Each batch is a separate transaction so we don't hold one huge lock and
+ * users with tens of thousands of articles can still self-delete.
+ */
+async function chunkedDelete(
+  label: string,
+  count: () => Promise<number>,
+  deleteBatch: () => Promise<{ count: number }>,
+  userId: number
+) {
+  let remaining = await count();
+  if (remaining === 0) return;
+  while (remaining > 0) {
+    const before = remaining;
+    const res = await deleteBatch();
+    if (res.count === 0) break;
+    remaining = await count();
+    if (remaining >= before) {
+      logger.warn(
+        { userId, label, remaining },
+        "[profile] chunked delete made no progress — aborting"
+      );
+      break;
+    }
+  }
+}
 
 export const ProfileService = {
   async get(userId: number) {
@@ -13,25 +47,14 @@ export const ProfileService = {
 
   async updateEmail(userId: number, email: string, currentPassword: string) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) {
-      const err: any = new Error("Utilisateur introuvable");
-      err.status = 404;
-      throw err;
-    }
+    if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) {
-      const err: any = new Error("Mot de passe invalide");
-      err.status = 401;
-      throw err;
-    }
+    if (!valid) throw createHttpError(401, "Invalid password");
 
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing && existing.userId !== userId) {
-      const err: any = new Error("Email déjà enregistré");
-      err.status = 409;
-      throw err;
-    }
+    if (existing && existing.userId !== userId)
+      throw createHttpError(409, "Email already in use");
 
     return prisma.user.update({
       where: { userId },
@@ -46,68 +69,193 @@ export const ProfileService = {
     newPassword: string
   ) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) {
-      const err: any = new Error("Utilisateur introuvable");
-      err.status = 404;
-      throw err;
-    }
+    if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) {
-      const err: any = new Error("Mot de passe invalide");
-      err.status = 401;
-      throw err;
-    }
+    if (!valid) throw createHttpError(401, "Invalid password");
 
     const hashed = await bcrypt.hash(newPassword, 10);
 
-    return prisma.user.update({
+    // Bumping tokenVersion invalidates every JWT issued before this point —
+    // any stolen cookie / leaked session is killed when the user rotates
+    // their password. The route layer reissues a fresh token to the current
+    // request so the caller stays logged in on the current device.
+    const updated = await prisma.user.update({
       where: { userId },
-      data: { password: hashed },
-      select: { userId: true, email: true, role: true },
+      data: { password: hashed, tokenVersion: { increment: 1 } },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        tokenVersion: true,
+      },
     });
+    return updated;
   },
 
   async deleteAccount(userId: number, currentPassword: string) {
     const user = await prisma.user.findUnique({ where: { userId } });
-    if (!user) {
-      const err: any = new Error("Utilisateur introuvable");
-      err.status = 404;
-      throw err;
-    }
+    if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) {
-      const err: any = new Error("Mot de passe invalide");
-      err.status = 401;
-      throw err;
+    if (!valid) throw createHttpError(401, "Invalid password");
+
+    // Cancel active Stripe subscription before deleting so the user is not
+    // charged again after account removal.
+    if (user.stripeSubscriptionId && process.env.STRIPE_SECRET_KEY) {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+      } catch (err) {
+        logger.warn(
+          { err, userId },
+          "[profile] stripe subscription cancel failed during account deletion — proceeding"
+        );
+      }
     }
 
-    // Delete in a safe order to avoid FK constraint issues.
-    // Note: Many relations are configured with onDelete: Cascade, but explicit deletions
-    // make the behavior predictable and work even if some cascades are missing in DB.
-    await prisma.$transaction(async (tx: TxClient) => {
-      // 1) Alerts must go before warranties/articles because they reference them.
-      await tx.alerte.deleteMany({ where: { ownerUserId: userId } });
+    // Cancel scheduled BullMQ jobs before removing DB records so they don't
+    // fire against deleted rows and fill the Redis failed-jobs queue.
+    try {
+      await AlertService.cancelForUser(userId);
+    } catch (err) {
+      logger.warn(
+        { err, userId },
+        "[profile] alert job cancellation failed during account deletion — proceeding"
+      );
+    }
 
-      // 2) Shares/invites/audit logs can reference the user.
-      await tx.inventoryShare.deleteMany({ where: { ownerUserId: userId } });
-      await tx.inventoryShare.deleteMany({ where: { targetUserId: userId } });
-      await tx.shareInvite.deleteMany({ where: { ownerUserId: userId } });
-      await tx.auditLog.deleteMany({ where: { userId } });
+    // Last-admin guard runs first, in its own tx, before any destructive work.
+    await prisma.$transaction(
+      async (tx: TxClient) => {
+        if (user.role === "ADMIN") {
+          const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+          if (adminCount <= 1)
+            throw createHttpError(400, "Cannot delete the last admin account");
+        }
+      },
+      { isolationLevel: "Serializable" }
+    );
 
-      // 3) Attachments can reference articles/warranties.
-      await tx.attachment.deleteMany({ where: { ownerUserId: userId } });
+    // Delete dependent rows in chunks (each chunk is its own short tx) so a
+    // user with tens of thousands of articles / attachments / alerts does
+    // not time out a single mega-transaction. Order matters: child rows
+    // before parents, even though most relations cascade — explicit deletes
+    // remain predictable if cascades drift.
+    await chunkedDelete(
+      "alerte",
+      () => prisma.alerte.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.alerte.findMany({
+          where: { ownerUserId: userId },
+          select: { alerteId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.alerte.deleteMany({
+          where: { alerteId: { in: ids.map((r) => r.alerteId) } },
+        });
+      },
+      userId
+    );
 
-      // 4) Warranties can reference attachments (garantieImageAttachmentId) and articles.
-      await tx.garantie.deleteMany({ where: { ownerUserId: userId } });
+    await chunkedDelete(
+      "inventoryShare.owner",
+      () => prisma.inventoryShare.count({ where: { ownerUserId: userId } }),
+      () =>
+        prisma.inventoryShare.deleteMany({
+          where: { ownerUserId: userId },
+        }) as Promise<{ count: number }>,
+      userId
+    );
+    await chunkedDelete(
+      "inventoryShare.target",
+      () => prisma.inventoryShare.count({ where: { targetUserId: userId } }),
+      () =>
+        prisma.inventoryShare.deleteMany({
+          where: { targetUserId: userId },
+        }) as Promise<{ count: number }>,
+      userId
+    );
+    await chunkedDelete(
+      "shareInvite",
+      () => prisma.shareInvite.count({ where: { ownerUserId: userId } }),
+      () =>
+        prisma.shareInvite.deleteMany({
+          where: { ownerUserId: userId },
+        }) as Promise<{ count: number }>,
+      userId
+    );
+    await chunkedDelete(
+      "auditLog",
+      () => prisma.auditLog.count({ where: { userId } }),
+      async () => {
+        const rows = await prisma.auditLog.findMany({
+          where: { userId },
+          select: { id: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (rows.length === 0) return { count: 0 };
+        return prisma.auditLog.deleteMany({
+          where: { id: { in: rows.map((r) => r.id) } },
+        });
+      },
+      userId
+    );
 
-      // 5) Articles are last.
-      await tx.article.deleteMany({ where: { ownerUserId: userId } });
+    await chunkedDelete(
+      "attachment",
+      () => prisma.attachment.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.attachment.findMany({
+          where: { ownerUserId: userId },
+          select: { attachmentId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.attachment.deleteMany({
+          where: { attachmentId: { in: ids.map((r) => r.attachmentId) } },
+        });
+      },
+      userId
+    );
 
-      // 6) Finally delete the user.
-      await tx.user.delete({ where: { userId } });
-    });
+    await chunkedDelete(
+      "garantie",
+      () => prisma.garantie.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.garantie.findMany({
+          where: { ownerUserId: userId },
+          select: { garantieId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.garantie.deleteMany({
+          where: { garantieId: { in: ids.map((r) => r.garantieId) } },
+        });
+      },
+      userId
+    );
+
+    await chunkedDelete(
+      "article",
+      () => prisma.article.count({ where: { ownerUserId: userId } }),
+      async () => {
+        const ids = await prisma.article.findMany({
+          where: { ownerUserId: userId },
+          select: { articleId: true },
+          take: DELETE_CHUNK_SIZE,
+        });
+        if (ids.length === 0) return { count: 0 };
+        return prisma.article.deleteMany({
+          where: { articleId: { in: ids.map((r) => r.articleId) } },
+        });
+      },
+      userId
+    );
+
+    // Finally, the user row itself.
+    await prisma.user.delete({ where: { userId } });
 
     return { ok: true };
   },

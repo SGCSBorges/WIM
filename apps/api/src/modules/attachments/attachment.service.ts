@@ -1,13 +1,47 @@
 import { prisma } from "../../libs/prisma";
+import { createHttpError } from "../../utils/http-error";
 import {
   AttachmentCreateInput,
   AttachmentUpdateInput,
 } from "./attachment.schemas";
 
+// Reject create/update payloads that try to link an attachment to an article
+// or warranty belonging to a different user. Without these checks the
+// ownerUserId scoping on /api/attachments would still hold, but the FK row
+// would silently surface someone else's attachment metadata in their
+// per-article / per-warranty list.
+async function assertArticleOwned(
+  articleId: number | null | undefined,
+  ownerUserId: number
+) {
+  if (articleId == null) return;
+  const owned = await prisma.article.findFirst({
+    where: { articleId, ownerUserId },
+    select: { articleId: true },
+  });
+  if (!owned)
+    throw createHttpError(403, "Article not found or not owned by you");
+}
+
+async function assertWarrantyOwned(
+  garantieId: number | null | undefined,
+  ownerUserId: number
+) {
+  if (garantieId == null) return;
+  const owned = await prisma.garantie.findFirst({
+    where: { garantieId, ownerUserId },
+    select: { garantieId: true },
+  });
+  if (!owned)
+    throw createHttpError(403, "Warranty not found or not owned by you");
+}
+
 export const AttachmentService = {
   list: (
     ownerUserId: number,
-    filters?: { articleId?: number; garantieId?: number }
+    filters?: { articleId?: number; garantieId?: number },
+    page = 1,
+    limit = 50
   ) =>
     prisma.attachment.findMany({
       where: {
@@ -15,6 +49,8 @@ export const AttachmentService = {
         ...(filters?.articleId && { articleId: filters.articleId }),
         ...(filters?.garantieId && { garantieId: filters.garantieId }),
       },
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { createdAt: "desc" },
       include: {
         article: {
@@ -38,16 +74,26 @@ export const AttachmentService = {
       where: { attachmentId: id, ownerUserId },
     }),
 
-  create: (data: AttachmentCreateInput) =>
-    prisma.attachment.create({
-      data,
-    }),
+  create: async (data: AttachmentCreateInput) => {
+    await assertArticleOwned(data.articleId, data.ownerUserId);
+    await assertWarrantyOwned(data.garantieId, data.ownerUserId);
+    return prisma.attachment.create({ data });
+  },
 
-  update: (id: number, ownerUserId: number, data: AttachmentUpdateInput) =>
-    prisma.attachment.updateMany({
+  update: async (
+    id: number,
+    ownerUserId: number,
+    data: AttachmentUpdateInput
+  ) => {
+    if (data.articleId !== undefined)
+      await assertArticleOwned(data.articleId, ownerUserId);
+    if (data.garantieId !== undefined)
+      await assertWarrantyOwned(data.garantieId, ownerUserId);
+    return prisma.attachment.updateMany({
       where: { attachmentId: id, ownerUserId },
       data: { ...data },
-    }),
+    });
+  },
 
   remove: (id: number, ownerUserId: number) =>
     prisma.attachment.delete({

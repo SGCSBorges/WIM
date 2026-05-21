@@ -6,7 +6,8 @@
     "target": "ES2022",
     "moduleResolution": "Node",
     "baseUrl": ".",
-    "paths": {}
+    "paths": {},
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts", "vitest.config.ts"]
 }

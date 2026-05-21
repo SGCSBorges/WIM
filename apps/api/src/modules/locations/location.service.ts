@@ -1,19 +1,16 @@
 import { prisma } from "../../libs/prisma";
 import { LocationCreateInput, LocationUpdateInput } from "./location.schemas";
+import { createHttpError } from "../../utils/http-error";
 
 export const LocationService = {
-  list: (ownerUserId: number) =>
+  list: (ownerUserId: number, page = 1, limit = 50) =>
     prisma.location.findMany({
       where: { ownerUserId },
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { updatedAt: "desc" },
       include: {
-        articles: {
-          select: {
-            articleId: true,
-            assignedAt: true,
-            article: { select: { articleNom: true, articleModele: true } },
-          },
-        },
+        _count: { select: { articles: true } },
       },
     }),
 
@@ -22,6 +19,7 @@ export const LocationService = {
       where: { locationId, ownerUserId },
       include: {
         articles: {
+          take: 500,
           select: {
             articleId: true,
             assignedAt: true,
@@ -36,20 +34,28 @@ export const LocationService = {
       data,
     }),
 
-  update: (
+  update: async (
     locationId: number,
     ownerUserId: number,
     data: LocationUpdateInput
-  ) =>
-    prisma.location.update({
+  ) => {
+    const existing = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
-      data: { ...data, ownerUserId },
-    }),
+    });
+    if (!existing) throw createHttpError(404, "Location not found");
+    return prisma.location.update({
+      where: { locationId },
+      data,
+    });
+  },
 
-  remove: (locationId: number, ownerUserId: number) =>
-    prisma.location.delete({
+  remove: async (locationId: number, ownerUserId: number) => {
+    const existing = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
-    }),
+    });
+    if (!existing) throw createHttpError(404, "Location not found");
+    await prisma.location.deleteMany({ where: { locationId, ownerUserId } });
+  },
 
   addArticle: async (
     locationId: number,
@@ -62,16 +68,8 @@ export const LocationService = {
       prisma.article.findFirst({ where: { articleId, ownerUserId } }),
     ]);
 
-    if (!location) {
-      const err: any = new Error("Location not found");
-      err.status = 404;
-      throw err;
-    }
-    if (!article) {
-      const err: any = new Error("Article not found");
-      err.status = 404;
-      throw err;
-    }
+    if (!location) throw createHttpError(404, "Location not found");
+    if (!article) throw createHttpError(404, "Article not found");
 
     return prisma.articleLocation.upsert({
       where: { articleId_locationId: { articleId, locationId } },
@@ -88,29 +86,36 @@ export const LocationService = {
     const location = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
     });
-    if (!location) {
-      const err: any = new Error("Location not found");
-      err.status = 404;
-      throw err;
-    }
+    if (!location) throw createHttpError(404, "Location not found");
+
+    const article = await prisma.article.findFirst({
+      where: { articleId, ownerUserId },
+      select: { articleId: true },
+    });
+    if (!article)
+      throw createHttpError(403, "Article not found or not owned by you");
+
     await prisma.articleLocation.delete({
       where: { articleId_locationId: { articleId, locationId } },
     });
     return { ok: true };
   },
 
-  listArticles: async (locationId: number, ownerUserId: number) => {
+  listArticles: async (
+    locationId: number,
+    ownerUserId: number,
+    page = 1,
+    limit = 50
+  ) => {
     const location = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
     });
-    if (!location) {
-      const err: any = new Error("Location not found");
-      err.status = 404;
-      throw err;
-    }
+    if (!location) throw createHttpError(404, "Location not found");
 
     const rows = await prisma.articleLocation.findMany({
       where: { locationId },
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { assignedAt: "desc" },
       include: {
         article: {
@@ -125,6 +130,6 @@ export const LocationService = {
       },
     });
 
-    return rows.map((r: any) => ({ ...r.article, assignedAt: r.assignedAt }));
+    return rows.map((r) => ({ ...r.article, assignedAt: r.assignedAt }));
   },
 };

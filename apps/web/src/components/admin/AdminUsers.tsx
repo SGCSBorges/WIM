@@ -1,6 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { API_BASE_URL, authAPI, statisticsAPI } from "../../services/api";
+import { useCallback, useEffect, useState } from "react";
+import {
+  adminAPI,
+  articlesAPI,
+  authAPI,
+  statisticsAPI,
+} from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { getErrorMessage } from "../../utils/error";
+import CreateUserModal from "./CreateUserModal";
+import ResetPasswordModal from "./ResetPasswordModal";
+import AuditLogTab from "./AuditLogTab";
+import AdminDbBackup from "./AdminDbBackup";
+import { DashboardStatsSkeleton } from "../common/Skeleton";
+
+type Role = "USER" | "POWER_USER" | "ADMIN";
 
 type UserRow = {
   userId: number;
@@ -62,14 +75,6 @@ type AdminStatistics = {
   };
 };
 
-function headers() {
-  const token = localStorage.getItem("token");
-  return {
-    "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : "",
-  };
-}
-
 export default function AdminUsers() {
   const { t } = useI18n();
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -81,126 +86,139 @@ export default function AdminUsers() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "users">(
-    "dashboard",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "users" | "auditLog"
+  >("dashboard");
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  const role = useMemo(() => authAPI.getRole(), []);
+  const [confirmDeleteUserId, setConfirmDeleteUserId] = useState<number | null>(
+    null
+  );
+  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
+    number | null
+  >(null);
 
-  const getErrorMessage = async (res: Response, fallback: string) => {
-    try {
-      const data = await res.json();
-      return data?.error || `${fallback} (${res.status})`;
-    } catch {
-      const text = await res.text().catch(() => "");
-      const snippet = text ? `: ${text.slice(0, 200)}` : "";
-      return `${fallback} (${res.status})${snippet}`;
-    }
-  };
+  const [createOpen, setCreateOpen] = useState(false);
+  const [resetPwTarget, setResetPwTarget] = useState<UserRow | null>(null);
+  const [confirmForceLogoutUserId, setConfirmForceLogoutUserId] = useState<
+    number | null
+  >(null);
+  const [editingRoleUserId, setEditingRoleUserId] = useState<number | null>(
+    null
+  );
+  const [editingRoleValue, setEditingRoleValue] = useState<Role>("USER");
 
-  const fetchStatistics = async () => {
+  const role = authAPI.getRole();
+
+  const fetchStatistics = useCallback(async () => {
     setLoadingStats(true);
     setError(null);
     try {
       const data = await statisticsAPI.getAdmin();
       setStatistics(data);
-    } catch (e: any) {
-      setError(e.message || t("admin.error.fetchStatistics"));
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("admin.error.fetchStatistics")));
     } finally {
       setLoadingStats(false);
     }
-  };
+  }, [t]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoadingUsers(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/users`, {
-        headers: headers(),
-      });
-      if (!res.ok) {
-        throw new Error(await getErrorMessage(res, "Failed to fetch users"));
-      }
-      const data = (await res.json()) as UserRow[];
+      const data = await adminAPI.listUsers();
       setUsers(data);
-    } catch (e: any) {
-      setError(e.message || t("admin.error.fetchUsers"));
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("admin.error.fetchUsers")));
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, [t]);
 
   const fetchInventory = async (userId: number) => {
     setLoadingInventory(true);
     setError(null);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/admin/users/${userId}/inventory`,
-        {
-          headers: headers(),
-        },
-      );
-      if (!res.ok) {
-        throw new Error(
-          await getErrorMessage(res, "Failed to fetch inventory"),
-        );
-      }
-      const data = (await res.json()) as UserInventory;
+      const data = await adminAPI.getUserInventory(userId);
       setInventory(data);
-    } catch (e: any) {
-      setError(e.message || t("admin.error.fetchInventory"));
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("admin.error.fetchInventory")));
     } finally {
       setLoadingInventory(false);
     }
   };
 
   const deleteUser = async (userId: number) => {
-    if (!confirm(t("admin.confirmDeleteUser"))) {
-      return;
-    }
+    setConfirmDeleteUserId(null);
     setActionLoading(`user:${userId}`);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-        method: "DELETE",
-        headers: headers(),
-      });
-      if (!res.ok) {
-        throw new Error(await getErrorMessage(res, "Failed to delete user"));
-      }
-      // refresh
+      await adminAPI.deleteUser(userId);
       if (selectedUser?.userId === userId) {
         setSelectedUser(null);
         setInventory(null);
       }
       await fetchUsers();
-    } catch (e: any) {
-      setError(e.message || t("admin.error.deleteUser"));
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("admin.error.deleteUser")));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const startEditRole = (u: UserRow) => {
+    setEditingRoleUserId(u.userId);
+    setEditingRoleValue(u.role);
+  };
+
+  const cancelEditRole = () => {
+    setEditingRoleUserId(null);
+  };
+
+  const saveRole = async (u: UserRow) => {
+    if (editingRoleValue === u.role) {
+      setEditingRoleUserId(null);
+      return;
+    }
+    setActionLoading(`role:${u.userId}`);
+    setError(null);
+    try {
+      await adminAPI.updateUser(u.userId, { role: editingRoleValue });
+      setEditingRoleUserId(null);
+      await fetchUsers();
+    } catch (e) {
+      setError(getErrorMessage(e, t("admin.error.updateUser")));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const forceLogout = async (userId: number) => {
+    setConfirmForceLogoutUserId(null);
+    setActionLoading(`force-logout:${userId}`);
+    setError(null);
+    try {
+      await adminAPI.forceLogout(userId);
+    } catch (e) {
+      setError(getErrorMessage(e, t("admin.error.forceLogout")));
     } finally {
       setActionLoading(null);
     }
   };
 
   const deleteArticle = async (articleId: number) => {
-    if (!confirm(t("admin.confirmDeleteArticle"))) return;
+    setConfirmDeleteArticleId(null);
     setActionLoading(`article:${articleId}`);
     setError(null);
     try {
-      // Admin can delete inventory items via normal endpoint (auth required)
-      const res = await fetch(`${API_BASE_URL}/articles/${articleId}`, {
-        method: "DELETE",
-        headers: headers(),
-      });
-      if (!res.ok) {
-        throw new Error(await getErrorMessage(res, "Failed to delete article"));
-      }
+      await articlesAPI.delete(articleId);
       if (selectedUser) {
         await fetchInventory(selectedUser.userId);
       }
-    } catch (e: any) {
-      setError(e.message || t("admin.error.deleteArticle"));
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("admin.error.deleteArticle")));
     } finally {
       setActionLoading(null);
     }
@@ -209,7 +227,7 @@ export default function AdminUsers() {
   useEffect(() => {
     fetchUsers();
     fetchStatistics();
-  }, []);
+  }, [fetchUsers, fetchStatistics]);
 
   if (role !== "ADMIN") {
     return (
@@ -237,14 +255,14 @@ export default function AdminUsers() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b ui-divider">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab("dashboard")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "dashboard"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "ui-tab-active"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
             {t("admin.dashboard")}
@@ -253,17 +271,27 @@ export default function AdminUsers() {
             onClick={() => setActiveTab("users")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "users"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "ui-tab-active"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
             }`}
           >
             {t("admin.users")}
+          </button>
+          <button
+            onClick={() => setActiveTab("auditLog")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "auditLog"
+                ? "ui-tab-active"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
+            }`}
+          >
+            {t("admin.auditLog")}
           </button>
         </nav>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="border ui-alert-error rounded-lg p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
@@ -271,123 +299,237 @@ export default function AdminUsers() {
       {activeTab === "dashboard" && (
         <div>
           {loadingStats ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
+            <DashboardStatsSkeleton cards={4} />
           ) : statistics ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.totalUsers")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.users.total}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-blue-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-primary text-2xl flex items-center justify-center w-12 h-12">
                     👥
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.totalArticles")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.articles.total}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-green-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-success text-2xl flex items-center justify-center w-12 h-12">
                     📦
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.activeWarranties")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.warranties.active}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-purple-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-purple text-2xl flex items-center justify-center w-12 h-12">
                     🛡️
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="ui-card rounded-lg shadow p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium ui-text-muted">
                       {t("admin.sharedArticles")}
                     </p>
-                    <p className="text-3xl font-semibold text-gray-900">
+                    <p className="text-3xl font-semibold">
                       {statistics.sharing.totalSharedArticles}
                     </p>
                   </div>
-                  <div className="p-3 rounded-full bg-orange-500 text-white text-2xl flex items-center justify-center w-12 h-12">
+                  <div className="p-3 rounded-full ui-icon-warning text-2xl flex items-center justify-center w-12 h-12">
                     🤝
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-700">No statistics available</p>
+            <div className="border ui-alert-warning rounded-lg p-4">
+              <p className="text-sm text-yellow-700">
+                {t("dashboard.noStats")}
+              </p>
             </div>
           )}
+          <div className="mt-6">
+            <AdminDbBackup />
+          </div>
         </div>
       )}
 
       {activeTab === "users" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="ui-card rounded-lg">
-            <div className="p-4 border-b ui-divider flex items-center justify-between">
+            <div className="p-4 border-b ui-divider flex items-center justify-between gap-2">
               <h2 className="font-semibold">{t("admin.users")}</h2>
-              {loadingUsers && (
-                <span className="text-xs ui-text-muted">
-                  {t("common.loading")}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {loadingUsers && (
+                  <span className="text-xs ui-text-muted">
+                    {t("common.loading")}
+                  </span>
+                )}
+                <button
+                  onClick={() => setCreateOpen(true)}
+                  className="text-sm px-3 py-1.5 ui-btn-primary rounded"
+                >
+                  + {t("admin.createUser.button")}
+                </button>
+              </div>
             </div>
             <div className="divide-y">
               {users.map((u) => (
                 <div
                   key={u.userId}
-                  className={`p-4 flex items-center justify-between ${
+                  className={`p-4 space-y-2 ${
                     selectedUser?.userId === u.userId ? "ui-panel" : ""
                   }`}
                 >
-                  <button
-                    onClick={() => {
-                      setSelectedUser(u);
-                      fetchInventory(u.userId);
-                    }}
-                    className="text-left flex-1 mr-4"
-                  >
-                    <div className="font-medium">{u.email}</div>
-                    <div className="text-xs ui-text-muted">
-                      {t("admin.roleLabel")}: {u.role}
+                  <div className="flex items-start justify-between gap-3">
+                    <button
+                      onClick={() => {
+                        setSelectedUser(u);
+                        fetchInventory(u.userId);
+                      }}
+                      className="text-left flex-1 min-w-0"
+                    >
+                      <div className="font-medium truncate">{u.email}</div>
+                      <div className="text-xs ui-text-muted">
+                        ID #{u.userId}
+                      </div>
+                    </button>
+
+                    {/* Inline role editor */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {editingRoleUserId === u.userId ? (
+                        <>
+                          <select
+                            value={editingRoleValue}
+                            onChange={(e) =>
+                              setEditingRoleValue(e.target.value as Role)
+                            }
+                            className="ui-input text-xs px-2 py-1 rounded"
+                          >
+                            <option value="USER">USER</option>
+                            <option value="POWER_USER">POWER_USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                          </select>
+                          <button
+                            onClick={() => saveRole(u)}
+                            className="text-xs px-2 py-1 ui-btn-primary rounded"
+                            disabled={actionLoading === `role:${u.userId}`}
+                          >
+                            {t("common.save")}
+                          </button>
+                          <button
+                            onClick={cancelEditRole}
+                            className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                          >
+                            {t("common.cancel")}
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => startEditRole(u)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                          title={t("admin.editRole")}
+                        >
+                          {u.role} ✎
+                        </button>
+                      )}
                     </div>
-                  </button>
-                  <button
-                    onClick={() => deleteUser(u.userId)}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                    disabled={actionLoading === `user:${u.userId}`}
-                  >
-                    {actionLoading === `user:${u.userId}`
-                      ? t("admin.deleting")
-                      : t("admin.delete")}
-                  </button>
+                  </div>
+
+                  {/* Action row: reset pw / force logout / delete */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setResetPwTarget(u)}
+                      className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                    >
+                      🔑 {t("admin.resetPassword.button")}
+                    </button>
+
+                    {confirmForceLogoutUserId === u.userId ? (
+                      <span className="flex items-center gap-1">
+                        <span className="text-xs text-red-700">
+                          {t("admin.confirmForceLogout")}
+                        </span>
+                        <button
+                          onClick={() => forceLogout(u.userId)}
+                          className="text-xs px-2 py-1 ui-btn-danger rounded"
+                          disabled={
+                            actionLoading === `force-logout:${u.userId}`
+                          }
+                        >
+                          {t("common.yes")}
+                        </button>
+                        <button
+                          onClick={() => setConfirmForceLogoutUserId(null)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        >
+                          {t("common.no")}
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmForceLogoutUserId(u.userId)}
+                        className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        disabled={actionLoading === `force-logout:${u.userId}`}
+                      >
+                        🚪 {t("admin.forceLogout")}
+                      </button>
+                    )}
+
+                    {confirmDeleteUserId === u.userId ? (
+                      <span className="flex items-center gap-1">
+                        <span className="text-xs text-red-700">
+                          {t("admin.confirmDeleteUser")}
+                        </span>
+                        <button
+                          onClick={() => deleteUser(u.userId)}
+                          className="text-xs px-2 py-1 ui-btn-danger rounded"
+                          disabled={actionLoading === `user:${u.userId}`}
+                        >
+                          {t("common.yes")}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteUserId(null)}
+                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                        >
+                          {t("common.no")}
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteUserId(u.userId)}
+                        className="ui-action-danger text-xs"
+                        disabled={actionLoading === `user:${u.userId}`}
+                      >
+                        🗑 {t("admin.delete")}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
               {!loadingUsers && users.length === 0 && (
@@ -426,35 +568,68 @@ export default function AdminUsers() {
                     {inventory.articlesOwned?.map((a) => (
                       <div
                         key={a.articleId}
-                        className="ui-panel rounded p-3 flex items-start justify-between"
+                        className="ui-panel rounded p-3 space-y-2"
                       >
-                        <div>
-                          <div className="font-medium">
-                            {a.articleNom} — {a.articleModele}
-                          </div>
-                          <div className="text-xs ui-text-muted">
-                            {a.articleDescription || t("admin.noDescription")}
-                          </div>
-                          {a.garantie && (
-                            <div className="text-xs ui-text-muted mt-1">
-                              {t("admin.warrantyLabel")}:{" "}
-                              {a.garantie.garantieNom} (
-                              {a.garantie.garantieIsValide
-                                ? t("admin.status.valid")
-                                : t("admin.status.expired")}
-                              )
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="font-medium">
+                              {a.articleNom} — {a.articleModele}
                             </div>
+                            <div className="text-xs ui-text-muted">
+                              {a.articleDescription || t("admin.noDescription")}
+                            </div>
+                            {a.garantie && (
+                              <div className="text-xs ui-text-muted mt-1">
+                                {t("admin.warrantyLabel")}:{" "}
+                                {a.garantie.garantieNom} (
+                                {a.garantie.garantieIsValide
+                                  ? t("admin.status.valid")
+                                  : t("admin.status.expired")}
+                                )
+                              </div>
+                            )}
+                          </div>
+
+                          {confirmDeleteArticleId === a.articleId ? (
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => deleteArticle(a.articleId)}
+                                className="text-xs px-2 py-1 ui-btn-danger rounded"
+                                disabled={
+                                  actionLoading === `article:${a.articleId}`
+                                }
+                              >
+                                {t("common.yes")}
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteArticleId(null)}
+                                className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                              >
+                                {t("common.no")}
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                setConfirmDeleteArticleId(a.articleId)
+                              }
+                              className="ui-action-danger text-sm shrink-0"
+                              disabled={
+                                actionLoading === `article:${a.articleId}`
+                              }
+                            >
+                              {actionLoading === `article:${a.articleId}`
+                                ? t("admin.deleting")
+                                : t("admin.delete")}
+                            </button>
                           )}
                         </div>
-                        <button
-                          onClick={() => deleteArticle(a.articleId)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                          disabled={actionLoading === `article:${a.articleId}`}
-                        >
-                          {actionLoading === `article:${a.articleId}`
-                            ? t("admin.deleting")
-                            : t("admin.delete")}
-                        </button>
+
+                        {confirmDeleteArticleId === a.articleId && (
+                          <p className="text-xs text-red-700">
+                            {t("admin.confirmDeleteArticle")}
+                          </p>
+                        )}
                       </div>
                     ))}
                     {inventory.articlesOwned?.length === 0 && (
@@ -496,6 +671,27 @@ export default function AdminUsers() {
             )}
           </div>
         </div>
+      )}
+
+      {activeTab === "auditLog" && <AuditLogTab />}
+
+      {createOpen && (
+        <CreateUserModal
+          onClose={() => setCreateOpen(false)}
+          onCreated={() => {
+            fetchUsers();
+            fetchStatistics();
+          }}
+        />
+      )}
+
+      {resetPwTarget && (
+        <ResetPasswordModal
+          userId={resetPwTarget.userId}
+          email={resetPwTarget.email}
+          onClose={() => setResetPwTarget(null)}
+          onDone={() => undefined}
+        />
       )}
     </div>
   );

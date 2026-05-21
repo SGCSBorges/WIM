@@ -1,6 +1,9 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import Stripe from "stripe";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
+import { logger } from "../../config/logger";
+import { ShareService } from "../shares/share.service";
 
 const router = Router();
 
@@ -17,8 +20,7 @@ function getStripe() {
  */
 router.post(
   "/webhook",
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require("express").raw({ type: "application/json" }),
+  express.raw({ type: "application/json" }),
   async (req, res) => {
     const signingSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!signingSecret) {
@@ -36,80 +38,117 @@ router.post(
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(req.body, sig, signingSecret);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       return res
         .status(400)
-        .send(`Webhook signature verification failed: ${err.message}`);
+        .send(`Webhook signature verification failed: ${errMsg}`);
     }
 
+    // Idempotency: the marker insert AND the business logic must commit
+    // together. If business logic fails we want Stripe to redeliver, which
+    // requires the marker to NOT have been saved. So we wrap both in one
+    // transaction. A duplicate delivery races on the marker insert and the
+    // P2002 unique-violation is treated as "already processed".
     try {
-      // Upgrade user after successful checkout
-      if (event.type === "checkout.session.completed") {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const userIdRaw = (session.metadata as any)?.userId;
-        const targetRole = (session.metadata as any)?.targetRole;
+      await prisma.$transaction(async (tx) => {
+        // Marker first inside the tx — concurrent deliveries of the same
+        // event id will collide on the PK here and one will roll back.
+        await tx.processedStripeEvent.create({
+          data: { eventId: event.id, type: event.type },
+        });
 
-        const subscriptionId =
-          typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription?.id;
+        if (event.type === "checkout.session.completed") {
+          const session = event.data.object as Stripe.Checkout.Session;
+          const userIdRaw = session.metadata?.userId;
+          const targetRole = session.metadata?.targetRole;
+          const subscriptionId =
+            typeof session.subscription === "string"
+              ? session.subscription
+              : session.subscription?.id;
+          const userId = userIdRaw ? Number(userIdRaw) : NaN;
 
-        const userId = userIdRaw ? Number(userIdRaw) : NaN;
-        if (!Number.isFinite(userId)) {
-          return res.status(200).json({ received: true });
+          if (Number.isFinite(userId) && targetRole === "POWER_USER") {
+            const target = await tx.user.findUnique({
+              where: { userId },
+              select: { role: true },
+            });
+            if (target) {
+              await tx.user.update({
+                where: { userId },
+                data: {
+                  ...(target.role === "ADMIN" ? {} : { role: "POWER_USER" }),
+                  ...(subscriptionId
+                    ? { stripeSubscriptionId: subscriptionId }
+                    : {}),
+                },
+              });
+            }
+          }
         }
 
-        if (targetRole === "POWER_USER") {
-          await prisma.user.update({
-            where: { userId },
-            data: {
-              role: "POWER_USER",
-              stripeSubscriptionId: subscriptionId || undefined,
-            },
-          });
+        if (
+          event.type === "customer.subscription.deleted" ||
+          event.type === "customer.subscription.updated"
+        ) {
+          const sub = event.data.object as Stripe.Subscription;
+          const subscriptionId = sub.id;
+          const status = sub.status;
+          const endedAt = sub.ended_at as number | null | undefined;
+
+          const shouldDowngrade =
+            status === "canceled" ||
+            status === "unpaid" ||
+            status === "incomplete_expired" ||
+            Boolean(endedAt);
+
+          if (shouldDowngrade) {
+            const affected = await tx.user.findMany({
+              where: {
+                stripeSubscriptionId: subscriptionId,
+                role: "POWER_USER",
+              },
+              select: { userId: true },
+            });
+            await tx.user.updateMany({
+              where: { stripeSubscriptionId: subscriptionId },
+              data: { role: "USER" },
+            });
+            for (const u of affected) {
+              const counts = await ShareService.cleanupSharingForUser(
+                u.userId,
+                tx
+              );
+              logger.info(
+                { userId: u.userId, ...counts, reason: "stripe-cancel" },
+                "[stripe-webhook] downgrade cleanup"
+              );
+            }
+          }
         }
-      }
-
-      // Downgrade when subscription is actually no longer active.
-      // We don't downgrade on cancel_at_period_end=true, only when it ends.
-      if (
-        event.type === "customer.subscription.deleted" ||
-        event.type === "customer.subscription.updated"
-      ) {
-        const sub = event.data.object as Stripe.Subscription;
-        const subscriptionId = sub.id;
-        const status = sub.status;
-        const cancelAtPeriodEnd = sub.cancel_at_period_end;
-        const endedAt = (sub as any).ended_at as number | null | undefined;
-
-        // Map Stripe status to our role.
-        const shouldDowngrade =
-          status === "canceled" ||
-          status === "unpaid" ||
-          status === "incomplete_expired" ||
-          Boolean(endedAt);
-
-        // If subscription is deleted, Stripe will send customer.subscription.deleted.
-        // If it's updated to canceled at period end, we wait until it becomes canceled.
-        if (shouldDowngrade) {
-          await prisma.user.updateMany({
-            where: { stripeSubscriptionId: subscriptionId },
-            data: { role: "USER" },
-          });
-        } else if (cancelAtPeriodEnd) {
-          // Ensure we at least store the subscription id if we didn't yet.
-          // (e.g., if Checkout metadata failed but Stripe sent a sub update.)
-          // We still need a way to map to user; without metadata/customer mapping,
-          // we can only store when we already have the subscriptionId.
-          // No-op beyond having the field, kept for clarity.
-        }
-      }
+      });
 
       return res.status(200).json({ received: true });
-    } catch (e: any) {
-      // Return 200 to prevent event retry storms in dev; log server-side.
-      // In prod you might want 500 + idempotency.
-      return res.status(200).json({ received: true, error: e?.message });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002"
+      ) {
+        // Duplicate delivery — either a Stripe redelivery or a concurrent
+        // delivery that lost the marker race. Treat as success so Stripe
+        // stops retrying.
+        logger.info(
+          { eventId: event.id, type: event.type },
+          "[stripe-webhook] duplicate delivery — skipping"
+        );
+        return res.status(200).json({ received: true, duplicate: true });
+      }
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error(
+        { err, eventType: event.type, eventId: event.id },
+        "[stripe-webhook] handler error — Stripe will retry"
+      );
+      return res.status(500).json({ error: message });
     }
   }
 );

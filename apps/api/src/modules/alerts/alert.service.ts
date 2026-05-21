@@ -1,3 +1,4 @@
+import { AlerteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { alertQueue } from "../../jobs/queues";
 import { logger } from "../../config/logger";
@@ -25,12 +26,14 @@ function buildJobId(
 }
 
 export const AlertService = {
-  list: (ownerUserId?: number, status?: string) => {
+  list: (ownerUserId: number, status?: AlerteStatus, page = 1, limit = 50) => {
     return prisma.alerte.findMany({
       where: {
-        ...(ownerUserId ? ({ ownerUserId } as any) : {}),
-        ...(status ? ({ status } as any) : {}),
-      } as any,
+        ownerUserId,
+        ...(status ? { status } : {}),
+      },
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { alerteDate: "asc" },
       include: {
         garantie: {
@@ -76,8 +79,8 @@ export const AlertService = {
             alerteDate: executeAt,
             alerteGarantieId: input.garantieId,
             alerteArticleId: input.articleId ?? null,
-            ...({ status: "SCHEDULED" } as any),
-          } as any,
+            status: AlerteStatus.SCHEDULED,
+          },
         ],
         skipDuplicates: true,
       });
@@ -87,13 +90,19 @@ export const AlertService = {
           ownerUserId: input.ownerUserId,
           alerteGarantieId: input.garantieId,
           alerteDate: executeAt,
-        } as any,
+        },
         orderBy: { alerteId: "desc" },
       });
 
-      if (!alerte) continue;
+      if (!alerte) {
+        logger.warn(
+          { garantieId: input.garantieId, executeAt },
+          "[alerts] alert record not found after createMany — skipping job"
+        );
+        continue;
+      }
 
-      const delay = executeMs - now.getTime();
+      const delay = Math.max(0, executeMs - now.getTime());
       const jobId = buildJobId(input.garantieId, reminderKind, executeAt);
 
       const payload: WarrantyReminderJobPayload = {
@@ -138,8 +147,8 @@ export const AlertService = {
       where: {
         ownerUserId: input.ownerUserId,
         alerteGarantieId: input.garantieId,
-        ...({ status: "SCHEDULED" } as any),
-      } as any,
+        status: AlerteStatus.SCHEDULED,
+      },
     });
 
     for (const a of alerts) {
@@ -154,13 +163,38 @@ export const AlertService = {
       }
     }
 
+    // Only cancel SCHEDULED alerts — leave SENT/FAILED records intact for audit purposes.
     await prisma.alerte.updateMany({
       where: {
         ownerUserId: input.ownerUserId,
         alerteGarantieId: input.garantieId,
-      } as any,
-      data: { status: "CANCELLED" } as any,
+        status: AlerteStatus.SCHEDULED,
+      },
+      data: { status: AlerteStatus.CANCELLED },
     });
+  },
+
+  cancelForUser: async (ownerUserId: number) => {
+    const alerts = await prisma.alerte.findMany({
+      where: { ownerUserId, status: AlerteStatus.SCHEDULED },
+      select: { alerteGarantieId: true, alerteDate: true },
+    });
+
+    for (const a of alerts) {
+      if (!a.alerteGarantieId) continue;
+      for (const reminderKind of ["J30", "J7", "J1"] as const) {
+        const jobId = buildJobId(
+          a.alerteGarantieId,
+          reminderKind,
+          a.alerteDate
+        );
+        const job = await alertQueue.getJob(jobId);
+        if (job) {
+          await job.remove();
+          logger.info({ jobId }, "[alerts] cancelled job for account deletion");
+        }
+      }
+    }
   },
 
   rescheduleForWarranty: async (input: {
@@ -179,7 +213,7 @@ export const AlertService = {
   markSent: (alerteId: number) =>
     prisma.alerte.update({
       where: { alerteId },
-      data: { status: "SENT", sentAt: new Date() } as any,
+      data: { status: AlerteStatus.SENT, sentAt: new Date() },
     }),
 
   markFailed: (alerteId: number, err: unknown) => {
@@ -188,12 +222,10 @@ export const AlertService = {
     return prisma.alerte.update({
       where: { alerteId },
       data: {
-        ...({
-          status: "FAILED",
-          failedAt: new Date(),
-          errorMessage: message.slice(0, 500),
-          errorStack: stack ? stack.slice(0, 2000) : null,
-        } as any),
+        status: AlerteStatus.FAILED,
+        failedAt: new Date(),
+        errorMessage: message.slice(0, 500),
+        errorStack: stack ? stack.slice(0, 2000) : null,
       },
     });
   },

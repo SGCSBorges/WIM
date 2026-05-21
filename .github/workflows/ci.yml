@@ -1,8 +1,12 @@
 name: ci
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   build:
@@ -15,11 +19,17 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
           cache: "npm"
 
-      - name: Install dependencies (workspaces)
-        run: npm ci --workspaces
+      # `npm install` (not `npm ci`) so a stale package-lock.json doesn't
+      # block CI when a dependency is added or bumped. Render's
+      # render-build:web does the same, so dev/CI/prod stay aligned.
+      - name: Install dependencies
+        run: npm install --workspaces --include-workspace-root --include=optional
+
+      - name: Lint (all workspaces)
+        run: npm run lint
 
       - name: API - Prisma generate
         working-directory: apps/api
@@ -29,32 +39,37 @@ jobs:
         working-directory: apps/api
         run: npm run build
 
-      - name: Web - Build
-        working-directory: apps/web
-        run: npm run build
-
-      - name: Install (root workspace)
-        run: npm ci
-
-      # API build (placeholder until we add tsc)
-      - name: API - Lint placeholder
+      - name: API - Test
         working-directory: apps/api
-        run: |
-          node -v
-          npm run lint || echo "lint to be configured"
+        run: npm test
 
-      # WEB build
-      - name: Web - Install workspace deps (if not hoisted)
+      - name: Web - Test
         working-directory: apps/web
-        run: npm i --no-audit --no-fund
+        run: npm test
 
       - name: Web - Build
         working-directory: apps/web
         run: npm run build
 
-      - name: Artifact Web Dist
-        if: success()
+      - name: Upload web dist artifact
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
         uses: actions/upload-artifact@v4
         with:
           name: web-dist
           path: apps/web/dist
+
+      - name: npm audit (high+, advisory only)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

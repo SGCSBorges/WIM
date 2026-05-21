@@ -1,9 +1,32 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 
 export type AuditInput = {
   userId?: number | null;
-  action: "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT" | string;
-  entity: "Article" | "Garantie" | "Alerte" | "User" | string;
+  action:
+    | "CREATE"
+    | "UPDATE"
+    | "DELETE"
+    | "LOGIN"
+    | "LOGOUT"
+    | "ACCEPT"
+    | "FORCE_LOGOUT"
+    | "BILLING_CHECKOUT_STARTED"
+    | "BILLING_PORTAL_OPENED"
+    | "BILLING_CANCEL_REQUESTED"
+    | "DB_EXPORT"
+    | "DB_IMPORT";
+  entity:
+    | "Article"
+    | "Garantie"
+    | "Alerte"
+    | "User"
+    | "Location"
+    | "Attachment"
+    | "ShareInvite"
+    | "InventoryShare"
+    | "ArticleLocation"
+    | "Database";
   entityId?: number | null;
   metadata?: Record<string, unknown>;
   ip?: string | null;
@@ -19,7 +42,7 @@ export const AuditService = {
         action,
         entity,
         entityId: entityId ?? null,
-        metadata: metadata ? (metadata as any) : undefined,
+        metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
         ip: ip ?? null,
         userAgent: ua ?? null,
       },

@@ -1,6 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
+import { TranslationKey } from "../../i18n/translations";
 import { alertsAPI } from "../../services/api";
+import { getErrorMessage } from "../../utils/error";
+import { ErrorBanner } from "../common/States";
 
 type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
 
@@ -29,15 +33,15 @@ type Alert = {
 function statusBadge(status: AlertStatus) {
   switch (status) {
     case "SCHEDULED":
-      return "ui-panel";
+      return "ui-badge-info";
     case "SENT":
-      return "ui-panel";
+      return "ui-badge-success";
     case "CANCELLED":
-      return "ui-panel";
+      return "ui-badge";
     case "FAILED":
-      return "ui-panel";
+      return "ui-badge-danger";
     default:
-      return "ui-panel";
+      return "ui-badge";
   }
 }
 
@@ -50,25 +54,28 @@ export default function AlertsView() {
   const [sortBy, setSortBy] = useState<"date" | "status" | "name">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
+    setItems([]);
     setError(null);
     try {
       const data = await alertsAPI.getAll(
-        statusFilter === "ALL" ? undefined : statusFilter,
+        statusFilter === "ALL" ? undefined : statusFilter
       );
       setItems(data);
-    } catch (e: any) {
-      setError(e?.message || "Failed to fetch alerts");
+    } catch (e: unknown) {
+      setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setLoading(false);
     }
-  };
+    // t is intentionally excluded: translating the fallback error in the closure
+    // is acceptable; excluding it prevents an unnecessary refetch on language change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [fetchAll]);
 
   const sorted = useMemo(() => {
     const arr = [...items];
@@ -108,7 +115,9 @@ export default function AlertsView() {
           <div className="flex items-center gap-3">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) =>
+                setSortBy(e.target.value as "date" | "status" | "name")
+              }
               className="ui-select px-2 py-1 rounded-md text-sm"
               title={t("alerts.sortBy")}
             >
@@ -127,7 +136,9 @@ export default function AlertsView() {
 
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as "ALL" | AlertStatus)
+              }
               className="ui-select px-2 py-1 rounded-md text-sm"
             >
               <option value="ALL">{t("alerts.filters.all")}</option>
@@ -154,9 +165,11 @@ export default function AlertsView() {
 
         {error && (
           <div className="p-4">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
+            <ErrorBanner
+              message={error}
+              onRetry={fetchAll}
+              retryLabel={t("common.retry")}
+            />
           </div>
         )}
 
@@ -172,7 +185,7 @@ export default function AlertsView() {
                   <div className="font-medium">{a.alerteNom}</div>
                   <div className="text-xs ui-text-muted">
                     {t("alerts.date")}:{" "}
-                    {new Date(a.alerteDate).toLocaleString()}
+                    {format(parseISO(a.alerteDate), "dd MMM yyyy, HH:mm")}
                   </div>
 
                   {(a.garantie ||
@@ -186,8 +199,8 @@ export default function AlertsView() {
                           onClick={() =>
                             copyToClipboard(
                               String(
-                                a.garantie?.garantieId ?? a.alerteGarantieId,
-                              ),
+                                a.garantie?.garantieId ?? a.alerteGarantieId
+                              )
                             )
                           }
                           className="underline hover:opacity-90"
@@ -203,7 +216,7 @@ export default function AlertsView() {
                           type="button"
                           onClick={() =>
                             copyToClipboard(
-                              String(a.article?.articleId ?? a.alerteArticleId),
+                              String(a.article?.articleId ?? a.alerteArticleId)
                             )
                           }
                           className="underline hover:opacity-90"
@@ -227,10 +240,12 @@ export default function AlertsView() {
 
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge(
-                    a.status,
+                    a.status
                   )}`}
                 >
-                  {t(`alerts.status.${a.status.toLowerCase()}` as any)}
+                  {t(
+                    `alerts.status.${a.status.toLowerCase()}` as TranslationKey
+                  )}
                 </span>
               </div>
             </div>

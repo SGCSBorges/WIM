@@ -1,5 +1,6 @@
 import { Request } from "express";
-import { AuditService } from "../audit/audit.service";
+import { AuthRequest } from "../auth/auth.middleware";
+import { AuditService, AuditInput } from "../audit/audit.service";
 
 export function extractClient(req: Request) {
   const ip =
@@ -10,19 +11,20 @@ export function extractClient(req: Request) {
   return { ip, ua: ua as string | null };
 }
 
+/**
+ * Writes an audit log entry, automatically extracting IP and user-agent from the request.
+ * Falls back to `(req as AuthRequest).user?.sub` when `params.userId` is not provided.
+ */
 export async function auditAction(
   req: Request,
-  params: {
-    userId?: number | null;
-    action: string;
-    entity: string;
-    entityId?: number | null;
-    metadata?: Record<string, unknown>;
-  }
+  params: Pick<
+    AuditInput,
+    "userId" | "action" | "entity" | "entityId" | "metadata"
+  >
 ) {
   const { ip, ua } = extractClient(req);
   await AuditService.log({
-    userId: params.userId ?? (req as any).user?.sub ?? null,
+    userId: params.userId ?? (req as AuthRequest).user?.sub ?? null,
     action: params.action,
     entity: params.entity,
     entityId: params.entityId ?? null,

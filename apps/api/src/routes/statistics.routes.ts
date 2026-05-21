@@ -1,10 +1,10 @@
-/**
- * Statistics Routes
- * API endpoints for dashboard statistics and analytics
- */
-
 import { Router } from "express";
-import { authGuard, requireRole } from "../modules/auth/auth.middleware";
+import {
+  authGuard,
+  requireRole,
+  AuthRequest,
+} from "../modules/auth/auth.middleware";
+import { asyncHandler } from "../modules/common/http";
 import {
   getDashboardStatistics,
   getBasicStatistics,
@@ -13,52 +13,35 @@ import {
 
 const router = Router();
 
-/**
- * GET /api/statistics/dashboard
- * Get comprehensive dashboard statistics
- */
-router.get("/dashboard", authGuard, async (req, res) => {
-  try {
-    const userId = Number((req as any).user?.sub);
-    const role = String((req as any).user?.role || "USER");
+router.get(
+  "/dashboard",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const userId = req.user!.sub;
+    const role = req.user!.role;
     const statistics = await getDashboardStatistics({ userId, role });
     res.json(statistics);
-  } catch (error) {
-    console.error(
-      "[Statistics API] Error fetching dashboard statistics:",
-      error
-    );
-    res.status(500).json({ error: "Failed to fetch dashboard statistics" });
-  }
-});
+  })
+);
 
-/**
- * GET /api/statistics/basic
- * Get basic statistics for quick overview
- */
-router.get("/basic", authGuard, async (req, res) => {
-  try {
-    const userId = Number((req as any).user?.sub);
+router.get(
+  "/basic",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const userId = req.user!.sub;
     const statistics = await getBasicStatistics({ userId });
     res.json(statistics);
-  } catch (error) {
-    console.error("[Statistics API] Error fetching basic statistics:", error);
-    res.status(500).json({ error: "Failed to fetch basic statistics" });
-  }
-});
+  })
+);
 
-/**
- * GET /api/statistics/admin
- * Get admin dashboard statistics (global totals, Admin only)
- */
-router.get("/admin", authGuard, requireRole("ADMIN"), async (req, res) => {
-  try {
+router.get(
+  "/admin",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (_req, res) => {
     const statistics = await getAdminStatistics();
     res.json(statistics);
-  } catch (error) {
-    console.error("[Statistics API] Error fetching admin statistics:", error);
-    res.status(500).json({ error: "Failed to fetch admin statistics" });
-  }
-});
+  })
+);
 
 export default router;

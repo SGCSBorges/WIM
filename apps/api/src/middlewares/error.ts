@@ -1,30 +1,33 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError, ZodIssue } from "zod";
+import { logger } from "../config/logger";
 
 export function errorHandler(
-  err: any,
+  err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction
 ) {
   // Validation Zod
   if (err instanceof ZodError) {
+    const msg = err.issues[0]?.message ?? "Validation error";
     return res.status(400).json({
-      error: "ValidationError",
+      error: msg,
       issues: err.issues.map((e: ZodIssue) => ({
         path: e.path,
         message: e.message,
-        code: e.code, // utile pour déboguer
+        code: e.code,
       })),
     });
   }
 
   // Erreurs applicatives typées avec status
-  if (err?.status && err?.message) {
-    return res.status(err.status).json({ error: err.message });
+  if (err && typeof err === "object" && "status" in err && "message" in err) {
+    const e = err as { status: number; message: string };
+    return res.status(e.status).json({ error: e.message });
   }
 
   // Fallback
-  console.error("[UnhandledError]", err);
-  return res.status(500).json({ error: "Erreur interne" });
+  logger.error({ err }, "[UnhandledError]");
+  return res.status(500).json({ error: "Internal server error" });
 }

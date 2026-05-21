@@ -1,7 +1,19 @@
 import { Router } from "express";
+import { z } from "zod";
 import Stripe from "stripe";
-import { authGuard } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { asyncHandler } from "../common/http";
+import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
+import { auditAction } from "../common/audit";
+
+const PlanSchema = z.object({
+  plan: z.enum(["monthly", "yearly"]).optional(),
+  // i18n hint from the frontend so Stripe Checkout renders in the same
+  // language as the WIM UI. We accept just the languages we support;
+  // anything else falls through to "auto".
+  locale: z.enum(["en", "fr", "pt"]).optional(),
+});
 
 const router = Router();
 
@@ -10,125 +22,153 @@ function getStripe() {
   if (!key) {
     throw new Error("STRIPE_SECRET_KEY missing");
   }
-  // Pinning apiVersion avoids surprises when Stripe updates defaults.
   return new Stripe(key);
 }
 
-router.post("/upgrade/power-user/checkout", authGuard, async (req, res) => {
-  try {
-    // URL of the frontend app for Stripe redirects.
-    // On Render, set APP_URL to your static site origin (e.g. https://wimweb.onrender.com)
-    // Never leave it as localhost in production, otherwise Stripe redirects to localhost.
-    const appUrlRaw =
-      process.env.APP_URL ||
-      process.env.RENDER_EXTERNAL_URL ||
-      "http://localhost:5173";
-    const appUrl = String(appUrlRaw).replace(/\/$/, "");
+async function getOrCreateStripeCustomer(
+  stripe: Stripe,
+  userId: number,
+  email: string,
+  stripeCustomerId: string | null
+): Promise<string> {
+  if (stripeCustomerId) return stripeCustomerId;
+  const customer = await stripe.customers.create({
+    email,
+    metadata: { userId: String(userId) },
+  });
+  await prisma.user.update({
+    where: { userId },
+    data: { stripeCustomerId: customer.id },
+  });
+  return customer.id;
+}
 
-    const plan = String((req.body as any)?.plan || "monthly");
-    if (plan !== "monthly" && plan !== "yearly") {
-      return res.status(400).json({ error: "Invalid plan" });
-    }
+function getAppUrl(): string {
+  const raw = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL;
+  if (!raw) {
+    throw createHttpError(
+      500,
+      "APP_URL is not configured. Set APP_URL to your frontend origin."
+    );
+  }
+  // Be defensive about misconfiguration: APP_URL is a single origin, but a
+  // user copying their CORS_ORIGIN value here might paste a comma-separated
+  // list. Take the first entry, strip whitespace, and validate it parses
+  // as a real URL — otherwise Stripe redirects users into a broken host.
+  const first = String(raw).split(",")[0]?.trim().replace(/\/+$/, "") ?? "";
+  let parsed: URL;
+  try {
+    parsed = new URL(first);
+  } catch {
+    throw createHttpError(
+      500,
+      `APP_URL is not a valid URL: ${JSON.stringify(raw)}. ` +
+        `It must be a single origin like https://app.example.com (no trailing slash, no comma-separated list).`
+    );
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw createHttpError(
+      500,
+      `APP_URL must use http(s); got ${parsed.protocol}`
+    );
+  }
+  return parsed.origin;
+}
+
+router.post(
+  "/upgrade/power-user/checkout",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const appUrl = getAppUrl();
+
+    const { plan = "monthly", locale } = PlanSchema.parse(req.body);
 
     const monthlyPriceId = process.env.STRIPE_POWER_USER_PRICE_MONTHLY;
     const yearlyPriceId = process.env.STRIPE_POWER_USER_PRICE_YEARLY;
     const priceId = plan === "yearly" ? yearlyPriceId : monthlyPriceId;
 
     if (!priceId) {
-      return res.status(500).json({
-        error:
-          "Missing Stripe Price ID for selected plan. Set STRIPE_POWER_USER_PRICE_MONTHLY and STRIPE_POWER_USER_PRICE_YEARLY to price_* values.",
-      });
+      throw createHttpError(
+        500,
+        "Missing Stripe Price ID for selected plan. Set STRIPE_POWER_USER_PRICE_MONTHLY and STRIPE_POWER_USER_PRICE_YEARLY."
+      );
     }
 
     if (!String(priceId).startsWith("price_")) {
-      return res.status(500).json({
-        error:
-          "Stripe price IDs must start with price_. You currently have amounts (e.g. 2.99) instead of Stripe Price IDs.",
-      });
+      throw createHttpError(
+        500,
+        "Stripe price IDs must start with price_. You currently have amounts instead of Stripe Price IDs."
+      );
     }
 
     const stripe = getStripe();
-
-    const userId = Number((req as any).user?.sub);
-    if (!Number.isFinite(userId)) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    const userId = req.user!.sub;
 
     const user = await prisma.user.findUnique({
       where: { userId },
       select: { userId: true, email: true, stripeCustomerId: true },
     });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) throw createHttpError(404, "User not found");
 
-    // Ensure we have a Stripe Customer to attach the subscription to.
-    // This is required to support cancellation at period end later.
-    let stripeCustomerId = user.stripeCustomerId;
-    if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { userId: String(user.userId) },
-      });
-      stripeCustomerId = customer.id;
-      await prisma.user.update({
-        where: { userId: user.userId },
-        data: { stripeCustomerId },
-      });
-    }
+    const stripeCustomerId = await getOrCreateStripeCustomer(
+      stripe,
+      user.userId,
+      user.email,
+      user.stripeCustomerId
+    );
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: stripeCustomerId,
       line_items: [{ price: String(priceId), quantity: 1 }],
+      // Stripe accepts ISO 639 language codes; "auto" detects from the
+      // browser, which is what we fall back to when the user hasn't picked
+      // a language in WIM.
+      locale: locale ?? "auto",
       success_url: `${appUrl}/?stripe=success`,
       cancel_url: `${appUrl}/?stripe=cancel`,
       metadata: {
         userId: String(userId),
-        role: String((req as any).user?.role ?? ""),
+        role: req.user!.role,
         targetRole: "POWER_USER",
         plan,
       },
     });
 
+    await auditAction(req, {
+      action: "BILLING_CHECKOUT_STARTED",
+      entity: "User",
+      entityId: userId,
+      metadata: { plan, sessionId: session.id },
+    });
+
+    if (!session.url)
+      throw createHttpError(500, "Stripe did not return a checkout URL");
     return res.json({ url: session.url });
-  } catch (e: any) {
-    const message = e?.message || "Failed to create checkout session";
-    return res.status(500).json({ error: message });
-  }
-});
+  })
+);
 
-// Cancel/downgrade: revert POWER_USER back to USER.
-// NOTE: This currently only updates the local role.
-// To actually cancel a Stripe subscription, we need to store and look up the Stripe
-// customer/subscription id (or implement Stripe customer portal and let Stripe manage it).
-router.post("/cancel/power-user", authGuard, async (req: any, res) => {
-  try {
-    const userId = Number(req.user?.sub);
-    if (!Number.isFinite(userId)) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+router.post(
+  "/cancel/power-user",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const userId = req.user!.sub;
 
-    // Stripe-backed cancel at period end.
     const user = await prisma.user.findUnique({
       where: { userId },
       select: { userId: true, role: true, stripeSubscriptionId: true },
     });
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) throw createHttpError(404, "User not found");
 
     if (user.role !== "POWER_USER") {
-      return res.status(400).json({ error: "You are not a POWER_USER" });
+      throw createHttpError(400, "You are not a POWER_USER");
     }
 
     if (!user.stripeSubscriptionId) {
-      return res.status(400).json({
-        error:
-          "No Stripe subscription found for your account. If you upgraded recently, try again in a moment after the webhook processes your payment.",
-      });
+      throw createHttpError(
+        400,
+        "No Stripe subscription found. If you upgraded recently, try again after the webhook processes your payment."
+      );
     }
 
     const stripe = getStripe();
@@ -137,68 +177,67 @@ router.post("/cancel/power-user", authGuard, async (req: any, res) => {
       { cancel_at_period_end: true }
     );
 
-    // Do NOT downgrade role immediately. We'll downgrade via webhook when the subscription ends.
+    await auditAction(req, {
+      action: "BILLING_CANCEL_REQUESTED",
+      entity: "User",
+      entityId: userId,
+      metadata: {
+        subscriptionId: updatedSub.id,
+        cancelAtPeriodEnd: updatedSub.cancel_at_period_end,
+      },
+    });
+
     return res.json({
       subscriptionId: updatedSub.id,
       cancelAtPeriodEnd: updatedSub.cancel_at_period_end,
       currentPeriodEnd: updatedSub.current_period_end,
     });
-  } catch (e: any) {
-    return res
-      .status(500)
-      .json({ error: e?.message || "Failed to cancel subscription" });
-  }
+  })
+);
+
+const PortalSchema = z.object({
+  locale: z.enum(["en", "fr", "pt"]).optional(),
 });
 
-// Optional: Stripe Customer Portal session (lets users manage/cancel themselves).
-// This endpoint is safe to add even if the UI doesn't use it yet.
-router.post("/portal", authGuard, async (req: any, res) => {
-  try {
-    const userId = Number(req.user?.sub);
-    if (!Number.isFinite(userId)) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const appUrlRaw =
-      process.env.APP_URL ||
-      process.env.RENDER_EXTERNAL_URL ||
-      "http://localhost:5173";
-    const appUrl = String(appUrlRaw).replace(/\/$/, "");
-
+router.post(
+  "/portal",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const appUrl = getAppUrl();
+    const userId = req.user!.sub;
     const stripe = getStripe();
+    const { locale } = PortalSchema.parse(req.body ?? {});
 
     const user = await prisma.user.findUnique({
       where: { userId },
       select: { stripeCustomerId: true, email: true, userId: true },
     });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!user) throw createHttpError(404, "User not found");
 
-    let customerId = user.stripeCustomerId;
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { userId: String(user.userId) },
-      });
-      customerId = customer.id;
-      await prisma.user.update({
-        where: { userId: user.userId },
-        data: { stripeCustomerId: customerId },
-      });
-    }
+    const customerId = await getOrCreateStripeCustomer(
+      stripe,
+      user.userId,
+      user.email,
+      user.stripeCustomerId
+    );
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
+      locale: locale ?? "auto",
       return_url: `${appUrl}/?billing=return`,
     });
 
+    await auditAction(req, {
+      action: "BILLING_PORTAL_OPENED",
+      entity: "User",
+      entityId: userId,
+      metadata: { customerId },
+    });
+
+    if (!session.url)
+      throw createHttpError(500, "Stripe did not return a portal URL");
     return res.json({ url: session.url });
-  } catch (e: any) {
-    return res
-      .status(500)
-      .json({ error: e?.message || "Failed to open portal" });
-  }
-});
+  })
+);
 
 export default router;

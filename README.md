@@ -1,48 +1,326 @@
-# WIM
+# WIM — Warranty & Inventory Manager
 
-WIM is a full-stack inventory + warranty manager.
+WIM is a full-stack SaaS application for tracking physical assets, their warranties, attachments, and alerts. Built with a React frontend and a Node.js/Express API backed by PostgreSQL and Redis.
 
-- API: Node.js + Express + TypeScript + Prisma
-- Web: React + Vite
+> **New chat?** Read [`CLAUDE.md`](./CLAUDE.md) at the repo root — it has the internal context (deploy quirks, conventions, open items) the README intentionally doesn't repeat.
 
-## Docs
+---
 
-- API reference: `docs/api.md`
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 · TypeScript · Vite · Tailwind CSS · React Router v7 · react-hook-form + Zod |
+| Backend | Node.js 22 · Express · TypeScript · Prisma ORM |
+| Database | PostgreSQL |
+| Queue | BullMQ + Redis |
+| Auth | JWT in `httpOnly` cookie (`wim_token`) + Redis denylist on logout + per-user `tokenVersion` for force-logout |
+| Payments | Stripe (subscriptions + webhooks) |
+| PWA | manifest + service worker + sharp-generated icons |
+| Logging | Pino structured logging |
+
+---
 
 ## Workspace structure
 
-- `apps/api`: backend API (`/api/*`)
-- `apps/web`: frontend web app
-
-## Notes
-
-- Production API base URL (Render): `https://wimapi.onrender.com/api`
-- Uploaded files are served publicly from `/uploads/*` on the API host.
-  The metadata endpoints under `/api/attachments/*` require JWT.
-
-## Dev quickstart (Windows)
-
-API (dev):
-
-```powershell
-cd .\apps\api
-npm install
-npm run dev
+```
+WIM/
+├── apps/
+│   ├── api/                # Express REST API (port 3000)
+│   └── web/                # React SPA + PWA (port 5173)
+├── packages/
+│   └── types/              # Plain TS interfaces shared by api + web
+├── render.yaml             # Render Blueprint for the static web site
+├── CLAUDE.md               # Context primer for new chats
+└── .github/workflows/ci.yml
 ```
 
-Web (dev):
+---
 
-```powershell
-cd .\apps\web
-npm install
-npm run dev
+## Getting started
+
+### Prerequisites
+
+- Node.js ≥ 22
+- PostgreSQL
+- Redis (for BullMQ)
+
+### Install & run
+
+```bash
+npm install --workspaces
+cp apps/api/.env.example apps/api/.env  # fill in values, see env table below
+npm --workspace apps/api run prisma:migrate
+npm --workspace apps/api run dev        # API on :3000
+npm --workspace apps/web run dev        # Web on :5173 (runs `predev` to generate PWA icons)
 ```
 
-### Configure API base URL for the web app
+Set `VITE_API_BASE_URL=http://localhost:3000/api` in `apps/web/.env.local` so the web app finds the local API.
 
-Set `VITE_API_BASE_URL` to one of:
+### Required environment variables (API)
 
-- `https://wimapi.onrender.com/api` (Render)
-- `http://localhost:3000/api` (local dev)
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET` | Signing secret (min 32 chars, random). App exits at boot if missing. |
+| `REDIS_URL` | `redis://host:port` — used for the JWT denylist + BullMQ |
+| `CORS_ORIGIN` | Allowed web origin, no trailing slash. Comma-list OK. |
+| `APP_URL` | Public web origin used for Stripe redirect URLs. **Single origin**, no trailing slash. |
 
-The frontend logic lives in `apps/web/src/services/api.ts`.
+### Optional environment variables (API)
+
+| Variable | Description |
+|---|---|
+| `PORT` | API port (default `3000`) |
+| `STRIPE_SECRET_KEY` | Stripe secret key (required for billing) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `STRIPE_POWER_USER_PRICE_MONTHLY` | `price_…` for monthly POWER_USER subscription |
+| `STRIPE_POWER_USER_PRICE_YEARLY`  | `price_…` for yearly POWER_USER subscription |
+| `RATE_LIMIT_WINDOW_MS` | Rate-limit window (default `60000`) |
+| `RATE_LIMIT_MAX` | Max requests per window (default `100`) |
+
+---
+
+## User roles
+
+| Role | Capabilities |
+|---|---|
+| `USER` | Manage own articles, warranties, attachments, alerts |
+| `POWER_USER` | Everything USER does, plus: share articles publicly with all power users (read-only), invite other power users to read or write their full inventory, edit articles where they have WRITE access |
+| `ADMIN` | User management, audit log, force-logout, password reset for any user |
+
+Public registration always creates a `USER`. To create the first admin:
+
+```bash
+# Locally
+npm --workspace apps/api run promote:admin -- you@example.com
+
+# On Render's API service shell
+node dist/scripts/promote-to-admin.js you@example.com
+```
+
+For convenience on free-tier Render (Postgres expires monthly), there's also a temporary `POST /api/auth/bootstrap-admin` endpoint + `TestAdmin` button on the login screen — it one-shot promotes `admin@admin.com` only when no ADMIN exists, so it's idempotent. Remove once you replace it with a proper seeding flow.
+
+---
+
+## API reference
+
+Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — clients must use `credentials: 'include'`. No `Authorization` header.
+
+The full OpenAPI 3.1 spec is served at `GET /api/docs` (Swagger UI) and `GET /api/openapi.json` (raw JSON).
+
+### Auth — `/api/auth`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/register` | ✗ | Register a new USER |
+| `POST` | `/login` | ✗ | Login — sets `wim_token` cookie |
+| `POST` | `/logout` | ✓ | Logout — adds jti to Redis denylist + clears cookie |
+| `GET`  | `/me` | ✓ | Current user profile |
+| `POST` | `/bootstrap-admin` | ✗ | One-shot promote `admin@admin.com` if no ADMIN exists yet (idempotent) |
+
+### Articles — `/api/articles`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | ✓ | List own articles (`?locationId=`, `?page=`, `?limit=`) |
+| `POST`   | `/` | ✓ | Create article (can include embedded warranty + locationIds) |
+| `GET`    | `/:id` | ✓ | Get single article |
+| `PUT`    | `/:id` | ✓ | Update article (and its warranty + locations) |
+| `DELETE` | `/:id` | ✓ | Delete article |
+| `GET`    | `/shared-public` | POWER_USER | List own articles that are publicly shared |
+| `POST`   | `/unshare-all` | POWER_USER | Kill switch — unshare every publicly-shared article |
+| `POST`   | `/:id/share` | POWER_USER | Mark article shared-with-all-power-users (read-only) |
+| `GET`    | `/:id/shares` | POWER_USER | Get share status for an article |
+| `DELETE` | `/:id/share` | POWER_USER | Unshare an article |
+
+### Warranties — `/api/warranties`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | ✓ | List own warranties (paginated) |
+| `POST`   | `/` | ✓ | Create standalone warranty |
+| `GET`    | `/:id` | ✓ | Get warranty |
+| `PUT`    | `/:id` | ✓ | Update warranty (recalculates expiry + reschedules alerts) |
+| `DELETE` | `/:id` | ✓ | Delete warranty (cancels its alerts) |
+
+### Attachments — `/api/attachments`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | ✓ | List attachments (`?articleId=`, `?garantieId=`) |
+| `POST`   | `/upload` | ✓ | Upload file (multipart/form-data, 10 MB cap, magic-byte validated) |
+| `DELETE` | `/:id` | ✓ | Delete (`?removeFile=true` also deletes the file from disk) |
+
+Uploaded files are served behind auth at `GET /uploads/<filename>` — the owner must be the authenticated user.
+
+### Alerts — `/api/alerts`
+
+Read-only list of scheduled alerts (J-30, J-7, J-1 before warranty expiry — scheduled automatically by BullMQ).
+
+### Locations — `/api/locations`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | ✓ | List own locations |
+| `POST`   | `/` | ✓ | Create location |
+| `POST`   | `/:id/articles` | ✓ | Attach an article to a location |
+| `DELETE` | `/:id/articles/:articleId` | ✓ | Detach an article from a location |
+
+### Sharing — `/api/shares`
+
+Per-user inventory sharing (POWER_USER ↔ POWER_USER). All actions require POWER_USER on both ends (invitee email must already be a registered POWER_USER; the accept route also gates on POWER_USER).
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST`   | `/invites` | POWER_USER | Send invite (invitee role enforced server-side) |
+| `POST`   | `/invites/accept` | POWER_USER | Redeem an invite token |
+| `GET`    | `/invites/sent` | POWER_USER | List own sent invites |
+| `DELETE` | `/invites/:id` | POWER_USER | Revoke a sent invite |
+| `GET`    | `/owned` | POWER_USER | List active outgoing shares |
+| `GET`    | `/received` | POWER_USER | List active incoming shares |
+| `PUT`    | `/:targetUserId` | POWER_USER | Update share permission (READ ↔ WRITE) |
+| `DELETE` | `/:targetUserId` | POWER_USER | Revoke an active share |
+
+### Shared view — `/api/shared`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/articles` | POWER_USER | Articles shared to the caller — merges per-user shares + globally-shared. Each row carries `source: "user" \| "global"` and `permission: "READ" \| "WRITE"`. |
+| `PUT` | `/articles/:id` | POWER_USER (with WRITE share) | Edit basic article fields when the caller has an active WRITE InventoryShare from the owner. Warranty + locations stay with the owner. |
+
+### Statistics — `/api/statistics`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/dashboard` | ✓ | Role-aware dashboard stats |
+| `GET` | `/basic` | ✓ | Basic counts for the current user |
+| `GET` | `/admin` | ADMIN | Platform-wide stats |
+
+### Profile — `/api/profile`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/me` | ✓ | Current user's profile |
+| `PUT`    | `/me/email` | ✓ | Update email (`{ email, currentPassword }`) |
+| `PUT`    | `/me/password` | ✓ | Update password (`{ currentPassword, newPassword }`) |
+| `DELETE` | `/me` | ✓ | Delete account (`{ currentPassword }`) — 204 |
+
+### Billing — `/api/billing`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/upgrade/power-user/checkout` | ✓ | Create Stripe checkout (`{ plan, locale? }`) |
+| `POST` | `/portal` | ✓ | Open Stripe billing portal (locale passed through) |
+| `POST` | `/cancel/power-user` | POWER_USER | Cancel at period end |
+| `GET`  | `/me` | ✓ | Current subscription summary (plan, status, next billing, cancelAtPeriodEnd) |
+| `POST` | `/sync` | ✓ | Webhook-independent reconciliation — queries Stripe directly and updates role + subscriptionId. Frontend calls this on return from Checkout. |
+| `POST` | `/webhook` | ✗ (Stripe signature) | Webhook receiver (raw body required) |
+
+On every POWER_USER → USER downgrade (webhook cancel, `/sync`, or admin demote), `ShareService.cleanupSharingForUser` runs inside the same transaction: flips public articles back, deactivates outgoing per-user shares, and revokes pending invites.
+
+### Admin — `/api/admin`
+
+All routes require ADMIN.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET`    | `/db-stats` | DB row counts + recent users/articles |
+| `GET`    | `/users` | List all users |
+| `POST`   | `/users` | Create a user with any role |
+| `PATCH`  | `/users/:id` | Update email and/or role (last-admin protection in a serializable tx) |
+| `DELETE` | `/users/:id` | Delete a user (last-admin protection) |
+| `GET`    | `/users/:id/inventory` | User's articles + warranties |
+| `POST`   | `/users/:id/reset-password` | Force a new password + bump `tokenVersion` |
+| `POST`   | `/users/:id/force-logout` | Bump `tokenVersion` so all their JWTs become invalid |
+| `GET`    | `/audit-log` | Cursor-paginated audit log (`?userId=`, `?action=`, `?entity=`, `?limit=`, `?cursor=`) |
+
+---
+
+## Data model
+
+```
+User ─── Article ─── Garantie (warranty)
+  │         │              └── Alerte (alert)
+  │         ├── Attachment
+  │         └── Location (many-to-many via ArticleLocation)
+  │
+  ├── InventoryShare (owner → target, READ|WRITE, active flag)
+  ├── ShareInvite (token-based; status: PENDING / ACCEPTED / REVOKED / EXPIRED)
+  └── AuditLog
+```
+
+Key flags on User: `role`, `tokenVersion`, `stripeCustomerId`, `stripeSubscriptionId`.
+
+---
+
+## Running tests
+
+```bash
+npm test                                    # all workspaces
+npm --workspace apps/api run test:watch     # watch mode
+npm --workspace apps/api run test:coverage  # coverage
+```
+
+API tests live in `apps/api/src/__tests__/`. Web tests live in `apps/web/src/__tests__/`. Both use [Vitest](https://vitest.dev/).
+
+---
+
+## CI
+
+GitHub Actions runs on every push and pull request:
+
+1. Install dependencies (`npm install --workspaces`, not `npm ci`, so a stale lockfile doesn't block a workspace adding a dep)
+2. Lint all workspaces
+3. Generate Prisma client
+4. Build the API (`tsc`)
+5. Run API + web tests
+6. Build the web app (`vite build`, with `prebuild` generating PWA icons via sharp)
+7. Upload `apps/web/dist` as an artifact (main/dev only)
+
+See `.github/workflows/ci.yml`.
+
+---
+
+## Deployment (Render)
+
+Two services on Render, both deploying from `dev`:
+
+| Service | URL | Type |
+|---|---|---|
+| API | `https://wimapi.onrender.com` | Web service (`render-build:api`) |
+| Web | `https://wim-web.onrender.com` | Static site (configured via `render.yaml` Blueprint, SPA rewrite included) |
+
+API env vars (Render dashboard, **not in repo**): every Required var above, plus `NODE_ENV=production` and `RENDER_EXTERNAL_URL=https://wimapi.onrender.com`.
+
+Web env var: `VITE_API_BASE_URL=https://wimapi.onrender.com/api`.
+
+> **Free-tier quirks:**
+> - Postgres expires after ~30 days. Re-seed admin with the `TestAdmin` button on the login screen (uses `/api/auth/bootstrap-admin`).
+> - The API container cold-starts in ~30 s. The web fetch timeout is 45 s to absorb this.
+> - File uploads use ephemeral disk. For real production, move them to S3/R2.
+
+The web service is provisioned from `render.yaml` at the repo root (SPA rewrite + headers + asset path). Use **New + → Blueprint** in Render to create or sync.
+
+---
+
+## Security notes
+
+- JWTs are stored in `httpOnly` cookies (`wim_token`), `sameSite=none` in production (web/api are on different Render subdomains and therefore different PSL sites — the cookie must be cross-site to send), `lax` in dev. `secure` is forced on in production.
+- Every request reads `tokenVersion` + `role` from the DB in `authGuard` — bumping the version invalidates every JWT for that user, and role changes propagate immediately without re-login.
+- CORS is enforced via `CORS_ORIGIN`; production rejects all cross-origin requests if it's unset.
+- `JWT_SECRET` is required at boot; the API exits otherwise.
+- Rate limiting is applied globally (100 req/min by default) via `RATE_LIMIT_*`.
+- File uploads are size-capped (10 MB) and magic-byte validated before being kept on disk.
+- The Stripe webhook verifies signatures and uses a `ProcessedStripeEvent` table for idempotency.
+
+---
+
+## Known limitations / roadmap
+
+- [ ] Move file uploads from ephemeral disk to S3-compatible storage (Cloudflare R2 or AWS S3)
+- [ ] Add per-user / per-route rate limits on top of the global one
+- [ ] Expand test coverage to route-level integration tests
+- [ ] Add a data-caching layer (TanStack Query) on the web client to reduce duplicate fetches across routes
+- [ ] Replace the temporary `/auth/bootstrap-admin` with a proper one-time seed flow once the production DB is stable
+- [ ] Consolidate the two sharing models (public flag + per-user InventoryShare) into a single “Share article…” dialog with options — deferred by design today

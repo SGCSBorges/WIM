@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { format } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 
 interface Warranty {
@@ -46,7 +47,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
     if (!formData.garantieDateAchat) {
       newErrors.garantieDateAchat = t(
-        "warrantyForm.error.purchaseDateRequired",
+        "warrantyForm.error.purchaseDateRequired"
       );
     }
 
@@ -74,7 +75,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
 
   const handleInputChange = (
     field: keyof typeof formData,
-    value: string | number,
+    value: string | number
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -90,7 +91,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
       const purchaseDate = new Date(formData.garantieDateAchat);
       const endDate = new Date(purchaseDate);
       endDate.setMonth(endDate.getMonth() + formData.garantieDuration);
-      return endDate.toLocaleDateString();
+      return format(endDate, "dd MMM yyyy");
     }
     return "";
   };
@@ -165,7 +166,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             onChange={(e) =>
               handleInputChange(
                 "garantieDuration",
-                parseInt(e.target.value) || 0,
+                parseInt(e.target.value) || 0
               )
             }
             className="ui-input w-full px-3 py-2 rounded-md"
@@ -196,7 +197,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="ui-btn-primary px-6 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="ui-btn-primary px-6 py-2 rounded-md"
           >
             {isLoading
               ? t("warrantyForm.saving")
@@ -209,7 +210,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             <button
               type="button"
               onClick={onCancel}
-              className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider transition-colors"
+              className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider"
             >
               {t("common.cancel")}
             </button>

@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { authGuard, requireRole } from "../auth/auth.middleware";
+import { z } from "zod";
+import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import {
   ShareInviteAcceptSchema,
@@ -8,6 +9,7 @@ import {
 } from "./share.schemas";
 import { ShareService } from "./share.service";
 import { auditAction } from "../common/audit";
+import { paginationQuery } from "../common/schemas";
 
 const router = Router();
 
@@ -16,29 +18,33 @@ router.post(
   "/invites",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = ShareInviteCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
     );
-    const data = { ...bodyData, ownerUserId: req.user.sub };
+    const data = { ...bodyData, ownerUserId: req.user!.sub };
     const inv = await ShareService.createInvite(data);
     await auditAction(req, {
       action: "CREATE",
       entity: "ShareInvite",
-      entityId: (inv as any).inviteId || (inv as any).shareInviteId, // Handle field name inconsistency
+      entityId: inv.shareInviteId,
       metadata: { email: data.email, permission: data.permission },
     });
     res.status(201).json(inv);
   })
 );
 
-// accepter une invitation (token)
+// accepter une invitation (token). Inventory shares are POWER_USER-only
+// on both sides — the createInvite path enforces it for the recipient at
+// invite time, but a previously-power-user could lose the role between
+// invite and accept; the route guard catches that.
 router.post(
   "/invites/accept",
   authGuard,
-  asyncHandler(async (req: any, res) => {
+  requireRole("POWER_USER"),
+  asyncHandler(async (req: AuthRequest, res) => {
     const { token } = ShareInviteAcceptSchema.parse(req.body);
-    const result = await ShareService.acceptInvite(token, req.user.sub);
+    const result = await ShareService.acceptInvite(token, req.user!.sub);
     await auditAction(req, {
       action: "ACCEPT",
       entity: "InventoryShare",
@@ -48,12 +54,44 @@ router.post(
   })
 );
 
+// liste les invitations envoyées par le user courant
+router.get(
+  "/invites/sent",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { page, limit } = paginationQuery.parse(req.query);
+    const rows = await ShareService.listSentInvites(req.user!.sub, page, limit);
+    res.json(rows);
+  })
+);
+
+// révoquer une invitation envoyée
+router.delete(
+  "/invites/:inviteId",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const inviteId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(req.params.inviteId);
+    await ShareService.revokeInvite(inviteId, req.user!.sub);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "ShareInvite",
+      entityId: inviteId,
+    });
+    res.status(204).send();
+  })
+);
+
 // listes de partage
 router.get(
   "/owned",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const rows = await ShareService.listSharesOwned(req.user.sub);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { page, limit } = paginationQuery.parse(req.query);
+    const rows = await ShareService.listSharesOwned(req.user!.sub, page, limit);
     res.json(rows);
   })
 );
@@ -61,8 +99,13 @@ router.get(
 router.get(
   "/received",
   authGuard,
-  asyncHandler(async (req: any, res) => {
-    const rows = await ShareService.listSharesReceived(req.user.sub);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { page, limit } = paginationQuery.parse(req.query);
+    const rows = await ShareService.listSharesReceived(
+      req.user!.sub,
+      page,
+      limit
+    );
     res.json(rows);
   })
 );
@@ -72,18 +115,22 @@ router.put(
   "/:targetUserId",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
+  asyncHandler(async (req: AuthRequest, res) => {
     const { permission } = ShareUpdateSchema.parse(req.body);
-    const targetUserId = Number(req.params.targetUserId);
+    const targetUserId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(req.params.targetUserId);
     const updated = await ShareService.updateShare(
-      req.user.sub,
+      req.user!.sub,
       targetUserId,
       permission
     );
     await auditAction(req, {
       action: "UPDATE",
       entity: "InventoryShare",
-      entityId: (updated as any).shareId || (updated as any).inventoryShareId, // Handle field name inconsistency
+      entityId: updated.inventoryShareId,
       metadata: { permission },
     });
     res.json(updated);
@@ -95,9 +142,13 @@ router.delete(
   "/:targetUserId",
   authGuard,
   requireRole("POWER_USER"),
-  asyncHandler(async (req: any, res) => {
-    const targetUserId = Number(req.params.targetUserId);
-    await ShareService.revokeShare(req.user.sub, targetUserId);
+  asyncHandler(async (req: AuthRequest, res) => {
+    const targetUserId = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(req.params.targetUserId);
+    await ShareService.revokeShare(req.user!.sub, targetUserId);
     await auditAction(req, {
       action: "DELETE",
       entity: "InventoryShare",
