@@ -246,7 +246,7 @@ export default function LocationsView() {
                         </button>
                         {confirmDeleteId === l.locationId ? (
                           <span className="inline-flex items-center gap-2">
-                            <span className="text-xs text-red-700">
+                            <span className="text-xs ui-text-error">
                               {t("locations.deleteConfirm")}
                             </span>
                             <button

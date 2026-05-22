@@ -151,8 +151,8 @@ const Dashboard: React.FC = () => {
     return (
       <div className="border ui-alert-warning rounded-lg p-4">
         <div className="flex items-center">
-          <span className="text-yellow-400 mr-2">⚠️</span>
-          <p className="text-sm text-yellow-700">{t("dashboard.noStats")}</p>
+          <span className="ui-text-warn mr-2">⚠️</span>
+          <p className="text-sm ui-text-warn">{t("dashboard.noStats")}</p>
         </div>
       </div>
     );
@@ -212,7 +212,7 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.withWarranty"),
               value: statistics.articles.withWarranty,
-              color: "text-green-600",
+              color: "ui-text-success",
             },
             {
               label: t("dashboard.withoutWarranty"),
@@ -263,12 +263,12 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.active"),
               value: statistics.warranties.active,
-              color: "text-green-600",
+              color: "ui-text-success",
             },
             {
               label: t("dashboard.expired"),
               value: statistics.warranties.expired,
-              color: "text-red-600",
+              color: "ui-text-error",
             },
             {
               label: t("dashboard.expiringSoon"),
@@ -278,7 +278,7 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.withAttachment"),
               value: statistics.warranties.withAttachment,
-              color: "text-green-600",
+              color: "ui-text-success",
             },
           ]}
         />
@@ -291,7 +291,7 @@ const Dashboard: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center">
-            <span className="text-green-500 mr-2">✅</span>
+            <span className="ui-text-success mr-2">✅</span>
             <span className="text-sm ui-text-muted">
               {(statistics.warranties.total
                 ? (statistics.warranties.active / statistics.warranties.total) *
