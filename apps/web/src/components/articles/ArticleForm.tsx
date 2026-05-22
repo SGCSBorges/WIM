@@ -487,7 +487,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   )}
 
                   {warrantyProofError && (
-                    <p className="text-sm text-red-600">{warrantyProofError}</p>
+                    <p className="text-sm ui-text-error">
+                      {warrantyProofError}
+                    </p>
                   )}
 
                   {warrantyProofAttachment && (
@@ -550,7 +552,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               {t("articleForm.locations.loading")}
             </p>
           ) : locationsError ? (
-            <p className="text-sm text-red-600">{locationsError}</p>
+            <p className="text-sm ui-text-error">{locationsError}</p>
           ) : locations.length === 0 ? (
             <p className="text-sm ui-text-muted">
               {t("articleForm.locations.none")}
@@ -594,12 +596,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             </button>
           </div>
           {locCreateError && (
-            <p className="mt-1 text-sm text-red-600">{locCreateError}</p>
+            <p className="mt-1 text-sm ui-text-error">{locCreateError}</p>
           )}
         </div>
 
         {formError && (
-          <p ref={formErrorRef} role="alert" className="text-sm text-red-600">
+          <p ref={formErrorRef} role="alert" className="text-sm ui-text-error">
             {formError}
           </p>
         )}
