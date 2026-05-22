@@ -231,7 +231,7 @@ export default function AlertsView() {
                   )}
 
                   {a.status === "FAILED" && a.errorMessage && (
-                    <div className="mt-2 text-xs text-red-700">
+                    <div className="mt-2 text-xs ui-text-error">
                       {t("alerts.error")}: {a.errorMessage}
                     </div>
                   )}

@@ -111,16 +111,16 @@ export default function AdminDbBackup() {
 
       {error && (
         <div className="border ui-alert-error rounded-md p-3" role="alert">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm ui-text-error">{error}</p>
         </div>
       )}
 
       {counts && (
         <div className="border ui-alert-success rounded-md p-3">
-          <p className="text-sm text-green-800 font-medium">
+          <p className="text-sm ui-text-success font-medium">
             {t("admin.db.importSuccess")}
           </p>
-          <ul className="mt-1 text-xs text-green-700 grid grid-cols-2 gap-x-3">
+          <ul className="mt-1 text-xs ui-text-success grid grid-cols-2 gap-x-3">
             {Object.entries(counts).map(([table, n]) => (
               <li key={table}>
                 <code className="font-mono">{table}</code>: {n}
@@ -161,13 +161,13 @@ export default function AdminDbBackup() {
 
       {pendingFile && !importing && !counts && (
         <div className="border ui-alert-warning rounded-md p-3 space-y-3">
-          <p className="text-sm text-yellow-900">
+          <p className="text-sm ui-text-warn">
             <strong>{t("admin.db.confirmTitle")}</strong>
           </p>
-          <p className="text-sm text-yellow-800">
+          <p className="text-sm ui-text-warn">
             {t("admin.db.confirmBody").replace("{file}", pendingFile.name)}
           </p>
-          <label className="block text-sm text-yellow-900">
+          <label className="block text-sm ui-text-warn">
             <span className="font-medium">
               {t("admin.db.passwordPromptLabel")}
             </span>
@@ -180,7 +180,7 @@ export default function AdminDbBackup() {
               required
             />
           </label>
-          <label className="flex items-start gap-2 text-xs text-yellow-900">
+          <label className="flex items-start gap-2 text-xs ui-text-warn">
             <input
               type="checkbox"
               checked={keepStripeIds}
