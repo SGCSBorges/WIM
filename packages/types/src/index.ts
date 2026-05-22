@@ -38,7 +38,9 @@ export interface Article {
   garantie?: ArticleWarranty | null;
 }
 
-/** Article as returned by the API — always has an articleId. */
+/** Article as returned by the API — always has an articleId and timestamps. */
 export interface FetchedArticle extends Article {
   articleId: number;
+  createdAt: string;
+  updatedAt: string;
 }

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
-import { useI18n } from "../../i18n/i18n";
-import { TranslationKey } from "../../i18n/translations";
+import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { alertsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner } from "../common/States";

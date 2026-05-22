@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { useI18n } from "../../i18n/i18n";
-import type { TranslationKey } from "../../i18n/translations";
+import { useI18n, type TranslationKey } from "../../i18n/i18n";
 
 interface ShareFormProps {
   onSubmit: (shareData: {

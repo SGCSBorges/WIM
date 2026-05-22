@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
-import { Language, TranslationKey, translations } from "./translations";
+import { Language, translations } from "./translations";
 import { extras, ExtrasKey } from "./translations.extras";
+
+// Derived from the English dict so it stays a single source of truth.
+// Re-exported for components that build keys via template strings — they
+// need the union to satisfy `t()`'s typed argument.
+export type TranslationKey = keyof (typeof translations)["en"];
 
 // `t` accepts both keys baked into the main dict and keys added later
 // via translations.extras. Lookups prefer extras (so copy fixes there

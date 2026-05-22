@@ -37,39 +37,23 @@ export default function DataExportPanel() {
           );
         } else {
           const csv = toCSV(
-            rows.map(
-              (r: {
-                articleId: number;
-                articleNom: string;
-                articleModele: string;
-                articleDescription?: string | null;
-                productImageUrl?: string | null;
-                sharedWithPowerUsers?: boolean;
-                createdAt: string;
-                updatedAt: string;
-                garantie?: {
-                  garantieNom?: string;
-                  garantieFin?: string;
-                  garantieIsValide?: boolean;
-                } | null;
-              }) => ({
-                articleId: r.articleId,
-                name: r.articleNom,
-                model: r.articleModele,
-                description: r.articleDescription ?? "",
-                imageUrl: r.productImageUrl ?? "",
-                sharedPublicly: r.sharedWithPowerUsers ? "yes" : "no",
-                warrantyName: r.garantie?.garantieNom ?? "",
-                warrantyEndDate: r.garantie?.garantieFin ?? "",
-                warrantyActive: r.garantie
-                  ? r.garantie.garantieIsValide
-                    ? "yes"
-                    : "no"
-                  : "",
-                createdAt: r.createdAt,
-                updatedAt: r.updatedAt,
-              })
-            ),
+            rows.map((r) => ({
+              articleId: r.articleId,
+              name: r.articleNom,
+              model: r.articleModele,
+              description: r.articleDescription ?? "",
+              imageUrl: r.productImageUrl ?? "",
+              sharedPublicly: r.sharedWithPowerUsers ? "yes" : "no",
+              warrantyName: r.garantie?.garantieNom ?? "",
+              warrantyEndDate: r.garantie?.garantieFin ?? "",
+              warrantyActive: r.garantie
+                ? r.garantie.garantieIsValide
+                  ? "yes"
+                  : "no"
+                : "",
+              createdAt: r.createdAt,
+              updatedAt: r.updatedAt,
+            })),
             [
               { key: "articleId", header: "Article ID" },
               { key: "name", header: "Name" },
