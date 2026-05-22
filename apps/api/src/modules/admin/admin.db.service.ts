@@ -271,8 +271,17 @@ export const AdminDbService = {
    *
    * Whole thing is wrapped in a single transaction so a failure rolls back
    * to the pre-import state (the truncate too).
+   *
+   * `keepStripeIds=false` (default) strips `stripeCustomerId` and
+   * `stripeSubscriptionId` from User rows on the way in. Stripe is global,
+   * so importing into a different environment with the same ids would
+   * misroute future webhooks / cancellations.
    */
-  async importAll(payload: ImportPayload) {
+  async importAll(
+    payload: ImportPayload,
+    options: { keepStripeIds?: boolean } = {}
+  ) {
+    const keepStripeIds = options.keepStripeIds === true;
     if (payload.version !== FORMAT_VERSION) {
       throw createHttpError(
         400,
@@ -289,6 +298,17 @@ export const AdminDbService = {
         "Refusing to import a dump that contains no ADMIN user — you would be locked out"
       );
     }
+
+    // Materialise the user rows we'll actually insert. Strip Stripe ids by
+    // default so a dump taken in environment A doesn't keep pointing at A's
+    // Stripe customers when restored into environment B.
+    const usersForInsert = keepStripeIds
+      ? t.users
+      : t.users.map((u) => ({
+          ...u,
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+        }));
 
     const counts: Record<string, number> = {};
 
@@ -313,9 +333,12 @@ export const AdminDbService = {
            RESTART IDENTITY CASCADE`
         );
 
-        if (t.users.length) {
+        if (usersForInsert.length) {
           counts.users = (
-            await tx.user.createMany({ data: t.users, skipDuplicates: false })
+            await tx.user.createMany({
+              data: usersForInsert,
+              skipDuplicates: false,
+            })
           ).count;
         }
         if (t.locations.length) {

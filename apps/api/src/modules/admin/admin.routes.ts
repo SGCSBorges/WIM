@@ -491,6 +491,8 @@ router.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const ConfirmedSchema = z.object({
       confirm: z.literal("REPLACE"),
+      currentPassword: z.string().min(1),
+      keepStripeIds: z.boolean().optional(),
       payload: ImportPayloadSchema,
     });
     const parsed = ConfirmedSchema.safeParse(req.body);
@@ -504,17 +506,55 @@ router.post(
       );
     }
 
-    const result = await AdminDbService.importAll(parsed.data.payload);
+    // Re-prompt for the admin's own password before nuking the database.
+    // Stops a stolen-but-still-valid session cookie from triggering a
+    // full-DB rewrite without explicit re-authentication.
+    const me = await prisma.user.findUnique({
+      where: { userId: req.user!.sub },
+      select: { password: true },
+    });
+    if (!me) throw createHttpError(401, "User no longer exists");
+    const valid = await bcrypt.compare(
+      parsed.data.currentPassword,
+      me.password
+    );
+    if (!valid) throw createHttpError(401, "Invalid password");
 
-    // Audit before we lose the admin's session. The audit row references
-    // the *current* User row, which is in the freshly imported dump — so
-    // the userId we record is only meaningful if that user survived the
-    // import. We log defensively.
+    // Audit BEFORE the destructive write so a crash mid-import still leaves
+    // a forensic trail in the (about-to-be-replaced) audit log. The row
+    // itself doesn't survive the TRUNCATE — but a copy is also written to
+    // the structured log via logger.info inside importAll, and the post-
+    // import audit entry below records the outcome.
     await auditAction(req, {
       userId: req.user!.sub,
       action: "DB_IMPORT",
       entity: "Database",
-      metadata: { counts: result.counts },
+      metadata: {
+        stage: "pre-truncate",
+        counts: {
+          users: parsed.data.payload.tables.users.length,
+          articles: parsed.data.payload.tables.articles.length,
+          locations: parsed.data.payload.tables.locations.length,
+          garanties: parsed.data.payload.tables.garanties.length,
+          attachments: parsed.data.payload.tables.attachments.length,
+          auditLogs: parsed.data.payload.tables.auditLogs.length,
+        },
+        keepStripeIds: parsed.data.keepStripeIds === true,
+        exportedAt: parsed.data.payload.exportedAt ?? null,
+      },
+    });
+
+    const result = await AdminDbService.importAll(parsed.data.payload, {
+      keepStripeIds: parsed.data.keepStripeIds,
+    });
+
+    // Audit the outcome too. This row sits on top of the freshly-restored
+    // log, so the chain reads pre-truncate → import succeeded.
+    await auditAction(req, {
+      userId: req.user!.sub,
+      action: "DB_IMPORT",
+      entity: "Database",
+      metadata: { stage: "post-import", counts: result.counts },
     });
 
     res.json({

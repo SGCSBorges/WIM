@@ -94,14 +94,72 @@ export function createApp() {
         return res.status(400).json({ error: "Invalid file path" });
       }
 
+      // Look up the attachment without an ownership filter so we can apply
+      // share-aware access rules below. We need the article + warranty
+      // refs to walk the share graph.
+      const viewerId = req.user!.sub;
+      const viewerRole = req.user!.role;
       const attachment = await prisma.attachment.findFirst({
-        where: {
-          ownerUserId: req.user!.sub,
-          fileUrl: { endsWith: `/uploads/${storedName}` },
+        where: { fileUrl: { endsWith: `/uploads/${storedName}` } },
+        select: {
+          mimeType: true,
+          fileName: true,
+          ownerUserId: true,
+          articleId: true,
+          garantieId: true,
+          article: {
+            select: { sharedWithPowerUsers: true, ownerUserId: true },
+          },
+          garantie: {
+            select: {
+              ownerUserId: true,
+              article: {
+                select: {
+                  sharedWithPowerUsers: true,
+                  ownerUserId: true,
+                },
+              },
+            },
+          },
         },
-        select: { mimeType: true, fileName: true },
       });
       if (!attachment) return res.status(404).json({ error: "Not found" });
+
+      // Access rules, evaluated cheapest-first:
+      //   1. Owner of the attachment always wins.
+      //   2. If the attachment is linked to an article (directly, or via a
+      //      warranty), the viewer inherits access whenever the article is
+      //      publicly shared (and the viewer is at least POWER_USER) OR the
+      //      article's owner has granted the viewer an active InventoryShare.
+      //   3. Standalone attachments (no article, no warranty) stay
+      //      owner-only — they have no inheritable parent.
+      const article =
+        attachment.article ?? attachment.garantie?.article ?? null;
+      const articleOwnerId = article?.ownerUserId ?? null;
+      const articleIsPublic = article?.sharedWithPowerUsers === true;
+
+      let allowed = attachment.ownerUserId === viewerId;
+
+      if (!allowed && articleOwnerId !== null) {
+        if (
+          articleIsPublic &&
+          (viewerRole === "POWER_USER" || viewerRole === "ADMIN")
+        ) {
+          allowed = true;
+        } else {
+          const share = await prisma.inventoryShare.findFirst({
+            where: {
+              ownerUserId: articleOwnerId,
+              targetUserId: viewerId,
+              active: true,
+            },
+            select: { inventoryShareId: true },
+          });
+          if (share) allowed = true;
+        }
+      }
+
+      if (!allowed) return res.status(404).json({ error: "Not found" });
 
       if (!fs.existsSync(fullPath)) {
         return res.status(404).json({ error: "File missing on disk" });
