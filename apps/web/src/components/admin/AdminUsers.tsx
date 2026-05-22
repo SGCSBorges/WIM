@@ -292,7 +292,7 @@ export default function AdminUsers() {
 
       {error && (
         <div className="border ui-alert-error rounded-lg p-4">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm ui-text-error">{error}</p>
         </div>
       )}
 
@@ -368,9 +368,7 @@ export default function AdminUsers() {
             </div>
           ) : (
             <div className="border ui-alert-warning rounded-lg p-4">
-              <p className="text-sm text-yellow-700">
-                {t("dashboard.noStats")}
-              </p>
+              <p className="text-sm ui-text-warn">{t("dashboard.noStats")}</p>
             </div>
           )}
           <div className="mt-6">
@@ -472,7 +470,7 @@ export default function AdminUsers() {
 
                     {confirmForceLogoutUserId === u.userId ? (
                       <span className="flex items-center gap-1">
-                        <span className="text-xs text-red-700">
+                        <span className="text-xs ui-text-error">
                           {t("admin.confirmForceLogout")}
                         </span>
                         <button
@@ -503,7 +501,7 @@ export default function AdminUsers() {
 
                     {confirmDeleteUserId === u.userId ? (
                       <span className="flex items-center gap-1">
-                        <span className="text-xs text-red-700">
+                        <span className="text-xs ui-text-error">
                           {t("admin.confirmDeleteUser")}
                         </span>
                         <button
@@ -626,7 +624,7 @@ export default function AdminUsers() {
                         </div>
 
                         {confirmDeleteArticleId === a.articleId && (
-                          <p className="text-xs text-red-700">
+                          <p className="text-xs ui-text-error">
                             {t("admin.confirmDeleteArticle")}
                           </p>
                         )}
