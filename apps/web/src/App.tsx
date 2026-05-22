@@ -72,10 +72,10 @@ export class ErrorBoundary extends Component<
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="max-w-md w-full p-8 border ui-alert-error rounded-lg text-center">
-            <h1 className="text-xl font-bold text-red-800 mb-2">
+            <h1 className="text-xl font-bold ui-text-error mb-2">
               Something went wrong
             </h1>
-            <p className="text-sm text-red-600 mb-4">
+            <p className="text-sm ui-text-error mb-4">
               {this.state.error.message}
             </p>
             <button
@@ -475,11 +475,11 @@ export default function App() {
             className="mb-6 border ui-alert-success rounded-lg p-4 flex items-start justify-between gap-3"
             role="status"
           >
-            <p className="text-sm text-green-800">🎉 {upgradeSuccess}</p>
+            <p className="text-sm ui-text-success">🎉 {upgradeSuccess}</p>
             <button
               type="button"
               onClick={() => setUpgradeSuccess(null)}
-              className="text-green-700 hover:opacity-70"
+              className="ui-text-success hover:opacity-70"
               aria-label="Dismiss"
             >
               ✕
@@ -533,7 +533,7 @@ export default function App() {
                           </div>
                         </div>
                         {upgradeError && (
-                          <div className="mt-3 px-3 py-2 rounded-md text-sm border ui-alert-error text-red-700">
+                          <div className="mt-3 px-3 py-2 rounded-md text-sm border ui-alert-error ui-text-error">
                             {upgradeError}
                           </div>
                         )}
