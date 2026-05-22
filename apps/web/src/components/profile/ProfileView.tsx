@@ -301,12 +301,12 @@ export default function ProfileView() {
 
       {error && (
         <div className="border ui-alert-error rounded-lg p-4" role="alert">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm ui-text-error">{error}</p>
         </div>
       )}
       {success && (
         <div className="border ui-alert-success rounded-lg p-4" role="status">
-          <p className="text-sm text-green-700">{success}</p>
+          <p className="text-sm ui-text-success">{success}</p>
         </div>
       )}
 
@@ -332,10 +332,10 @@ export default function ProfileView() {
             (subscription.cancelAtPeriodEnd ||
             subscription.status === "canceled" ? (
               <div className="border ui-alert-warning rounded-md p-3 text-sm">
-                <p className="font-medium text-yellow-900">
+                <p className="font-medium ui-text-warn">
                   {t("profile.billing.cancelScheduled")}
                 </p>
-                <p className="text-yellow-800 mt-1">
+                <p className="ui-text-warn mt-1">
                   {t("profile.billing.accessEndsOn")}{" "}
                   <strong>
                     {formatDate(
@@ -421,7 +421,7 @@ export default function ProfileView() {
           </div>
           {showCancelConfirm && (
             <div className="mt-3 p-3 border ui-alert-warning rounded-lg space-y-2">
-              <p className="text-sm text-yellow-800">
+              <p className="text-sm ui-text-warn">
                 {t("profile.billing.cancelTooltip")}
               </p>
               <div className="flex gap-2">
@@ -496,7 +496,7 @@ export default function ProfileView() {
             <div className="pt-3 border-t ui-divider">
               {showUnshareAllConfirm ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-red-700">
+                  <span className="text-sm ui-text-error">
                     {t("profile.share.public.unshareAllConfirm")}
                   </span>
                   <button
@@ -724,7 +724,7 @@ export default function ProfileView() {
       </div>
 
       <div className="ui-card rounded-xl p-6 space-y-3 border border-red-200">
-        <h2 className="font-semibold text-red-600">
+        <h2 className="font-semibold ui-text-error">
           {t("profile.danger.title")}
         </h2>
         <p className="text-sm ui-text-muted">{t("profile.danger.subtitle")}</p>
@@ -748,7 +748,7 @@ export default function ProfileView() {
           </button>
         ) : (
           <div className="p-3 border ui-alert-error rounded-lg space-y-2">
-            <p className="text-sm text-red-800">
+            <p className="text-sm ui-text-error">
               {t("profile.danger.confirm")}
             </p>
             <div className="flex gap-2">
