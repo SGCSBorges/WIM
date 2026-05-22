@@ -46,6 +46,10 @@
   --btn-ghost-text: var(--nav-muted);
   --btn-ghost-hover-text: var(--text);
   --btn-ghost-hover-bg: var(--nav-hover-bg);
+
+  --text-error: #b91c1c;
+  --text-success: #15803d;
+  --text-warn: #a16207;
 }
 
 /* Light — navy primary, white/blue surfaces, orange accent */
@@ -81,6 +85,10 @@
   --btn-ghost-text: var(--nav-muted);
   --btn-ghost-hover-text: var(--text);
   --btn-ghost-hover-bg: var(--nav-hover-bg);
+
+  --text-error: #b91c1c;
+  --text-success: #15803d;
+  --text-warn: #a16207;
 }
 
 /*
@@ -120,6 +128,10 @@
   --btn-ghost-text: var(--nav-muted);
   --btn-ghost-hover-text: var(--nav-text);
   --btn-ghost-hover-bg: var(--nav-hover-bg);
+
+  --text-error: #fca5a5;
+  --text-success: #86efac;
+  --text-warn: #fde047;
 }
 
 /* Ocean — alt brand, kept distinct from the shield palette. */
@@ -154,6 +166,10 @@
   --btn-ghost-text: var(--nav-muted);
   --btn-ghost-hover-text: var(--nav-text);
   --btn-ghost-hover-bg: var(--nav-hover-bg);
+
+  --text-error: #fca5a5;
+  --text-success: #99f6e4;
+  --text-warn: #fde047;
 }
 
 /*
@@ -194,6 +210,10 @@
   --btn-ghost-text: var(--nav-muted);
   --btn-ghost-hover-text: var(--nav-text);
   --btn-ghost-hover-bg: var(--nav-hover-bg);
+
+  --text-error: #fca5a5;
+  --text-success: #5eff8f;
+  --text-warn: #fde047;
 }
 
 /* Apply global page background/text via variables (keeps Tailwind layout intact). */
@@ -559,4 +579,17 @@ body {
   .ui-drawer-backdrop {
     transition: none;
   }
+}
+
+/* Semantic text utilities. Pair with `.ui-alert-*` backgrounds — these
+   are the foreground colours that previously hardcoded text-red-700 etc.
+   The CSS vars resolve per-theme so dark/ocean/cyber stay readable. */
+.ui-text-error {
+  color: var(--text-error);
+}
+.ui-text-success {
+  color: var(--text-success);
+}
+.ui-text-warn {
+  color: var(--text-warn);
 }
