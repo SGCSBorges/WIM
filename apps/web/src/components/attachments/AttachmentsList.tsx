@@ -168,7 +168,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     if (mimeType.startsWith("image/")) {
       return (
         <svg
-          className="h-8 w-8 text-green-500"
+          className="h-8 w-8 ui-text-success"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -184,7 +184,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     } else if (mimeType === "application/pdf") {
       return (
         <svg
-          className="h-8 w-8 text-red-500"
+          className="h-8 w-8 ui-text-error"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
