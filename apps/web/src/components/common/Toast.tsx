@@ -32,8 +32,8 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 let nextId = 1;
 
 const KIND_CLASS: Record<ToastKind, string> = {
-  success: "ui-alert-success text-green-800",
-  error: "ui-alert-error text-red-800",
+  success: "ui-alert-success ui-text-success",
+  error: "ui-alert-error ui-text-error",
   info: "ui-alert-info text-slate-800",
 };
 

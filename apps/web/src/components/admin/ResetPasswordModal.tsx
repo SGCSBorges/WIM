@@ -83,7 +83,7 @@ export default function ResetPasswordModal({
           </div>
           {error && (
             <div className="border ui-alert-error rounded-md p-3">
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm ui-text-error">{error}</p>
             </div>
           )}
         </div>

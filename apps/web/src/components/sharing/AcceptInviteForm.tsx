@@ -103,12 +103,12 @@ export default function AcceptInviteForm({ onAccepted }: Props) {
 
       {error && (
         <div className="border ui-alert-error rounded-md p-3" role="alert">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm ui-text-error">{error}</p>
         </div>
       )}
       {success && (
         <div className="border ui-alert-success rounded-md p-3" role="status">
-          <p className="text-sm text-green-700">{success}</p>
+          <p className="text-sm ui-text-success">{success}</p>
         </div>
       )}
     </div>

@@ -64,7 +64,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
             disabled={isLoading}
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            <p className="mt-1 text-sm ui-text-error">{errors.email}</p>
           )}
         </div>
 

@@ -18,11 +18,11 @@ export function ErrorBanner({
       role="alert"
       className={`border ui-alert-error rounded-lg p-4 flex items-start gap-3 ${className}`}
     >
-      <span aria-hidden="true" className="text-red-400 text-lg leading-none">
+      <span aria-hidden="true" className="ui-text-error text-lg leading-none">
         ❌
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-red-700 break-words">{message}</p>
+        <p className="text-sm ui-text-error break-words">{message}</p>
       </div>
       {onRetry && (
         <button
