@@ -67,59 +67,83 @@ export const ArticleService = {
   create: async (data: ArticleCreateInput) => {
     const { locationIds, garantie, ...articleData } = data;
 
-    await assertLocationsOwned(articleData.ownerUserId, locationIds);
+    // Ownership checks + the insert all run in a single transaction so an
+    // interleaved delete can't slip a stale locationId/attachmentId past
+    // the precheck. Each assert query reads through the same snapshot the
+    // insert sees, so the only way the FK can resolve to a foreign row is
+    // if the read ran post-snapshot — which the transaction prevents.
+    const created = await prisma.$transaction(async (tx) => {
+      if (locationIds.length > 0) {
+        const unique = Array.from(new Set(locationIds));
+        const owned = await tx.location.count({
+          where: {
+            locationId: { in: unique },
+            ownerUserId: articleData.ownerUserId,
+          },
+        });
+        if (owned !== unique.length) {
+          throw createHttpError(
+            403,
+            "One or more locations are not owned by you"
+          );
+        }
+      }
 
-    if (garantie?.garantieImageAttachmentId) {
-      const owned = await prisma.attachment.findFirst({
-        where: {
-          attachmentId: garantie.garantieImageAttachmentId,
-          ownerUserId: articleData.ownerUserId,
-        },
-        select: { attachmentId: true },
-      });
-      if (!owned)
-        throw createHttpError(403, "Attachment not found or not owned by you");
-    }
+      if (garantie?.garantieImageAttachmentId) {
+        const ownedAttachment = await tx.attachment.findFirst({
+          where: {
+            attachmentId: garantie.garantieImageAttachmentId,
+            ownerUserId: articleData.ownerUserId,
+          },
+          select: { attachmentId: true },
+        });
+        if (!ownedAttachment)
+          throw createHttpError(
+            403,
+            "Attachment not found or not owned by you"
+          );
+      }
 
-    const created = await prisma.article.create({
-      data: {
-        ...articleData,
-        ...(garantie
-          ? {
-              garantie: {
-                create: {
-                  ownerUserId: articleData.ownerUserId,
-                  garantieNom: garantie.garantieNom,
-                  garantieDateAchat: garantie.garantieDateAchat,
-                  garantieDuration: garantie.garantieDuration,
-                  ...(garantie.garantieImageAttachmentId !== undefined
-                    ? {
-                        garantieImageAttachmentId:
-                          garantie.garantieImageAttachmentId,
-                      }
-                    : {}),
-                  garantieFin: addMonths(
-                    new Date(garantie.garantieDateAchat),
-                    garantie.garantieDuration
-                  ),
-                  garantieIsValide: true,
+      return tx.article.create({
+        data: {
+          ...articleData,
+          ...(garantie
+            ? {
+                garantie: {
+                  create: {
+                    ownerUserId: articleData.ownerUserId,
+                    garantieNom: garantie.garantieNom,
+                    garantieDateAchat: garantie.garantieDateAchat,
+                    garantieDuration: garantie.garantieDuration,
+                    ...(garantie.garantieImageAttachmentId !== undefined
+                      ? {
+                          garantieImageAttachmentId:
+                            garantie.garantieImageAttachmentId,
+                        }
+                      : {}),
+                    garantieFin: addMonths(
+                      new Date(garantie.garantieDateAchat),
+                      garantie.garantieDuration
+                    ),
+                    garantieIsValide: true,
+                  },
                 },
-              },
-            }
-          : {}),
-        locations: {
-          create: locationIds.map((locationId: number) => ({ locationId })),
-        },
-      },
-      include: {
-        garantie: true,
-        locations: {
-          select: {
-            locationId: true,
-            location: { select: { name: true } },
+              }
+            : {}),
+          locations: {
+            create: locationIds.map((locationId: number) => ({ locationId })),
           },
         },
-      },
+        include: {
+          garantie: true,
+          locations: {
+            select: {
+              locationId: true,
+              location: { select: { name: true } },
+            },
+          },
+        },
+      });
     });
 
     // Schedule warranty reminders for inline-created warranties.

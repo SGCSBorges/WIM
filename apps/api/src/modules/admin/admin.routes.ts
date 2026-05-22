@@ -5,6 +5,7 @@ import { prisma } from "../../libs/prisma";
 import { asyncHandler } from "../common/http";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
+import { security } from "../../config/security";
 import { createHttpError } from "../../utils/http-error";
 import { idParam } from "../common/schemas";
 import { passwordSchema } from "../auth/auth.schemas";
@@ -45,6 +46,11 @@ const AuditLogQuerySchema = z.object({
   entity: z.string().min(1).max(80).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   cursor: z.coerce.number().int().positive().optional(),
+});
+
+const InventoryQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
 });
 
 /** GET /api/admin/db-stats - Database statistics (Admin only) */
@@ -402,43 +408,69 @@ router.get(
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
     const userId = idParam.parse(req.params.id);
+    const { page, limit } = InventoryQuerySchema.parse(req.query);
+    const skip = (page - 1) * limit;
 
-    const user = await prisma.user.findUnique({
-      where: { userId },
-      include: {
-        articlesOwned: {
-          take: 500,
-          include: {
-            garantie: {
-              select: {
-                garantieId: true,
-                garantieNom: true,
-                garantieIsValide: true,
-              },
+    // Resolve the three queries in parallel so a user with thousands of
+    // articles doesn't add three sequential round-trips. The user lookup
+    // is cheap; the relation lookups respect the page window.
+    const [
+      user,
+      articlesOwned,
+      warrantiesOwned,
+      totalArticles,
+      totalWarranties,
+    ] = await Promise.all([
+      prisma.user.findUnique({
+        where: { userId },
+        select: { userId: true, email: true },
+      }),
+      prisma.article.findMany({
+        where: { ownerUserId: userId },
+        orderBy: { articleId: "desc" },
+        take: limit,
+        skip,
+        include: {
+          garantie: {
+            select: {
+              garantieId: true,
+              garantieNom: true,
+              garantieIsValide: true,
             },
           },
         },
-        warrantiesOwned: {
-          take: 500,
-          include: {
-            article: {
-              select: {
-                articleNom: true,
-                articleModele: true,
-              },
+      }),
+      prisma.garantie.findMany({
+        where: { ownerUserId: userId },
+        orderBy: { garantieId: "desc" },
+        take: limit,
+        skip,
+        include: {
+          article: {
+            select: {
+              articleNom: true,
+              articleModele: true,
             },
           },
         },
-      },
-    });
+      }),
+      prisma.article.count({ where: { ownerUserId: userId } }),
+      prisma.garantie.count({ where: { ownerUserId: userId } }),
+    ]);
 
     if (!user) throw createHttpError(404, "User not found");
 
     res.json({
       userId: user.userId,
       email: user.email,
-      articlesOwned: user.articlesOwned,
-      warrantiesOwned: user.warrantiesOwned,
+      articlesOwned,
+      warrantiesOwned,
+      pagination: {
+        page,
+        limit,
+        totalArticles,
+        totalWarranties,
+      },
     });
   })
 );
@@ -451,6 +483,7 @@ router.get(
  */
 router.get(
   "/db/export",
+  security.destructiveRateLimiter,
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (req: AuthRequest, res) => {
@@ -485,6 +518,7 @@ const importBodyParser = express.json({ limit: "100mb" });
  */
 router.post(
   "/db/import",
+  security.destructiveRateLimiter,
   authGuard,
   requireRole("ADMIN"),
   importBodyParser,
