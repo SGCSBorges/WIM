@@ -183,7 +183,9 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
         >
           <h3 className="font-semibold ui-title">{t("shareForm.title")}</h3>
           <p className="text-xs ui-text-muted">{t("shareForm.email.note")}</p>
-          {inviteError && <p className="text-sm text-red-600">{inviteError}</p>}
+          {inviteError && (
+            <p className="text-sm ui-text-error">{inviteError}</p>
+          )}
           <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="email"
@@ -219,7 +221,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
 
       {error && (
         <div role="alert" className="border ui-alert-error rounded-lg p-3">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm ui-text-error">{error}</p>
         </div>
       )}
 
@@ -343,7 +345,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                     {share.active &&
                       (confirmRevokeId === share.inventoryShareId ? (
                         <>
-                          <span className="text-xs text-red-700">
+                          <span className="text-xs ui-text-error">
                             {t("shares.confirmRevoke")}
                           </span>
                           <button
@@ -455,7 +457,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       <div className="flex items-center space-x-2">
                         {confirmRevokeInviteId === invite.shareInviteId ? (
                           <>
-                            <span className="text-xs text-red-700">
+                            <span className="text-xs ui-text-error">
                               {t("shares.confirmRevoke")}
                             </span>
                             <button
