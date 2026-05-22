@@ -149,7 +149,7 @@ export const extras = {
     "shared.permission.read.tooltip":
       "Lecture seule. Seul le propriétaire peut modifier cet article.",
     "shared.permission.write.tooltip":
-      "Le propriétaire vous a accordé un accès en écriture ; vos modifications sont enregistrées dans son inventaire.",
+      "Le propriétaire vous a accordé un accès en écriture ; vos modifications sont enregistrées dans son inventaire.",
     "shared.source.user": "Direct",
     "shared.source.user.tooltip":
       "Partagé spécifiquement avec vous par le propriétaire.",
@@ -157,7 +157,7 @@ export const extras = {
     "shared.source.global.tooltip":
       "Le propriétaire a rendu cet article visible à tous les Power Users.",
 
-    "acceptInvite.title": "Vous avez une invitation ?",
+    "acceptInvite.title": "Vous avez une invitation ?",
     "acceptInvite.subtitle":
       "Collez un jeton d'invitation pour accéder à l'inventaire de quelqu'un d'autre.",
     "acceptInvite.placeholder": "Collez le jeton ici…",
@@ -177,7 +177,7 @@ export const extras = {
     "profile.share.public.unshareOne": "Retirer",
     "profile.share.public.unshareAll": "Tout retirer du partage public",
     "profile.share.public.unshareAllConfirm":
-      "Arrêter de partager tous les articles publiquement ?",
+      "Arrêter de partager tous les articles publiquement ?",
     "profile.share.public.unshareAllSuccess":
       "{count} article(s) retiré(s) du partage.",
     "profile.share.invited.title": "Personnes que vous avez invitées",
@@ -199,7 +199,7 @@ export const extras = {
     "articles.bulk.unshare": "Retirer du partage",
     "articles.bulk.delete": "Supprimer la sélection",
     "articles.bulk.deleteConfirm":
-      "Supprimer {count} article(s) ? Cette action est irréversible.",
+      "Supprimer {count} article(s) ? Cette action est irréversible.",
     "articles.bulk.deleteSuccess": "{count} article(s) supprimé(s).",
     "articles.bulk.shareSuccess": "Partage mis à jour sur {count} article(s).",
     "articles.bulk.clear": "Effacer la sélection",
@@ -225,7 +225,7 @@ export const extras = {
     "locations.none": "Aucun lieu pour le moment.",
     "locations.articleCount": "{count} article(s)",
     "locations.deleteConfirm":
-      "Supprimer ce lieu ? Les articles perdront cette assignation.",
+      "Supprimer ce lieu ? Les articles perdront cette assignation.",
     "locations.created": "Lieu créé.",
     "locations.updated": "Lieu mis à jour.",
     "locations.deleted": "Lieu supprimé.",
@@ -266,7 +266,7 @@ export const extras = {
     "admin.db.confirmReplace": "Oui, remplacer la base",
     "admin.db.invalidJson": "Ce fichier n'est pas un JSON valide.",
     "admin.db.uploadsNote":
-      "Remarque : les fichiers téléversés dans /uploads/ sont stockés sur le disque, pas en base. Copiez ce dossier séparément lors d'une migration.",
+      "Remarque : les fichiers téléversés dans /uploads/ sont stockés sur le disque, pas en base. Copiez ce dossier séparément lors d'une migration.",
     "admin.db.passwordPromptLabel":
       "Saisissez à nouveau votre mot de passe pour confirmer cette action destructive",
     "admin.db.passwordRequired": "Le mot de passe est requis.",
@@ -407,8 +407,7 @@ export const extras = {
     "admin.db.passwordPromptLabel":
       "Reintroduza a sua palavra-passe para confirmar esta ação destrutiva",
     "admin.db.passwordRequired": "A palavra-passe é obrigatória.",
-    "admin.db.keepStripeIdsLabel":
-      "Manter os ids de cliente/assinatura Stripe",
+    "admin.db.keepStripeIdsLabel": "Manter os ids de cliente/assinatura Stripe",
     "admin.db.keepStripeIdsNote":
       "Desativado por omissão. Ative apenas quando restaurar para a mesma conta Stripe — caso contrário, webhooks e cancelamentos serão mal encaminhados.",
 
