@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { ShareService } from "../shares/share.service";
+import { AuditService } from "../audit/audit.service";
 
 const router = Router();
 
@@ -74,6 +75,7 @@ router.post(
               select: { role: true },
             });
             if (target) {
+              const willPromote = target.role === "USER";
               await tx.user.update({
                 where: { userId },
                 data: {
@@ -83,6 +85,19 @@ router.post(
                     : {}),
                 },
               });
+              if (willPromote) {
+                await AuditService.log({
+                  userId,
+                  action: "BILLING_UPGRADE",
+                  entity: "User",
+                  entityId: userId,
+                  metadata: {
+                    eventId: event.id,
+                    eventType: event.type,
+                    subscriptionId: subscriptionId ?? null,
+                  },
+                });
+              }
             }
           }
         }
@@ -103,26 +118,44 @@ router.post(
             Boolean(endedAt);
 
           if (shouldDowngrade) {
-            const affected = await tx.user.findMany({
+            // Scope by userId: stripeSubscriptionId is now @unique in the
+            // schema, but defence-in-depth — never run a row-spanning
+            // updateMany for a role change. Find the one owner explicitly,
+            // then update by primary key.
+            const owner = await tx.user.findFirst({
               where: {
                 stripeSubscriptionId: subscriptionId,
                 role: "POWER_USER",
               },
-              select: { userId: true },
+              select: { userId: true, email: true },
             });
-            await tx.user.updateMany({
-              where: { stripeSubscriptionId: subscriptionId },
-              data: { role: "USER" },
-            });
-            for (const u of affected) {
+            if (owner) {
+              await tx.user.update({
+                where: { userId: owner.userId },
+                data: { role: "USER" },
+              });
               const counts = await ShareService.cleanupSharingForUser(
-                u.userId,
+                owner.userId,
                 tx
               );
               logger.info(
-                { userId: u.userId, ...counts, reason: "stripe-cancel" },
+                { userId: owner.userId, ...counts, reason: "stripe-cancel" },
                 "[stripe-webhook] downgrade cleanup"
               );
+              await AuditService.log({
+                userId: owner.userId,
+                action: "BILLING_DOWNGRADE",
+                entity: "User",
+                entityId: owner.userId,
+                metadata: {
+                  eventId: event.id,
+                  eventType: event.type,
+                  subscriptionId,
+                  status,
+                  email: owner.email,
+                  shareCleanup: counts,
+                },
+              });
             }
           }
         }

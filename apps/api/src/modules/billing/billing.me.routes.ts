@@ -6,6 +6,7 @@ import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { ShareService } from "../shares/share.service";
+import { auditAction } from "../common/audit";
 
 const router = Router();
 
@@ -191,6 +192,22 @@ router.post(
           );
         }
       });
+
+      const isUpgrade = user.role === "USER" && nextRole === "POWER_USER";
+      if (isUpgrade || isDowngrade) {
+        await auditAction(req, {
+          userId,
+          action: isUpgrade ? "BILLING_UPGRADE" : "BILLING_DOWNGRADE",
+          entity: "User",
+          entityId: userId,
+          metadata: {
+            source: "billing/sync",
+            from: user.role,
+            to: nextRole,
+            subscriptionId: activeSubscriptionId,
+          },
+        });
+      }
     }
 
     return res.json({ role: nextRole, synced: true });

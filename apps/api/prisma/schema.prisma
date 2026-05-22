@@ -69,7 +69,7 @@ model User {
   // Billing (Stripe)
   // Used to manage subscription lifecycle (cancel at period end, etc.)
   stripeCustomerId     String? @unique @db.VarChar(80)
-  stripeSubscriptionId String? @db.VarChar(80)
+  stripeSubscriptionId String? @unique @db.VarChar(80)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

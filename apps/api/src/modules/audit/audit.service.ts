@@ -14,6 +14,8 @@ export type AuditInput = {
     | "BILLING_CHECKOUT_STARTED"
     | "BILLING_PORTAL_OPENED"
     | "BILLING_CANCEL_REQUESTED"
+    | "BILLING_UPGRADE"
+    | "BILLING_DOWNGRADE"
     | "DB_EXPORT"
     | "DB_IMPORT";
   entity:
