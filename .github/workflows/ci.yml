@@ -12,6 +12,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Postgres service is only used by the Prisma drift check below as a
+    # shadow database. The API tests don't talk to it (they mock Prisma).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wim_shadow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,10 +65,13 @@ jobs:
 
       # Detect schema drift: fails if schema.prisma is ahead of the
       # migrations folder (someone edited the model without `prisma migrate
-      # dev`). Compares the migration sum to the live schema's SQL.
+      # dev`). Prisma applies the migration history to the shadow DB
+      # service above, then diffs the resulting state against schema.prisma.
       - name: API - Prisma migration drift check
         working-directory: apps/api
-        run: npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --exit-code
+        env:
+          SHADOW_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wim_shadow
+        run: npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url "$SHADOW_DATABASE_URL" --exit-code
         continue-on-error: false
 
       - name: API - Test
