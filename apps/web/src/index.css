@@ -544,6 +544,16 @@ body {
 .ui-drawer-backdrop.open {
   background: rgba(0, 0, 0, 0.45);
 }
+
+/* Generic modal backdrop. Used by <Modal /> so its overlay is theme-
+   aware (the same 45% tint as the drawer) instead of a hardcoded
+   `bg-black/50` that ignores dark/cyber themes. */
+.ui-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+[data-theme="cyber"] .ui-overlay {
+  background: rgba(5, 10, 25, 0.65);
+}
 @media (prefers-reduced-motion: reduce) {
   .ui-drawer,
   .ui-drawer-backdrop {
