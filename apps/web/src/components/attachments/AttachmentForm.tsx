@@ -177,7 +177,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
                 {selectedFile ? (
                   <div className="space-y-2">
                     <svg
-                      className="mx-auto h-12 w-12 text-green-500"
+                      className="mx-auto h-12 w-12 ui-text-success"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -235,7 +235,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             </div>
 
             {errors.file && (
-              <p className="mt-1 text-sm text-red-600">{errors.file}</p>
+              <p className="mt-1 text-sm ui-text-error">{errors.file}</p>
             )}
           </div>
         )}

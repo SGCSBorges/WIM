@@ -133,7 +133,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               aria-invalid={errors.email ? "true" : undefined}
             />
             {errors.email && (
-              <p id="email-error" className="mt-1 text-xs text-red-600">
+              <p id="email-error" className="mt-1 text-xs ui-text-error">
                 {fieldError(errors.email.message)}
               </p>
             )}
@@ -158,7 +158,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               aria-invalid={errors.password ? "true" : undefined}
             />
             {errors.password && (
-              <p id="password-error" className="mt-1 text-xs text-red-600">
+              <p id="password-error" className="mt-1 text-xs ui-text-error">
                 {fieldError(errors.password.message)}
               </p>
             )}
@@ -167,7 +167,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           {submissionError && (
             <div
               role="alert"
-              className="px-4 py-3 rounded-md text-sm border ui-alert-error text-red-700"
+              className="px-4 py-3 rounded-md text-sm border ui-alert-error ui-text-error"
             >
               {submissionError}
             </div>
