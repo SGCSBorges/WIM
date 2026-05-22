@@ -23,6 +23,11 @@ export default function AdminDbBackup() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Confirm step asks for the admin's current password (tripwire against a
+  // stolen cookie) and lets them opt in to keeping Stripe ids — default is
+  // strip-on-import so a dump can't re-aim webhooks at the wrong env.
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [keepStripeIds, setKeepStripeIds] = useState(false);
 
   const handleExport = async () => {
     setError(null);
@@ -56,6 +61,10 @@ export default function AdminDbBackup() {
 
   const confirmImport = async () => {
     if (!pendingFile) return;
+    if (!confirmPassword) {
+      setError(t("admin.db.passwordRequired"));
+      return;
+    }
     setError(null);
     setImporting(true);
     try {
@@ -66,7 +75,11 @@ export default function AdminDbBackup() {
       } catch {
         throw new Error(t("admin.db.invalidJson"));
       }
-      const result = await adminAPI.importDatabase(parsed);
+      const result = await adminAPI.importDatabase(parsed, {
+        currentPassword: confirmPassword,
+        keepStripeIds,
+      });
+      setConfirmPassword("");
       setCounts(result.counts);
       toast.show(t("admin.db.importSuccess"), { kind: "success" });
       // Server rewrote the user table; our session no longer maps to a
@@ -147,17 +160,45 @@ export default function AdminDbBackup() {
       </div>
 
       {pendingFile && !importing && !counts && (
-        <div className="border ui-alert-warning rounded-md p-3 space-y-2">
+        <div className="border ui-alert-warning rounded-md p-3 space-y-3">
           <p className="text-sm text-yellow-900">
             <strong>{t("admin.db.confirmTitle")}</strong>
           </p>
           <p className="text-sm text-yellow-800">
             {t("admin.db.confirmBody").replace("{file}", pendingFile.name)}
           </p>
+          <label className="block text-sm text-yellow-900">
+            <span className="font-medium">
+              {t("admin.db.passwordPromptLabel")}
+            </span>
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="mt-1 w-full ui-input px-3 py-2 rounded text-sm"
+              required
+            />
+          </label>
+          <label className="flex items-start gap-2 text-xs text-yellow-900">
+            <input
+              type="checkbox"
+              checked={keepStripeIds}
+              onChange={(e) => setKeepStripeIds(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <strong>{t("admin.db.keepStripeIdsLabel")}</strong>{" "}
+              <span className="ui-text-muted">
+                {t("admin.db.keepStripeIdsNote")}
+              </span>
+            </span>
+          </label>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={confirmImport}
+              disabled={!confirmPassword}
               className="ui-btn-danger px-3 py-1.5 text-sm rounded"
             >
               {t("admin.db.confirmReplace")}
@@ -166,6 +207,8 @@ export default function AdminDbBackup() {
               type="button"
               onClick={() => {
                 setPendingFile(null);
+                setConfirmPassword("");
+                setKeepStripeIds(false);
                 if (fileInputRef.current) fileInputRef.current.value = "";
               }}
               className="ui-btn-ghost px-3 py-1.5 text-sm rounded border ui-divider"

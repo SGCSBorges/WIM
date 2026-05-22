@@ -138,7 +138,11 @@ export const authAPI = {
 
 // Articles API
 export const articlesAPI = {
-  async getAll(locationId?: number, page?: number, limit?: number) {
+  async getAll(
+    locationId?: number,
+    page?: number,
+    limit?: number
+  ): Promise<FetchedArticle[]> {
     const url = new URL(`${API_BASE_URL}/articles`);
     if (locationId) url.searchParams.set("locationId", String(locationId));
     if (page != null) url.searchParams.set("page", String(page));
@@ -743,8 +747,12 @@ export const adminAPI = {
 
   // Full-database import: send the previously exported JSON back. The
   // server replaces every row. Caller MUST treat this as a destructive
-  // logout — the calling admin's User row was rewritten.
-  async importDatabase(payload: unknown): Promise<{
+  // logout — the calling admin's User row was rewritten. The caller's
+  // current password is required as a tripwire against stolen sessions.
+  async importDatabase(
+    payload: unknown,
+    options: { currentPassword: string; keepStripeIds?: boolean }
+  ): Promise<{
     counts: Record<string, number>;
     sessionInvalidated: boolean;
   }> {
@@ -753,7 +761,12 @@ export const adminAPI = {
       {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ confirm: "REPLACE", payload }),
+        body: JSON.stringify({
+          confirm: "REPLACE",
+          currentPassword: options.currentPassword,
+          keepStripeIds: options.keepStripeIds === true,
+          payload,
+        }),
       },
       5 * 60 * 1000
     );

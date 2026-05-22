@@ -39,6 +39,21 @@ jobs:
         working-directory: apps/api
         run: npm run build
 
+      # Strict TypeScript check on the web workspace. Vite's build is
+      # transpile-only and won't fail on type errors, so without this step
+      # `TS2345` / `TS2724` regressions ship to prod.
+      - name: Web - Typecheck
+        working-directory: apps/web
+        run: npm run typecheck
+
+      # Detect schema drift: fails if schema.prisma is ahead of the
+      # migrations folder (someone edited the model without `prisma migrate
+      # dev`). Compares the migration sum to the live schema's SQL.
+      - name: API - Prisma migration drift check
+        working-directory: apps/api
+        run: npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --exit-code
+        continue-on-error: false
+
       - name: API - Test
         working-directory: apps/api
         run: npm test
