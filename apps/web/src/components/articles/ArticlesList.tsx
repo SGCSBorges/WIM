@@ -344,7 +344,7 @@ const ArticlesList: React.FC = () => {
 
       {showBulkDeleteConfirm && (
         <div className="border ui-alert-error rounded-lg p-4 flex flex-wrap items-center gap-3">
-          <p className="text-sm text-red-700 flex-1">
+          <p className="text-sm ui-text-error flex-1">
             {t("articles.bulk.deleteConfirm").replace(
               "{count}",
               String(selectedIds.size)
@@ -548,7 +548,7 @@ const ArticlesList: React.FC = () => {
                             return <span className="ui-text-muted">—</span>;
                           if (days < 0)
                             return (
-                              <span className="text-red-600 font-medium">
+                              <span className="ui-text-error font-medium">
                                 {t("articles.warranty.expired")}
                               </span>
                             );
@@ -556,7 +556,7 @@ const ArticlesList: React.FC = () => {
                             <span
                               className={
                                 days <= 30
-                                  ? "text-yellow-600 font-medium"
+                                  ? "ui-text-warn font-medium"
                                   : "ui-text-muted"
                               }
                             >
@@ -612,7 +612,7 @@ const ArticlesList: React.FC = () => {
 
                         {confirmDeleteArticleId === article.articleId ? (
                           <span className="inline-flex items-center gap-2">
-                            <span className="text-xs text-red-700">
+                            <span className="text-xs ui-text-error">
                               {t("articles.delete.confirm")}
                             </span>
                             <button
