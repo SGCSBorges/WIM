@@ -12,10 +12,19 @@ export type TranslationKey = keyof (typeof translations)["en"];
 // override the main file), then fall back through the language chain.
 type AnyKey = TranslationKey | ExtrasKey;
 
+// `plural(count, forms)` picks the right form for the current language
+// using Intl.PluralRules. Call sites that previously did raw
+// `"{count} article(s)".replace("{count}", n)` can now write proper
+// "1 article" / "N articles" once their translations expose .one/.other
+// keys. Forms not provided fall through to `.other`.
+type PluralCategory = Intl.LDMLPluralRule;
+type PluralForms = Partial<Record<PluralCategory, string>>;
+
 type I18nContextValue = {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: AnyKey) => string;
+  plural: (count: number, forms: PluralForms) => string;
 };
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -43,6 +52,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   };
 
   const value = useMemo<I18nContextValue>(() => {
+    // BCP-47 tags so Intl.PluralRules picks the right rule set
+    // (English: one/other, French: one/many/other, Portuguese: one/other).
+    const localeMap: Record<Language, string> = {
+      en: "en-US",
+      fr: "fr-FR",
+      pt: "pt-PT",
+    };
+    const pluralRules = new Intl.PluralRules(localeMap[language]);
+
     return {
       language,
       setLanguage,
@@ -56,6 +74,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
           (translations.en as Record<string, string>)[key] ??
           key
         );
+      },
+      plural: (count: number, forms: PluralForms) => {
+        const cat = pluralRules.select(count) as PluralCategory;
+        return forms[cat] ?? forms.other ?? "";
       },
     };
   }, [language]);

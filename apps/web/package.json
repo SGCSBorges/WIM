@@ -8,6 +8,7 @@
     "predev": "node scripts/generate-pwa-icons.mjs",
     "prebuild": "node scripts/generate-pwa-icons.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/bump-sw-version.mjs",
     "preview": "vite preview --port 4173",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
