@@ -129,6 +129,12 @@ export const extras = {
     "admin.db.invalidJson": "That file is not valid JSON.",
     "admin.db.uploadsNote":
       "Note: files uploaded to /uploads/ are stored on disk, not in the database. Copy that directory separately when migrating providers.",
+    "admin.db.passwordPromptLabel":
+      "Re-enter your password to confirm this destructive action",
+    "admin.db.passwordRequired": "Password is required.",
+    "admin.db.keepStripeIdsLabel": "Keep Stripe customer/subscription ids",
+    "admin.db.keepStripeIdsNote":
+      "Off by default. Only enable when restoring into the same Stripe account — otherwise webhooks and cancellations will misroute.",
 
     "articles.search.placeholder": "Search by name or model…",
     "articles.export.csv": "Export CSV",
@@ -261,6 +267,13 @@ export const extras = {
     "admin.db.invalidJson": "Ce fichier n'est pas un JSON valide.",
     "admin.db.uploadsNote":
       "Remarque : les fichiers téléversés dans /uploads/ sont stockés sur le disque, pas en base. Copiez ce dossier séparément lors d'une migration.",
+    "admin.db.passwordPromptLabel":
+      "Saisissez à nouveau votre mot de passe pour confirmer cette action destructive",
+    "admin.db.passwordRequired": "Le mot de passe est requis.",
+    "admin.db.keepStripeIdsLabel":
+      "Conserver les identifiants Stripe (client / abonnement)",
+    "admin.db.keepStripeIdsNote":
+      "Désactivé par défaut. À activer uniquement si vous restaurez vers le même compte Stripe, sinon les webhooks et annulations seront mal routés.",
 
     "articles.search.placeholder": "Rechercher par nom ou modèle…",
     "articles.export.csv": "Exporter CSV",
@@ -391,6 +404,13 @@ export const extras = {
     "admin.db.invalidJson": "Esse ficheiro não é JSON válido.",
     "admin.db.uploadsNote":
       "Nota: os ficheiros enviados para /uploads/ são guardados em disco, não na base. Copie esse diretório à parte ao migrar de fornecedor.",
+    "admin.db.passwordPromptLabel":
+      "Reintroduza a sua palavra-passe para confirmar esta ação destrutiva",
+    "admin.db.passwordRequired": "A palavra-passe é obrigatória.",
+    "admin.db.keepStripeIdsLabel":
+      "Manter os ids de cliente/assinatura Stripe",
+    "admin.db.keepStripeIdsNote":
+      "Desativado por omissão. Ative apenas quando restaurar para a mesma conta Stripe — caso contrário, webhooks e cancelamentos serão mal encaminhados.",
 
     "articles.search.placeholder": "Pesquisar por nome ou modelo…",
     "articles.export.csv": "Exportar CSV",
