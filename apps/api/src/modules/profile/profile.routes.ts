@@ -5,6 +5,7 @@ import { auditAction } from "../common/audit";
 import { denyToken } from "../auth/token-denylist";
 import { cookieOptsFor } from "../auth/cookies";
 import { signToken } from "../auth/auth.service";
+import { security } from "../../config/security";
 import {
   DeleteAccountSchema,
   UpdateEmailSchema,
@@ -93,6 +94,7 @@ router.put(
 
 router.delete(
   "/me",
+  security.destructiveRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     /**

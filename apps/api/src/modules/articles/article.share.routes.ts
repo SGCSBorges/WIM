@@ -3,7 +3,8 @@ import { prisma } from "../../libs/prisma";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
-import { idParam } from "../common/schemas";
+import { idParam, paginationQuery } from "../common/schemas";
+import { security } from "../../config/security";
 
 const router = Router();
 
@@ -20,9 +21,12 @@ router.get(
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
     const ownerUserId = req.user!.sub;
+    const { page, limit } = paginationQuery.parse(req.query);
     const articles = await prisma.article.findMany({
       where: { ownerUserId, sharedWithPowerUsers: true },
       orderBy: { updatedAt: "desc" },
+      take: limit,
+      skip: (page - 1) * limit,
       include: {
         garantie: true,
         locations: {
@@ -42,6 +46,7 @@ router.get(
 // where it was true. Returns the count for the UI to confirm.
 router.post(
   "/unshare-all",
+  security.destructiveRateLimiter,
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {

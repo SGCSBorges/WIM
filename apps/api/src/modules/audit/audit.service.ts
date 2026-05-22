@@ -50,4 +50,37 @@ export const AuditService = {
       },
     });
   },
+
+  /**
+   * Delete audit log rows older than the cutoff in chunks so a one-off
+   * prune doesn't lock the table or time out a single mega-transaction.
+   * Returns the total number of rows removed.
+   *
+   * Run via `npm --workspace apps/api run prune:audit -- 180` (180 = days)
+   * or invoke programmatically.
+   */
+  async pruneOlderThan(days: number): Promise<{ deleted: number }> {
+    if (!Number.isFinite(days) || days <= 0) {
+      throw new Error(`pruneOlderThan: days must be > 0 (got ${days})`);
+    }
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const BATCH = 1000;
+    let total = 0;
+    // Loop until a batch comes back empty. Each pass uses a fresh
+    // findMany→deleteMany so we never hold one huge transaction open.
+    for (;;) {
+      const ids = await prisma.auditLog.findMany({
+        where: { createdAt: { lt: cutoff } },
+        select: { id: true },
+        take: BATCH,
+      });
+      if (ids.length === 0) break;
+      const r = await prisma.auditLog.deleteMany({
+        where: { id: { in: ids.map((x) => x.id) } },
+      });
+      total += r.count;
+      if (ids.length < BATCH) break;
+    }
+    return { deleted: total };
+  },
 };

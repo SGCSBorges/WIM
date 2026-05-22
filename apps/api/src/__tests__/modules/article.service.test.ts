@@ -13,6 +13,36 @@ vi.mock("../../libs/prisma", () => ({
     location: {
       count: vi.fn(),
     },
+    // create() now wraps ownership + insert in a transaction; the test's
+    // tx client mirrors prisma's surface so callbacks reach the mocked
+    // location.count.
+    $transaction: vi.fn(async (cb: unknown) => {
+      if (typeof cb !== "function") return undefined;
+      const tx = {
+        location: {
+          count: (
+            prisma as unknown as {
+              location: { count: ReturnType<typeof vi.fn> };
+            }
+          ).location.count,
+        },
+        attachment: {
+          findFirst: (
+            prisma as unknown as {
+              attachment: { findFirst: ReturnType<typeof vi.fn> };
+            }
+          ).attachment.findFirst,
+        },
+        article: {
+          create: (
+            prisma as unknown as {
+              article: { create: ReturnType<typeof vi.fn> };
+            }
+          ).article.create,
+        },
+      };
+      return (cb as (tx: unknown) => Promise<unknown>)(tx);
+    }),
   },
 }));
 

@@ -59,4 +59,18 @@ export const security = {
       error: "Too many authentication attempts, please try again later.",
     },
   }),
+  // Tight bucket for destructive/expensive operations: full-DB export +
+  // import, account deletion, bulk delete. The default `rateLimiter`
+  // (100/min) is too generous for routes that serialize the entire DB or
+  // wipe rows in bulk — a small handful of mistakes should be enough to
+  // cut the caller off.
+  destructiveRateLimiter: rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      error: "Too many destructive operations, please try again later.",
+    },
+  }),
 };

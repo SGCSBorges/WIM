@@ -6,6 +6,7 @@ import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest, requireRole } from "../auth/auth.middleware";
 import { idParam, paginationQuery } from "../common/schemas";
+import { security } from "../../config/security";
 
 const router = Router();
 
@@ -60,11 +61,19 @@ router.post(
     );
     const data = { ...bodyData, ownerUserId: req.user!.sub };
     const created = await ArticleService.create(data);
+    // Audit metadata: log structural facts (which fields were set, which
+    // location ids, whether a warranty was attached) — NOT the free-text
+    // user input. We don't want article names, descriptions, image URLs,
+    // or warranty names accumulating in the audit log indefinitely.
     await auditAction(req, {
       action: "CREATE",
       entity: "Article",
       entityId: created.articleId,
-      metadata: { data },
+      metadata: {
+        locationIds: bodyData.locationIds,
+        hasGarantie: Boolean(bodyData.garantie),
+        hasImage: Boolean(bodyData.productImageUrl),
+      },
     });
     res.status(201).json(created);
   })
@@ -79,11 +88,23 @@ router.put(
     const id = idParam.parse(req.params.id);
     const data = ArticleUpdateSchema.parse(req.body);
     const updated = await ArticleService.update(id, req.user!.sub, data);
+    // Log the *shape* of the change (which fields the caller touched),
+    // not the values. Free-text payloads bloat the audit log and may
+    // contain PII the operator doesn't want retained.
+    const touchedFields = Object.keys(data).filter(
+      (k) => (data as Record<string, unknown>)[k] !== undefined
+    );
     await auditAction(req, {
       action: "UPDATE",
       entity: "Article",
       entityId: id,
-      metadata: { data },
+      metadata: {
+        touchedFields,
+        ...(data.locationIds !== undefined
+          ? { locationIds: data.locationIds }
+          : {}),
+        ...(data.removeGarantie ? { removeGarantie: true } : {}),
+      },
     });
     res.json(updated);
   })
@@ -111,6 +132,7 @@ router.delete(
  */
 router.post(
   "/bulk-delete",
+  security.destructiveRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const { ids } = BulkIdsSchema.parse(req.body);
