@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError, ZodIssue } from "zod";
+import { Prisma } from "@prisma/client";
 import { logger } from "../config/logger";
 
 export function errorHandler(
@@ -25,6 +26,18 @@ export function errorHandler(
   if (err && typeof err === "object" && "status" in err && "message" in err) {
     const e = err as { status: number; message: string };
     return res.status(e.status).json({ error: e.message });
+  }
+
+  // Prisma constraint errors that slip past application-level checks (e.g. a
+  // unique insert losing a race). The column name is intentionally omitted to
+  // avoid leaking schema details / enabling enumeration.
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2002")
+      return res
+        .status(409)
+        .json({ error: "A record with this value already exists" });
+    if (err.code === "P2025")
+      return res.status(404).json({ error: "Record not found" });
   }
 
   // Fallback

@@ -42,18 +42,34 @@ export const WarrantyService = {
     if (existing)
       throw createHttpError(409, "A warranty already exists for this article");
 
-    // Créer la garantie une seule fois
-    const created = await prisma.garantie.create({
-      data: {
-        garantieArticleId: data.garantieArticleId,
-        garantieNom: data.garantieNom,
-        garantieDateAchat: data.garantieDateAchat,
-        garantieDuration: data.garantieDuration,
-        garantieFin: fin,
-        garantieIsValide: true,
-        ownerUserId: data.ownerUserId,
-      },
-    });
+    // Créer la garantie une seule fois. The unique constraint on
+    // garantieArticleId is the real guard — if two requests race past the
+    // findUnique above, the loser hits P2002, which we surface as the same
+    // 409 instead of a generic 500.
+    let created;
+    try {
+      created = await prisma.garantie.create({
+        data: {
+          garantieArticleId: data.garantieArticleId,
+          garantieNom: data.garantieNom,
+          garantieDateAchat: data.garantieDateAchat,
+          garantieDuration: data.garantieDuration,
+          garantieFin: fin,
+          garantieIsValide: true,
+          ownerUserId: data.ownerUserId,
+        },
+      });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2002"
+      )
+        throw createHttpError(
+          409,
+          "A warranty already exists for this article"
+        );
+      throw e;
+    }
 
     // Planifier 3 rappels (J-30 / J-7 / J-1)
     await AlertService.scheduleForWarranty({
