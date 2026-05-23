@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";
+import { isValidEmail } from "../../utils/validation";
 
 interface ShareFormProps {
   onSubmit: (shareData: {
@@ -26,7 +27,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
     const newErrors: Record<string, string> = {};
     if (!formData.email.trim()) {
       newErrors.email = t("shareForm.error.emailRequired");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!isValidEmail(formData.email)) {
       newErrors.email = t("shareForm.error.emailInvalid");
     }
     setErrors(newErrors);

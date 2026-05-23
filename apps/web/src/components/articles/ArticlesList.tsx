@@ -448,7 +448,12 @@ const ArticlesList: React.FC = () => {
           </div>
         ) : filteredArticles.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="ui-text-muted">{t("articles.search.placeholder")}</p>
+            <p className="ui-text-muted">
+              {t("articles.search.noResults").replace(
+                "{query}",
+                searchQuery.trim()
+              )}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">

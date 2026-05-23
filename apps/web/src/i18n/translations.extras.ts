@@ -137,6 +137,7 @@ export const extras = {
       "Off by default. Only enable when restoring into the same Stripe account — otherwise webhooks and cancellations will misroute.",
 
     "articles.search.placeholder": "Search by name or model…",
+    "articles.search.noResults": 'No articles match "{query}".',
     "articles.export.csv": "Export CSV",
     "articles.table.expiresIn": "Expires in",
     "articles.warranty.daysLeft": "days",
@@ -278,6 +279,7 @@ export const extras = {
       "Désactivé par défaut. À activer uniquement si vous restaurez vers le même compte Stripe, sinon les webhooks et annulations seront mal routés.",
 
     "articles.search.placeholder": "Rechercher par nom ou modèle…",
+    "articles.search.noResults": "Aucun article ne correspond à « {query} ».",
     "articles.export.csv": "Exporter CSV",
     "articles.table.expiresIn": "Expire dans",
     "articles.warranty.daysLeft": "jours",
@@ -417,6 +419,7 @@ export const extras = {
       "Desativado por omissão. Ative apenas quando restaurar para a mesma conta Stripe — caso contrário, webhooks e cancelamentos serão mal encaminhados.",
 
     "articles.search.placeholder": "Pesquisar por nome ou modelo…",
+    "articles.search.noResults": 'Nenhum artigo corresponde a "{query}".',
     "articles.export.csv": "Exportar CSV",
     "articles.table.expiresIn": "Expira em",
     "articles.warranty.daysLeft": "dias",

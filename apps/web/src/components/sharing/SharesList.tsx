@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import { sharesAPI, ShareItem, ShareInviteItem } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
+import { isValidEmail } from "../../utils/validation";
 
 interface SharesListProps {
   onEdit?: (share: ShareItem) => void;
@@ -88,10 +89,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const handleSendInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setInviteError(null);
-    if (
-      !inviteEmail.trim() ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail)
-    ) {
+    if (!isValidEmail(inviteEmail)) {
       setInviteError(t("shareForm.error.emailInvalid"));
       return;
     }
