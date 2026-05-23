@@ -65,7 +65,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     setTestAdminBusy(true);
     try {
       const res = await authAPI.bootstrapAdmin();
-      setTestAdminMsg(`✓ ${res.email} is now ${res.role}. Log in to use it.`);
+      setTestAdminMsg(
+        t("auth.bootstrap.success")
+          .replace("{email}", res.email)
+          .replace("{role}", res.role)
+      );
     } catch (e) {
       setTestAdminMsg(e instanceof Error ? e.message : "Bootstrap failed");
     } finally {

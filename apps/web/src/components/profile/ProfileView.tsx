@@ -69,6 +69,16 @@ export default function ProfileView() {
 
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Tracks mount state so the fire-and-forget billing fetch in loadMe doesn't
+  // call setState after the component unmounts (user navigates away mid-load).
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const showSuccess = useCallback(
     (msg: string) => {
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
@@ -108,8 +118,12 @@ export default function ProfileView() {
       // to block first paint of the profile on it.
       billingAPI
         .getBillingMe()
-        .then((b) => setSubscription(b.subscription))
-        .catch(() => setSubscription(null));
+        .then((b) => {
+          if (mountedRef.current) setSubscription(b.subscription);
+        })
+        .catch(() => {
+          if (mountedRef.current) setSubscription(null);
+        });
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
@@ -650,26 +664,36 @@ export default function ProfileView() {
         <h2 className="font-semibold ui-title">{t("profile.email.title")}</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="profile-email-new"
+              className="block text-sm font-medium mb-1"
+            >
               {t("profile.email.new")}
             </label>
             <input
+              id="profile-email-new"
               className="w-full ui-input px-3 py-2 rounded"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
+              autoComplete="email"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="profile-email-current-password"
+              className="block text-sm font-medium mb-1"
+            >
               {t("profile.email.currentPassword")}
             </label>
             <input
+              id="profile-email-current-password"
               className="w-full ui-input px-3 py-2 rounded"
               value={currentPasswordForEmail}
               onChange={(e) => setCurrentPasswordForEmail(e.target.value)}
               type="password"
+              autoComplete="current-password"
               required
             />
           </div>
@@ -689,26 +713,36 @@ export default function ProfileView() {
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="profile-password-current"
+              className="block text-sm font-medium mb-1"
+            >
               {t("profile.password.current")}
             </label>
             <input
+              id="profile-password-current"
               className="w-full ui-input px-3 py-2 rounded"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               type="password"
+              autoComplete="current-password"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="profile-password-new"
+              className="block text-sm font-medium mb-1"
+            >
               {t("profile.password.new")}
             </label>
             <input
+              id="profile-password-new"
               className="w-full ui-input px-3 py-2 rounded"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               type="password"
+              autoComplete="new-password"
               minLength={8}
               required
             />
@@ -729,14 +763,19 @@ export default function ProfileView() {
         </h2>
         <p className="text-sm ui-text-muted">{t("profile.danger.subtitle")}</p>
         <div className="max-w-sm">
-          <label className="block text-sm font-medium mb-1">
+          <label
+            htmlFor="profile-delete-password"
+            className="block text-sm font-medium mb-1"
+          >
             {t("profile.danger.currentPassword")}
           </label>
           <input
+            id="profile-delete-password"
             className="w-full ui-input px-3 py-2 rounded"
             value={deletePassword}
             onChange={(e) => setDeletePassword(e.target.value)}
             type="password"
+            autoComplete="current-password"
           />
         </div>
         {!showDeleteConfirm ? (

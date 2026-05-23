@@ -140,6 +140,8 @@ export const extras = {
     "articles.export.csv": "Export CSV",
     "articles.table.expiresIn": "Expires in",
     "articles.warranty.daysLeft": "days",
+
+    "auth.bootstrap.success": "✓ {email} is now {role}. Log in to use it.",
   },
   fr: {
     "articles.table.image": "Image",
@@ -279,6 +281,9 @@ export const extras = {
     "articles.export.csv": "Exporter CSV",
     "articles.table.expiresIn": "Expire dans",
     "articles.warranty.daysLeft": "jours",
+
+    "auth.bootstrap.success":
+      "✓ {email} est maintenant {role}. Connectez-vous pour l'utiliser.",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -415,6 +420,9 @@ export const extras = {
     "articles.export.csv": "Exportar CSV",
     "articles.table.expiresIn": "Expira em",
     "articles.warranty.daysLeft": "dias",
+
+    "auth.bootstrap.success":
+      "✓ {email} agora é {role}. Inicie sessão para utilizar.",
   },
 } as const;
 
