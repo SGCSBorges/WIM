@@ -102,6 +102,7 @@ model User {
   locations   Location[]
   tags        Tag[]
   articleNotes ArticleNote[]
+  savedViews  SavedView[]
 }
 
 model Article {
@@ -172,6 +173,20 @@ model ArticleNote {
   owner   User    @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
 
   @@index([articleId])
+  @@index([ownerUserId])
+}
+
+model SavedView {
+  id          Int      @id @default(autoincrement())
+  ownerUserId Int
+  name        String   @db.VarChar(60)
+  // The Articles-page filter querystring (e.g. "warranty=expired&priceMin=100").
+  query       String   @db.VarChar(500)
+  createdAt   DateTime @default(now())
+
+  owner User @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+
+  @@unique([ownerUserId, name], map: "uq_savedview_owner_name")
   @@index([ownerUserId])
 }
 

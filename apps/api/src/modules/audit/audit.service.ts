@@ -30,6 +30,7 @@ export type AuditInput = {
     | "ArticleLocation"
     | "Tag"
     | "ArticleNote"
+    | "SavedView"
     | "Database";
   entityId?: number | null;
   metadata?: Record<string, unknown>;
