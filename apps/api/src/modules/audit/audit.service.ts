@@ -29,6 +29,7 @@ export type AuditInput = {
     | "InventoryShare"
     | "ArticleLocation"
     | "Tag"
+    | "ArticleNote"
     | "Database";
   entityId?: number | null;
   metadata?: Record<string, unknown>;

@@ -5,6 +5,7 @@ import { security } from "./config/security";
 import { errorHandler } from "./middlewares/error";
 import { csrfGuard } from "./middlewares/csrf";
 import articleRoutes from "./modules/articles/article.routes";
+import articleNoteRoutes from "./modules/articles/note.routes";
 import articleShareRoutes from "./modules/articles/article.share.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import authRoutes from "./modules/auth/auth.routes";
@@ -179,6 +180,7 @@ export function createApp() {
 
   // Routes
   app.use("/api/articles", articleRoutes);
+  app.use("/api/articles", articleNoteRoutes);
   app.use("/api/articles", articleShareRoutes);
   app.use("/api/warranties", warrantyRoutes);
   app.use("/api/auth", security.authRateLimiter, authRoutes);

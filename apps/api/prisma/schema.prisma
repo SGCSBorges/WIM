@@ -97,6 +97,7 @@ model User {
   attachments Attachment[]
   locations   Location[]
   tags        Tag[]
+  articleNotes ArticleNote[]
 }
 
 model Article {
@@ -124,6 +125,7 @@ model Article {
   alertes  Alerte[]
   locations ArticleLocation[]
   tags     ArticleTag[]
+  notes    ArticleNote[]
 
   @@index([ownerUserId])
   @@index([articleNom, articleModele])
@@ -153,6 +155,20 @@ model ArticleTag {
 
   @@id([articleId, tagId])
   @@index([tagId])
+}
+
+model ArticleNote {
+  noteId      Int      @id @default(autoincrement())
+  articleId   Int
+  ownerUserId Int
+  content     String   @db.VarChar(2000)
+  createdAt   DateTime @default(now())
+
+  article Article @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+  owner   User    @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([ownerUserId])
 }
 
 model ArticleLocation {
