@@ -12,6 +12,12 @@ import {
 import type { FetchedArticle } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import {
+  pushSupported,
+  isPushSubscribed,
+  enablePush,
+  disablePush,
+} from "../../utils/push";
 import ArticleThumb from "../articles/ArticleThumb";
 import { useToast } from "../common/Toast";
 import DataExportPanel from "./DataExportPanel";
@@ -58,6 +64,8 @@ export default function ProfileView() {
   const [saving, setSaving] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
   const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
+  const [pushOn, setPushOn] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -204,6 +212,31 @@ export default function ProfileView() {
       showSuccess(t("profile.currency.success"));
     } catch (e: unknown) {
       showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    }
+  };
+
+  useEffect(() => {
+    isPushSubscribed()
+      .then(setPushOn)
+      .catch(() => {});
+  }, []);
+
+  const togglePush = async () => {
+    setPushBusy(true);
+    try {
+      if (pushOn) {
+        await disablePush();
+        setPushOn(false);
+        showSuccess(t("push.disabled"));
+      } else {
+        const ok = await enablePush();
+        setPushOn(ok);
+        showSuccess(ok ? t("push.enabled") : t("push.unavailable"));
+      }
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setPushBusy(false);
     }
   };
 
@@ -444,6 +477,29 @@ export default function ProfileView() {
           </button>
         )}
       </div>
+
+      {pushSupported() && (
+        <div className="ui-card rounded-xl p-6 space-y-3">
+          <div>
+            <h2 className="font-semibold ui-title">{t("push.title")}</h2>
+            <p className="text-sm ui-text-muted">{t("push.subtitle")}</p>
+          </div>
+          <button
+            type="button"
+            onClick={togglePush}
+            disabled={pushBusy}
+            className={`px-4 py-2 rounded text-sm ${
+              pushOn ? "ui-btn-ghost border ui-divider" : "ui-btn-primary"
+            }`}
+          >
+            {pushBusy
+              ? t("common.loading")
+              : pushOn
+                ? t("push.disable")
+                : t("push.enable")}
+          </button>
+        </div>
+      )}
 
       {me?.role === "POWER_USER" && (
         <div className="ui-card rounded-xl p-6 space-y-3">

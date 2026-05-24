@@ -75,3 +75,41 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+// Web Push: show the notification the API sent (warranty/maintenance reminder).
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
+  const title = data.title || "WIM reminder";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: data.url || "/" },
+    })
+  );
+});
+
+// Focus an existing window (or open one) at the notification's target URL.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((wins) => {
+        for (const w of wins) {
+          if ("focus" in w) {
+            w.navigate(target).catch(() => undefined);
+            return w.focus();
+          }
+        }
+        return self.clients.openWindow(target);
+      })
+  );
+});

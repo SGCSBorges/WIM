@@ -230,6 +230,14 @@ export const extras = {
     "scan.hint": "Point the camera at a product barcode or QR code.",
     "scan.unsupported": "Barcode scanning isn't supported on this browser.",
     "scan.cameraError": "Couldn't access the camera.",
+    "push.title": "Push notifications",
+    "push.subtitle":
+      "Get a browser notification when a warranty or maintenance reminder is due.",
+    "push.enable": "Enable notifications",
+    "push.disable": "Disable notifications",
+    "push.enabled": "Notifications enabled.",
+    "push.disabled": "Notifications disabled.",
+    "push.unavailable": "Notifications are unavailable or were not allowed.",
     "notes.title": "Maintenance & service notes",
     "notes.placeholder": "Add a note (repair, service, observation)…",
     "notes.add": "Add note",
@@ -466,6 +474,14 @@ export const extras = {
     "scan.unsupported":
       "Le scan de code-barres n'est pas pris en charge sur ce navigateur.",
     "scan.cameraError": "Impossible d'accéder à la caméra.",
+    "push.title": "Notifications push",
+    "push.subtitle":
+      "Recevez une notification du navigateur quand un rappel de garantie ou d'entretien arrive à échéance.",
+    "push.enable": "Activer les notifications",
+    "push.disable": "Désactiver les notifications",
+    "push.enabled": "Notifications activées.",
+    "push.disabled": "Notifications désactivées.",
+    "push.unavailable": "Notifications indisponibles ou non autorisées.",
     "notes.title": "Notes d'entretien et de service",
     "notes.placeholder":
       "Ajouter une note (réparation, entretien, observation)…",
@@ -701,6 +717,14 @@ export const extras = {
     "scan.unsupported":
       "A digitalização de códigos de barras não é suportada neste navegador.",
     "scan.cameraError": "Não foi possível aceder à câmara.",
+    "push.title": "Notificações push",
+    "push.subtitle":
+      "Receba uma notificação do navegador quando um lembrete de garantia ou manutenção estiver pendente.",
+    "push.enable": "Ativar notificações",
+    "push.disable": "Desativar notificações",
+    "push.enabled": "Notificações ativadas.",
+    "push.disabled": "Notificações desativadas.",
+    "push.unavailable": "Notificações indisponíveis ou não permitidas.",
     "notes.title": "Notas de manutenção e serviço",
     "notes.placeholder": "Adicionar uma nota (reparação, serviço, observação)…",
     "notes.add": "Adicionar",

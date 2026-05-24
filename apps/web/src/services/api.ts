@@ -676,6 +676,39 @@ export const savedViewsAPI = {
   },
 };
 
+// Web Push subscriptions
+export const pushAPI = {
+  // Returns the VAPID public key, or null when push isn't configured server-side.
+  async publicKey(): Promise<string | null> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/push/public-key`, {
+      headers: getHeaders(),
+    });
+    if (response.status === 404) return null;
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load push key"));
+    const data = await response.json();
+    return data.publicKey ?? null;
+  },
+
+  async subscribe(sub: PushSubscriptionJSON): Promise<void> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/push/subscribe`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(sub),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to subscribe"));
+  },
+
+  async unsubscribe(endpoint: string): Promise<void> {
+    await fetchWithTimeout(`${API_BASE_URL}/push/unsubscribe`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ endpoint }),
+    }).catch(() => undefined);
+  },
+};
+
 // Calendar feed
 export const calendarAPI = {
   async enable(): Promise<{ token: string; path: string }> {
