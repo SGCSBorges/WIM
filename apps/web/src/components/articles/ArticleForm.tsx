@@ -14,6 +14,7 @@ import { useI18n } from "../../i18n/i18n";
 import type { Article, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
+import BarcodeScanner, { barcodeSupported } from "./BarcodeScanner";
 
 interface ArticleFormProps {
   article?: Article;
@@ -80,6 +81,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [purchasePrice, setPurchasePrice] = useState<string>(
     article?.purchasePrice != null ? String(article.purchasePrice) : ""
   );
+  const [showScanner, setShowScanner] = useState(false);
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
     Boolean(article?.garantie)
@@ -428,18 +430,40 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           >
             {t("articleForm.model")} *
           </label>
-          <input
-            type="text"
-            id="articleModele"
-            name="articleModele"
-            required
-            value={formData.articleModele}
-            onChange={handleChange}
-            className="w-full px-3 py-2 ui-input rounded-md"
-            placeholder={t("articleForm.placeholder.model")}
-            maxLength={100}
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              id="articleModele"
+              name="articleModele"
+              required
+              value={formData.articleModele}
+              onChange={handleChange}
+              className="flex-1 px-3 py-2 ui-input rounded-md"
+              placeholder={t("articleForm.placeholder.model")}
+              maxLength={100}
+            />
+            {barcodeSupported() && (
+              <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className="ui-btn-ghost border ui-divider rounded-md px-3 py-2 text-sm shrink-0"
+              >
+                {t("scan.button")}
+              </button>
+            )}
+          </div>
         </div>
+
+        {showScanner && (
+          <BarcodeScanner
+            open={showScanner}
+            onClose={() => setShowScanner(false)}
+            onDetected={(value) => {
+              setFormData((prev) => ({ ...prev, articleModele: value }));
+              setShowScanner(false);
+            }}
+          />
+        )}
 
         <div>
           <label
