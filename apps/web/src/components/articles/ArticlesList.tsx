@@ -13,6 +13,8 @@ import {
   authAPI,
   profileAPI,
   tagsAPI,
+  savedViewsAPI,
+  type SavedView,
 } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location, Tag } from "../../types";
@@ -117,6 +119,7 @@ const ArticlesList: React.FC = () => {
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [savedViews, setSavedViews] = useState<SavedView[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [total, setTotal] = useState(0);
 
@@ -340,6 +343,12 @@ const ArticlesList: React.FC = () => {
     }
   };
 
+  const loadSavedViews = () =>
+    savedViewsAPI
+      .list()
+      .then(setSavedViews)
+      .catch(() => {});
+
   useEffect(() => {
     fetchLocations();
     tagsAPI
@@ -348,6 +357,7 @@ const ArticlesList: React.FC = () => {
         setTags(data.map((tg) => ({ tagId: tg.tagId, name: tg.name })))
       )
       .catch(() => {});
+    loadSavedViews();
     // Load the user's display currency for the value column (best-effort).
     profileAPI
       .getMe()
@@ -360,6 +370,31 @@ const ArticlesList: React.FC = () => {
   useEffect(() => {
     fetchArticles();
   }, [fetchArticles]);
+
+  const saveCurrentView = async () => {
+    const name = window.prompt(t("savedViews.namePrompt"))?.trim();
+    if (!name) return;
+    try {
+      await savedViewsAPI.create(name, searchParams.toString());
+      await loadSavedViews();
+      toast.show(t("savedViews.saved"), { kind: "success" });
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
+  };
+
+  const deleteView = async (id: number) => {
+    try {
+      await savedViewsAPI.remove(id);
+      setSavedViews((prev) => prev.filter((v) => v.id !== id));
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -489,6 +524,43 @@ const ArticlesList: React.FC = () => {
             {t("articles.create")}
           </button>
         </div>
+      </div>
+
+      {/* Saved filter views */}
+      <div className="flex flex-wrap items-center gap-2">
+        {savedViews.map((v) => (
+          <span
+            key={v.id}
+            className="inline-flex items-center gap-1 ui-badge px-2 py-1 rounded-full text-xs"
+          >
+            <button
+              type="button"
+              onClick={() =>
+                setSearchParams(new URLSearchParams(v.query), {
+                  replace: true,
+                })
+              }
+              className="hover:underline"
+            >
+              {v.name}
+            </button>
+            <button
+              type="button"
+              onClick={() => deleteView(v.id)}
+              aria-label={t("savedViews.delete")}
+              className="ui-action-danger leading-none"
+            >
+              ✕
+            </button>
+          </span>
+        ))}
+        <button
+          type="button"
+          onClick={saveCurrentView}
+          className="text-xs ui-btn-ghost border ui-divider rounded-full px-2 py-1"
+        >
+          + {t("savedViews.save")}
+        </button>
       </div>
 
       {error && (

@@ -638,6 +638,44 @@ export const notesAPI = {
   },
 };
 
+export interface SavedView {
+  id: number;
+  name: string;
+  query: string;
+}
+
+// Saved Articles filter presets
+export const savedViewsAPI = {
+  async list(): Promise<SavedView[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/saved-views`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load views"));
+    return response.json();
+  },
+
+  async create(name: string, query: string): Promise<SavedView> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/saved-views`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ name, query }),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to save view"));
+    return response.json();
+  },
+
+  async remove(id: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/saved-views/${id}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to delete view"));
+  },
+};
+
 // Calendar feed
 export const calendarAPI = {
   async enable(): Promise<{ token: string; path: string }> {
