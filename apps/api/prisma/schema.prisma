@@ -79,6 +79,10 @@ model User {
   // Display currency (ISO 4217) for inventory value formatting on the client.
   currency String @default("USD") @db.VarChar(3)
 
+  // Capability token for the read-only iCalendar feed (calendar apps can't
+  // send the auth cookie). Null = feed disabled.
+  calendarToken String? @unique @db.VarChar(64)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
