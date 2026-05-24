@@ -18,6 +18,7 @@ import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
+import { downloadBlob } from "../../utils/csv";
 import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
@@ -454,6 +455,24 @@ const ArticlesList: React.FC = () => {
             className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
           >
             {t("articles.export.csv")}
+          </button>
+
+          <button
+            onClick={async () => {
+              try {
+                downloadBlob(
+                  "inventory-manifest.pdf",
+                  await articlesAPI.inventoryPdf()
+                );
+              } catch (e) {
+                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+                  kind: "error",
+                });
+              }
+            }}
+            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+          >
+            {t("articles.export.pdf")}
           </button>
 
           <button

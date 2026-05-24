@@ -178,6 +178,26 @@ export const articlesAPI = {
     return response.json();
   },
 
+  async claimPdf(id: number): Promise<Blob> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${id}/claim.pdf`,
+      { headers: { Accept: "application/pdf" } }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to generate PDF"));
+    return response.blob();
+  },
+
+  async inventoryPdf(): Promise<Blob> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/export/inventory.pdf`,
+      { headers: { Accept: "application/pdf" } }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to generate PDF"));
+    return response.blob();
+  },
+
   async getById(id: number): Promise<FetchedArticle> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
       headers: getHeaders(),

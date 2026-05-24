@@ -12,6 +12,7 @@ import {
 import type { FetchedArticle } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
+import { downloadBlob } from "../../utils/csv";
 import { ErrorBanner } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
@@ -121,9 +122,28 @@ export default function ArticleDetail() {
 
   return (
     <div className="space-y-6">
-      <Link to="/articles" className="text-sm ui-action-primary">
-        ← {t("articleDetail.back")}
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link to="/articles" className="text-sm ui-action-primary">
+          ← {t("articleDetail.back")}
+        </Link>
+        <button
+          onClick={async () => {
+            try {
+              downloadBlob(
+                `article-${articleId}-claim.pdf`,
+                await articlesAPI.claimPdf(articleId)
+              );
+            } catch (e) {
+              toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+                kind: "error",
+              });
+            }
+          }}
+          className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm"
+        >
+          {t("articleDetail.downloadPdf")}
+        </button>
+      </div>
 
       <div className="ui-card rounded-lg p-6 flex flex-col sm:flex-row gap-6">
         <ArticleThumb

@@ -55,6 +55,18 @@ export function downloadFile(
   setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }
 
+/** Trigger a client-side download of an already-built Blob (e.g. a PDF). */
+export function downloadBlob(filename: string, blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1_000);
+}
+
 /**
  * Parse CSV text into an array of row objects keyed by the header row.
  * RFC-4180-ish: handles quoted fields, escaped quotes ("") and CRLF/LF.
