@@ -108,7 +108,11 @@ router.get(
   "/users",
   authGuard,
   requireRole("ADMIN"),
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    // Paginatable so instances with >500 users aren't silently truncated.
+    // Defaults preserve the previous behaviour (first 500, newest first).
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 500));
     const users = await prisma.user.findMany({
       select: {
         userId: true,
@@ -117,7 +121,8 @@ router.get(
         createdAt: true,
         updatedAt: true,
       },
-      take: 500,
+      take: limit,
+      skip: (page - 1) * limit,
       orderBy: { createdAt: "desc" },
     });
     res.json(users);

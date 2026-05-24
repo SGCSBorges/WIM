@@ -5,6 +5,14 @@ import { warrantiesAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner } from "../common/States";
 
+// Format an ISO date defensively — a malformed/empty value from the API must
+// not crash the whole list. Falls back to an em dash.
+function safeFormat(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = parseISO(iso);
+  return Number.isNaN(d.getTime()) ? "—" : format(d, "dd MMM yyyy");
+}
+
 type Warranty = {
   garantieId: number;
   garantieNom: string;
@@ -104,9 +112,8 @@ export default function WarrantiesView() {
               <div key={w.garantieId} className="p-4">
                 <div className="font-medium">{w.garantieNom}</div>
                 <div className="text-xs ui-text-muted">
-                  {t("warranties.purchase")}:{" "}
-                  {format(parseISO(w.garantieDateAchat), "dd MMM yyyy")} —{" "}
-                  {t("warranties.duration")}: {w.garantieDuration}{" "}
+                  {t("warranties.purchase")}: {safeFormat(w.garantieDateAchat)}{" "}
+                  — {t("warranties.duration")}: {w.garantieDuration}{" "}
                   {t("warranties.months")}
                 </div>
                 <div className="text-xs ui-text-muted">
