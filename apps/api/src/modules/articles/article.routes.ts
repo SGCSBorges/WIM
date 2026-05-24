@@ -37,28 +37,37 @@ const ImportSchema = z.object({
     .max(1000),
 });
 
-/** GET tous les articles */
+// Query schema for the list/search endpoint. All filters optional.
+const ArticleListQuerySchema = z.object({
+  locationId: z.coerce.number().int().positive().optional(),
+  tag: z.coerce.number().int().positive().optional(),
+  q: z.string().trim().max(200).optional(),
+  warrantyStatus: z
+    .enum(["valid", "expiringSoon", "expired", "none"])
+    .optional(),
+  priceMin: z.coerce.number().nonnegative().optional(),
+  priceMax: z.coerce.number().nonnegative().optional(),
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(200).optional(),
+});
+
+/** GET tous les articles — server-side search + filters, returns {items,total} */
 router.get(
   "/",
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const locationIdRaw = req.query.locationId;
-    const locationId = locationIdRaw
-      ? z.coerce.number().int().positive().parse(locationIdRaw)
-      : undefined;
-    const tagIdRaw = req.query.tag;
-    const tagId = tagIdRaw
-      ? z.coerce.number().int().positive().parse(tagIdRaw)
-      : undefined;
-    const { page, limit } = paginationQuery.parse(req.query);
-    const articles = await ArticleService.list(
-      req.user!.sub,
-      locationId,
-      page,
-      limit,
-      tagId
-    );
-    res.json(articles);
+    const q = ArticleListQuerySchema.parse(req.query);
+    const result = await ArticleService.list(req.user!.sub, {
+      locationId: q.locationId,
+      tagId: q.tag,
+      q: q.q,
+      warrantyStatus: q.warrantyStatus,
+      priceMin: q.priceMin,
+      priceMax: q.priceMax,
+      page: q.page,
+      limit: q.limit,
+    });
+    res.json(result);
   })
 );
 

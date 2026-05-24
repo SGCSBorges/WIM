@@ -51,25 +51,74 @@ const articleInclude = {
   },
 } as const;
 
+export type ArticleListFilters = {
+  locationId?: number;
+  tagId?: number;
+  q?: string;
+  warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
+  priceMin?: number;
+  priceMax?: number;
+  page?: number;
+  limit?: number;
+};
+
+// Translate the filter set into a Prisma where-clause (all owner-scoped).
+function buildArticleWhere(
+  ownerUserId: number,
+  f: ArticleListFilters
+): Prisma.ArticleWhereInput {
+  const where: Prisma.ArticleWhereInput = { ownerUserId };
+  if (f.locationId) where.locations = { some: { locationId: f.locationId } };
+  if (f.tagId) where.tags = { some: { tagId: f.tagId } };
+  if (f.q && f.q.trim()) {
+    const q = f.q.trim();
+    where.OR = [
+      { articleNom: { contains: q, mode: "insensitive" } },
+      { articleModele: { contains: q, mode: "insensitive" } },
+      { articleDescription: { contains: q, mode: "insensitive" } },
+    ];
+  }
+  if (f.priceMin != null || f.priceMax != null) {
+    where.purchasePrice = {
+      ...(f.priceMin != null ? { gte: f.priceMin } : {}),
+      ...(f.priceMax != null ? { lte: f.priceMax } : {}),
+    };
+  }
+  if (f.warrantyStatus) {
+    const now = new Date();
+    if (f.warrantyStatus === "none") {
+      where.garantie = { is: null };
+    } else if (f.warrantyStatus === "valid") {
+      where.garantie = { garantieFin: { gte: now } };
+    } else if (f.warrantyStatus === "expired") {
+      where.garantie = { garantieFin: { lt: now } };
+    } else {
+      // expiringSoon: within the next 30 days
+      const in30 = new Date();
+      in30.setDate(now.getDate() + 30);
+      where.garantie = { garantieFin: { gte: now, lte: in30 } };
+    }
+  }
+  return where;
+}
+
 export const ArticleService = {
-  list: (
-    ownerUserId: number,
-    locationId?: number,
-    page = 1,
-    limit = 50,
-    tagId?: number
-  ) =>
-    prisma.article.findMany({
-      where: {
-        ownerUserId,
-        ...(locationId ? { locations: { some: { locationId } } } : {}),
-        ...(tagId ? { tags: { some: { tagId } } } : {}),
-      },
-      take: limit,
-      skip: (page - 1) * limit,
-      orderBy: { articleId: "desc" },
-      include: articleInclude,
-    }),
+  list: async (ownerUserId: number, filters: ArticleListFilters = {}) => {
+    const page = filters.page && filters.page > 0 ? filters.page : 1;
+    const limit = filters.limit && filters.limit > 0 ? filters.limit : 50;
+    const where = buildArticleWhere(ownerUserId, filters);
+    const [items, total] = await prisma.$transaction([
+      prisma.article.findMany({
+        where,
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: { articleId: "desc" },
+        include: articleInclude,
+      }),
+      prisma.article.count({ where }),
+    ]);
+    return { items, total, page, limit };
+  },
 
   get: (id: number, ownerUserId: number) =>
     prisma.article.findFirst({
