@@ -38,7 +38,16 @@ export interface Article {
   sharedWithPowerUsers?: boolean;
   locationIds?: number[];
   locations?: Array<{ locationId: number; location?: { name: string } }>;
+  // Tags: write via tagIds; reads carry the joined tags array.
+  tagIds?: number[];
+  tags?: Array<{ tagId: number; tag?: { name: string } }>;
   garantie?: ArticleWarranty | null;
+}
+
+export interface Tag {
+  tagId: number;
+  name: string;
+  articleCount?: number;
 }
 
 /** Article as returned by the API — always has an articleId and timestamps. */

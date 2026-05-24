@@ -91,6 +91,7 @@ model User {
   auditLogs AuditLog[]
   attachments Attachment[]
   locations   Location[]
+  tags        Tag[]
 }
 
 model Article {
@@ -117,11 +118,36 @@ model Article {
   attachments Attachment[]
   alertes  Alerte[]
   locations ArticleLocation[]
+  tags     ArticleTag[]
 
   @@index([ownerUserId])
   @@index([articleNom, articleModele])
   @@index([sharedWithPowerUsers])
   @@index([sharedWithPowerUsers, updatedAt(sort: Desc)])
+}
+
+model Tag {
+  tagId       Int      @id @default(autoincrement())
+  ownerUserId Int
+  name        String   @db.VarChar(40)
+  createdAt   DateTime @default(now())
+
+  owner    User         @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  articles ArticleTag[]
+
+  @@unique([ownerUserId, name], map: "uq_tag_owner_name")
+  @@index([ownerUserId])
+}
+
+model ArticleTag {
+  articleId Int
+  tagId     Int
+
+  article Article @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
 }
 
 model ArticleLocation {

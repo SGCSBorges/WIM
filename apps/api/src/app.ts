@@ -16,6 +16,7 @@ import billingWebhookRoutes from "./modules/billing/billing.webhook.routes";
 import billingMeRoutes from "./modules/billing/billing.me.routes";
 import shareRoutes from "./modules/shares/share.routes";
 import locationRoutes from "./modules/locations/location.routes";
+import tagRoutes from "./modules/tags/tag.routes";
 import alertRoutes from "./modules/alerts/alert.routes";
 import sharedRoutes from "./modules/shared/shared.routes";
 import profileRoutes from "./modules/profile/profile.routes";
@@ -185,6 +186,7 @@ export function createApp() {
   app.use("/api/admin", adminRoutes);
   app.use("/api/attachments", attachmentRoutes);
   app.use("/api/locations", locationRoutes);
+  app.use("/api/tags", tagRoutes);
   app.use("/api/billing", billingRoutes);
   app.use("/api/billing", billingMeRoutes);
   app.use("/api/shares", shareRoutes);

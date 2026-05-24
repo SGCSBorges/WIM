@@ -23,49 +23,62 @@ async function assertLocationsOwned(
   }
 }
 
+// Same shape as assertLocationsOwned: any tag id not owned by the caller is a
+// 403 (no per-id leak of which exist under other accounts).
+async function assertTagsOwned(ownerUserId: number, tagIds: number[]) {
+  if (tagIds.length === 0) return;
+  const unique = Array.from(new Set(tagIds));
+  const owned = await prisma.tag.count({
+    where: { tagId: { in: unique }, ownerUserId },
+  });
+  if (owned !== unique.length) {
+    throw createHttpError(403, "One or more tags are not owned by you");
+  }
+}
+
+// Shared include used by list/get/create/update so every article response
+// carries its locations + tags in the same shape.
+const articleInclude = {
+  garantie: true,
+  locations: {
+    select: {
+      locationId: true,
+      location: { select: { name: true } },
+    },
+  },
+  tags: {
+    select: { tagId: true, tag: { select: { name: true } } },
+  },
+} as const;
+
 export const ArticleService = {
-  list: (ownerUserId: number, locationId?: number, page = 1, limit = 50) =>
+  list: (
+    ownerUserId: number,
+    locationId?: number,
+    page = 1,
+    limit = 50,
+    tagId?: number
+  ) =>
     prisma.article.findMany({
       where: {
         ownerUserId,
-        ...(locationId
-          ? {
-              locations: {
-                some: { locationId },
-              },
-            }
-          : {}),
+        ...(locationId ? { locations: { some: { locationId } } } : {}),
+        ...(tagId ? { tags: { some: { tagId } } } : {}),
       },
       take: limit,
       skip: (page - 1) * limit,
       orderBy: { articleId: "desc" },
-      include: {
-        garantie: true,
-        locations: {
-          select: {
-            locationId: true,
-            location: { select: { name: true } },
-          },
-        },
-      },
+      include: articleInclude,
     }),
 
   get: (id: number, ownerUserId: number) =>
     prisma.article.findFirst({
       where: { articleId: id, ownerUserId },
-      include: {
-        garantie: true,
-        locations: {
-          select: {
-            locationId: true,
-            location: { select: { name: true } },
-          },
-        },
-      },
+      include: articleInclude,
     }),
 
   create: async (data: ArticleCreateInput) => {
-    const { locationIds, garantie, ...articleData } = data;
+    const { locationIds, tagIds, garantie, ...articleData } = data;
 
     // Ownership checks + the insert all run in a single transaction so an
     // interleaved delete can't slip a stale locationId/attachmentId past
@@ -104,6 +117,18 @@ export const ArticleService = {
           );
       }
 
+      if (tagIds && tagIds.length > 0) {
+        const unique = Array.from(new Set(tagIds));
+        const owned = await tx.tag.count({
+          where: {
+            tagId: { in: unique },
+            ownerUserId: articleData.ownerUserId,
+          },
+        });
+        if (owned !== unique.length)
+          throw createHttpError(403, "One or more tags are not owned by you");
+      }
+
       return tx.article.create({
         data: {
           ...articleData,
@@ -133,16 +158,11 @@ export const ArticleService = {
           locations: {
             create: locationIds.map((locationId: number) => ({ locationId })),
           },
+          ...(tagIds && tagIds.length > 0
+            ? { tags: { create: tagIds.map((tagId: number) => ({ tagId })) } }
+            : {}),
         },
-        include: {
-          garantie: true,
-          locations: {
-            select: {
-              locationId: true,
-              location: { select: { name: true } },
-            },
-          },
-        },
+        include: articleInclude,
       });
     });
 
@@ -161,7 +181,7 @@ export const ArticleService = {
   },
 
   update: async (id: number, ownerUserId: number, data: ArticleUpdateInput) => {
-    const { locationIds, garantie, removeGarantie, ...patch } = data;
+    const { locationIds, tagIds, garantie, removeGarantie, ...patch } = data;
 
     // If updating locations, enforce at least one.
     if (locationIds && Array.isArray(locationIds) && locationIds.length === 0)
@@ -169,6 +189,10 @@ export const ArticleService = {
 
     if (locationIds && locationIds.length > 0) {
       await assertLocationsOwned(ownerUserId, locationIds);
+    }
+
+    if (tagIds && tagIds.length > 0) {
+      await assertTagsOwned(ownerUserId, tagIds);
     }
 
     // We need current warranty state to decide create vs update vs delete.
@@ -309,16 +333,16 @@ export const ArticleService = {
                 },
               }
             : {}),
+          ...(tagIds
+            ? {
+                tags: {
+                  deleteMany: {},
+                  create: tagIds.map((tagId: number) => ({ tagId })),
+                },
+              }
+            : {}),
         },
-        include: {
-          garantie: true,
-          locations: {
-            select: {
-              locationId: true,
-              location: { select: { name: true } },
-            },
-          },
-        },
+        include: articleInclude,
       });
       return { article, pendingAlert: pending };
     });

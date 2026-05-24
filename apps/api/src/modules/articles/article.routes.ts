@@ -27,12 +27,17 @@ router.get(
     const locationId = locationIdRaw
       ? z.coerce.number().int().positive().parse(locationIdRaw)
       : undefined;
+    const tagIdRaw = req.query.tag;
+    const tagId = tagIdRaw
+      ? z.coerce.number().int().positive().parse(tagIdRaw)
+      : undefined;
     const { page, limit } = paginationQuery.parse(req.query);
     const articles = await ArticleService.list(
       req.user!.sub,
       locationId,
       page,
-      limit
+      limit,
+      tagId
     );
     res.json(articles);
   })

@@ -22,6 +22,8 @@ export const ArticleCreateSchema = z.object({
     .nullable(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
+  // Optional tags (owner-scoped). Empty/absent = no tags.
+  tagIds: z.array(z.number().int().positive()).optional(),
   // Optional warranty created alongside the article
   garantie: z
     .object({
