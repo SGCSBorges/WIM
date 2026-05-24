@@ -3,10 +3,12 @@ import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { ArticleService } from "./article.service";
 import { importArticles } from "./article.import";
+import { streamArticleClaimPdf, streamInventoryPdf } from "./article.pdf";
+import { prisma } from "../../libs/prisma";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest, requireRole } from "../auth/auth.middleware";
-import { idParam, paginationQuery } from "../common/schemas";
+import { idParam } from "../common/schemas";
 import { security } from "../../config/security";
 
 const router = Router();
@@ -223,6 +225,35 @@ router.post(
       },
     });
     res.json(result);
+  })
+);
+
+async function userCurrency(userId: number): Promise<string> {
+  const u = await prisma.user.findUnique({
+    where: { userId },
+    select: { currency: true },
+  });
+  return u?.currency ?? "USD";
+}
+
+/** GET full-inventory manifest PDF (declared before /:id/* article routes). */
+router.get(
+  "/export/inventory.pdf",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const currency = await userCurrency(req.user!.sub);
+    await streamInventoryPdf(res, req.user!.sub, currency);
+  })
+);
+
+/** GET single-article insurance/claim PDF. */
+router.get(
+  "/:id/claim.pdf",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const id = idParam.parse(req.params.id);
+    const currency = await userCurrency(req.user!.sub);
+    await streamArticleClaimPdf(res, id, req.user!.sub, currency);
   })
 );
 
