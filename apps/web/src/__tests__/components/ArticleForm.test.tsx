@@ -12,6 +12,10 @@ vi.mock("../../services/api", () => ({
     uploadFile: vi.fn(),
     deleteAttachment: vi.fn(),
   },
+  tagsAPI: {
+    getAll: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+  },
 }));
 
 import ArticleForm from "../../components/articles/ArticleForm";

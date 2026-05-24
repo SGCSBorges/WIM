@@ -11,9 +11,10 @@ import {
   locationsAPI,
   authAPI,
   profileAPI,
+  tagsAPI,
 } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-import type { Article, FetchedArticle, Location } from "../../types";
+import type { Article, FetchedArticle, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import ArticleThumb from "./ArticleThumb";
@@ -117,6 +118,8 @@ const ArticlesList: React.FC = () => {
   const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
     undefined
   );
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [tagFilterId, setTagFilterId] = useState<number | undefined>(undefined);
 
   // Bulk selection: ids of articles currently checked. Cleared on refetch
   // so the bar doesn't keep references to articles that just left the page.
@@ -137,7 +140,12 @@ const ArticlesList: React.FC = () => {
   const fetchArticles = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await articlesAPI.getAll(locationFilterId);
+      const data = await articlesAPI.getAll(
+        locationFilterId,
+        undefined,
+        undefined,
+        tagFilterId
+      );
       setArticles(data);
       setError(null);
       // Drop any selections whose article no longer appears in the list
@@ -157,7 +165,7 @@ const ArticlesList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [locationFilterId, t]);
+  }, [locationFilterId, tagFilterId, t]);
 
   const toggleSelected = (articleId: number) => {
     setSelectedIds((prev) => {
@@ -276,6 +284,12 @@ const ArticlesList: React.FC = () => {
 
   useEffect(() => {
     fetchLocations();
+    tagsAPI
+      .getAll()
+      .then((data) =>
+        setTags(data.map((tg) => ({ tagId: tg.tagId, name: tg.name })))
+      )
+      .catch(() => {});
     // Load the user's display currency for the value column (best-effort).
     profileAPI
       .getMe()
@@ -322,6 +336,26 @@ const ArticlesList: React.FC = () => {
               </option>
             ))}
           </select>
+
+          {tags.length > 0 && (
+            <select
+              value={tagFilterId ?? ""}
+              onChange={(e) =>
+                setTagFilterId(
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              className="ui-select px-3 py-2 rounded-md"
+              aria-label={t("articles.filter.tag")}
+            >
+              <option value="">{t("articles.filter.allTags")}</option>
+              {tags.map((tg) => (
+                <option key={tg.tagId} value={tg.tagId}>
+                  {tg.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <button
             onClick={exportToCsv}
@@ -535,8 +569,20 @@ const ArticlesList: React.FC = () => {
                           alt={article.articleNom}
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 text-sm font-medium">
                         {article.articleNom}
+                        {article.tags && article.tags.length > 0 && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {article.tags.map((at) => (
+                              <span
+                                key={at.tagId}
+                                className="px-1.5 py-0.5 text-[10px] rounded-full ui-badge-info"
+                              >
+                                {at.tag?.name ?? `#${at.tagId}`}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
                         {article.articleModele}

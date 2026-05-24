@@ -154,6 +154,11 @@ export const extras = {
     "profile.currency.subtitle":
       "Used to format inventory values across the app.",
     "profile.currency.success": "Currency updated.",
+    "articleForm.tags": "Tags",
+    "articleForm.tags.placeholder": "New tag name",
+    "articleForm.tags.add": "Add tag",
+    "articles.filter.tag": "Filter by tag",
+    "articles.filter.allTags": "All tags",
   },
   fr: {
     "articles.table.image": "Image",
@@ -308,6 +313,11 @@ export const extras = {
     "profile.currency.subtitle":
       "Utilisée pour formater les valeurs d'inventaire dans l'application.",
     "profile.currency.success": "Devise mise à jour.",
+    "articleForm.tags": "Étiquettes",
+    "articleForm.tags.placeholder": "Nom de la nouvelle étiquette",
+    "articleForm.tags.add": "Ajouter",
+    "articles.filter.tag": "Filtrer par étiquette",
+    "articles.filter.allTags": "Toutes les étiquettes",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -459,6 +469,11 @@ export const extras = {
     "profile.currency.subtitle":
       "Usada para formatar os valores de inventário na aplicação.",
     "profile.currency.success": "Moeda atualizada.",
+    "articleForm.tags": "Etiquetas",
+    "articleForm.tags.placeholder": "Nome da nova etiqueta",
+    "articleForm.tags.add": "Adicionar",
+    "articles.filter.tag": "Filtrar por etiqueta",
+    "articles.filter.allTags": "Todas as etiquetas",
   },
 } as const;
 

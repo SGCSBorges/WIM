@@ -5,4 +5,5 @@ export type {
   ArticleWarranty,
   FetchedArticle,
   Location,
+  Tag,
 } from "@wim/types";

@@ -141,10 +141,12 @@ export const articlesAPI = {
   async getAll(
     locationId?: number,
     page?: number,
-    limit?: number
+    limit?: number,
+    tagId?: number
   ): Promise<FetchedArticle[]> {
     const url = new URL(`${API_BASE_URL}/articles`);
     if (locationId) url.searchParams.set("locationId", String(locationId));
+    if (tagId) url.searchParams.set("tag", String(tagId));
     if (page != null) url.searchParams.set("page", String(page));
     if (limit != null) url.searchParams.set("limit", String(limit));
 
@@ -484,6 +486,40 @@ export const attachmentsAPI = {
           `Failed to delete attachment (${response.status})`
         )
       );
+  },
+};
+
+// Tags API
+export const tagsAPI = {
+  async getAll(): Promise<
+    Array<{ tagId: number; name: string; articleCount: number }>
+  > {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/tags`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load tags"));
+    return response.json();
+  },
+
+  async create(name: string): Promise<{ tagId: number; name: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/tags`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to create tag"));
+    return response.json();
+  },
+
+  async remove(tagId: number): Promise<void> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/tags/${tagId}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to delete tag"));
   },
 };
 

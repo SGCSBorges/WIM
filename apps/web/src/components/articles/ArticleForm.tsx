@@ -4,9 +4,14 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { attachmentsAPI, locationsAPI, API_BASE_URL } from "../../services/api";
+import {
+  attachmentsAPI,
+  locationsAPI,
+  tagsAPI,
+  API_BASE_URL,
+} from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
-import type { Article, Location } from "../../types";
+import type { Article, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 
@@ -51,6 +56,20 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [locCreateError, setLocCreateError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Tags (owner-scoped). Mirrors the location chip/create pattern.
+  const deriveInitialTagIds = (a?: Article): number[] =>
+    Array.isArray(a?.tags)
+      ? a!
+          .tags!.map((x) => Number(x?.tagId))
+          .filter((n) => Number.isFinite(n) && n > 0)
+      : [];
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<number[]>(() =>
+    deriveInitialTagIds(article)
+  );
+  const [newTagName, setNewTagName] = useState("");
+  const [creatingTag, setCreatingTag] = useState(false);
 
   const [formData, setFormData] = useState<Omit<Article, "articleId">>({
     articleNom: article?.articleNom || "",
@@ -110,6 +129,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       article?.purchasePrice != null ? String(article.purchasePrice) : ""
     );
     setSelectedLocationIds(deriveInitialLocationIds(article));
+    setSelectedTagIds(deriveInitialTagIds(article));
     setWarrantyEnabled(Boolean(article?.garantie));
     setWarrantyNom(article?.garantie?.garantieNom || "");
     const raw = article?.garantie?.garantieDateAchat;
@@ -176,6 +196,54 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     () => new Set(selectedLocationIds),
     [selectedLocationIds]
   );
+  const selectedTagSet = useMemo(
+    () => new Set(selectedTagIds),
+    [selectedTagIds]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    tagsAPI
+      .getAll()
+      .then((data) => {
+        if (mounted)
+          setTags(data.map((tg) => ({ tagId: tg.tagId, name: tg.name })));
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const toggleTag = (id: number) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleCreateTag = async () => {
+    const name = newTagName.trim();
+    if (!name) return;
+    try {
+      setCreatingTag(true);
+      const created = await tagsAPI.create(name);
+      setTags((prev) =>
+        prev.some((tg) => tg.tagId === created.tagId)
+          ? prev
+          : [...prev, { tagId: created.tagId, name: created.name }]
+      );
+      setSelectedTagIds((prev) =>
+        prev.includes(created.tagId) ? prev : [...prev, created.tagId]
+      );
+      setNewTagName("");
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setCreatingTag(false);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -246,6 +314,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       productImageUrl: formData.productImageUrl?.trim() || null,
       purchasePrice: purchasePrice.trim() === "" ? null : Number(purchasePrice),
       locationIds: selectedLocationIds,
+      tagIds: selectedTagIds,
       ...(warrantyEnabled
         ? {
             garantie: {
@@ -626,6 +695,56 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           {locCreateError && (
             <p className="mt-1 text-sm ui-text-error">{locCreateError}</p>
           )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium ui-text-muted mb-1">
+            {t("articleForm.tags")}
+          </label>
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {tags.map((tg) => {
+                const active = selectedTagSet.has(tg.tagId);
+                return (
+                  <button
+                    type="button"
+                    key={tg.tagId}
+                    onClick={() => toggleTag(tg.tagId)}
+                    aria-pressed={active}
+                    className={`px-2 py-1 text-xs rounded-full border ui-divider ${
+                      active ? "ui-badge-info" : "ui-btn-ghost"
+                    }`}
+                  >
+                    {tg.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleCreateTag();
+                }
+              }}
+              placeholder={t("articleForm.tags.placeholder")}
+              className="flex-1 px-3 py-2 ui-input rounded-md"
+              maxLength={40}
+            />
+            <button
+              type="button"
+              onClick={handleCreateTag}
+              disabled={creatingTag || !newTagName.trim()}
+              className="px-3 py-2 ui-btn-ghost border ui-divider rounded-md"
+            >
+              {t("articleForm.tags.add")}
+            </button>
+          </div>
         </div>
 
         {formError && (
