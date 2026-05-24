@@ -137,18 +137,36 @@ export const authAPI = {
 };
 
 // Articles API
+export interface ArticleListParams {
+  locationId?: number;
+  tagId?: number;
+  q?: string;
+  warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
+  priceMin?: number;
+  priceMax?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface ArticleListResult {
+  items: FetchedArticle[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export const articlesAPI = {
-  async getAll(
-    locationId?: number,
-    page?: number,
-    limit?: number,
-    tagId?: number
-  ): Promise<FetchedArticle[]> {
+  async getAll(params: ArticleListParams = {}): Promise<ArticleListResult> {
     const url = new URL(`${API_BASE_URL}/articles`);
-    if (locationId) url.searchParams.set("locationId", String(locationId));
-    if (tagId) url.searchParams.set("tag", String(tagId));
-    if (page != null) url.searchParams.set("page", String(page));
-    if (limit != null) url.searchParams.set("limit", String(limit));
+    const p = url.searchParams;
+    if (params.locationId) p.set("locationId", String(params.locationId));
+    if (params.tagId) p.set("tag", String(params.tagId));
+    if (params.q) p.set("q", params.q);
+    if (params.warrantyStatus) p.set("warrantyStatus", params.warrantyStatus);
+    if (params.priceMin != null) p.set("priceMin", String(params.priceMin));
+    if (params.priceMax != null) p.set("priceMax", String(params.priceMax));
+    if (params.page != null) p.set("page", String(params.page));
+    if (params.limit != null) p.set("limit", String(params.limit));
 
     const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),

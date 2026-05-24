@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
 import {
@@ -113,15 +114,62 @@ const ArticlesList: React.FC = () => {
     number | null
   >(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
-
   const [locations, setLocations] = useState<Location[]>([]);
-  const [locationFilterId, setLocationFilterId] = useState<number | undefined>(
-    undefined
-  );
   const [tags, setTags] = useState<Tag[]>([]);
-  const [tagFilterId, setTagFilterId] = useState<number | undefined>(undefined);
   const [showImport, setShowImport] = useState(false);
+  const [total, setTotal] = useState(0);
+
+  // All filter/search/pagination state lives in the URL so a filtered view is
+  // shareable and survives reload. The search box keeps a local mirror so it
+  // can debounce before writing back to the URL.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const qParam = searchParams.get("q") ?? "";
+  const warrantyStatus = searchParams.get("warranty") ?? "";
+  const priceMin = searchParams.get("priceMin") ?? "";
+  const priceMax = searchParams.get("priceMax") ?? "";
+  const locationFilterId = searchParams.get("location")
+    ? Number(searchParams.get("location"))
+    : undefined;
+  const tagFilterId = searchParams.get("tag")
+    ? Number(searchParams.get("tag"))
+    : undefined;
+  const page = Math.max(1, Number(searchParams.get("page") || "1"));
+  const LIMIT = 50;
+  const hasActiveFilters = Boolean(
+    qParam ||
+    warrantyStatus ||
+    priceMin ||
+    priceMax ||
+    locationFilterId ||
+    tagFilterId
+  );
+
+  const [searchInput, setSearchInput] = useState(qParam);
+
+  const updateParams = useCallback(
+    (patch: Record<string, string | undefined>, resetPage = true) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          for (const [k, v] of Object.entries(patch)) {
+            if (v == null || v === "") next.delete(k);
+            else next.set(k, v);
+          }
+          if (resetPage) next.delete("page");
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
+
+  // Debounce the search box into the URL `q` param.
+  useEffect(() => {
+    if (searchInput === qParam) return;
+    const id = setTimeout(() => updateParams({ q: searchInput }), 350);
+    return () => clearTimeout(id);
+  }, [searchInput, qParam, updateParams]);
 
   // Bulk selection: ids of articles currently checked. Cleared on refetch
   // so the bar doesn't keep references to articles that just left the page.
@@ -129,33 +177,32 @@ const ArticlesList: React.FC = () => {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
-  const filteredArticles = searchQuery.trim()
-    ? articles.filter((a) => {
-        const q = searchQuery.trim().toLowerCase();
-        return (
-          a.articleNom.toLowerCase().includes(q) ||
-          (a.articleModele ?? "").toLowerCase().includes(q)
-        );
-      })
-    : articles;
-
   const fetchArticles = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await articlesAPI.getAll(
-        locationFilterId,
-        undefined,
-        undefined,
-        tagFilterId
-      );
-      setArticles(data);
+      const { items, total: t0 } = await articlesAPI.getAll({
+        locationId: locationFilterId,
+        tagId: tagFilterId,
+        q: qParam || undefined,
+        warrantyStatus:
+          (warrantyStatus as
+            | "valid"
+            | "expiringSoon"
+            | "expired"
+            | "none"
+            | "") || undefined,
+        priceMin: priceMin ? Number(priceMin) : undefined,
+        priceMax: priceMax ? Number(priceMax) : undefined,
+        page,
+        limit: LIMIT,
+      });
+      setArticles(items);
+      setTotal(t0);
       setError(null);
-      // Drop any selections whose article no longer appears in the list
-      // (filter changed, item was deleted/moved). Avoids the BulkActionBar
-      // counting articles that aren't visible anymore.
+      // Drop selections that left the page after a filter/page change.
       setSelectedIds((prev) => {
         if (prev.size === 0) return prev;
-        const visible = new Set(data.map((a) => a.articleId));
+        const visible = new Set(items.map((a) => a.articleId));
         const next = new Set<number>();
         prev.forEach((id) => {
           if (visible.has(id)) next.add(id);
@@ -167,7 +214,16 @@ const ArticlesList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [locationFilterId, tagFilterId, t]);
+  }, [
+    locationFilterId,
+    tagFilterId,
+    qParam,
+    warrantyStatus,
+    priceMin,
+    priceMax,
+    page,
+    t,
+  ]);
 
   const toggleSelected = (articleId: number) => {
     setSelectedIds((prev) => {
@@ -179,18 +235,17 @@ const ArticlesList: React.FC = () => {
   };
 
   const allPageSelected =
-    filteredArticles.length > 0 &&
-    filteredArticles.every((a) => selectedIds.has(a.articleId));
+    articles.length > 0 && articles.every((a) => selectedIds.has(a.articleId));
 
   const toggleSelectAll = () => {
     setSelectedIds((prev) => {
       if (allPageSelected) {
         const next = new Set(prev);
-        filteredArticles.forEach((a) => next.delete(a.articleId));
+        articles.forEach((a) => next.delete(a.articleId));
         return next;
       }
       const next = new Set(prev);
-      filteredArticles.forEach((a) => next.add(a.articleId));
+      articles.forEach((a) => next.add(a.articleId));
       return next;
     });
   };
@@ -316,8 +371,8 @@ const ArticlesList: React.FC = () => {
         <div className="flex items-center gap-3 flex-wrap">
           <input
             type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder={t("articles.search.placeholder")}
             className="ui-input px-3 py-2 rounded-md text-sm w-52"
           />
@@ -325,9 +380,7 @@ const ArticlesList: React.FC = () => {
           <select
             value={locationFilterId ?? ""}
             onChange={(e) =>
-              setLocationFilterId(
-                e.target.value ? Number(e.target.value) : undefined
-              )
+              updateParams({ location: e.target.value || undefined })
             }
             className="ui-select px-3 py-2 rounded-md"
           >
@@ -343,9 +396,7 @@ const ArticlesList: React.FC = () => {
             <select
               value={tagFilterId ?? ""}
               onChange={(e) =>
-                setTagFilterId(
-                  e.target.value ? Number(e.target.value) : undefined
-                )
+                updateParams({ tag: e.target.value || undefined })
               }
               className="ui-select px-3 py-2 rounded-md"
               aria-label={t("articles.filter.tag")}
@@ -358,6 +409,44 @@ const ArticlesList: React.FC = () => {
               ))}
             </select>
           )}
+
+          <select
+            value={warrantyStatus}
+            onChange={(e) =>
+              updateParams({ warranty: e.target.value || undefined })
+            }
+            className="ui-select px-3 py-2 rounded-md"
+            aria-label={t("articles.filter.warranty")}
+          >
+            <option value="">{t("articles.filter.allWarranties")}</option>
+            <option value="valid">{t("articles.filter.warrantyValid")}</option>
+            <option value="expiringSoon">
+              {t("articles.filter.warrantyExpiringSoon")}
+            </option>
+            <option value="expired">
+              {t("articles.filter.warrantyExpired")}
+            </option>
+            <option value="none">{t("articles.filter.warrantyNone")}</option>
+          </select>
+
+          <input
+            type="number"
+            min="0"
+            value={priceMin}
+            onChange={(e) => updateParams({ priceMin: e.target.value })}
+            placeholder={t("articles.filter.priceMin")}
+            className="ui-input px-3 py-2 rounded-md text-sm w-24"
+            aria-label={t("articles.filter.priceMin")}
+          />
+          <input
+            type="number"
+            min="0"
+            value={priceMax}
+            onChange={(e) => updateParams({ priceMax: e.target.value })}
+            placeholder={t("articles.filter.priceMax")}
+            className="ui-input px-3 py-2 rounded-md text-sm w-24"
+            aria-label={t("articles.filter.priceMax")}
+          />
 
           <button
             onClick={exportToCsv}
@@ -492,6 +581,12 @@ const ArticlesList: React.FC = () => {
               </tbody>
             </table>
           </div>
+        ) : articles.length === 0 && hasActiveFilters ? (
+          <div className="p-8 text-center">
+            <p className="ui-text-muted">
+              {t("articles.search.noResults").replace("{query}", qParam.trim())}
+            </p>
+          </div>
         ) : articles.length === 0 ? (
           <div className="p-8 text-center">
             <div className="ui-text-muted text-6xl mb-4">📦</div>
@@ -505,15 +600,6 @@ const ArticlesList: React.FC = () => {
             >
               {t("articles.create")}
             </button>
-          </div>
-        ) : filteredArticles.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="ui-text-muted">
-              {t("articles.search.noResults").replace(
-                "{query}",
-                searchQuery.trim()
-              )}
-            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -561,7 +647,7 @@ const ArticlesList: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y ui-divider">
-                {filteredArticles.map((article) => (
+                {articles.map((article) => (
                   <React.Fragment key={article.articleId}>
                     <tr className="hover-surface">
                       <td className="px-3 py-4">
@@ -733,6 +819,39 @@ const ArticlesList: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {!loading && total > 0 && (
+          <div className="p-4 border-t ui-divider flex items-center justify-between gap-3 text-sm">
+            <span className="ui-text-muted">
+              {t("articles.results.count").replace("{total}", String(total))}
+            </span>
+            {total > LIMIT && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    updateParams({ page: String(page - 1) }, false)
+                  }
+                  disabled={page <= 1}
+                  className="ui-btn-ghost border ui-divider rounded px-3 py-1 disabled:opacity-50"
+                >
+                  {t("common.prev")}
+                </button>
+                <span className="ui-text-muted">
+                  {page} / {Math.max(1, Math.ceil(total / LIMIT))}
+                </span>
+                <button
+                  onClick={() =>
+                    updateParams({ page: String(page + 1) }, false)
+                  }
+                  disabled={page >= Math.ceil(total / LIMIT)}
+                  className="ui-btn-ghost border ui-divider rounded px-3 py-1 disabled:opacity-50"
+                >
+                  {t("common.next")}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

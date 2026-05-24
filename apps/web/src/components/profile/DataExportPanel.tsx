@@ -28,7 +28,7 @@ export default function DataExportPanel() {
       const filename = `wim-${target}-${stamp}.${format}`;
 
       if (target === "articles") {
-        const rows = await articlesAPI.getAll(undefined, 1, 1000);
+        const { items: rows } = await articlesAPI.getAll({ limit: 200 });
         if (format === "json") {
           downloadFile(
             filename,
