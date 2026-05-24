@@ -178,6 +178,15 @@ export const articlesAPI = {
     return response.json();
   },
 
+  async getById(id: number): Promise<FetchedArticle> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch article"));
+    return response.json();
+  },
+
   async create(article: Omit<Article, "articleId">) {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles`, {
       method: "POST",
@@ -563,6 +572,49 @@ export const tagsAPI = {
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to delete tag"));
+  },
+};
+
+export interface ArticleNote {
+  noteId: number;
+  articleId: number;
+  content: string;
+  createdAt: string;
+}
+
+// Article maintenance/service notes
+export const notesAPI = {
+  async list(articleId: number): Promise<ArticleNote[]> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/notes`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load notes"));
+    return response.json();
+  },
+
+  async create(articleId: number, content: string): Promise<ArticleNote> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/notes`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ content }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to add note"));
+    return response.json();
+  },
+
+  async remove(articleId: number, noteId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/notes/${noteId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to delete note"));
   },
 };
 

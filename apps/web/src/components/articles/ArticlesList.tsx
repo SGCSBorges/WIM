@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
 import {
@@ -665,7 +665,12 @@ const ArticlesList: React.FC = () => {
                         />
                       </td>
                       <td className="px-6 py-4 text-sm font-medium">
-                        {article.articleNom}
+                        <Link
+                          to={`/articles/${article.articleId}`}
+                          className="ui-action-primary hover:underline"
+                        >
+                          {article.articleNom}
+                        </Link>
                         {article.tags && article.tags.length > 0 && (
                           <div className="mt-1 flex flex-wrap gap-1">
                             {article.tags.map((at) => (

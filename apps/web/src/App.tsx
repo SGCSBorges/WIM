@@ -27,6 +27,9 @@ import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 const ArticlesList = React.lazy(
   () => import("./components/articles/ArticlesList")
 );
+const ArticleDetail = React.lazy(
+  () => import("./components/articles/ArticleDetail")
+);
 const Dashboard = React.lazy(() => import("./components/dashboard/Dashboard"));
 const AdminUsers = React.lazy(() => import("./components/admin/AdminUsers"));
 const WarrantiesView = React.lazy(
@@ -581,6 +584,7 @@ export default function App() {
 
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/articles" element={<ArticlesList />} />
+            <Route path="/articles/:id" element={<ArticleDetail />} />
             <Route path="/warranties" element={<WarrantiesView />} />
             <Route path="/attachments" element={<AttachmentsList />} />
             <Route path="/locations" element={<LocationsView />} />
