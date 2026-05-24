@@ -4,6 +4,11 @@ import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { AlertJobPayload } from "../../modules/alerts/alert.types";
 import { AlertService } from "../../modules/alerts/alert.service";
+import { PushService } from "../../modules/push/push.service";
+
+function shortDate(d: Date | null | undefined): string {
+  return d ? new Date(d).toISOString().slice(0, 10) : "";
+}
 
 export const ReminderProcessor = {
   async handle(job: Job<AlertJobPayload>) {
@@ -53,8 +58,14 @@ export const ReminderProcessor = {
         "[alerts] reminder event"
       );
 
-      // V1: "notification" = log + DB update
       await AlertService.markSent(data.alerteId);
+
+      // Best-effort Web Push (no-op when VAPID isn't configured).
+      await PushService.sendToUser(data.ownerUserId, {
+        title: `Warranty reminder: ${g.garantieNom}`,
+        body: `Warranty expires ${shortDate(g.garantieFin)}.`,
+        url: data.articleId ? `/articles/${data.articleId}` : "/alerts",
+      });
     } catch (err) {
       logger.error(
         {
@@ -83,6 +94,14 @@ export const ReminderProcessor = {
       }
 
       await AlertService.markSent(alerteId);
+
+      await PushService.sendToUser(alerte.ownerUserId, {
+        title: alerte.alerteNom,
+        body: alerte.alerteDescription ?? "Maintenance reminder.",
+        url: alerte.alerteArticleId
+          ? `/articles/${alerte.alerteArticleId}`
+          : "/alerts",
+      });
 
       // Recurring CUSTOM alert: spawn the next occurrence. A failure here must
       // not re-fail the job — the alert is already SENT, so a retry would just

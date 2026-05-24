@@ -35,6 +35,11 @@ loads into every new Claude Code session.
     `CORS_ORIGIN` (no trailing slash, comma-list OK), `APP_URL` (**single
     origin**, no trailing slash — `getAppUrl()` validates and rejects
     junk), `NODE_ENV=production`.
+  - API (optional, Web Push): `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
+    (generate once via `npx web-push generate-vapid-keys`), optional
+    `VAPID_SUBJECT` (`mailto:` contact). Without them, alert push delivery
+    is a no-op and the "Enable notifications" toggle hides — everything
+    else still works.
   - Web: `VITE_API_BASE_URL=https://wimapi.onrender.com/api`.
 - Render free-tier Postgres expires after ~30 days and the API container
   cold-starts in ~30 s. The fetch timeout in `apps/web/src/services/api.ts`

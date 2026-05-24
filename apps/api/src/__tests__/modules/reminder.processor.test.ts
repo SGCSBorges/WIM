@@ -15,13 +15,22 @@ vi.mock("../../modules/alerts/alert.service", () => ({
   },
 }));
 
+vi.mock("../../modules/push/push.service", () => ({
+  PushService: { sendToUser: vi.fn().mockResolvedValue(undefined) },
+}));
+
 vi.mock("../../config/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 import { prisma } from "../../libs/prisma";
 import { AlertService } from "../../modules/alerts/alert.service";
+import { PushService } from "../../modules/push/push.service";
 import { ReminderProcessor } from "../../jobs/processors/reminder.processor";
+
+const push = PushService as unknown as {
+  sendToUser: ReturnType<typeof vi.fn>;
+};
 
 const mockPrisma = prisma as unknown as {
   garantie: { findUnique: ReturnType<typeof vi.fn> };
@@ -57,6 +66,7 @@ describe("ReminderProcessor", () => {
       })
     );
     expect(svc.markSent).toHaveBeenCalledWith(9);
+    expect(push.sendToUser).toHaveBeenCalledWith(1, expect.any(Object));
   });
 
   it("skips a warranty reminder whose warranty was deleted", async () => {

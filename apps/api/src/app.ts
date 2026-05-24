@@ -20,6 +20,7 @@ import locationRoutes from "./modules/locations/location.routes";
 import tagRoutes from "./modules/tags/tag.routes";
 import calendarRoutes from "./modules/calendar/calendar.routes";
 import savedViewRoutes from "./modules/saved-views/saved-view.routes";
+import pushRoutes from "./modules/push/push.routes";
 import alertRoutes from "./modules/alerts/alert.routes";
 import sharedRoutes from "./modules/shared/shared.routes";
 import profileRoutes from "./modules/profile/profile.routes";
@@ -193,6 +194,7 @@ export function createApp() {
   app.use("/api/tags", tagRoutes);
   app.use("/api/calendar", calendarRoutes);
   app.use("/api/saved-views", savedViewRoutes);
+  app.use("/api/push", pushRoutes);
   app.use("/api/billing", billingRoutes);
   app.use("/api/billing", billingMeRoutes);
   app.use("/api/shares", shareRoutes);
