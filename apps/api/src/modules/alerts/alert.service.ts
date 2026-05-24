@@ -1,14 +1,20 @@
-import { AlerteStatus } from "@prisma/client";
+import { AlerteStatus, AlerteKind, Alerte } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { alertQueue } from "../../jobs/queues";
 import { logger } from "../../config/logger";
+import { addMonths } from "../common/date";
+import { createHttpError } from "../../utils/http-error";
 import { computeWarrantyReminderSchedule } from "./alert.scheduler";
 
 import {
   reminderKindLabel,
   WarrantyReminderJobPayload,
   WarrantyReminderKind,
+  CustomAlertJobPayload,
 } from "./alert.types";
+
+// Generic per-alert job id used by CUSTOM alerts and any snoozed alert.
+const customJobId = (alerteId: number) => `alert:${alerteId}`;
 
 function formatYYYYMMDD(d: Date) {
   const yyyy = d.getFullYear();
@@ -208,6 +214,133 @@ export const AlertService = {
       garantieId: input.garantieId,
     });
     await AlertService.scheduleForWarranty(input);
+  },
+
+  // Remove any BullMQ job(s) backing an alert. Warranty alerts are keyed by
+  // (garantieId, kind, date) so we try all three reminder kinds; custom and
+  // snoozed alerts use the generic per-alert id.
+  removeJobsForAlert: async (alert: {
+    alerteId: number;
+    alerteGarantieId: number | null;
+    alerteDate: Date;
+    kind: AlerteKind;
+  }) => {
+    if (alert.kind === AlerteKind.WARRANTY && alert.alerteGarantieId) {
+      for (const reminderKind of ["J30", "J7", "J1"] as const) {
+        const jobId = buildJobId(
+          alert.alerteGarantieId,
+          reminderKind,
+          alert.alerteDate
+        );
+        const job = await alertQueue.getJob(jobId);
+        if (job) await job.remove();
+      }
+    }
+    const generic = await alertQueue.getJob(customJobId(alert.alerteId));
+    if (generic) await generic.remove();
+  },
+
+  enqueueCustom: async (ownerUserId: number, alerteId: number, when: Date) => {
+    const payload: CustomAlertJobPayload = {
+      type: "custom_alert",
+      ownerUserId,
+      alerteId,
+      executeAt: when.toISOString(),
+    };
+    await alertQueue.add("reminder", payload, {
+      jobId: customJobId(alerteId),
+      delay: Math.max(0, when.getTime() - Date.now()),
+      removeOnComplete: true,
+      removeOnFail: false,
+      attempts: 3,
+      backoff: { type: "exponential", delay: 30_000 },
+    });
+  },
+
+  createCustom: async (input: {
+    ownerUserId: number;
+    alerteNom: string;
+    alerteDate: Date;
+    alerteDescription?: string | null;
+    recurrenceMonths?: number | null;
+    alerteArticleId?: number | null;
+    alerteGarantieId?: number | null;
+  }) => {
+    const created = await prisma.alerte.create({
+      data: {
+        ownerUserId: input.ownerUserId,
+        alerteNom: input.alerteNom,
+        alerteDate: input.alerteDate,
+        alerteDescription: input.alerteDescription ?? null,
+        kind: AlerteKind.CUSTOM,
+        recurrenceMonths: input.recurrenceMonths ?? null,
+        alerteArticleId: input.alerteArticleId ?? null,
+        alerteGarantieId: input.alerteGarantieId ?? null,
+        status: AlerteStatus.SCHEDULED,
+      },
+    });
+    await AlertService.enqueueCustom(
+      created.ownerUserId,
+      created.alerteId,
+      created.alerteDate
+    );
+    return created;
+  },
+
+  // Spawn the next occurrence of a recurring CUSTOM alert after it fires.
+  createRecurrenceFollowUp: async (alert: Alerte) => {
+    if (!alert.recurrenceMonths) return;
+    const nextDate = addMonths(
+      new Date(alert.alerteDate),
+      alert.recurrenceMonths
+    );
+    const next = await prisma.alerte.create({
+      data: {
+        ownerUserId: alert.ownerUserId,
+        alerteNom: alert.alerteNom,
+        alerteDate: nextDate,
+        alerteDescription: alert.alerteDescription,
+        kind: AlerteKind.CUSTOM,
+        recurrenceMonths: alert.recurrenceMonths,
+        alerteArticleId: alert.alerteArticleId,
+        alerteGarantieId: alert.alerteGarantieId,
+        status: AlerteStatus.SCHEDULED,
+      },
+    });
+    await AlertService.enqueueCustom(
+      next.ownerUserId,
+      next.alerteId,
+      next.alerteDate
+    );
+    return next;
+  },
+
+  snooze: async (alerteId: number, ownerUserId: number, days: number) => {
+    const alert = await prisma.alerte.findFirst({
+      where: { alerteId, ownerUserId, status: AlerteStatus.SCHEDULED },
+    });
+    if (!alert) throw createHttpError(404, "Scheduled alert not found");
+
+    await AlertService.removeJobsForAlert(alert);
+    const newDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    const updated = await prisma.alerte.update({
+      where: { alerteId },
+      data: { alerteDate: newDate, snoozedUntil: newDate },
+    });
+    await AlertService.enqueueCustom(ownerUserId, alerteId, newDate);
+    return updated;
+  },
+
+  cancel: async (alerteId: number, ownerUserId: number) => {
+    const alert = await prisma.alerte.findFirst({
+      where: { alerteId, ownerUserId, status: AlerteStatus.SCHEDULED },
+    });
+    if (!alert) throw createHttpError(404, "Scheduled alert not found");
+    await AlertService.removeJobsForAlert(alert);
+    return prisma.alerte.update({
+      where: { alerteId },
+      data: { status: AlerteStatus.CANCELLED },
+    });
   },
 
   markSent: (alerteId: number) =>

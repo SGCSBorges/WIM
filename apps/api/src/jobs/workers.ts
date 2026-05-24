@@ -1,16 +1,16 @@
 import { Worker } from "bullmq";
 import { createRedisConnection } from "./redis";
-import { WarrantyReminderJobPayload } from "../modules/alerts/alert.types";
+import { AlertJobPayload } from "../modules/alerts/alert.types";
 // Using dynamic import avoids TS module-resolution edge cases in some workspace configs.
 import { logger } from "../config/logger";
 import { ALERT_QUEUE_NAME } from "./queues";
 
-let workerSingleton: Worker<WarrantyReminderJobPayload> | null = null;
+let workerSingleton: Worker<AlertJobPayload> | null = null;
 
 export function startWorkers() {
   if (workerSingleton) return;
 
-  const worker = new Worker<WarrantyReminderJobPayload>(
+  const worker = new Worker<AlertJobPayload>(
     ALERT_QUEUE_NAME,
     async (job) => {
       const mod =

@@ -39,6 +39,11 @@ enum AlerteStatus {
   FAILED
 }
 
+enum AlerteKind {
+  WARRANTY
+  CUSTOM
+}
+
 model Location {
   locationId  Int      @id @default(autoincrement())
   ownerUserId Int
@@ -199,6 +204,11 @@ model Alerte {
   alerteDescription String?  @db.VarChar(255)
 
   status            AlerteStatus @default(SCHEDULED)
+  kind              AlerteKind   @default(WARRANTY)
+  // For CUSTOM alerts: repeat every N months after firing (null = one-shot).
+  recurrenceMonths  Int?
+  // Set when an alert has been snoozed; alerteDate is moved to this time too.
+  snoozedUntil      DateTime?
   sentAt            DateTime?
   failedAt          DateTime?
   errorMessage      String?  @db.VarChar(500)

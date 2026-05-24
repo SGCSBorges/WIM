@@ -6,6 +6,7 @@ vi.mock("../../libs/prisma", () => ({
     alerte: {
       findMany: vi.fn(),
       createMany: vi.fn(),
+      create: vi.fn(),
       findFirst: vi.fn(),
       updateMany: vi.fn(),
       update: vi.fn(),
@@ -94,6 +95,105 @@ describe("AlertService.cancelForWarranty", () => {
 // ---------------------------------------------------------------------------
 // markSent / markFailed
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// createCustom / snooze / cancel
+// ---------------------------------------------------------------------------
+
+describe("AlertService.createCustom", () => {
+  it("creates a CUSTOM alert and enqueues a job", async () => {
+    const when = new Date(Date.now() + 86_400_000);
+    mockPrisma.alerte.create.mockResolvedValue({
+      alerteId: 42,
+      ownerUserId: 1,
+      alerteDate: when,
+    });
+
+    const created = await AlertService.createCustom({
+      ownerUserId: 1,
+      alerteNom: "Filter swap",
+      alerteDate: when,
+      recurrenceMonths: 3,
+    });
+
+    expect(created.alerteId).toBe(42);
+    expect(mockPrisma.alerte.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          kind: "CUSTOM",
+          recurrenceMonths: 3,
+          status: AlerteStatus.SCHEDULED,
+        }),
+      })
+    );
+    expect(queueRef.add).toHaveBeenCalledWith(
+      "reminder",
+      expect.objectContaining({ type: "custom_alert", alerteId: 42 }),
+      expect.objectContaining({ jobId: "alert:42" })
+    );
+  });
+});
+
+describe("AlertService.snooze", () => {
+  it("rejects a non-scheduled / non-owned alert", async () => {
+    mockPrisma.alerte.findFirst.mockResolvedValue(null);
+    await expect(AlertService.snooze(9, 1, 7)).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it("removes the old job, moves the date, and re-enqueues", async () => {
+    mockPrisma.alerte.findFirst.mockResolvedValue({
+      alerteId: 9,
+      alerteGarantieId: null,
+      alerteDate: new Date(),
+      kind: "CUSTOM",
+    });
+    const mockJob = { remove: vi.fn().mockResolvedValue(undefined) };
+    queueRef.getJob.mockResolvedValue(mockJob);
+    mockPrisma.alerte.update.mockResolvedValue({ alerteId: 9 });
+
+    await AlertService.snooze(9, 1, 7);
+
+    expect(mockJob.remove).toHaveBeenCalled();
+    expect(mockPrisma.alerte.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { alerteId: 9 },
+        data: expect.objectContaining({ snoozedUntil: expect.any(Date) }),
+      })
+    );
+    expect(queueRef.add).toHaveBeenCalledWith(
+      "reminder",
+      expect.objectContaining({ type: "custom_alert", alerteId: 9 }),
+      expect.objectContaining({ jobId: "alert:9" })
+    );
+  });
+});
+
+describe("AlertService.cancel", () => {
+  it("cancels a scheduled alert and removes its job", async () => {
+    mockPrisma.alerte.findFirst.mockResolvedValue({
+      alerteId: 11,
+      alerteGarantieId: null,
+      alerteDate: new Date(),
+      kind: "CUSTOM",
+    });
+    queueRef.getJob.mockResolvedValue(null);
+    mockPrisma.alerte.update.mockResolvedValue({
+      alerteId: 11,
+      status: "CANCELLED",
+    });
+
+    await AlertService.cancel(11, 1);
+
+    expect(mockPrisma.alerte.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { alerteId: 11 },
+        data: { status: AlerteStatus.CANCELLED },
+      })
+    );
+  });
+});
 
 describe("AlertService.markSent", () => {
   it("updates the alert to SENT with a sentAt timestamp", async () => {

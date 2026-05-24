@@ -2,12 +2,18 @@ import type { Job } from "bullmq";
 
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
-import { WarrantyReminderJobPayload } from "../../modules/alerts/alert.types";
+import { AlertJobPayload } from "../../modules/alerts/alert.types";
 import { AlertService } from "../../modules/alerts/alert.service";
 
 export const ReminderProcessor = {
-  async handle(job: Job<WarrantyReminderJobPayload>) {
+  async handle(job: Job<AlertJobPayload>) {
     const data = job.data;
+
+    // Custom / snoozed alerts are keyed purely by alerteId — load the row,
+    // mark it sent, and (for recurring CUSTOM alerts) schedule the next one.
+    if (data.type === "custom_alert") {
+      return ReminderProcessor.handleCustom(job, data.alerteId);
+    }
 
     logger.info(
       {
@@ -59,6 +65,32 @@ export const ReminderProcessor = {
         "[alerts] reminder failed"
       );
       await AlertService.markFailed(data.alerteId, err);
+      throw err;
+    }
+  },
+
+  async handleCustom(job: Job<AlertJobPayload>, alerteId: number) {
+    try {
+      const alerte = await prisma.alerte.findUnique({ where: { alerteId } });
+      // Gone (article/account deleted) or no longer scheduled (cancelled,
+      // already sent, or superseded by a snooze that re-keyed the job).
+      if (!alerte || alerte.status !== "SCHEDULED") {
+        logger.warn(
+          { jobId: job.id, alerteId, status: alerte?.status },
+          "[alerts] custom alert not actionable — skipping"
+        );
+        return;
+      }
+
+      await AlertService.markSent(alerteId);
+
+      // Recurring CUSTOM alert: spawn the next occurrence.
+      if (alerte.kind === "CUSTOM" && alerte.recurrenceMonths) {
+        await AlertService.createRecurrenceFollowUp(alerte);
+      }
+    } catch (err) {
+      logger.error({ jobId: job.id, alerteId, err }, "[alerts] custom failed");
+      await AlertService.markFailed(alerteId, err);
       throw err;
     }
   },
