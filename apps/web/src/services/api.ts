@@ -544,6 +544,47 @@ export const alertsAPI = {
       );
     return response.json();
   },
+
+  async create(input: {
+    alerteNom: string;
+    alerteDate: string;
+    alerteDescription?: string | null;
+    recurrenceMonths?: number | null;
+    alerteArticleId?: number | null;
+  }) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/alerts`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(input),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to create alert"));
+    return response.json();
+  },
+
+  async snooze(alerteId: number, days: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/alerts/${alerteId}/snooze`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ days }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to snooze alert"));
+    return response.json();
+  },
+
+  async cancel(alerteId: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/alerts/${alerteId}/cancel`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to cancel alert"));
+    return response.json();
+  },
 };
 
 // Statistics API

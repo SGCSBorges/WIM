@@ -4,6 +4,7 @@ import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { alertsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner } from "../common/States";
+import { useToast } from "../common/Toast";
 
 type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
 
@@ -13,6 +14,9 @@ type Alert = {
   alerteDate: string;
   alerteDescription?: string | null;
   status: AlertStatus;
+  kind?: "WARRANTY" | "CUSTOM";
+  recurrenceMonths?: number | null;
+  snoozedUntil?: string | null;
   sentAt?: string | null;
   failedAt?: string | null;
   errorMessage?: string | null;
@@ -46,12 +50,21 @@ function statusBadge(status: AlertStatus) {
 
 export default function AlertsView() {
   const { t } = useI18n();
+  const toast = useToast();
   const [items, setItems] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"ALL" | AlertStatus>("ALL");
   const [sortBy, setSortBy] = useState<"date" | "status" | "name">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  // New-alert form
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newDate, setNewDate] = useState("");
+  const [newRecurrence, setNewRecurrence] = useState("");
+  const [creating, setCreating] = useState(false);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -96,17 +109,122 @@ export default function AlertsView() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      toast.show(t("alerts.copied"), { kind: "success" });
     } catch {
-      // silent (some browsers disallow clipboard without HTTPS)
+      // Clipboard can be blocked (insecure context / permissions). Tell the
+      // user instead of failing silently.
+      toast.show(t("alerts.copyFailed"), { kind: "error" });
+    }
+  };
+
+  const createAlert = async () => {
+    if (!newName.trim() || !newDate) return;
+    setCreating(true);
+    try {
+      await alertsAPI.create({
+        alerteNom: newName.trim(),
+        alerteDate: new Date(newDate).toISOString(),
+        recurrenceMonths: newRecurrence ? Number(newRecurrence) : null,
+      });
+      toast.show(t("alerts.create.success"), { kind: "success" });
+      setNewName("");
+      setNewDate("");
+      setNewRecurrence("");
+      setShowCreate(false);
+      await fetchAll();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const snoozeAlert = async (alerteId: number, days: number) => {
+    setBusyId(alerteId);
+    try {
+      await alertsAPI.snooze(alerteId, days);
+      toast.show(t("alerts.snooze.success"), { kind: "success" });
+      await fetchAll();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const cancelAlert = async (alerteId: number) => {
+    setBusyId(alerteId);
+    try {
+      await alertsAPI.cancel(alerteId);
+      toast.show(t("alerts.cancel.success"), { kind: "success" });
+      await fetchAll();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBusyId(null);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t("alerts.title")}</h1>
-        <p className="ui-text-muted">{t("alerts.subtitle")}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">{t("alerts.title")}</h1>
+          <p className="ui-text-muted">{t("alerts.subtitle")}</p>
+        </div>
+        <button
+          onClick={() => setShowCreate((v) => !v)}
+          className="ui-btn-primary px-4 py-2 rounded-md text-sm shrink-0"
+        >
+          {showCreate ? t("common.cancel") : t("alerts.create.button")}
+        </button>
       </div>
+
+      {showCreate && (
+        <div className="ui-card rounded-lg p-4 space-y-3">
+          <h2 className="font-semibold">{t("alerts.create.title")}</h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={t("alerts.create.namePlaceholder")}
+              className="ui-input px-3 py-2 rounded-md"
+              maxLength={100}
+            />
+            <input
+              type="datetime-local"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              className="ui-input px-3 py-2 rounded-md"
+              aria-label={t("alerts.create.date")}
+            />
+            <input
+              type="number"
+              min="1"
+              max="120"
+              value={newRecurrence}
+              onChange={(e) => setNewRecurrence(e.target.value)}
+              placeholder={t("alerts.create.recurrencePlaceholder")}
+              className="ui-input px-3 py-2 rounded-md"
+              aria-label={t("alerts.recurrence")}
+            />
+          </div>
+          <button
+            onClick={createAlert}
+            disabled={creating || !newName.trim() || !newDate}
+            className="ui-btn-primary px-4 py-2 rounded-md text-sm"
+          >
+            {creating ? t("common.loading") : t("alerts.create.submit")}
+          </button>
+        </div>
+      )}
 
       <div className="ui-card rounded-lg">
         <div className="p-4 border-b ui-divider flex items-center justify-between gap-4">
@@ -230,6 +348,16 @@ export default function AlertsView() {
                     </div>
                   )}
 
+                  {a.recurrenceMonths ? (
+                    <div className="mt-1 text-xs ui-text-muted">
+                      🔁{" "}
+                      {t("alerts.recurrence.every").replace(
+                        "{months}",
+                        String(a.recurrenceMonths)
+                      )}
+                    </div>
+                  ) : null}
+
                   {a.status === "FAILED" && a.errorMessage && (
                     <div className="mt-2 text-xs ui-text-error">
                       {t("alerts.error")}: {a.errorMessage}
@@ -237,15 +365,43 @@ export default function AlertsView() {
                   )}
                 </div>
 
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge(
-                    a.status
-                  )}`}
-                >
-                  {t(
-                    `alerts.status.${a.status.toLowerCase()}` as TranslationKey
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge(
+                      a.status
+                    )}`}
+                  >
+                    {t(
+                      `alerts.status.${a.status.toLowerCase()}` as TranslationKey
+                    )}
+                  </span>
+
+                  {a.status === "SCHEDULED" && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => snoozeAlert(a.alerteId, 7)}
+                        disabled={busyId === a.alerteId}
+                        className="text-xs ui-btn-ghost border ui-divider rounded px-2 py-1"
+                      >
+                        {t("alerts.snooze.7d")}
+                      </button>
+                      <button
+                        onClick={() => snoozeAlert(a.alerteId, 30)}
+                        disabled={busyId === a.alerteId}
+                        className="text-xs ui-btn-ghost border ui-divider rounded px-2 py-1"
+                      >
+                        {t("alerts.snooze.30d")}
+                      </button>
+                      <button
+                        onClick={() => cancelAlert(a.alerteId)}
+                        disabled={busyId === a.alerteId}
+                        className="text-xs ui-action-danger px-2 py-1"
+                      >
+                        {t("alerts.cancel")}
+                      </button>
+                    </div>
                   )}
-                </span>
+                </div>
               </div>
             </div>
           ))}
