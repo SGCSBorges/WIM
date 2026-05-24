@@ -5,6 +5,7 @@ import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import { ErrorBanner } from "../common/States";
+import BarList from "../common/BarList";
 
 interface DashboardStatistics {
   articles: {
@@ -38,6 +39,7 @@ interface DashboardStatistics {
     total: number;
     atRisk: number;
     byLocation: Array<{ locationId: number; name: string; value: number }>;
+    byTag: Array<{ tagId: number; name: string; value: number }>;
   };
 }
 
@@ -227,6 +229,58 @@ const Dashboard: React.FC = () => {
           color="ui-icon-warning"
           subtitle={t("dashboard.availableInSharedView")}
         />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="ui-card rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">
+            {t("dashboard.charts.valueByLocation")}
+          </h3>
+          <BarList
+            items={statistics.inventoryValue.byLocation.map((l) => ({
+              label: l.name,
+              value: l.value,
+            }))}
+            formatValue={(n) => formatMoney(n, currency, language)}
+            emptyLabel={t("dashboard.charts.noData")}
+          />
+        </div>
+        <div className="ui-card rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">
+            {t("dashboard.charts.valueByTag")}
+          </h3>
+          <BarList
+            items={statistics.inventoryValue.byTag.map((tg) => ({
+              label: tg.name,
+              value: tg.value,
+            }))}
+            formatValue={(n) => formatMoney(n, currency, language)}
+            emptyLabel={t("dashboard.charts.noData")}
+          />
+        </div>
+        <div className="ui-card rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">
+            {t("dashboard.charts.warrantyStatus")}
+          </h3>
+          <BarList
+            items={[
+              {
+                label: t("dashboard.active"),
+                value: statistics.warranties.active,
+              },
+              {
+                label: t("dashboard.expiringSoon"),
+                value: statistics.warranties.expiringSoon,
+              },
+              {
+                label: t("dashboard.expired"),
+                value: statistics.warranties.expired,
+              },
+            ]}
+            emptyLabel={t("dashboard.charts.noData")}
+          />
+        </div>
       </div>
 
       {/* Detailed Stats */}

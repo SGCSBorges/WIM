@@ -37,7 +37,7 @@ const STATS = {
   },
   alerts: { total: 8 },
   sharing: { ownedSharedArticles: 3, totalSharedArticles: 11 },
-  inventoryValue: { total: 1234, atRisk: 200, byLocation: [] },
+  inventoryValue: { total: 1234, atRisk: 200, byLocation: [], byTag: [] },
 };
 
 function renderDashboard() {
