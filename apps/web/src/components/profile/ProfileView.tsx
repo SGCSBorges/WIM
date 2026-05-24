@@ -4,6 +4,7 @@ import {
   billingAPI,
   articlesAPI,
   sharesAPI,
+  calendarAPI,
   type BillingSubscription,
   type ShareItem,
   type ShareInviteItem,
@@ -56,6 +57,7 @@ export default function ProfileView() {
   const [success, setSuccess] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [billingBusy, setBillingBusy] = useState(false);
+  const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -200,6 +202,26 @@ export default function ProfileView() {
       const updated = await profileAPI.updateCurrency(currency);
       setMe((prev) => (prev ? { ...prev, currency: updated.currency } : prev));
       showSuccess(t("profile.currency.success"));
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    }
+  };
+
+  const enableCalendar = async () => {
+    try {
+      const { path } = await calendarAPI.enable();
+      setCalendarUrl(calendarAPI.feedUrl(path));
+      showSuccess(t("calendar.enabled"));
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    }
+  };
+
+  const disableCalendar = async () => {
+    try {
+      await calendarAPI.disable();
+      setCalendarUrl(null);
+      showSuccess(t("calendar.disabled"));
     } catch (e: unknown) {
       showFailure(getErrorMessage(e, t("common.errorOccurred")));
     }
@@ -374,6 +396,53 @@ export default function ProfileView() {
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="ui-card rounded-xl p-6 space-y-3">
+        <div>
+          <h2 className="font-semibold ui-title">{t("calendar.title")}</h2>
+          <p className="text-sm ui-text-muted">{t("calendar.subtitle")}</p>
+        </div>
+        {calendarUrl ? (
+          <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                readOnly
+                value={calendarUrl}
+                onFocus={(e) => e.currentTarget.select()}
+                className="ui-input flex-1 px-3 py-2 rounded font-mono text-xs"
+                aria-label={t("calendar.url")}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard
+                    ?.writeText(calendarUrl)
+                    .then(() => showSuccess(t("calendar.copied")))
+                    .catch(() => {});
+                }}
+                className="ui-btn-ghost px-4 py-2 rounded border ui-divider text-sm"
+              >
+                {t("calendar.copy")}
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={disableCalendar}
+              className="ui-action-danger text-sm"
+            >
+              {t("calendar.disable")}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={enableCalendar}
+            className="ui-btn-primary px-4 py-2 rounded text-sm"
+          >
+            {t("calendar.enable")}
+          </button>
+        )}
       </div>
 
       {me?.role === "POWER_USER" && (

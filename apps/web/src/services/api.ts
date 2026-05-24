@@ -638,6 +638,41 @@ export const notesAPI = {
   },
 };
 
+// Calendar feed
+export const calendarAPI = {
+  async enable(): Promise<{ token: string; path: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/calendar/token`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to enable calendar feed")
+      );
+    return response.json();
+  },
+
+  async disable(): Promise<void> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/calendar/token`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to disable calendar feed")
+      );
+  },
+
+  // Build the absolute feed URL from the API origin + returned path.
+  feedUrl(path: string): string {
+    try {
+      return new URL(API_BASE_URL).origin + path;
+    } catch {
+      return path;
+    }
+  },
+};
+
 // Alerts API
 export const alertsAPI = {
   async getAll(status?: string, page?: number, limit?: number) {
