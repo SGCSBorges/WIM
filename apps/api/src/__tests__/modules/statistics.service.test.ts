@@ -13,6 +13,9 @@ vi.mock("../../libs/prisma", () => ({
       groupBy: vi.fn(),
       findMany: vi.fn(),
     },
+    articleTag: {
+      findMany: vi.fn(),
+    },
     garantie: {
       count: vi.fn(),
     },
@@ -44,6 +47,7 @@ const mockPrisma = prisma as unknown as {
   article: Record<string, ReturnType<typeof vi.fn>>;
   location: Record<string, ReturnType<typeof vi.fn>>;
   articleLocation: Record<string, ReturnType<typeof vi.fn>>;
+  articleTag: Record<string, ReturnType<typeof vi.fn>>;
   garantie: Record<string, ReturnType<typeof vi.fn>>;
   alerte: Record<string, ReturnType<typeof vi.fn>>;
   user: Record<string, ReturnType<typeof vi.fn>>;
@@ -78,6 +82,7 @@ function setupDashboardMocks({
     .mockResolvedValueOnce({ _sum: { purchasePrice: null } }) // total value
     .mockResolvedValueOnce({ _sum: { purchasePrice: null } }); // at-risk value
   mockPrisma.articleLocation.findMany.mockResolvedValue([]);
+  mockPrisma.articleTag.findMany.mockResolvedValue([]);
   mockPrisma.garantie.count
     .mockResolvedValueOnce(warrantiesTotal)
     .mockResolvedValueOnce(warrantiesActive)
@@ -158,6 +163,7 @@ describe("getDashboardStatistics", () => {
     mockPrisma.location.findMany.mockResolvedValue([]);
     mockPrisma.articleLocation.groupBy.mockResolvedValue([]);
     mockPrisma.articleLocation.findMany.mockResolvedValue([]);
+    mockPrisma.articleTag.findMany.mockResolvedValue([]);
     mockPrisma.article.aggregate
       .mockResolvedValueOnce({ _sum: { purchasePrice: null } })
       .mockResolvedValueOnce({ _sum: { purchasePrice: null } });
@@ -198,6 +204,10 @@ describe("getDashboardStatistics", () => {
       { locationId: 1, article: { purchasePrice: 50 } },
       { locationId: 2, article: { purchasePrice: 150 } },
     ]);
+    mockPrisma.articleTag.findMany.mockResolvedValue([
+      { tagId: 1, tag: { name: "Tools" }, article: { purchasePrice: 100 } },
+      { tagId: 1, tag: { name: "Tools" }, article: { purchasePrice: 150 } },
+    ]);
     mockPrisma.garantie.count.mockResolvedValue(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
 
@@ -208,6 +218,9 @@ describe("getDashboardStatistics", () => {
     expect(result.inventoryValue.byLocation).toEqual([
       { locationId: 1, name: "Home", value: 150 },
       { locationId: 2, name: "Office", value: 150 },
+    ]);
+    expect(result.inventoryValue.byTag).toEqual([
+      { tagId: 1, name: "Tools", value: 250 },
     ]);
   });
 

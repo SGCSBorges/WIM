@@ -44,6 +44,11 @@ export interface DashboardStatistics {
       name: string;
       value: number;
     }>;
+    byTag: Array<{
+      tagId: number;
+      name: string;
+      value: number;
+    }>;
   };
 }
 
@@ -112,6 +117,7 @@ export async function getDashboardStatistics(
       inventoryValueAgg,
       atRiskValueAgg,
       locationValueRows,
+      tagValueRows,
     ] = await Promise.all([
       prisma.article.count({ where: { ownerUserId } }),
       prisma.article.count({
@@ -162,6 +168,14 @@ export async function getDashboardStatistics(
           article: { select: { purchasePrice: true } },
         },
       }),
+      prisma.articleTag.findMany({
+        where: { article: { ownerUserId } },
+        select: {
+          tagId: true,
+          tag: { select: { name: true } },
+          article: { select: { purchasePrice: true } },
+        },
+      }),
     ]);
 
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
@@ -177,6 +191,17 @@ export async function getDashboardStatistics(
         row.locationId,
         (valueByLocationMap.get(row.locationId) ?? 0) + v
       );
+    }
+
+    // Same aggregation per tag.
+    const valueByTag = new Map<number, { name: string; value: number }>();
+    for (const row of tagValueRows) {
+      const v = row.article.purchasePrice
+        ? Number(row.article.purchasePrice)
+        : 0;
+      const existing = valueByTag.get(row.tagId);
+      if (existing) existing.value += v;
+      else valueByTag.set(row.tagId, { name: row.tag.name, value: v });
     }
 
     const countMap = new Map<number, number>();
@@ -241,6 +266,11 @@ export async function getDashboardStatistics(
           locationId: l.locationId,
           name: l.name,
           value: valueByLocationMap.get(l.locationId) ?? 0,
+        })),
+        byTag: Array.from(valueByTag.entries()).map(([tagId, v]) => ({
+          tagId,
+          name: v.name,
+          value: v.value,
         })),
       },
     };
