@@ -75,8 +75,8 @@ describe("AlertService.cancelForWarranty", () => {
 
     await AlertService.cancelForWarranty({ ownerUserId: 1, garantieId: 5 });
 
-    // 3 candidate job IDs tried per alert
-    expect(queueRef.getJob).toHaveBeenCalledTimes(3);
+    // 3 warranty-keyed candidates + 1 generic per-alert job id
+    expect(queueRef.getJob).toHaveBeenCalledTimes(4);
     expect(mockJob.remove).toHaveBeenCalledTimes(1);
 
     expect(mockPrisma.alerte.updateMany).toHaveBeenCalledWith(

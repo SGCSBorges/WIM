@@ -167,6 +167,10 @@ export const AlertService = {
           logger.info({ jobId }, "[alerts] cancelled job");
         }
       }
+      // Also drop the generic per-alert job in case this reminder was snoozed
+      // (snoozing re-keys it from the warranty id to `alert:<id>`).
+      const generic = await alertQueue.getJob(customJobId(a.alerteId));
+      if (generic) await generic.remove();
     }
 
     // Only cancel SCHEDULED alerts — leave SENT/FAILED records intact for audit purposes.

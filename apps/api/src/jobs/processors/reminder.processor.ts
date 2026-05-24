@@ -84,9 +84,18 @@ export const ReminderProcessor = {
 
       await AlertService.markSent(alerteId);
 
-      // Recurring CUSTOM alert: spawn the next occurrence.
+      // Recurring CUSTOM alert: spawn the next occurrence. A failure here must
+      // not re-fail the job — the alert is already SENT, so a retry would just
+      // re-skip it and the recurrence would be lost anyway. Log and move on.
       if (alerte.kind === "CUSTOM" && alerte.recurrenceMonths) {
-        await AlertService.createRecurrenceFollowUp(alerte);
+        try {
+          await AlertService.createRecurrenceFollowUp(alerte);
+        } catch (recErr) {
+          logger.error(
+            { jobId: job.id, alerteId, err: recErr },
+            "[alerts] failed to schedule recurrence follow-up"
+          );
+        }
       }
     } catch (err) {
       logger.error({ jobId: job.id, alerteId, err }, "[alerts] custom failed");

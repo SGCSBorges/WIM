@@ -182,27 +182,36 @@ export async function getDashboardStatistics(
 
     // Aggregate inventory value per location in JS (Prisma groupBy can't sum
     // a related column). Decimal columns come back as Prisma.Decimal | null.
-    const valueByLocationMap = new Map<number, number>();
+    // Accumulate in integer cents so repeated float addition can't drift the
+    // displayed totals; divide back to a currency amount at the end.
+    const cents = (price: unknown) =>
+      price ? Math.round(Number(price) * 100) : 0;
+
+    const centsByLocation = new Map<number, number>();
     for (const row of locationValueRows) {
-      const v = row.article.purchasePrice
-        ? Number(row.article.purchasePrice)
-        : 0;
-      valueByLocationMap.set(
+      centsByLocation.set(
         row.locationId,
-        (valueByLocationMap.get(row.locationId) ?? 0) + v
+        (centsByLocation.get(row.locationId) ?? 0) +
+          cents(row.article.purchasePrice)
       );
     }
+    const valueByLocationMap = new Map<number, number>();
+    for (const [id, c] of centsByLocation) valueByLocationMap.set(id, c / 100);
 
     // Same aggregation per tag.
-    const valueByTag = new Map<number, { name: string; value: number }>();
+    const tagCents = new Map<number, { name: string; cents: number }>();
     for (const row of tagValueRows) {
-      const v = row.article.purchasePrice
-        ? Number(row.article.purchasePrice)
-        : 0;
-      const existing = valueByTag.get(row.tagId);
-      if (existing) existing.value += v;
-      else valueByTag.set(row.tagId, { name: row.tag.name, value: v });
+      const existing = tagCents.get(row.tagId);
+      if (existing) existing.cents += cents(row.article.purchasePrice);
+      else
+        tagCents.set(row.tagId, {
+          name: row.tag.name,
+          cents: cents(row.article.purchasePrice),
+        });
     }
+    const valueByTag = new Map<number, { name: string; value: number }>();
+    for (const [id, v] of tagCents)
+      valueByTag.set(id, { name: v.name, value: v.cents / 100 });
 
     const countMap = new Map<number, number>();
     for (const row of articleCountsByLocation) {
