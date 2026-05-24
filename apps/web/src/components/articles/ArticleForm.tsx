@@ -58,6 +58,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     articleDescription: article?.articleDescription || "",
     productImageUrl: article?.productImageUrl || "",
   });
+  const [purchasePrice, setPurchasePrice] = useState<string>(
+    article?.purchasePrice != null ? String(article.purchasePrice) : ""
+  );
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
     Boolean(article?.garantie)
@@ -103,6 +106,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       articleDescription: article?.articleDescription || "",
       productImageUrl: article?.productImageUrl || "",
     });
+    setPurchasePrice(
+      article?.purchasePrice != null ? String(article.purchasePrice) : ""
+    );
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setWarrantyEnabled(Boolean(article?.garantie));
     setWarrantyNom(article?.garantie?.garantieNom || "");
@@ -238,6 +244,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       ...formData,
       articleDescription: formData.articleDescription?.trim() || null,
       productImageUrl: formData.productImageUrl?.trim() || null,
+      purchasePrice: purchasePrice.trim() === "" ? null : Number(purchasePrice),
       locationIds: selectedLocationIds,
       ...(warrantyEnabled
         ? {
@@ -362,6 +369,27 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.model")}
             maxLength={100}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="purchasePrice"
+            className="block text-sm font-medium ui-text-muted mb-1"
+          >
+            {t("articleForm.purchasePrice")}
+          </label>
+          <input
+            type="number"
+            id="purchasePrice"
+            name="purchasePrice"
+            min="0"
+            step="0.01"
+            inputMode="decimal"
+            value={purchasePrice}
+            onChange={(e) => setPurchasePrice(e.target.value)}
+            className="w-full px-3 py-2 ui-input rounded-md"
+            placeholder={t("articleForm.placeholder.purchasePrice")}
           />
         </div>
 

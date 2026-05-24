@@ -143,6 +143,17 @@ export const extras = {
     "articles.warranty.daysLeft": "days",
 
     "auth.bootstrap.success": "✓ {email} is now {role}. Log in to use it.",
+
+    "articles.table.value": "Value",
+    "articleForm.purchasePrice": "Purchase price",
+    "articleForm.placeholder.purchasePrice": "e.g. 199.99",
+    "dashboard.inventoryValue": "Inventory value",
+    "dashboard.valueByLocation": "Value by location",
+    "dashboard.valueAtRisk": "at risk (expired)",
+    "profile.currency.title": "Display currency",
+    "profile.currency.subtitle":
+      "Used to format inventory values across the app.",
+    "profile.currency.success": "Currency updated.",
   },
   fr: {
     "articles.table.image": "Image",
@@ -286,6 +297,17 @@ export const extras = {
 
     "auth.bootstrap.success":
       "✓ {email} est maintenant {role}. Connectez-vous pour l'utiliser.",
+
+    "articles.table.value": "Valeur",
+    "articleForm.purchasePrice": "Prix d'achat",
+    "articleForm.placeholder.purchasePrice": "ex. 199,99",
+    "dashboard.inventoryValue": "Valeur de l'inventaire",
+    "dashboard.valueByLocation": "Valeur par emplacement",
+    "dashboard.valueAtRisk": "à risque (expirée)",
+    "profile.currency.title": "Devise d'affichage",
+    "profile.currency.subtitle":
+      "Utilisée pour formater les valeurs d'inventaire dans l'application.",
+    "profile.currency.success": "Devise mise à jour.",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -426,6 +448,17 @@ export const extras = {
 
     "auth.bootstrap.success":
       "✓ {email} agora é {role}. Inicie sessão para utilizar.",
+
+    "articles.table.value": "Valor",
+    "articleForm.purchasePrice": "Preço de compra",
+    "articleForm.placeholder.purchasePrice": "ex. 199,99",
+    "dashboard.inventoryValue": "Valor do inventário",
+    "dashboard.valueByLocation": "Valor por localização",
+    "dashboard.valueAtRisk": "em risco (expirada)",
+    "profile.currency.title": "Moeda de exibição",
+    "profile.currency.subtitle":
+      "Usada para formatar os valores de inventário na aplicação.",
+    "profile.currency.success": "Moeda atualizada.",
   },
 } as const;
 

@@ -15,7 +15,15 @@ import ArticleThumb from "../articles/ArticleThumb";
 import { useToast } from "../common/Toast";
 import DataExportPanel from "./DataExportPanel";
 
-type Me = { userId: number; email: string; role: string };
+type Me = {
+  userId: number;
+  email: string;
+  role: string;
+  currency?: string;
+};
+
+// A small curated list keeps the selector usable; the API accepts any ISO code.
+const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF", "JPY", "BRL"];
 
 function formatDate(unixSeconds: number | null, language: string): string {
   if (!unixSeconds) return "—";
@@ -187,6 +195,16 @@ export default function ProfileView() {
     }
   };
 
+  const changeCurrency = async (currency: string) => {
+    try {
+      const updated = await profileAPI.updateCurrency(currency);
+      setMe((prev) => (prev ? { ...prev, currency: updated.currency } : prev));
+      showSuccess(t("profile.currency.success"));
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    }
+  };
+
   const openBillingPortal = async () => {
     setError(null);
     setBillingBusy(true);
@@ -330,6 +348,32 @@ export default function ProfileView() {
         <div className="text-xs ui-text-muted">
           {t("profile.role")} {me?.role}
         </div>
+      </div>
+
+      <div className="ui-card rounded-xl p-6 space-y-3">
+        <div>
+          <h2 className="font-semibold ui-title">
+            {t("profile.currency.title")}
+          </h2>
+          <p className="text-sm ui-text-muted">
+            {t("profile.currency.subtitle")}
+          </p>
+        </div>
+        <label htmlFor="profile-currency" className="sr-only">
+          {t("profile.currency.title")}
+        </label>
+        <select
+          id="profile-currency"
+          value={me?.currency ?? "USD"}
+          onChange={(e) => changeCurrency(e.target.value)}
+          className="ui-select px-3 py-2 rounded max-w-[12rem]"
+        >
+          {CURRENCIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
       </div>
 
       {me?.role === "POWER_USER" && (

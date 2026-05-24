@@ -6,6 +6,14 @@ vi.mock("../../services/api", () => ({
   statisticsAPI: {
     getDashboard: vi.fn(),
   },
+  profileAPI: {
+    getMe: vi.fn().mockResolvedValue({
+      userId: 1,
+      email: "u@e.com",
+      role: "USER",
+      currency: "USD",
+    }),
+  },
 }));
 
 import Dashboard from "../../components/dashboard/Dashboard";
@@ -29,6 +37,7 @@ const STATS = {
   },
   alerts: { total: 8 },
   sharing: { ownedSharedArticles: 3, totalSharedArticles: 11 },
+  inventoryValue: { total: 1234, atRisk: 200, byLocation: [] },
 };
 
 function renderDashboard() {

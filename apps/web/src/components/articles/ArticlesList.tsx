@@ -6,20 +6,27 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
-import { articlesAPI, locationsAPI, authAPI } from "../../services/api";
+import {
+  articlesAPI,
+  locationsAPI,
+  authAPI,
+  profileAPI,
+} from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location } from "../../types";
 import { getErrorMessage } from "../../utils/error";
+import { formatMoney } from "../../utils/money";
 import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
 import { useToast } from "../common/Toast";
 
 const ArticlesList: React.FC = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const toast = useToast();
   const role = authAPI.getRole();
   const isPowerUser = role === "POWER_USER" || role === "ADMIN";
+  const [currency, setCurrency] = useState("USD");
 
   const getDaysUntilExpiry = (
     garantieFin: string | Date | null | undefined
@@ -35,6 +42,7 @@ const ArticlesList: React.FC = () => {
       t("articles.table.name"),
       t("articles.table.model"),
       t("articles.table.description"),
+      t("articles.table.value"),
       t("articles.table.warranty"),
       t("articles.table.expiresIn"),
     ];
@@ -45,6 +53,7 @@ const ArticlesList: React.FC = () => {
         a.articleNom,
         a.articleModele,
         a.articleDescription ?? "",
+        a.purchasePrice != null ? String(a.purchasePrice) : "",
         ws.label,
         days !== null ? `${days} ${t("articles.warranty.daysLeft")}` : "",
       ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
@@ -267,6 +276,13 @@ const ArticlesList: React.FC = () => {
 
   useEffect(() => {
     fetchLocations();
+    // Load the user's display currency for the value column (best-effort).
+    profileAPI
+      .getMe()
+      .then((me) => {
+        if (me.currency) setCurrency(me.currency);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -399,6 +415,7 @@ const ArticlesList: React.FC = () => {
                     t("articles.table.name"),
                     t("articles.table.model"),
                     t("articles.table.description"),
+                    t("articles.table.value"),
                     t("articles.table.warranty"),
                     t("articles.table.expiresIn"),
                     t("articles.table.proof"),
@@ -420,7 +437,7 @@ const ArticlesList: React.FC = () => {
                     <td className="px-3 py-4 w-10">
                       <div className="h-4 w-4 animate-pulse rounded ui-panel" />
                     </td>
-                    {[12, 60, 40, 80, 24, 20, 24, 16, 48].map((w, j) => (
+                    {[12, 60, 40, 80, 20, 24, 20, 24, 16, 48].map((w, j) => (
                       <td key={j} className="px-6 py-4">
                         <div
                           className={`h-4 animate-pulse rounded ui-panel w-${w}`}
@@ -481,6 +498,9 @@ const ArticlesList: React.FC = () => {
                     {t("articles.table.description")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
+                    {t("articles.table.value")}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
                     {t("articles.table.warranty")}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
@@ -523,6 +543,15 @@ const ArticlesList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-sm ui-text-muted">
                         {article.articleDescription || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
+                        {article.purchasePrice != null
+                          ? formatMoney(
+                              article.purchasePrice,
+                              currency,
+                              language
+                            )
+                          : "—"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {(() => {

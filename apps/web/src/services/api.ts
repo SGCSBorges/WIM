@@ -551,12 +551,33 @@ export const statisticsAPI = {
 
 // Profile API
 export const profileAPI = {
-  async getMe(): Promise<{ userId: number; email: string; role: string }> {
+  async getMe(): Promise<{
+    userId: number;
+    email: string;
+    role: string;
+    currency?: string;
+  }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
       headers: getHeaders(),
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to load profile"));
+    return response.json();
+  },
+
+  async updateCurrency(currency: string) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/currency`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ currency }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update currency")
+      );
     return response.json();
   },
 

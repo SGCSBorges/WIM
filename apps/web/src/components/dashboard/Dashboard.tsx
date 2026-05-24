@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { statisticsAPI } from "../../services/api";
+import { statisticsAPI, profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { formatMoney } from "../../utils/money";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import { ErrorBanner } from "../common/States";
 
@@ -33,11 +34,16 @@ interface DashboardStatistics {
     ownedSharedArticles: number;
     totalSharedArticles: number;
   };
+  inventoryValue: {
+    total: number;
+    atRisk: number;
+    byLocation: Array<{ locationId: number; name: string; value: number }>;
+  };
 }
 
 interface StatCardProps {
   title: string;
-  value: number;
+  value: number | string;
   icon: React.ReactNode;
   color: string;
   subtitle?: string;
@@ -68,7 +74,7 @@ const StatCard: React.FC<StatCardProps> = ({
 
 interface DetailCardProps {
   title: string;
-  data: { label: string; value: number; color?: string }[];
+  data: { label: string; value: number | string; color?: string }[];
 }
 
 const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
@@ -88,10 +94,11 @@ const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
 );
 
 const Dashboard: React.FC = () => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(
     null
   );
+  const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,6 +117,12 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchStatistics();
+    profileAPI
+      .getMe()
+      .then((me) => {
+        if (me.currency) setCurrency(me.currency);
+      })
+      .catch(() => {});
   }, [fetchStatistics]);
 
   if (loading) {
@@ -167,6 +180,22 @@ const Dashboard: React.FC = () => {
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title={t("dashboard.inventoryValue")}
+          value={formatMoney(
+            statistics.inventoryValue.total,
+            currency,
+            language
+          )}
+          icon="💰"
+          color="ui-icon-success"
+          subtitle={`${formatMoney(
+            statistics.inventoryValue.atRisk,
+            currency,
+            language
+          )} ${t("dashboard.valueAtRisk")}`}
+        />
+
         <StatCard
           title={t("dashboard.totalArticles")}
           value={statistics.articles.total}
@@ -250,6 +279,25 @@ const Dashboard: React.FC = () => {
               value: statistics.locations.unassigned,
               color: "ui-text-muted",
             },
+          ]}
+        />
+
+        <DetailCard
+          title={t("dashboard.valueByLocation")}
+          data={[
+            {
+              label: t("dashboard.inventoryValue"),
+              value: formatMoney(
+                statistics.inventoryValue.total,
+                currency,
+                language
+              ),
+              color: "ui-text-success",
+            },
+            ...statistics.inventoryValue.byLocation.map((l) => ({
+              label: l.name,
+              value: formatMoney(l.value, currency, language),
+            })),
           ]}
         />
 
