@@ -175,6 +175,17 @@ export const extras = {
     "alerts.snooze.success": "Alert snoozed.",
     "alerts.cancel": "Cancel",
     "alerts.cancel.success": "Alert cancelled.",
+    "common.close": "Close",
+    "articles.import.csv": "Import CSV",
+    "import.title": "Import articles from CSV",
+    "import.subtitle":
+      "Columns: Name, Model, Description, Price, Locations, Tags. Separate multiple locations or tags with ';'. Name, Model and at least one Location are required.",
+    "import.preview": "{file}: {valid} of {total} row(s) ready to import.",
+    "import.col.ok": "OK",
+    "import.submit": "Import {count} row(s)",
+    "import.success": "Imported {count} article(s).",
+    "import.result": "Imported {count} article(s).",
+    "import.rowError": "Row {row}: {message}",
   },
   fr: {
     "articles.table.image": "Image",
@@ -350,6 +361,18 @@ export const extras = {
     "alerts.snooze.success": "Alerte reportée.",
     "alerts.cancel": "Annuler",
     "alerts.cancel.success": "Alerte annulée.",
+    "common.close": "Fermer",
+    "articles.import.csv": "Importer CSV",
+    "import.title": "Importer des articles depuis un CSV",
+    "import.subtitle":
+      "Colonnes : Name, Model, Description, Price, Locations, Tags. Séparez plusieurs emplacements ou étiquettes par « ; ». Name, Model et au moins un emplacement sont requis.",
+    "import.preview":
+      "{file} : {valid} ligne(s) sur {total} prêtes à importer.",
+    "import.col.ok": "OK",
+    "import.submit": "Importer {count} ligne(s)",
+    "import.success": "{count} article(s) importé(s).",
+    "import.result": "{count} article(s) importé(s).",
+    "import.rowError": "Ligne {row} : {message}",
   },
   pt: {
     "articles.table.image": "Imagem",
@@ -523,6 +546,18 @@ export const extras = {
     "alerts.snooze.success": "Alerta adiado.",
     "alerts.cancel": "Cancelar",
     "alerts.cancel.success": "Alerta cancelado.",
+    "common.close": "Fechar",
+    "articles.import.csv": "Importar CSV",
+    "import.title": "Importar artigos de um CSV",
+    "import.subtitle":
+      "Colunas: Name, Model, Description, Price, Locations, Tags. Separe várias localizações ou etiquetas com ';'. Name, Model e pelo menos uma localização são obrigatórios.",
+    "import.preview":
+      "{file}: {valid} de {total} linha(s) prontas para importar.",
+    "import.col.ok": "OK",
+    "import.submit": "Importar {count} linha(s)",
+    "import.success": "{count} artigo(s) importado(s).",
+    "import.result": "{count} artigo(s) importado(s).",
+    "import.rowError": "Linha {row}: {message}",
   },
 } as const;
 

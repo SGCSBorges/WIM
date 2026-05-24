@@ -54,3 +54,66 @@ export function downloadFile(
   // Revoke after the browser has time to start the download.
   setTimeout(() => URL.revokeObjectURL(url), 1_000);
 }
+
+/**
+ * Parse CSV text into an array of row objects keyed by the header row.
+ * RFC-4180-ish: handles quoted fields, escaped quotes ("") and CRLF/LF.
+ * Header keys are lower-cased and trimmed so lookups are case-insensitive.
+ */
+export function parseCSV(text: string): Array<Record<string, string>> {
+  const rows: string[][] = [];
+  let field = "";
+  let record: string[] = [];
+  let inQuotes = false;
+
+  const pushField = () => {
+    record.push(field);
+    field = "";
+  };
+  const pushRecord = () => {
+    pushField();
+    rows.push(record);
+    record = [];
+  };
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ",") {
+      pushField();
+    } else if (c === "\n") {
+      pushRecord();
+    } else if (c === "\r") {
+      // swallow; the following \n (if any) triggers the record
+    } else {
+      field += c;
+    }
+  }
+  // Flush the trailing field/record if the file doesn't end in a newline.
+  if (field.length > 0 || record.length > 0) pushRecord();
+
+  if (rows.length === 0) return [];
+  const headers = rows[0].map((h) => h.trim().toLowerCase());
+  return rows
+    .slice(1)
+    .filter((r) => r.some((c) => c.trim() !== ""))
+    .map((r) => {
+      const obj: Record<string, string> = {};
+      headers.forEach((h, idx) => {
+        obj[h] = (r[idx] ?? "").trim();
+      });
+      return obj;
+    });
+}

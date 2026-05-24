@@ -20,6 +20,7 @@ import { formatMoney } from "../../utils/money";
 import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
+import CsvImportModal from "./CsvImportModal";
 import { useToast } from "../common/Toast";
 
 const ArticlesList: React.FC = () => {
@@ -120,6 +121,7 @@ const ArticlesList: React.FC = () => {
   );
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagFilterId, setTagFilterId] = useState<number | undefined>(undefined);
+  const [showImport, setShowImport] = useState(false);
 
   // Bulk selection: ids of articles currently checked. Cleared on refetch
   // so the bar doesn't keep references to articles that just left the page.
@@ -363,6 +365,13 @@ const ArticlesList: React.FC = () => {
             className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
           >
             {t("articles.export.csv")}
+          </button>
+
+          <button
+            onClick={() => setShowImport(true)}
+            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+          >
+            {t("articles.import.csv")}
           </button>
 
           <button
@@ -727,6 +736,12 @@ const ArticlesList: React.FC = () => {
           </div>
         )}
       </div>
+
+      <CsvImportModal
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={fetchArticles}
+      />
     </div>
   );
 };

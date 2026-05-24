@@ -177,6 +177,31 @@ export const articlesAPI = {
     return response.json();
   },
 
+  async importRows(
+    rows: Array<{
+      name: string;
+      model: string;
+      description?: string | null;
+      price?: number | null;
+      locations: string[];
+      tags: string[];
+    }>
+  ): Promise<{
+    created: number;
+    errors: Array<{ row: number; message: string }>;
+  }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/import`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ rows }),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to import articles")
+      );
+    return response.json();
+  },
+
   async update(id: number, article: Omit<Article, "articleId">) {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
       method: "PUT",
