@@ -36,6 +36,15 @@ export interface DashboardStatistics {
     ownedSharedArticles: number;
     totalSharedArticles: number;
   };
+  inventoryValue: {
+    total: number;
+    atRisk: number; // value of articles whose warranty has expired
+    byLocation: Array<{
+      locationId: number;
+      name: string;
+      value: number;
+    }>;
+  };
 }
 
 export interface AdminStatistics {
@@ -100,6 +109,9 @@ export async function getDashboardStatistics(
       warrantiesWithAttachment,
       alertsTotal,
       ownedSharedArticles,
+      inventoryValueAgg,
+      atRiskValueAgg,
+      locationValueRows,
     ] = await Promise.all([
       prisma.article.count({ where: { ownerUserId } }),
       prisma.article.count({
@@ -135,9 +147,37 @@ export async function getDashboardStatistics(
       prisma.article.count({
         where: { ownerUserId, sharedWithPowerUsers: true },
       }),
+      prisma.article.aggregate({
+        where: { ownerUserId },
+        _sum: { purchasePrice: true },
+      }),
+      prisma.article.aggregate({
+        where: { ownerUserId, garantie: { garantieFin: { lt: currentDate } } },
+        _sum: { purchasePrice: true },
+      }),
+      prisma.articleLocation.findMany({
+        where: { article: { ownerUserId } },
+        select: {
+          locationId: true,
+          article: { select: { purchasePrice: true } },
+        },
+      }),
     ]);
 
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
+
+    // Aggregate inventory value per location in JS (Prisma groupBy can't sum
+    // a related column). Decimal columns come back as Prisma.Decimal | null.
+    const valueByLocationMap = new Map<number, number>();
+    for (const row of locationValueRows) {
+      const v = row.article.purchasePrice
+        ? Number(row.article.purchasePrice)
+        : 0;
+      valueByLocationMap.set(
+        row.locationId,
+        (valueByLocationMap.get(row.locationId) ?? 0) + v
+      );
+    }
 
     const countMap = new Map<number, number>();
     for (const row of articleCountsByLocation) {
@@ -193,6 +233,15 @@ export async function getDashboardStatistics(
       sharing: {
         ownedSharedArticles,
         totalSharedArticles,
+      },
+      inventoryValue: {
+        total: Number(inventoryValueAgg._sum.purchasePrice ?? 0),
+        atRisk: Number(atRiskValueAgg._sum.purchasePrice ?? 0),
+        byLocation: byLocation.map((l) => ({
+          locationId: l.locationId,
+          name: l.name,
+          value: valueByLocationMap.get(l.locationId) ?? 0,
+        })),
       },
     };
   } catch (error) {

@@ -8,6 +8,7 @@ import { signToken } from "../auth/auth.service";
 import { security } from "../../config/security";
 import {
   DeleteAccountSchema,
+  UpdateCurrencySchema,
   UpdateEmailSchema,
   UpdatePasswordSchema,
 } from "./profile.schemas";
@@ -49,6 +50,25 @@ router.put(
       metadata: { field: "email" },
     });
 
+    res.json(updated);
+  })
+);
+
+router.put(
+  "/me/currency",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { currency } = UpdateCurrencySchema.parse(req.body);
+    const updated = await ProfileService.updateCurrency(
+      req.user!.sub,
+      currency
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { field: "currency" },
+    });
     res.json(updated);
   })
 );

@@ -13,6 +13,13 @@ export const ArticleCreateSchema = z.object({
     })
     .optional()
     .nullable(),
+  // Purchase price for inventory-value tracking (optional).
+  purchasePrice: z.coerce
+    .number()
+    .nonnegative()
+    .max(10_000_000_000)
+    .optional()
+    .nullable(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
   // Optional warranty created alongside the article

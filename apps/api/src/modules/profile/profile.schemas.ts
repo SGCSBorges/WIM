@@ -17,3 +17,13 @@ export const DeleteAccountSchema = z.object({
   currentPassword: z.string().min(1),
 });
 export type DeleteAccountInput = z.infer<typeof DeleteAccountSchema>;
+
+export const UpdateCurrencySchema = z.object({
+  // ISO 4217 alpha code, e.g. USD, EUR, GBP.
+  currency: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{3}$/, "currency must be a 3-letter ISO code"),
+});
+export type UpdateCurrencyInput = z.infer<typeof UpdateCurrencySchema>;

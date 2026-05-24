@@ -41,7 +41,15 @@ export const ProfileService = {
   async get(userId: number) {
     return prisma.user.findUnique({
       where: { userId },
-      select: { userId: true, email: true, role: true },
+      select: { userId: true, email: true, role: true, currency: true },
+    });
+  },
+
+  async updateCurrency(userId: number, currency: string) {
+    return prisma.user.update({
+      where: { userId },
+      data: { currency },
+      select: { userId: true, email: true, role: true, currency: true },
     });
   },
 

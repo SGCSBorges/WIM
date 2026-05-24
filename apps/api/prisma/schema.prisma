@@ -70,6 +70,10 @@ model User {
   // Used to manage subscription lifecycle (cancel at period end, etc.)
   stripeCustomerId     String? @unique @db.VarChar(80)
   stripeSubscriptionId String? @unique @db.VarChar(80)
+
+  // Display currency (ISO 4217) for inventory value formatting on the client.
+  currency String @default("USD") @db.VarChar(3)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -96,6 +100,10 @@ model Article {
   articleModele      String   @db.VarChar(100)
   articleDescription String?  @db.VarChar(255)
   productImageUrl    String?  @db.VarChar(500)
+
+  // Purchase price for inventory-value tracking. Decimal to avoid float
+  // rounding; serialized as a string over JSON and formatted on the client.
+  purchasePrice      Decimal? @db.Decimal(12, 2)
 
   // Sharing v2 (simplest): when true, this article is visible in the shared view
   // to all POWER_USER accounts (read-only; owner-only edit/unshare).

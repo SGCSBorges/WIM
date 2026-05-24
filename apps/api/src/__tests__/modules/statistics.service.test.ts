@@ -4,12 +4,14 @@ vi.mock("../../libs/prisma", () => ({
   prisma: {
     article: {
       count: vi.fn(),
+      aggregate: vi.fn(),
     },
     location: {
       findMany: vi.fn(),
     },
     articleLocation: {
       groupBy: vi.fn(),
+      findMany: vi.fn(),
     },
     garantie: {
       count: vi.fn(),
@@ -71,6 +73,11 @@ function setupDashboardMocks({
     .mockResolvedValueOnce(totalSharedArticles); // totalSharedArticles (if role is POWER_USER)
   mockPrisma.location.findMany.mockResolvedValue(locations);
   mockPrisma.articleLocation.groupBy.mockResolvedValue(articleCountsByLocation);
+  // Inventory-value aggregations (total + at-risk) and per-location join rows.
+  mockPrisma.article.aggregate
+    .mockResolvedValueOnce({ _sum: { purchasePrice: null } }) // total value
+    .mockResolvedValueOnce({ _sum: { purchasePrice: null } }); // at-risk value
+  mockPrisma.articleLocation.findMany.mockResolvedValue([]);
   mockPrisma.garantie.count
     .mockResolvedValueOnce(warrantiesTotal)
     .mockResolvedValueOnce(warrantiesActive)
@@ -150,6 +157,10 @@ describe("getDashboardStatistics", () => {
       .mockResolvedValueOnce(5); // totalSharedArticles
     mockPrisma.location.findMany.mockResolvedValue([]);
     mockPrisma.articleLocation.groupBy.mockResolvedValue([]);
+    mockPrisma.articleLocation.findMany.mockResolvedValue([]);
+    mockPrisma.article.aggregate
+      .mockResolvedValueOnce({ _sum: { purchasePrice: null } })
+      .mockResolvedValueOnce({ _sum: { purchasePrice: null } });
     mockPrisma.garantie.count
       .mockResolvedValueOnce(0)
       .mockResolvedValueOnce(0)
@@ -164,6 +175,40 @@ describe("getDashboardStatistics", () => {
     });
 
     expect(result.sharing.totalSharedArticles).toBe(5);
+  });
+
+  it("aggregates inventory value (total, at-risk, by location)", async () => {
+    mockPrisma.article.count
+      .mockResolvedValueOnce(3)
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(0);
+    mockPrisma.location.findMany.mockResolvedValue([
+      { locationId: 1, name: "Home" },
+      { locationId: 2, name: "Office" },
+    ]);
+    mockPrisma.articleLocation.groupBy.mockResolvedValue([
+      { locationId: 1, _count: { articleId: 2 } },
+      { locationId: 2, _count: { articleId: 1 } },
+    ]);
+    mockPrisma.article.aggregate
+      .mockResolvedValueOnce({ _sum: { purchasePrice: 300 } }) // total
+      .mockResolvedValueOnce({ _sum: { purchasePrice: 50 } }); // at-risk
+    mockPrisma.articleLocation.findMany.mockResolvedValue([
+      { locationId: 1, article: { purchasePrice: 100 } },
+      { locationId: 1, article: { purchasePrice: 50 } },
+      { locationId: 2, article: { purchasePrice: 150 } },
+    ]);
+    mockPrisma.garantie.count.mockResolvedValue(0);
+    mockPrisma.alerte.count.mockResolvedValue(0);
+
+    const result = await getDashboardStatistics({ userId: 1, role: "USER" });
+
+    expect(result.inventoryValue.total).toBe(300);
+    expect(result.inventoryValue.atRisk).toBe(50);
+    expect(result.inventoryValue.byLocation).toEqual([
+      { locationId: 1, name: "Home", value: 150 },
+      { locationId: 2, name: "Office", value: 150 },
+    ]);
   });
 
   it("treats unknown role as USER (no totalSharedArticles query)", async () => {

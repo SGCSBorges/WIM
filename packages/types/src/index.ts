@@ -32,6 +32,9 @@ export interface Article {
   articleModele: string;
   articleDescription?: string | null;
   productImageUrl?: string | null;
+  // Purchase price for inventory-value tracking. Serialized as a string
+  // (Prisma Decimal) on reads; accepts number on writes.
+  purchasePrice?: string | number | null;
   sharedWithPowerUsers?: boolean;
   locationIds?: number[];
   locations?: Array<{ locationId: number; location?: { name: string } }>;
