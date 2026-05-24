@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { ArticleService } from "./article.service";
+import { importArticles } from "./article.import";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest, requireRole } from "../auth/auth.middleware";
@@ -16,6 +17,24 @@ const router = Router();
 // safety margin without being a real limit users will hit organically.
 const BulkIdsSchema = z.object({
   ids: z.array(z.number().int().positive()).min(1).max(500),
+});
+
+// CSV import: a batch of loosely-typed rows (resolved/validated server-side,
+// per-row, in article.import). Capped to keep one request bounded.
+const ImportSchema = z.object({
+  rows: z
+    .array(
+      z.object({
+        name: z.string().trim().max(100),
+        model: z.string().trim().max(100),
+        description: z.string().trim().max(255).optional().nullable(),
+        price: z.coerce.number().nonnegative().max(1e10).optional().nullable(),
+        locations: z.array(z.string().trim().max(120)).default([]),
+        tags: z.array(z.string().trim().max(40)).default([]),
+      })
+    )
+    .min(1)
+    .max(1000),
 });
 
 /** GET tous les articles */
@@ -174,6 +193,27 @@ router.post(
       metadata: { bulk: true, shared, requested: ids.length, updated: count },
     });
     res.json({ count });
+  })
+);
+
+/** POST import articles from parsed CSV rows (partial success report). */
+router.post(
+  "/import",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { rows } = ImportSchema.parse(req.body);
+    const result = await importArticles(req.user!.sub, rows);
+    await auditAction(req, {
+      action: "CREATE",
+      entity: "Article",
+      metadata: {
+        import: true,
+        requested: rows.length,
+        created: result.created,
+        failed: result.errors.length,
+      },
+    });
+    res.json(result);
   })
 );
 
