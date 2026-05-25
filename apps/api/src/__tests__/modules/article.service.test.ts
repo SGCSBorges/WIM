@@ -4,6 +4,7 @@ vi.mock("../../libs/prisma", () => ({
   prisma: {
     article: {
       findFirst: vi.fn(),
+      findMany: vi.fn(),
       create: vi.fn(),
       delete: vi.fn(),
     },
@@ -13,33 +14,31 @@ vi.mock("../../libs/prisma", () => ({
     location: {
       count: vi.fn(),
     },
-    // create() now wraps ownership + insert in a transaction; the test's
-    // tx client mirrors prisma's surface so callbacks reach the mocked
-    // location.count.
+    tag: {
+      count: vi.fn(),
+    },
+    articleLocation: {
+      createMany: vi.fn(),
+    },
+    articleTag: {
+      createMany: vi.fn(),
+    },
+    // create()/bulkAssign() wrap ownership + writes in a transaction; the
+    // test's tx client mirrors prisma's surface so callbacks reach the
+    // mocked methods.
     $transaction: vi.fn(async (cb: unknown) => {
       if (typeof cb !== "function") return undefined;
+      const p = prisma as unknown as Record<
+        string,
+        Record<string, ReturnType<typeof vi.fn>>
+      >;
       const tx = {
-        location: {
-          count: (
-            prisma as unknown as {
-              location: { count: ReturnType<typeof vi.fn> };
-            }
-          ).location.count,
-        },
-        attachment: {
-          findFirst: (
-            prisma as unknown as {
-              attachment: { findFirst: ReturnType<typeof vi.fn> };
-            }
-          ).attachment.findFirst,
-        },
-        article: {
-          create: (
-            prisma as unknown as {
-              article: { create: ReturnType<typeof vi.fn> };
-            }
-          ).article.create,
-        },
+        location: { count: p.location.count },
+        tag: { count: p.tag.count },
+        attachment: { findFirst: p.attachment.findFirst },
+        article: { create: p.article.create, findMany: p.article.findMany },
+        articleLocation: { createMany: p.articleLocation.createMany },
+        articleTag: { createMany: p.articleTag.createMany },
       };
       return (cb as (tx: unknown) => Promise<unknown>)(tx);
     }),
@@ -60,6 +59,9 @@ const mockPrisma = prisma as unknown as {
   article: Record<string, ReturnType<typeof vi.fn>>;
   attachment: Record<string, ReturnType<typeof vi.fn>>;
   location: Record<string, ReturnType<typeof vi.fn>>;
+  tag: Record<string, ReturnType<typeof vi.fn>>;
+  articleLocation: Record<string, ReturnType<typeof vi.fn>>;
+  articleTag: Record<string, ReturnType<typeof vi.fn>>;
 };
 
 beforeEach(() => {
@@ -122,5 +124,43 @@ describe("ArticleService.create — location ownership", () => {
       })
     ).rejects.toMatchObject({ status: 403 });
     expect(mockPrisma.article.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("ArticleService.bulkAssign", () => {
+  it("assigns a location only to owned ids and skips duplicate join rows", async () => {
+    mockPrisma.location.count.mockResolvedValue(1); // owns the one location
+    // Of the requested [5, 6, 7], the caller only owns 5 and 6.
+    mockPrisma.article.findMany.mockResolvedValue([
+      { articleId: 5 },
+      { articleId: 6 },
+    ]);
+    mockPrisma.articleLocation.createMany.mockResolvedValue({ count: 2 });
+
+    const result = await ArticleService.bulkAssign([5, 6, 7], 1, [10], []);
+
+    expect(result).toEqual({ count: 2 });
+    expect(mockPrisma.articleLocation.createMany).toHaveBeenCalledWith({
+      data: [
+        { articleId: 5, locationId: 10 },
+        { articleId: 6, locationId: 10 },
+      ],
+      skipDuplicates: true,
+    });
+    expect(mockPrisma.articleTag.createMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects when a tag is not owned by the caller", async () => {
+    mockPrisma.tag.count.mockResolvedValue(0); // owns none of the requested tags
+    await expect(
+      ArticleService.bulkAssign([5], 1, [], [99])
+    ).rejects.toMatchObject({ status: 403 });
+    expect(mockPrisma.articleTag.createMany).not.toHaveBeenCalled();
+  });
+
+  it("is a no-op when nothing to add", async () => {
+    const result = await ArticleService.bulkAssign([5, 6], 1, [], []);
+    expect(result).toEqual({ count: 0 });
+    expect(mockPrisma.article.findMany).not.toHaveBeenCalled();
   });
 });

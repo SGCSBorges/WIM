@@ -1,23 +1,32 @@
 import { useI18n } from "../../i18n/i18n";
+import type { Location, Tag } from "../../types";
 
 interface BulkActionBarProps {
   selectedCount: number;
   canShare: boolean;
   busy: boolean;
+  locations: Location[];
+  tags: Tag[];
   onClear: () => void;
   onDelete: () => void;
   onShare: () => void;
   onUnshare: () => void;
+  onAssignLocation: (locationId: number) => void;
+  onAssignTag: (tagId: number) => void;
 }
 
 export default function BulkActionBar({
   selectedCount,
   canShare,
   busy,
+  locations,
+  tags,
   onClear,
   onDelete,
   onShare,
   onUnshare,
+  onAssignLocation,
+  onAssignTag,
 }: BulkActionBarProps) {
   const { t } = useI18n();
 
@@ -34,6 +43,48 @@ export default function BulkActionBar({
       </span>
 
       <div className="flex flex-wrap items-center gap-2 ml-auto">
+        {locations.length > 0 && (
+          <select
+            value=""
+            disabled={busy}
+            onChange={(e) => {
+              const id = Number(e.target.value);
+              if (id) onAssignLocation(id);
+              e.target.value = "";
+            }}
+            className="ui-select text-sm px-3 py-1.5 rounded-md"
+            aria-label={t("articles.bulk.addLocation")}
+          >
+            <option value="">{t("articles.bulk.addLocation")}</option>
+            {locations.map((l) => (
+              <option key={l.locationId} value={l.locationId}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {tags.length > 0 && (
+          <select
+            value=""
+            disabled={busy}
+            onChange={(e) => {
+              const id = Number(e.target.value);
+              if (id) onAssignTag(id);
+              e.target.value = "";
+            }}
+            className="ui-select text-sm px-3 py-1.5 rounded-md"
+            aria-label={t("articles.bulk.addTag")}
+          >
+            <option value="">{t("articles.bulk.addTag")}</option>
+            {tags.map((tg) => (
+              <option key={tg.tagId} value={tg.tagId}>
+                {tg.name}
+              </option>
+            ))}
+          </select>
+        )}
+
         {canShare && (
           <>
             <button

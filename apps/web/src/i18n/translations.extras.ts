@@ -66,6 +66,9 @@ export const extras = {
       "Delete {count} article(s)? This cannot be undone.",
     "articles.bulk.deleteSuccess": "Deleted {count} article(s).",
     "articles.bulk.shareSuccess": "Updated sharing on {count} article(s).",
+    "articles.bulk.addLocation": "Add to location…",
+    "articles.bulk.addTag": "Add tag…",
+    "articles.bulk.assignSuccess": "Updated {count} article(s).",
     "articles.bulk.clear": "Clear selection",
     "articles.bulk.selectAll": "Select all on page",
 
@@ -304,6 +307,9 @@ export const extras = {
       "Supprimer {count} article(s) ? Cette action est irréversible.",
     "articles.bulk.deleteSuccess": "{count} article(s) supprimé(s).",
     "articles.bulk.shareSuccess": "Partage mis à jour sur {count} article(s).",
+    "articles.bulk.addLocation": "Ajouter à un emplacement…",
+    "articles.bulk.addTag": "Ajouter une étiquette…",
+    "articles.bulk.assignSuccess": "{count} article(s) mis à jour.",
     "articles.bulk.clear": "Effacer la sélection",
     "articles.bulk.selectAll": "Tout sélectionner sur cette page",
 
@@ -547,6 +553,9 @@ export const extras = {
       "Eliminar {count} artigo(s)? Esta ação é irreversível.",
     "articles.bulk.deleteSuccess": "{count} artigo(s) eliminado(s).",
     "articles.bulk.shareSuccess": "Partilha atualizada em {count} artigo(s).",
+    "articles.bulk.addLocation": "Adicionar a um local…",
+    "articles.bulk.addTag": "Adicionar etiqueta…",
+    "articles.bulk.assignSuccess": "{count} artigo(s) atualizado(s).",
     "articles.bulk.clear": "Limpar seleção",
     "articles.bulk.selectAll": "Selecionar tudo nesta página",
 

@@ -354,6 +354,25 @@ export const articlesAPI = {
     return response.json();
   },
 
+  async bulkAssign(
+    ids: number[],
+    add: { addLocationIds?: number[]; addTagIds?: number[] }
+  ): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/bulk-assign`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids, ...add }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to assign articles")
+      );
+    return response.json();
+  },
+
   // GET /api/articles/shared-public — caller's articles where
   // sharedWithPowerUsers = true. Used by the Profile view's
   // "Articles you've shared publicly" panel.

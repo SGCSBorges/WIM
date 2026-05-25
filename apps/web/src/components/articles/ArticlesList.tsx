@@ -301,6 +301,29 @@ const ArticlesList: React.FC = () => {
     }
   };
 
+  const bulkAssign = async (add: {
+    addLocationIds?: number[];
+    addTagIds?: number[];
+  }) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { count } = await articlesAPI.bulkAssign(ids, add);
+      toast.show(
+        t("articles.bulk.assignSuccess").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+      await fetchArticles();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
   const fetchLocations = async () => {
     try {
       const data = await locationsAPI.getAll();
@@ -318,12 +341,40 @@ const ArticlesList: React.FC = () => {
 
   const handleSubmit = async (articleData: Omit<Article, "articleId">) => {
     setError(null);
-    try {
-      if (editingArticle) {
-        await articlesAPI.update(editingArticle.articleId, articleData);
-      } else {
-        await articlesAPI.create(articleData);
+
+    // Edit path: optimistically patch the visible scalar fields so the row
+    // updates instantly, then reconcile via refetch. Joined data (warranty,
+    // tags, locations) is left untouched here and refreshed by fetchArticles.
+    if (editingArticle) {
+      const id = editingArticle.articleId;
+      const previous = articles;
+      setArticles((rows) =>
+        rows.map((r) =>
+          r.articleId === id
+            ? {
+                ...r,
+                articleNom: articleData.articleNom,
+                articleModele: articleData.articleModele,
+                articleDescription: articleData.articleDescription ?? null,
+                purchasePrice: articleData.purchasePrice ?? null,
+              }
+            : r
+        )
+      );
+      setShowForm(false);
+      setEditingArticle(null);
+      try {
+        await articlesAPI.update(id, articleData);
+        await fetchArticles();
+      } catch (err) {
+        setArticles(previous);
+        setError(getErrorMessage(err, t("common.errorOccurred")));
       }
+      return;
+    }
+
+    try {
+      await articlesAPI.create(articleData);
       await fetchArticles();
       setShowForm(false);
       setEditingArticle(null);
@@ -575,10 +626,16 @@ const ArticlesList: React.FC = () => {
         selectedCount={selectedIds.size}
         canShare={isPowerUser}
         busy={bulkBusy}
+        locations={locations}
+        tags={tags}
         onClear={clearSelection}
         onDelete={() => setShowBulkDeleteConfirm(true)}
         onShare={() => bulkShare(true)}
         onUnshare={() => bulkShare(false)}
+        onAssignLocation={(locationId) =>
+          bulkAssign({ addLocationIds: [locationId] })
+        }
+        onAssignTag={(tagId) => bulkAssign({ addTagIds: [tagId] })}
       />
 
       {showBulkDeleteConfirm && (

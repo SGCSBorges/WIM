@@ -207,6 +207,50 @@ router.post(
   })
 );
 
+/**
+ * Bulk add locations and/or tags to every requested article the caller owns.
+ * Additive only (existing assignments kept, duplicates skipped). Accepts
+ * `{ ids: number[], addLocationIds?: number[], addTagIds?: number[] }`.
+ */
+router.post(
+  "/bulk-assign",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const schema = BulkIdsSchema.extend({
+      addLocationIds: z
+        .array(z.number().int().positive())
+        .max(50)
+        .optional()
+        .default([]),
+      addTagIds: z
+        .array(z.number().int().positive())
+        .max(50)
+        .optional()
+        .default([]),
+    });
+    const { ids, addLocationIds, addTagIds } = schema.parse(req.body);
+    const { count } = await ArticleService.bulkAssign(
+      ids,
+      req.user!.sub,
+      addLocationIds,
+      addTagIds
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      metadata: {
+        bulk: true,
+        assign: true,
+        requested: ids.length,
+        updated: count,
+        addLocationIds,
+        addTagIds,
+      },
+    });
+    res.json({ count });
+  })
+);
+
 /** POST import articles from parsed CSV rows (partial success report). */
 router.post(
   "/import",

@@ -492,4 +492,52 @@ export const ArticleService = {
     });
     return { count: result.count };
   },
+
+  /**
+   * Add locations and/or tags to every article in `ids` that the caller owns.
+   * Additive only — existing assignments are kept and duplicates are skipped.
+   * Locations and tags are ownership-checked up front; ids the caller doesn't
+   * own are silently dropped from the article set. Returns the number of
+   * articles touched.
+   */
+  bulkAssign: async (
+    ids: number[],
+    ownerUserId: number,
+    addLocationIds: number[],
+    addTagIds: number[]
+  ): Promise<{ count: number }> => {
+    if (ids.length === 0) return { count: 0 };
+    if (addLocationIds.length === 0 && addTagIds.length === 0)
+      return { count: 0 };
+
+    await assertLocationsOwned(ownerUserId, addLocationIds);
+    await assertTagsOwned(ownerUserId, addTagIds);
+
+    return prisma.$transaction(async (tx) => {
+      const owned = await tx.article.findMany({
+        where: { articleId: { in: ids }, ownerUserId },
+        select: { articleId: true },
+      });
+      if (owned.length === 0) return { count: 0 };
+      const ownedIds = owned.map((a) => a.articleId);
+
+      if (addLocationIds.length > 0) {
+        await tx.articleLocation.createMany({
+          data: ownedIds.flatMap((articleId) =>
+            addLocationIds.map((locationId) => ({ articleId, locationId }))
+          ),
+          skipDuplicates: true,
+        });
+      }
+      if (addTagIds.length > 0) {
+        await tx.articleTag.createMany({
+          data: ownedIds.flatMap((articleId) =>
+            addTagIds.map((tagId) => ({ articleId, tagId }))
+          ),
+          skipDuplicates: true,
+        });
+      }
+      return { count: ownedIds.length };
+    });
+  },
 };
