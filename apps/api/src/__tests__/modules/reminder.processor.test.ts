@@ -4,6 +4,7 @@ vi.mock("../../libs/prisma", () => ({
   prisma: {
     garantie: { findUnique: vi.fn() },
     alerte: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn() },
   },
 }));
 
@@ -17,6 +18,13 @@ vi.mock("../../modules/alerts/alert.service", () => ({
 
 vi.mock("../../modules/push/push.service", () => ({
   PushService: { sendToUser: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock("../../modules/email/email.service", () => ({
+  EmailService: {
+    isConfigured: vi.fn().mockReturnValue(false),
+    sendReminderEmail: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 vi.mock("../../config/logger", () => ({

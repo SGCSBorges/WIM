@@ -872,12 +872,29 @@ export const profileAPI = {
     email: string;
     role: string;
     currency?: string;
+    emailReminders?: boolean;
   }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
       headers: getHeaders(),
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to load profile"));
+    return response.json();
+  },
+
+  async updateEmailReminders(enabled: boolean) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/email-reminders`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ enabled }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update email reminders")
+      );
     return response.json();
   },
 

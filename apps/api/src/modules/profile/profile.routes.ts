@@ -9,6 +9,7 @@ import { security } from "../../config/security";
 import {
   DeleteAccountSchema,
   UpdateCurrencySchema,
+  UpdateEmailRemindersSchema,
   UpdateEmailSchema,
   UpdatePasswordSchema,
 } from "./profile.schemas";
@@ -68,6 +69,25 @@ router.put(
       entity: "User",
       entityId: req.user!.sub,
       metadata: { field: "currency" },
+    });
+    res.json(updated);
+  })
+);
+
+router.put(
+  "/me/email-reminders",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { enabled } = UpdateEmailRemindersSchema.parse(req.body);
+    const updated = await ProfileService.updateEmailReminders(
+      req.user!.sub,
+      enabled
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { field: "emailReminders", enabled },
     });
     res.json(updated);
   })

@@ -251,6 +251,11 @@ export const extras = {
     "push.enabled": "Notifications enabled.",
     "push.disabled": "Notifications disabled.",
     "push.unavailable": "Notifications are unavailable or were not allowed.",
+    "emailReminders.title": "Email reminders",
+    "emailReminders.subtitle":
+      "Also receive warranty and maintenance reminders by email.",
+    "emailReminders.toggle": "Send reminders to my email",
+    "emailReminders.success": "Email reminder preference saved.",
     "notes.title": "Maintenance & service notes",
     "notes.placeholder": "Add a note (repair, service, observation)…",
     "notes.add": "Add note",
@@ -508,6 +513,11 @@ export const extras = {
     "push.enabled": "Notifications activées.",
     "push.disabled": "Notifications désactivées.",
     "push.unavailable": "Notifications indisponibles ou non autorisées.",
+    "emailReminders.title": "Rappels par e-mail",
+    "emailReminders.subtitle":
+      "Recevez aussi les rappels de garantie et d'entretien par e-mail.",
+    "emailReminders.toggle": "Envoyer les rappels à mon e-mail",
+    "emailReminders.success": "Préférence de rappel par e-mail enregistrée.",
     "notes.title": "Notes d'entretien et de service",
     "notes.placeholder":
       "Ajouter une note (réparation, entretien, observation)…",
@@ -764,6 +774,11 @@ export const extras = {
     "push.enabled": "Notificações ativadas.",
     "push.disabled": "Notificações desativadas.",
     "push.unavailable": "Notificações indisponíveis ou não permitidas.",
+    "emailReminders.title": "Lembretes por e-mail",
+    "emailReminders.subtitle":
+      "Receba também lembretes de garantia e manutenção por e-mail.",
+    "emailReminders.toggle": "Enviar lembretes para o meu e-mail",
+    "emailReminders.success": "Preferência de lembrete por e-mail guardada.",
     "notes.title": "Notas de manutenção e serviço",
     "notes.placeholder": "Adicionar uma nota (reparação, serviço, observação)…",
     "notes.add": "Adicionar",

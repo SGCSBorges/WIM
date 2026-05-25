@@ -40,6 +40,12 @@ loads into every new Claude Code session.
     `VAPID_SUBJECT` (`mailto:` contact). Without them, alert push delivery
     is a no-op and the "Enable notifications" toggle hides — everything
     else still works.
+  - API (optional, Email reminders): `RESEND_API_KEY` + `MAIL_FROM` (a
+    Resend-verified sender like `WIM <reminders@domain>`). When both are
+    set, the reminder worker also emails alerts via Resend's REST API (no
+    SDK dependency — a plain `fetch`), respecting each user's
+    `User.emailReminders` opt-out (Profile toggle). Unset = no-op + log,
+    exactly like `PushService`.
   - Web: `VITE_API_BASE_URL=https://wimapi.onrender.com/api`.
 - Render free-tier Postgres expires after ~30 days and the API container
   cold-starts in ~30 s. The fetch timeout in `apps/web/src/services/api.ts`

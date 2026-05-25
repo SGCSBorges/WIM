@@ -27,6 +27,7 @@ type Me = {
   email: string;
   role: string;
   currency?: string;
+  emailReminders?: boolean;
 };
 
 // A small curated list keeps the selector usable; the API accepts any ISO code.
@@ -210,6 +211,18 @@ export default function ProfileView() {
       const updated = await profileAPI.updateCurrency(currency);
       setMe((prev) => (prev ? { ...prev, currency: updated.currency } : prev));
       showSuccess(t("profile.currency.success"));
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    }
+  };
+
+  const toggleEmailReminders = async (enabled: boolean) => {
+    try {
+      const updated = await profileAPI.updateEmailReminders(enabled);
+      setMe((prev) =>
+        prev ? { ...prev, emailReminders: updated.emailReminders } : prev
+      );
+      showSuccess(t("emailReminders.success"));
     } catch (e: unknown) {
       showFailure(getErrorMessage(e, t("common.errorOccurred")));
     }
@@ -500,6 +513,23 @@ export default function ProfileView() {
           </button>
         </div>
       )}
+
+      <div className="ui-card rounded-xl p-6 space-y-3">
+        <div>
+          <h2 className="font-semibold ui-title">{t("emailReminders.title")}</h2>
+          <p className="text-sm ui-text-muted">
+            {t("emailReminders.subtitle")}
+          </p>
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={me?.emailReminders ?? true}
+            onChange={(e) => toggleEmailReminders(e.target.checked)}
+          />
+          {t("emailReminders.toggle")}
+        </label>
+      </div>
 
       {me?.role === "POWER_USER" && (
         <div className="ui-card rounded-xl p-6 space-y-3">

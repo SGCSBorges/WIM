@@ -5,9 +5,28 @@ import { logger } from "../../config/logger";
 import { AlertJobPayload } from "../../modules/alerts/alert.types";
 import { AlertService } from "../../modules/alerts/alert.service";
 import { PushService } from "../../modules/push/push.service";
+import { EmailService } from "../../modules/email/email.service";
 
 function shortDate(d: Date | null | undefined): string {
   return d ? new Date(d).toISOString().slice(0, 10) : "";
+}
+
+// Best-effort email delivery alongside push. No-op when email isn't
+// configured or the user opted out; never throws so it can't re-fail a job
+// whose alert is already marked sent.
+async function emailReminder(
+  ownerUserId: number,
+  msg: { subject: string; body: string; path?: string }
+): Promise<void> {
+  if (!EmailService.isConfigured()) return;
+  const user = await prisma.user
+    .findUnique({
+      where: { userId: ownerUserId },
+      select: { email: true, emailReminders: true },
+    })
+    .catch(() => null);
+  if (!user || !user.emailReminders) return;
+  await EmailService.sendReminderEmail({ to: user.email, ...msg });
 }
 
 export const ReminderProcessor = {
@@ -60,11 +79,17 @@ export const ReminderProcessor = {
 
       await AlertService.markSent(data.alerteId);
 
+      const path = data.articleId ? `/articles/${data.articleId}` : "/alerts";
       // Best-effort Web Push (no-op when VAPID isn't configured).
       await PushService.sendToUser(data.ownerUserId, {
         title: `Warranty reminder: ${g.garantieNom}`,
         body: `Warranty expires ${shortDate(g.garantieFin)}.`,
-        url: data.articleId ? `/articles/${data.articleId}` : "/alerts",
+        url: path,
+      });
+      await emailReminder(data.ownerUserId, {
+        subject: `Warranty reminder: ${g.garantieNom}`,
+        body: `Warranty "${g.garantieNom}" expires ${shortDate(g.garantieFin)}.`,
+        path,
       });
     } catch (err) {
       logger.error(
@@ -95,12 +120,18 @@ export const ReminderProcessor = {
 
       await AlertService.markSent(alerteId);
 
+      const path = alerte.alerteArticleId
+        ? `/articles/${alerte.alerteArticleId}`
+        : "/alerts";
       await PushService.sendToUser(alerte.ownerUserId, {
         title: alerte.alerteNom,
         body: alerte.alerteDescription ?? "Maintenance reminder.",
-        url: alerte.alerteArticleId
-          ? `/articles/${alerte.alerteArticleId}`
-          : "/alerts",
+        url: path,
+      });
+      await emailReminder(alerte.ownerUserId, {
+        subject: alerte.alerteNom,
+        body: alerte.alerteDescription ?? "Maintenance reminder.",
+        path,
       });
 
       // Recurring CUSTOM alert: spawn the next occurrence. A failure here must

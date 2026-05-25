@@ -83,6 +83,10 @@ model User {
   // send the auth cookie). Null = feed disabled.
   calendarToken String? @unique @db.VarChar(64)
 
+  // Opt-out switch for emailed reminders (push is governed separately by
+  // having a subscription). Defaults on; the Profile page can disable it.
+  emailReminders Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

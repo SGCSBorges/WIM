@@ -27,3 +27,10 @@ export const UpdateCurrencySchema = z.object({
     .regex(/^[A-Z]{3}$/, "currency must be a 3-letter ISO code"),
 });
 export type UpdateCurrencyInput = z.infer<typeof UpdateCurrencySchema>;
+
+export const UpdateEmailRemindersSchema = z.object({
+  enabled: z.boolean(),
+});
+export type UpdateEmailRemindersInput = z.infer<
+  typeof UpdateEmailRemindersSchema
+>;

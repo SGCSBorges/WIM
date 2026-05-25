@@ -41,7 +41,13 @@ export const ProfileService = {
   async get(userId: number) {
     return prisma.user.findUnique({
       where: { userId },
-      select: { userId: true, email: true, role: true, currency: true },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        currency: true,
+        emailReminders: true,
+      },
     });
   },
 
@@ -50,6 +56,20 @@ export const ProfileService = {
       where: { userId },
       data: { currency },
       select: { userId: true, email: true, role: true, currency: true },
+    });
+  },
+
+  async updateEmailReminders(userId: number, enabled: boolean) {
+    return prisma.user.update({
+      where: { userId },
+      data: { emailReminders: enabled },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        currency: true,
+        emailReminders: true,
+      },
     });
   },
 
