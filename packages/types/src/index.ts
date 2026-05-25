@@ -56,3 +56,100 @@ export interface FetchedArticle extends Article {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ArticleListParams {
+  locationId?: number;
+  tagId?: number;
+  q?: string;
+  warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
+  priceMin?: number;
+  priceMax?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface ArticleListResult {
+  items: FetchedArticle[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ArticleNote {
+  noteId: number;
+  articleId: number;
+  content: string;
+  createdAt: string;
+}
+
+export interface SavedView {
+  id: number;
+  name: string;
+  query: string;
+}
+
+export interface WarrantyItem {
+  garantieId: number;
+  garantieNom: string;
+  garantieDateAchat: string;
+  garantieDuration: number;
+  garantieFin: string;
+  garantieIsValide: boolean;
+  garantieArticleId: number | null;
+}
+
+export interface ShareItem {
+  inventoryShareId: number;
+  permission: "READ" | "WRITE";
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  target: { userId: number; email: string };
+}
+
+export interface ShareInviteItem {
+  shareInviteId: number;
+  email: string;
+  token: string;
+  status: "PENDING" | "ACCEPTED" | "REVOKED" | "EXPIRED";
+  permission: "READ" | "WRITE";
+  expiresAt: string;
+  usedAt?: string;
+  createdAt: string;
+}
+
+export interface SharedArticleRow {
+  rowId: number;
+  /** "user" = via per-user InventoryShare; "global" = via owner toggling sharedWithPowerUsers. */
+  source: "user" | "global";
+  permission: "READ" | "WRITE";
+  owner: { userId: number; email: string };
+  article: {
+    articleId: number;
+    articleNom: string;
+    articleModele: string;
+    articleDescription?: string | null;
+    productImageUrl?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    garantie?: {
+      garantieId: number;
+      garantieNom: string;
+      garantieFin: string;
+      garantieIsValide: boolean;
+    } | null;
+    locations?: Array<{ locationId: number; location?: { name: string } }>;
+    ownerUserId: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BillingSubscription {
+  status: string;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: number | null;
+  cancelAt: number | null;
+  endedAt: number | null;
+  plan: "monthly" | "yearly" | null;
+}

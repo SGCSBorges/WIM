@@ -2,8 +2,17 @@
 // New code should import directly from "@wim/types".
 export type {
   Article,
+  ArticleListParams,
+  ArticleListResult,
+  ArticleNote,
   ArticleWarranty,
+  BillingSubscription,
   FetchedArticle,
   Location,
+  SavedView,
+  ShareInviteItem,
+  ShareItem,
+  SharedArticleRow,
   Tag,
+  WarrantyItem,
 } from "@wim/types";

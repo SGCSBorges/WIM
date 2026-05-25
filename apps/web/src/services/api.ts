@@ -1,4 +1,30 @@
-import type { Article, FetchedArticle } from "../types";
+import type {
+  Article,
+  ArticleListParams,
+  ArticleListResult,
+  ArticleNote,
+  BillingSubscription,
+  FetchedArticle,
+  SavedView,
+  ShareInviteItem,
+  ShareItem,
+  SharedArticleRow,
+  WarrantyItem,
+} from "../types";
+
+// Re-export shared response shapes so existing `import { X } from
+// "../services/api"` sites keep working after the move into @wim/types.
+export type {
+  ArticleListParams,
+  ArticleListResult,
+  ArticleNote,
+  BillingSubscription,
+  SavedView,
+  ShareInviteItem,
+  ShareItem,
+  SharedArticleRow,
+  WarrantyItem,
+};
 
 // API base URL strategy:
 // - In development, default to the local API.
@@ -137,24 +163,6 @@ export const authAPI = {
 };
 
 // Articles API
-export interface ArticleListParams {
-  locationId?: number;
-  tagId?: number;
-  q?: string;
-  warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
-  priceMin?: number;
-  priceMax?: number;
-  page?: number;
-  limit?: number;
-}
-
-export interface ArticleListResult {
-  items: FetchedArticle[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
 export const articlesAPI = {
   async getAll(params: ArticleListParams = {}): Promise<ArticleListResult> {
     const url = new URL(`${API_BASE_URL}/articles`);
@@ -595,13 +603,6 @@ export const tagsAPI = {
   },
 };
 
-export interface ArticleNote {
-  noteId: number;
-  articleId: number;
-  content: string;
-  createdAt: string;
-}
-
 // Article maintenance/service notes
 export const notesAPI = {
   async list(articleId: number): Promise<ArticleNote[]> {
@@ -637,12 +638,6 @@ export const notesAPI = {
       throw new Error(await extractError(response, "Failed to delete note"));
   },
 };
-
-export interface SavedView {
-  id: number;
-  name: string;
-  query: string;
-}
 
 // Saved Articles filter presets
 export const savedViewsAPI = {
@@ -1097,36 +1092,6 @@ export const adminAPI = {
   },
 };
 
-export interface WarrantyItem {
-  garantieId: number;
-  garantieNom: string;
-  garantieDateAchat: string;
-  garantieDuration: number;
-  garantieFin: string;
-  garantieIsValide: boolean;
-  garantieArticleId: number | null;
-}
-
-export interface ShareItem {
-  inventoryShareId: number;
-  permission: "READ" | "WRITE";
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  target: { userId: number; email: string };
-}
-
-export interface ShareInviteItem {
-  shareInviteId: number;
-  email: string;
-  token: string;
-  status: "PENDING" | "ACCEPTED" | "REVOKED" | "EXPIRED";
-  permission: "READ" | "WRITE";
-  expiresAt: string;
-  usedAt?: string;
-  createdAt: string;
-}
-
 // Warranties API
 export const warrantiesAPI = {
   async getAll(page?: number, limit?: number): Promise<WarrantyItem[]> {
@@ -1229,33 +1194,6 @@ export const sharesAPI = {
   },
 };
 
-export interface SharedArticleRow {
-  rowId: number;
-  /** "user" = via per-user InventoryShare; "global" = via owner toggling sharedWithPowerUsers. */
-  source: "user" | "global";
-  permission: "READ" | "WRITE";
-  owner: { userId: number; email: string };
-  article: {
-    articleId: number;
-    articleNom: string;
-    articleModele: string;
-    articleDescription?: string | null;
-    productImageUrl?: string | null;
-    createdAt: string;
-    updatedAt: string;
-    garantie?: {
-      garantieId: number;
-      garantieNom: string;
-      garantieFin: string;
-      garantieIsValide: boolean;
-    } | null;
-    locations?: Array<{ locationId: number; location?: { name: string } }>;
-    ownerUserId: number;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
 // Shared articles API (read-only view for POWER_USER receivers)
 export const sharedAPI = {
   async getSharedArticles(
@@ -1303,15 +1241,6 @@ export const sharedAPI = {
 };
 
 // Billing / Stripe
-export type BillingSubscription = {
-  status: string;
-  cancelAtPeriodEnd: boolean;
-  currentPeriodEnd: number | null;
-  cancelAt: number | null;
-  endedAt: number | null;
-  plan: "monthly" | "yearly" | null;
-};
-
 export const billingAPI = {
   async createPowerUserCheckoutSession(
     plan: "monthly" | "yearly",
