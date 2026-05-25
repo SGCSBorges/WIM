@@ -98,13 +98,19 @@ export default function BarcodeScanner({ open, onClose, onDetected }: Props) {
         {t("scan.title")}
       </h2>
       {error ? (
-        <p className="text-sm ui-text-error">{error}</p>
+        <p className="text-sm ui-text-error" role="alert">
+          {error}
+        </p>
       ) : (
         <>
-          <p className="text-sm ui-text-muted">{t("scan.hint")}</p>
+          <p id="barcode-scan-hint" className="text-sm ui-text-muted">
+            {t("scan.hint")}
+          </p>
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
           <video
             ref={videoRef}
+            aria-label={t("scan.title")}
+            aria-describedby="barcode-scan-hint"
             className="w-full rounded bg-black"
             muted
             playsInline

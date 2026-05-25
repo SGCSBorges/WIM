@@ -175,6 +175,7 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
           </p>
           <div className="max-h-64 overflow-auto border ui-divider rounded">
             <table className="w-full text-sm">
+              <caption className="sr-only">{t("import.title")}</caption>
               <thead className="ui-panel">
                 <tr>
                   <th className="px-2 py-1 text-left">{t("import.col.ok")}</th>

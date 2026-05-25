@@ -627,7 +627,11 @@ const ArticlesList: React.FC = () => {
       </div>
 
       {/* Saved filter views */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div
+        className="flex flex-wrap items-center gap-2"
+        role="group"
+        aria-label={t("savedViews.title")}
+      >
         {savedViews.map((v) => (
           <span
             key={v.id}
