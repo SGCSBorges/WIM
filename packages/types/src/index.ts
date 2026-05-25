@@ -35,6 +35,9 @@ export interface Article {
   // Purchase price for inventory-value tracking. Serialized as a string
   // (Prisma Decimal) on reads; accepts number on writes.
   purchasePrice?: string | number | null;
+  // Annual straight-line depreciation rate as a percentage (0–100). Null/
+  // absent = no depreciation. String on reads (Prisma Decimal), number on writes.
+  depreciationRate?: string | number | null;
   sharedWithPowerUsers?: boolean;
   locationIds?: number[];
   locations?: Array<{ locationId: number; location?: { name: string } }>;

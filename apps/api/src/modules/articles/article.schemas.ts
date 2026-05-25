@@ -20,6 +20,8 @@ export const ArticleCreateSchema = z.object({
     .max(10_000_000_000)
     .optional()
     .nullable(),
+  // Annual straight-line depreciation rate as a percentage (0–100).
+  depreciationRate: z.coerce.number().min(0).max(100).optional().nullable(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
   // Optional tags (owner-scoped). Empty/absent = no tags.

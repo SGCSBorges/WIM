@@ -5,6 +5,7 @@
 
 import { prisma } from "../libs/prisma";
 import { logger } from "../config/logger";
+import { currentValue } from "../modules/common/depreciation";
 
 type UserRole = "USER" | "POWER_USER" | "ADMIN";
 
@@ -38,6 +39,7 @@ export interface DashboardStatistics {
   };
   inventoryValue: {
     total: number;
+    currentTotal: number; // total after applying per-article depreciation
     atRisk: number; // value of articles whose warranty has expired
     byLocation: Array<{
       locationId: number;
@@ -118,6 +120,7 @@ export async function getDashboardStatistics(
       atRiskValueAgg,
       locationValueRows,
       tagValueRows,
+      valueArticles,
     ] = await Promise.all([
       prisma.article.count({ where: { ownerUserId } }),
       prisma.article.count({
@@ -176,6 +179,15 @@ export async function getDashboardStatistics(
           article: { select: { purchasePrice: true } },
         },
       }),
+      prisma.article.findMany({
+        where: { ownerUserId, purchasePrice: { not: null } },
+        select: {
+          purchasePrice: true,
+          depreciationRate: true,
+          createdAt: true,
+          garantie: { select: { garantieDateAchat: true } },
+        },
+      }),
     ]);
 
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
@@ -212,6 +224,20 @@ export async function getDashboardStatistics(
     const valueByTag = new Map<number, { name: string; value: number }>();
     for (const [id, v] of tagCents)
       valueByTag.set(id, { name: v.name, value: v.cents / 100 });
+
+    // Current (depreciated) value per article, summed in integer cents. Age
+    // basis is the warranty purchase date when present, else createdAt.
+    let currentCents = 0;
+    for (const a of valueArticles) {
+      const basis = a.garantie?.garantieDateAchat ?? a.createdAt;
+      const value = currentValue(
+        a.purchasePrice != null ? Number(a.purchasePrice) : null,
+        a.depreciationRate != null ? Number(a.depreciationRate) : null,
+        basis,
+        currentDate
+      );
+      currentCents += Math.round(value * 100);
+    }
 
     const countMap = new Map<number, number>();
     for (const row of articleCountsByLocation) {
@@ -270,6 +296,7 @@ export async function getDashboardStatistics(
       },
       inventoryValue: {
         total: Number(inventoryValueAgg._sum.purchasePrice ?? 0),
+        currentTotal: currentCents / 100,
         atRisk: Number(atRiskValueAgg._sum.purchasePrice ?? 0),
         byLocation: byLocation.map((l) => ({
           locationId: l.locationId,

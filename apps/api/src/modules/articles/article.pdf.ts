@@ -4,6 +4,7 @@ import PDFDocument from "pdfkit";
 import type { Response } from "express";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
+import { currentValue } from "../common/depreciation";
 
 const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
 
@@ -77,6 +78,18 @@ export async function streamArticleClaimPdf(
   if (article.articleDescription)
     row("Description:", article.articleDescription);
   row("Purchase price:", money(article.purchasePrice, currency));
+  if (article.depreciationRate != null && article.purchasePrice != null) {
+    const basis = article.garantie?.garantieDateAchat ?? article.createdAt;
+    const current = currentValue(
+      Number(article.purchasePrice),
+      Number(article.depreciationRate),
+      basis
+    );
+    row(
+      "Current value:",
+      `${money(current, currency)} (${Number(article.depreciationRate)}%/yr depreciation)`
+    );
+  }
   row(
     "Locations:",
     article.locations

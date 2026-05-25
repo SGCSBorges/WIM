@@ -131,6 +131,11 @@ model Article {
   // rounding; serialized as a string over JSON and formatted on the client.
   purchasePrice      Decimal? @db.Decimal(12, 2)
 
+  // Annual straight-line depreciation rate as a percentage (0–100). Null
+  // means the item doesn't depreciate. Used to derive a current value from
+  // purchasePrice and the item's age.
+  depreciationRate   Decimal? @db.Decimal(5, 2)
+
   // Sharing v2 (simplest): when true, this article is visible in the shared view
   // to all POWER_USER accounts (read-only; owner-only edit/unshare).
   sharedWithPowerUsers Boolean @default(false)

@@ -37,6 +37,7 @@ interface DashboardStatistics {
   };
   inventoryValue: {
     total: number;
+    currentTotal: number;
     atRisk: number;
     byLocation: Array<{ locationId: number; name: string; value: number }>;
     byTag: Array<{ tagId: number; name: string; value: number }>;
@@ -196,6 +197,22 @@ const Dashboard: React.FC = () => {
             currency,
             language
           )} ${t("dashboard.valueAtRisk")}`}
+        />
+
+        <StatCard
+          title={t("dashboard.currentValue")}
+          value={formatMoney(
+            statistics.inventoryValue.currentTotal,
+            currency,
+            language
+          )}
+          icon="📉"
+          color="ui-icon-info"
+          subtitle={`${formatMoney(
+            statistics.inventoryValue.total,
+            currency,
+            language
+          )} ${t("dashboard.atPurchase")}`}
         />
 
         <StatCard

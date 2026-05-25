@@ -12,6 +12,7 @@ import {
 import type { FetchedArticle } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
+import { currentValue } from "../../utils/depreciation";
 import { downloadBlob } from "../../utils/csv";
 import { ErrorBanner } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -166,6 +167,27 @@ export default function ArticleDetail() {
                 ? formatMoney(article.purchasePrice, currency, language)
                 : "—"}
             </span>
+            {(() => {
+              const current = currentValue(
+                article.purchasePrice,
+                article.depreciationRate,
+                article.garantie?.garantieDateAchat ?? article.createdAt
+              );
+              if (current == null) return null;
+              return (
+                <span>
+                  <span className="ui-text-muted">
+                    {t("articleDetail.currentValue")}:{" "}
+                  </span>
+                  {formatMoney(current, currency, language)}
+                  <span className="ui-text-muted">
+                    {" "}
+                    ({Number(article.depreciationRate)}%/
+                    {t("articleDetail.perYear")})
+                  </span>
+                </span>
+              );
+            })()}
             <span>
               <span className="ui-text-muted">
                 {t("articleDetail.locations")}:{" "}

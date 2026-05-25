@@ -81,6 +81,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [purchasePrice, setPurchasePrice] = useState<string>(
     article?.purchasePrice != null ? String(article.purchasePrice) : ""
   );
+  const [depreciationRate, setDepreciationRate] = useState<string>(
+    article?.depreciationRate != null ? String(article.depreciationRate) : ""
+  );
   const [showScanner, setShowScanner] = useState(false);
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
@@ -129,6 +132,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     });
     setPurchasePrice(
       article?.purchasePrice != null ? String(article.purchasePrice) : ""
+    );
+    setDepreciationRate(
+      article?.depreciationRate != null ? String(article.depreciationRate) : ""
     );
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setSelectedTagIds(deriveInitialTagIds(article));
@@ -315,6 +321,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       articleDescription: formData.articleDescription?.trim() || null,
       productImageUrl: formData.productImageUrl?.trim() || null,
       purchasePrice: purchasePrice.trim() === "" ? null : Number(purchasePrice),
+      depreciationRate:
+        depreciationRate.trim() === "" ? null : Number(depreciationRate),
       locationIds: selectedLocationIds,
       tagIds: selectedTagIds,
       ...(warrantyEnabled
@@ -484,6 +492,31 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.purchasePrice")}
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor="depreciationRate"
+            className="block text-sm font-medium ui-text-muted mb-1"
+          >
+            {t("articleForm.depreciationRate")}
+          </label>
+          <input
+            type="number"
+            id="depreciationRate"
+            name="depreciationRate"
+            min="0"
+            max="100"
+            step="0.01"
+            inputMode="decimal"
+            value={depreciationRate}
+            onChange={(e) => setDepreciationRate(e.target.value)}
+            className="w-full px-3 py-2 ui-input rounded-md"
+            placeholder={t("articleForm.placeholder.depreciationRate")}
+          />
+          <p className="mt-1 text-xs ui-text-muted">
+            {t("articleForm.depreciationRateHint")}
+          </p>
         </div>
 
         <div>

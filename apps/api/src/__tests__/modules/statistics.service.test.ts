@@ -5,6 +5,7 @@ vi.mock("../../libs/prisma", () => ({
     article: {
       count: vi.fn(),
       aggregate: vi.fn(),
+      findMany: vi.fn(),
     },
     location: {
       findMany: vi.fn(),
@@ -83,6 +84,7 @@ function setupDashboardMocks({
     .mockResolvedValueOnce({ _sum: { purchasePrice: null } }); // at-risk value
   mockPrisma.articleLocation.findMany.mockResolvedValue([]);
   mockPrisma.articleTag.findMany.mockResolvedValue([]);
+  mockPrisma.article.findMany.mockResolvedValue([]);
   mockPrisma.garantie.count
     .mockResolvedValueOnce(warrantiesTotal)
     .mockResolvedValueOnce(warrantiesActive)
@@ -164,6 +166,7 @@ describe("getDashboardStatistics", () => {
     mockPrisma.articleLocation.groupBy.mockResolvedValue([]);
     mockPrisma.articleLocation.findMany.mockResolvedValue([]);
     mockPrisma.articleTag.findMany.mockResolvedValue([]);
+    mockPrisma.article.findMany.mockResolvedValue([]);
     mockPrisma.article.aggregate
       .mockResolvedValueOnce({ _sum: { purchasePrice: null } })
       .mockResolvedValueOnce({ _sum: { purchasePrice: null } });
@@ -208,6 +211,7 @@ describe("getDashboardStatistics", () => {
       { tagId: 1, tag: { name: "Tools" }, article: { purchasePrice: 100 } },
       { tagId: 1, tag: { name: "Tools" }, article: { purchasePrice: 150 } },
     ]);
+    mockPrisma.article.findMany.mockResolvedValue([]);
     mockPrisma.garantie.count.mockResolvedValue(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
 
@@ -222,6 +226,44 @@ describe("getDashboardStatistics", () => {
     expect(result.inventoryValue.byTag).toEqual([
       { tagId: 1, name: "Tools", value: 250 },
     ]);
+  });
+
+  it("computes currentTotal from per-article straight-line depreciation", async () => {
+    setupDashboardMocks({ articlesTotal: 3 });
+    // Override total/at-risk aggregates with real numbers.
+    mockPrisma.article.aggregate.mockReset();
+    mockPrisma.article.aggregate
+      .mockResolvedValueOnce({ _sum: { purchasePrice: 300 } }) // total
+      .mockResolvedValueOnce({ _sum: { purchasePrice: 0 } }); // at-risk
+    const twoYearsAgo = new Date(Date.now() - 2 * 365.25 * 24 * 3600 * 1000);
+    mockPrisma.article.findMany.mockResolvedValue([
+      // 10%/yr for 2 years → 80% of 100 = 80
+      {
+        purchasePrice: 100,
+        depreciationRate: 10,
+        createdAt: twoYearsAgo,
+        garantie: null,
+      },
+      // No depreciation → full 100
+      {
+        purchasePrice: 100,
+        depreciationRate: null,
+        createdAt: twoYearsAgo,
+        garantie: null,
+      },
+      // Warranty purchase date drives age basis (2y, 10%) → 80
+      {
+        purchasePrice: 100,
+        depreciationRate: 10,
+        createdAt: new Date(),
+        garantie: { garantieDateAchat: twoYearsAgo },
+      },
+    ]);
+
+    const result = await getDashboardStatistics({ userId: 1, role: "USER" });
+
+    expect(result.inventoryValue.total).toBe(300);
+    expect(result.inventoryValue.currentTotal).toBeCloseTo(260, 0);
   });
 
   it("treats unknown role as USER (no totalSharedArticles query)", async () => {
