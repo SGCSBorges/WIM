@@ -9,6 +9,7 @@ import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
 import {
   articlesAPI,
+  attachmentsAPI,
   locationsAPI,
   authAPI,
   profileAPI,
@@ -26,6 +27,7 @@ import { ErrorBanner } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
 import CsvImportModal from "./CsvImportModal";
 import { useToast } from "../common/Toast";
+import { consumeSharedDraft } from "../../utils/shareTarget";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
@@ -112,6 +114,11 @@ const ArticlesList: React.FC = () => {
   const [editingArticle, setEditingArticle] = useState<FetchedArticle | null>(
     null
   );
+  // A create-mode draft prefilled from a PWA share-sheet payload.
+  const [sharedDraft, setSharedDraft] = useState<Omit<
+    Article,
+    "articleId"
+  > | null>(null);
 
   const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
     number | null
@@ -378,6 +385,7 @@ const ArticlesList: React.FC = () => {
       await fetchArticles();
       setShowForm(false);
       setEditingArticle(null);
+      setSharedDraft(null);
     } catch (err) {
       setError(getErrorMessage(err, t("common.errorOccurred")));
     }
@@ -421,6 +429,47 @@ const ArticlesList: React.FC = () => {
   useEffect(() => {
     fetchArticles();
   }, [fetchArticles]);
+
+  // Share-target landing: when arriving via the PWA share sheet (?shared=1),
+  // pull the stashed payload, upload any shared photo, and open a prefilled
+  // create form. Runs once; the param is stripped so a reload won't re-trigger.
+  useEffect(() => {
+    if (searchParams.get("shared") !== "1") return;
+    let cancelled = false;
+    (async () => {
+      const draft = await consumeSharedDraft().catch(() => null);
+      updateParams({ shared: undefined });
+      if (cancelled || !draft) return;
+
+      let productImageUrl: string | null = null;
+      if (draft.photo) {
+        try {
+          const created = await attachmentsAPI.uploadFile(draft.photo, "OTHER");
+          productImageUrl = created.fileUrl ?? null;
+        } catch {
+          // non-blocking: keep the rest of the prefill
+        }
+      }
+      if (cancelled) return;
+
+      const description = [draft.text, draft.url]
+        .map((s) => (s ?? "").trim())
+        .filter(Boolean)
+        .join("\n");
+      setSharedDraft({
+        articleNom: (draft.title ?? "").trim(),
+        articleModele: "",
+        articleDescription: description || null,
+        productImageUrl,
+      });
+      setEditingArticle(null);
+      setShowForm(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const saveCurrentView = async () => {
     const name = window.prompt(t("savedViews.namePrompt"))?.trim();
@@ -667,11 +716,12 @@ const ArticlesList: React.FC = () => {
 
       {showForm && (
         <ArticleForm
-          article={editingArticle || undefined}
+          article={editingArticle || sharedDraft || undefined}
           onSubmit={handleSubmit}
           onCancel={() => {
             setShowForm(false);
             setEditingArticle(null);
+            setSharedDraft(null);
           }}
         />
       )}

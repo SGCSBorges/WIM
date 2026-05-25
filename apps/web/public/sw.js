@@ -11,6 +11,12 @@
 const CACHE_VERSION = "wim-v1";
 const SHELL_URLS = ["/", "/index.html", "/icon-192.png", "/icon-512.png"];
 
+// Holds the payload from a PWA share-sheet POST until the SPA reads it.
+// Kept separate from the versioned shell cache so activate() doesn't wipe it.
+const SHARE_CACHE = "wim-share-target";
+const SHARE_META_KEY = "/__wim_share__";
+const SHARE_PHOTO_KEY = "/__wim_share_photo__";
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -28,7 +34,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k !== CACHE_VERSION)
+            .filter((k) => k !== CACHE_VERSION && k !== SHARE_CACHE)
             .map((k) => caches.delete(k))
         )
       )
@@ -36,11 +42,54 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Stash a share-sheet POST in the share cache, then redirect into the SPA's
+// "new article" flow, which reads the stash on load. Errors degrade to a plain
+// redirect so the user still lands somewhere sensible.
+async function handleShareTarget(req) {
+  try {
+    const form = await req.formData();
+    const meta = {
+      title: String(form.get("title") || ""),
+      text: String(form.get("text") || ""),
+      url: String(form.get("url") || ""),
+    };
+    const cache = await caches.open(SHARE_CACHE);
+    await cache.put(
+      SHARE_META_KEY,
+      new Response(JSON.stringify(meta), {
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+    const photo = form.get("photo");
+    if (photo && typeof photo !== "string" && photo.size > 0) {
+      await cache.put(
+        SHARE_PHOTO_KEY,
+        new Response(photo, {
+          headers: {
+            "Content-Type": photo.type || "application/octet-stream",
+            "X-Filename": photo.name || "shared-image",
+          },
+        })
+      );
+    } else {
+      await cache.delete(SHARE_PHOTO_KEY);
+    }
+  } catch {
+    // ignore — fall through to the redirect
+  }
+  return Response.redirect("/articles?shared=1", 303);
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  if (req.method !== "GET") return;
-
   const url = new URL(req.url);
+
+  if (req.method === "POST" && url.pathname === "/share-target") {
+    event.respondWith(handleShareTarget(req));
+    return;
+  }
+
+  if (req.method !== "GET") return;
   // Never intercept API calls — always go to the network so users see
   // current data and auth cookies aren't tripped up by a stale response.
   if (url.pathname.startsWith("/api/")) return;
