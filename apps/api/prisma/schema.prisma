@@ -304,6 +304,9 @@ model Attachment {
   mimeType     String         @db.VarChar(100)
   fileSize     Int
   fileUrl      String         @db.VarChar(500)
+  // Resized preview generated for image uploads; null for PDFs or when
+  // resizing failed (callers fall back to fileUrl).
+  thumbUrl     String?        @db.VarChar(500)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

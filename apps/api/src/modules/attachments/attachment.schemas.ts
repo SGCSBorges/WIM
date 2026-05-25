@@ -12,6 +12,15 @@ export const AttachmentCreateSchema = z.object({
     .refine((u) => /^https?:\/\//i.test(u), {
       message: "fileUrl must be an http(s) URL",
     }),
+  thumbUrl: z
+    .string()
+    .url()
+    .max(500)
+    .refine((u) => /^https?:\/\//i.test(u), {
+      message: "thumbUrl must be an http(s) URL",
+    })
+    .optional()
+    .nullable(),
   ownerUserId: z.number().int().positive(),
   articleId: z.number().int().positive().optional(),
   garantieId: z.number().int().positive().optional(),

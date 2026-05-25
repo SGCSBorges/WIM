@@ -17,6 +17,7 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { idParam, paginationQuery } from "../common/schemas";
 import { logger } from "../../config/logger";
 import { verifyFileSignature } from "../../utils/file-signature";
+import { makeImageThumbnail, thumbnailName } from "./attachment.thumbnail";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
 const router = Router();
@@ -171,6 +172,16 @@ router.post(
       `${req.protocol}://${req.get("host")}`;
     const fileUrl = `${baseUrl}/uploads/${encodeURIComponent(file.filename)}`;
 
+    // Generate a downscaled preview for images (best-effort; null for PDFs or
+    // on resize failure, in which case callers fall back to the original).
+    const thumbUrl = await makeImageThumbnail({
+      sourcePath: file.path,
+      uploadDir: UPLOAD_DIR,
+      storedName: file.filename,
+      mimeType: file.mimetype,
+      baseUrl,
+    });
+
     let created;
     try {
       created = await AttachmentService.create({
@@ -179,16 +190,22 @@ router.post(
         mimeType: file.mimetype,
         fileSize: file.size,
         fileUrl,
+        thumbUrl,
         ownerUserId: req.user!.sub,
       });
     } catch (err) {
-      try {
-        await fs.promises.unlink(file.path);
-      } catch (fsErr) {
-        logger.warn(
-          { err: fsErr, filePath: file.path },
-          "[attachment] failed to unlink orphaned file after DB error"
-        );
+      const orphans = [file.path];
+      if (thumbUrl)
+        orphans.push(path.join(UPLOAD_DIR, thumbnailName(file.filename)));
+      for (const p of orphans) {
+        try {
+          await fs.promises.unlink(p);
+        } catch (fsErr) {
+          logger.warn(
+            { err: fsErr, filePath: p },
+            "[attachment] failed to unlink orphaned file after DB error"
+          );
+        }
       }
       throw err;
     }
@@ -249,21 +266,24 @@ router.delete(
     if (!attachment)
       return res.status(404).json({ error: "Attachment not found" });
 
-    if (removeFile && attachment.fileUrl) {
-      try {
-        const url = new URL(attachment.fileUrl);
-        const pathname = decodeURIComponent(url.pathname);
-        if (pathname.startsWith("/uploads/")) {
-          const storedName = pathname.replace("/uploads/", "");
-          const fullPath = path.resolve(UPLOAD_DIR, storedName);
-          // Guard against path traversal: ensure fullPath stays inside UPLOAD_DIR.
-          if (!fullPath.startsWith(UPLOAD_DIR + path.sep)) {
-            throw new Error("Invalid file path");
+    if (removeFile) {
+      for (const fileUrl of [attachment.fileUrl, attachment.thumbUrl]) {
+        if (!fileUrl) continue;
+        try {
+          const url = new URL(fileUrl);
+          const pathname = decodeURIComponent(url.pathname);
+          if (pathname.startsWith("/uploads/")) {
+            const storedName = pathname.replace("/uploads/", "");
+            const fullPath = path.resolve(UPLOAD_DIR, storedName);
+            // Guard against path traversal: ensure fullPath stays inside UPLOAD_DIR.
+            if (!fullPath.startsWith(UPLOAD_DIR + path.sep)) {
+              throw new Error("Invalid file path");
+            }
+            await fs.promises.unlink(fullPath);
           }
-          await fs.promises.unlink(fullPath);
+        } catch {
+          // ignore parse/unlink errors (file may already be gone)
         }
-      } catch {
-        // ignore parse/unlink errors (file may already be gone)
       }
     }
 

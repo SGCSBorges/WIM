@@ -12,6 +12,7 @@ interface Attachment {
   mimeType: string;
   fileSize: number;
   fileUrl: string;
+  thumbUrl?: string | null;
   type: "INVOICE" | "WARRANTY" | "OTHER";
   createdAt: string;
   articleId?: number;
@@ -386,7 +387,16 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             >
               <div className="p-4">
                 <div className="flex items-start space-x-3">
-                  {getFileIcon(attachment.mimeType)}
+                  {attachment.thumbUrl ? (
+                    <img
+                      src={attachment.thumbUrl}
+                      alt={attachment.fileName}
+                      loading="lazy"
+                      className="h-12 w-12 rounded object-cover ui-divider border"
+                    />
+                  ) : (
+                    getFileIcon(attachment.mimeType)
+                  )}
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
