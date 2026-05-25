@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../../libs/prisma", () => ({
   prisma: {
-    location: { upsert: vi.fn() },
-    tag: { upsert: vi.fn() },
+    location: { upsert: vi.fn(), findMany: vi.fn() },
+    tag: { upsert: vi.fn(), findMany: vi.fn() },
   },
 }));
 
@@ -16,8 +16,14 @@ import { ArticleService } from "../../modules/articles/article.service";
 import { importArticles } from "../../modules/articles/article.import";
 
 const mockPrisma = prisma as unknown as {
-  location: { upsert: ReturnType<typeof vi.fn> };
-  tag: { upsert: ReturnType<typeof vi.fn> };
+  location: {
+    upsert: ReturnType<typeof vi.fn>;
+    findMany: ReturnType<typeof vi.fn>;
+  };
+  tag: {
+    upsert: ReturnType<typeof vi.fn>;
+    findMany: ReturnType<typeof vi.fn>;
+  };
 };
 const mockCreate = ArticleService.create as unknown as ReturnType<typeof vi.fn>;
 
@@ -30,6 +36,9 @@ beforeEach(() => {
   mockPrisma.tag.upsert.mockImplementation(({ create }) =>
     Promise.resolve({ tagId: 200 + create.name.length })
   );
+  // By default no names pre-exist, so the cap check counts every name as new.
+  mockPrisma.location.findMany.mockResolvedValue([]);
+  mockPrisma.tag.findMany.mockResolvedValue([]);
   mockCreate.mockResolvedValue({ articleId: 1 });
 });
 
@@ -44,7 +53,7 @@ describe("importArticles", () => {
       },
     ]);
 
-    expect(result).toEqual({ created: 1, errors: [] });
+    expect(result).toMatchObject({ created: 1, errors: [] });
     expect(mockPrisma.location.upsert).toHaveBeenCalledTimes(1);
     expect(mockPrisma.tag.upsert).toHaveBeenCalledTimes(1);
     expect(mockCreate).toHaveBeenCalledWith(
@@ -79,5 +88,53 @@ describe("importArticles", () => {
     ]);
     expect(result.created).toBe(0);
     expect(result.errors).toEqual([{ row: 1, message: "boom" }]);
+  });
+
+  it("dry run validates rows but writes nothing", async () => {
+    const result = await importArticles(
+      7,
+      [
+        { name: "OK", model: "M1", locations: ["Home"], tags: ["T"] },
+        { name: "", model: "M2", locations: ["Home"], tags: [] }, // invalid
+      ],
+      { dryRun: true }
+    );
+
+    expect(result.created).toBe(1);
+    expect(result.errors).toHaveLength(1);
+    expect(result.dryRun).toBe(true);
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockPrisma.location.upsert).not.toHaveBeenCalled();
+    expect(mockPrisma.tag.upsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects an import that would create more than 50 new locations", async () => {
+    const rows = Array.from({ length: 51 }, (_, i) => ({
+      name: `A${i}`,
+      model: "M",
+      locations: [`Loc-${i}`],
+      tags: [],
+    }));
+
+    await expect(importArticles(7, rows)).rejects.toMatchObject({
+      status: 400,
+    });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("does not count already-owned locations against the new-entity cap", async () => {
+    // All 51 location names already exist → zero new, so no cap breach.
+    mockPrisma.location.findMany.mockResolvedValue(
+      Array.from({ length: 51 }, (_, i) => ({ name: `Loc-${i}` }))
+    );
+    const rows = Array.from({ length: 51 }, (_, i) => ({
+      name: `A${i}`,
+      model: "M",
+      locations: [`Loc-${i}`],
+      tags: [],
+    }));
+
+    const result = await importArticles(7, rows, { dryRun: true });
+    expect(result.created).toBe(51);
   });
 });

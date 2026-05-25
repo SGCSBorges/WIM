@@ -240,12 +240,16 @@ export const articlesAPI = {
       price?: number | null;
       locations: string[];
       tags: string[];
-    }>
+    }>,
+    options: { dryRun?: boolean } = {}
   ): Promise<{
     created: number;
     errors: Array<{ row: number; message: string }>;
+    dryRun?: boolean;
   }> {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/import`, {
+    const url = new URL(`${API_BASE_URL}/articles/import`);
+    if (options.dryRun) url.searchParams.set("dryRun", "1");
+    const response = await fetchWithTimeout(url.toString(), {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify({ rows }),

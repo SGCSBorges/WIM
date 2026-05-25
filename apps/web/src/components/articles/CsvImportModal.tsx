@@ -55,6 +55,12 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
+  // Server dry-run outcome; gates the real commit so the user previews
+  // server-side validation (including the new-entity cap) before any writes.
+  const [validation, setValidation] = useState<{
+    created: number;
+    errors: Array<{ row: number; message: string }>;
+  } | null>(null);
   const [result, setResult] = useState<{
     created: number;
     errors: Array<{ row: number; message: string }>;
@@ -65,11 +71,13 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
   const reset = () => {
     setRows([]);
     setFileName("");
+    setValidation(null);
     setResult(null);
   };
 
   const handleFile = async (file: File) => {
     setResult(null);
+    setValidation(null);
     try {
       const text = await file.text();
       setRows(parseCSV(text).map(toRow));
@@ -81,21 +89,40 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
     }
   };
 
-  const doImport = async () => {
-    const valid = rows.filter((r) => r.valid);
+  const payload = () =>
+    rows
+      .filter((r) => r.valid)
+      .map((r) => ({
+        name: r.name,
+        model: r.model,
+        description: r.description || null,
+        price: r.price,
+        locations: r.locations,
+        tags: r.tags,
+      }));
+
+  const doValidate = async () => {
+    const valid = payload();
     if (valid.length === 0) return;
     setImporting(true);
     try {
-      const res = await articlesAPI.importRows(
-        valid.map((r) => ({
-          name: r.name,
-          model: r.model,
-          description: r.description || null,
-          price: r.price,
-          locations: r.locations,
-          tags: r.tags,
-        }))
-      );
+      const res = await articlesAPI.importRows(valid, { dryRun: true });
+      setValidation(res);
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const doImport = async () => {
+    const valid = payload();
+    if (valid.length === 0) return;
+    setImporting(true);
+    try {
+      const res = await articlesAPI.importRows(valid);
       setResult(res);
       toast.show(t("import.success").replace("{count}", String(res.created)), {
         kind: "success",
@@ -179,8 +206,38 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
         </>
       )}
 
+      {validation && !result && (
+        <div
+          className="border ui-divider rounded p-3 space-y-2"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="text-sm ui-text-success">
+            {t("import.validated").replace(
+              "{count}",
+              String(validation.created)
+            )}
+          </p>
+          {validation.errors.length > 0 && (
+            <ul className="text-xs ui-text-error max-h-32 overflow-auto space-y-1">
+              {validation.errors.map((e, i) => (
+                <li key={i}>
+                  {t("import.rowError")
+                    .replace("{row}", String(e.row))
+                    .replace("{message}", e.message)}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {result && (
-        <div className="border ui-divider rounded p-3 space-y-2">
+        <div
+          className="border ui-divider rounded p-3 space-y-2"
+          role="status"
+          aria-live="polite"
+        >
           <p className="text-sm ui-text-success">
             {t("import.result").replace("{count}", String(result.created))}
           </p>
@@ -199,16 +256,31 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
       )}
 
       <div className="flex justify-end gap-2 pt-2 border-t ui-divider">
-        {!result && (
+        {!result && !validation && (
           <button
             type="button"
-            onClick={doImport}
+            onClick={doValidate}
             disabled={importing || validCount === 0}
             className="ui-btn-primary px-4 py-2 rounded-md text-sm"
           >
             {importing
               ? t("common.loading")
-              : t("import.submit").replace("{count}", String(validCount))}
+              : t("import.validate").replace("{count}", String(validCount))}
+          </button>
+        )}
+        {!result && validation && (
+          <button
+            type="button"
+            onClick={doImport}
+            disabled={importing || validation.created === 0}
+            className="ui-btn-primary px-4 py-2 rounded-md text-sm"
+          >
+            {importing
+              ? t("common.loading")
+              : t("import.submit").replace(
+                  "{count}",
+                  String(validation.created)
+                )}
           </button>
         )}
         <button

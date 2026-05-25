@@ -191,6 +191,8 @@ export const extras = {
       "Columns: Name, Model, Description, Price, Locations, Tags. Separate multiple locations or tags with ';'. Name, Model and at least one Location are required.",
     "import.preview": "{file}: {valid} of {total} row(s) ready to import.",
     "import.col.ok": "OK",
+    "import.validate": "Validate {count} row(s)",
+    "import.validated": "{count} row(s) ready to import.",
     "import.submit": "Import {count} row(s)",
     "import.success": "Imported {count} article(s).",
     "import.result": "Imported {count} article(s).",
@@ -445,6 +447,8 @@ export const extras = {
     "import.preview":
       "{file} : {valid} ligne(s) sur {total} prêtes à importer.",
     "import.col.ok": "OK",
+    "import.validate": "Valider {count} ligne(s)",
+    "import.validated": "{count} ligne(s) prête(s) à importer.",
     "import.submit": "Importer {count} ligne(s)",
     "import.success": "{count} article(s) importé(s).",
     "import.result": "{count} article(s) importé(s).",
@@ -699,6 +703,8 @@ export const extras = {
     "import.preview":
       "{file}: {valid} de {total} linha(s) prontas para importar.",
     "import.col.ok": "OK",
+    "import.validate": "Validar {count} linha(s)",
+    "import.validated": "{count} linha(s) prontas para importar.",
     "import.submit": "Importar {count} linha(s)",
     "import.success": "{count} artigo(s) importado(s).",
     "import.result": "{count} artigo(s) importado(s).",

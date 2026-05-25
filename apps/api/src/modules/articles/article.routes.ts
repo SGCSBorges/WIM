@@ -251,23 +251,32 @@ router.post(
   })
 );
 
-/** POST import articles from parsed CSV rows (partial success report). */
+/**
+ * POST import articles from parsed CSV rows (partial success report).
+ * `?dryRun=1` validates + caps without writing, for a server-checked preview.
+ */
 router.post(
   "/import",
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const { rows } = ImportSchema.parse(req.body);
-    const result = await importArticles(req.user!.sub, rows);
-    await auditAction(req, {
-      action: "CREATE",
-      entity: "Article",
-      metadata: {
-        import: true,
-        requested: rows.length,
-        created: result.created,
-        failed: result.errors.length,
-      },
-    });
+    const dryRun = ["1", "true"].includes(
+      String(req.query.dryRun ?? "").toLowerCase()
+    );
+    const result = await importArticles(req.user!.sub, rows, { dryRun });
+    // A dry run writes nothing, so it's not worth an audit entry.
+    if (!dryRun) {
+      await auditAction(req, {
+        action: "CREATE",
+        entity: "Article",
+        metadata: {
+          import: true,
+          requested: rows.length,
+          created: result.created,
+          failed: result.errors.length,
+        },
+      });
+    }
     res.json(result);
   })
 );
