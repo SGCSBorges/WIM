@@ -15,6 +15,10 @@ import type { Article, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import BarcodeScanner, { barcodeSupported } from "./BarcodeScanner";
+import {
+  barcodeLookupEnabled,
+  lookupProduct,
+} from "../../services/barcodeLookup";
 
 interface ArticleFormProps {
   article?: Article;
@@ -467,8 +471,27 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             open={showScanner}
             onClose={() => setShowScanner(false)}
             onDetected={(value) => {
+              // Always fill the model with the scanned code; if product lookup
+              // is enabled, enrich name/image when the code is recognized.
               setFormData((prev) => ({ ...prev, articleModele: value }));
               setShowScanner(false);
+              if (barcodeLookupEnabled()) {
+                void lookupProduct(value).then((info) => {
+                  if (!info) return;
+                  setFormData((prev) => ({
+                    ...prev,
+                    articleNom:
+                      prev.articleNom.trim() === "" && info.name
+                        ? info.name
+                        : prev.articleNom,
+                    productImageUrl:
+                      (prev.productImageUrl ?? "").trim() === "" &&
+                      info.imageUrl
+                        ? info.imageUrl
+                        : prev.productImageUrl,
+                  }));
+                });
+              }
             }}
           />
         )}
