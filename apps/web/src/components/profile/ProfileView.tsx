@@ -516,7 +516,9 @@ export default function ProfileView() {
 
       <div className="ui-card rounded-xl p-6 space-y-3">
         <div>
-          <h2 className="font-semibold ui-title">{t("emailReminders.title")}</h2>
+          <h2 className="font-semibold ui-title">
+            {t("emailReminders.title")}
+          </h2>
           <p className="text-sm ui-text-muted">
             {t("emailReminders.subtitle")}
           </p>
