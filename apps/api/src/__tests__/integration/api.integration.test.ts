@@ -46,11 +46,17 @@ suite("API integration (real Postgres)", () => {
     process.env.JWT_SECRET ??= "integration-test-secret";
     process.env.JOBS_ENABLED = "false";
 
-    // Bring the schema up on the target DB before importing the app/prisma.
-    execSync("npx prisma migrate deploy", {
-      env: { ...process.env, DATABASE_URL: INTEGRATION_URL },
-      stdio: "inherit",
-    });
+    // Reset (not deploy) so the suite is robust to whatever state the target
+    // DB is in — in CI it reuses the Postgres service that the drift check
+    // leaves with a schema but no migration history, which `migrate deploy`
+    // refuses (P3005). `reset` drops everything and reapplies migrations.
+    execSync(
+      "npx prisma migrate reset --force --skip-seed --skip-generate",
+      {
+        env: { ...process.env, DATABASE_URL: INTEGRATION_URL },
+        stdio: "inherit",
+      }
+    );
 
     const appMod = await import("../../app");
     const prismaMod = await import("../../libs/prisma");
