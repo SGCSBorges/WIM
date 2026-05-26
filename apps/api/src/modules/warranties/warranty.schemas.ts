@@ -9,8 +9,14 @@ export const WarrantyCreateSchema = z.object({
 
 export const WarrantyUpdateSchema = WarrantyCreateSchema.partial();
 
+export const ClaimUpdateSchema = z.object({
+  status: z.enum(["NONE", "OPEN", "APPROVED", "REJECTED", "RESOLVED"]),
+  note: z.string().trim().max(2000).optional().nullable(),
+});
+
 export type WarrantyCreateInput = z.infer<typeof WarrantyCreateSchema> & {
   ownerUserId: number;
 };
 
 export type WarrantyUpdateInput = z.infer<typeof WarrantyUpdateSchema>;
+export type ClaimUpdateInput = z.infer<typeof ClaimUpdateSchema>;

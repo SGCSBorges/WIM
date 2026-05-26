@@ -4,6 +4,7 @@ import type {
   ArticleListResult,
   ArticleNote,
   BillingSubscription,
+  ClaimStatus,
   FetchedArticle,
   SavedView,
   ShareInviteItem,
@@ -1161,6 +1162,23 @@ export const warrantiesAPI = {
       throw new Error(
         await extractError(response, "Failed to fetch warranties")
       );
+    return response.json();
+  },
+
+  async updateClaim(
+    garantieId: number,
+    input: { status: ClaimStatus; note?: string | null }
+  ) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/warranties/${garantieId}/claim`,
+      {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(input),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update claim"));
     return response.json();
   },
 };

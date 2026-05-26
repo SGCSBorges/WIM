@@ -110,6 +110,14 @@ export async function streamArticleClaimPdf(
     row("Name:", article.garantie.garantieNom);
     row("Purchased:", fmtDate(article.garantie.garantieDateAchat));
     row("Ends:", fmtDate(article.garantie.garantieFin));
+    if (
+      article.garantie.claimStatus &&
+      article.garantie.claimStatus !== "NONE"
+    ) {
+      row("Claim status:", article.garantie.claimStatus);
+      if (article.garantie.claimNote)
+        row("Claim note:", article.garantie.claimNote);
+    }
 
     const proof = localUploadImagePath(
       article.garantie.garantieImageAttachment?.fileUrl,

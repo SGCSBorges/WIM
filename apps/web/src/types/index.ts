@@ -7,6 +7,7 @@ export type {
   ArticleNote,
   ArticleWarranty,
   BillingSubscription,
+  ClaimStatus,
   FetchedArticle,
   Location,
   SavedView,

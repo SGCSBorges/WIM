@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { asyncHandler } from "../common/http";
 import { WarrantyService } from "./warranty.service";
-import { WarrantyCreateSchema, WarrantyUpdateSchema } from "./warranty.schemas";
+import {
+  ClaimUpdateSchema,
+  WarrantyCreateSchema,
+  WarrantyUpdateSchema,
+} from "./warranty.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { idParam, paginationQuery } from "../common/schemas";
@@ -57,6 +61,23 @@ router.put(
       entity: "Garantie",
       entityId: id,
       metadata: { data },
+    });
+    res.json(updated);
+  })
+);
+
+router.patch(
+  "/:id/claim",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const data = ClaimUpdateSchema.parse(req.body);
+    const updated = await WarrantyService.updateClaim(id, req.user!.sub, data);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Garantie",
+      entityId: id,
+      metadata: { field: "claim", status: data.status },
     });
     res.json(updated);
   })

@@ -150,3 +150,34 @@ describe("WarrantyService.update", () => {
     expect(mockAlertService.rescheduleForWarranty).not.toHaveBeenCalled();
   });
 });
+
+describe("WarrantyService.updateClaim", () => {
+  it("throws 404 when the warranty isn't owned by the caller", async () => {
+    mockPrisma.garantie.findFirst.mockResolvedValue(null);
+    await expect(
+      WarrantyService.updateClaim(9, 1, { status: "OPEN" })
+    ).rejects.toMatchObject({ status: 404 });
+    expect(mockPrisma.garantie.update).not.toHaveBeenCalled();
+  });
+
+  it("sets status + note and stamps claimUpdatedAt when opening a claim", async () => {
+    mockPrisma.garantie.findFirst.mockResolvedValue({ garantieId: 5 });
+    mockPrisma.garantie.update.mockResolvedValue({});
+    await WarrantyService.updateClaim(5, 1, { status: "OPEN", note: "ref-42" });
+    const arg = mockPrisma.garantie.update.mock.calls[0][0];
+    expect(arg.where).toEqual({ garantieId: 5 });
+    expect(arg.data.claimStatus).toBe("OPEN");
+    expect(arg.data.claimNote).toBe("ref-42");
+    expect(arg.data.claimUpdatedAt).toBeInstanceOf(Date);
+  });
+
+  it("clears note + timestamp when resetting to NONE", async () => {
+    mockPrisma.garantie.findFirst.mockResolvedValue({ garantieId: 5 });
+    mockPrisma.garantie.update.mockResolvedValue({});
+    await WarrantyService.updateClaim(5, 1, { status: "NONE", note: "ignored" });
+    const arg = mockPrisma.garantie.update.mock.calls[0][0];
+    expect(arg.data.claimStatus).toBe("NONE");
+    expect(arg.data.claimNote).toBeNull();
+    expect(arg.data.claimUpdatedAt).toBeNull();
+  });
+});

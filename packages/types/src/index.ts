@@ -11,6 +11,13 @@ export interface Location {
   name: string;
 }
 
+export type ClaimStatus =
+  | "NONE"
+  | "OPEN"
+  | "APPROVED"
+  | "REJECTED"
+  | "RESOLVED";
+
 export interface ArticleWarranty {
   garantieId?: number;
   garantieNom: string;
@@ -19,6 +26,9 @@ export interface ArticleWarranty {
   garantieFin?: string | null;
   garantieIsValide?: boolean;
   garantieImageAttachmentId?: number | null;
+  claimStatus?: ClaimStatus;
+  claimNote?: string | null;
+  claimUpdatedAt?: string | null;
   garantieImageAttachment?: {
     fileName: string;
     mimeType: string;

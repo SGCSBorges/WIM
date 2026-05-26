@@ -44,6 +44,14 @@ enum AlerteKind {
   CUSTOM
 }
 
+enum ClaimStatus {
+  NONE
+  OPEN
+  APPROVED
+  REJECTED
+  RESOLVED
+}
+
 model Location {
   locationId  Int      @id @default(autoincrement())
   ownerUserId Int
@@ -245,6 +253,12 @@ model Garantie {
 
   // Optional linked image/proof attachment
   garantieImageAttachmentId Int? @unique
+
+  // Warranty claim workflow: NONE until the owner opens a claim, then tracks
+  // its outcome. claimNote is free text; claimUpdatedAt stamps the last change.
+  claimStatus    ClaimStatus @default(NONE)
+  claimNote      String?     @db.VarChar(2000)
+  claimUpdatedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

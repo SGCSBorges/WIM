@@ -7,9 +7,18 @@ import {
   attachmentsAPI,
   notesAPI,
   profileAPI,
+  warrantiesAPI,
   type ArticleNote,
 } from "../../services/api";
-import type { FetchedArticle } from "../../types";
+import type { ClaimStatus, FetchedArticle } from "../../types";
+
+const CLAIM_STATUSES: ClaimStatus[] = [
+  "NONE",
+  "OPEN",
+  "APPROVED",
+  "REJECTED",
+  "RESOLVED",
+];
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { currentValue } from "../../utils/depreciation";
@@ -162,6 +171,48 @@ export default function ArticleDetail() {
 
   const photos = attachments.filter((a) => a.mimeType?.startsWith("image/"));
 
+  const [claimStatus, setClaimStatus] = useState<ClaimStatus>("NONE");
+  const [claimNote, setClaimNote] = useState("");
+  const [savingClaim, setSavingClaim] = useState(false);
+
+  // Mirror the warranty's claim fields into local editable state on load.
+  useEffect(() => {
+    setClaimStatus(article?.garantie?.claimStatus ?? "NONE");
+    setClaimNote(article?.garantie?.claimNote ?? "");
+  }, [article?.garantie?.claimStatus, article?.garantie?.claimNote]);
+
+  const saveClaim = async () => {
+    const garantieId = article?.garantie?.garantieId;
+    if (!garantieId) return;
+    setSavingClaim(true);
+    try {
+      const updated = await warrantiesAPI.updateClaim(garantieId, {
+        status: claimStatus,
+        note: claimNote.trim() || null,
+      });
+      setArticle((prev) =>
+        prev && prev.garantie
+          ? {
+              ...prev,
+              garantie: {
+                ...prev.garantie,
+                claimStatus: updated.claimStatus,
+                claimNote: updated.claimNote,
+                claimUpdatedAt: updated.claimUpdatedAt,
+              },
+            }
+          : prev
+      );
+      toast.show(t("claim.saved"), { kind: "success" });
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setSavingClaim(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4" role="status" aria-busy="true">
@@ -287,6 +338,49 @@ export default function ArticleDetail() {
             {t("articleDetail.warrantyEnds")}:{" "}
             {safeDate(article.garantie.garantieFin)}
           </p>
+
+          <div className="pt-3 mt-2 border-t ui-divider space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor="claim-status" className="text-sm font-medium">
+                {t("claim.title")}
+              </label>
+              <select
+                id="claim-status"
+                value={claimStatus}
+                onChange={(e) => setClaimStatus(e.target.value as ClaimStatus)}
+                className="ui-select px-2 py-1 rounded-md text-sm"
+              >
+                {CLAIM_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`claim.status.${s}`)}
+                  </option>
+                ))}
+              </select>
+              {article.garantie.claimUpdatedAt && (
+                <span className="text-xs ui-text-muted">
+                  {safeDate(article.garantie.claimUpdatedAt)}
+                </span>
+              )}
+            </div>
+            {claimStatus !== "NONE" && (
+              <input
+                type="text"
+                value={claimNote}
+                onChange={(e) => setClaimNote(e.target.value)}
+                placeholder={t("claim.notePlaceholder")}
+                maxLength={2000}
+                className="ui-input w-full px-3 py-2 rounded-md text-sm"
+              />
+            )}
+            <button
+              type="button"
+              onClick={saveClaim}
+              disabled={savingClaim}
+              className="ui-btn-ghost border ui-divider px-3 py-1.5 rounded-md text-sm"
+            >
+              {savingClaim ? t("common.loading") : t("claim.save")}
+            </button>
+          </div>
         </div>
       )}
 

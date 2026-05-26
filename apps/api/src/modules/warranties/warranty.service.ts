@@ -1,7 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";
-import { WarrantyCreateInput, WarrantyUpdateInput } from "./warranty.schemas";
+import {
+  ClaimUpdateInput,
+  WarrantyCreateInput,
+  WarrantyUpdateInput,
+} from "./warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
 import { createHttpError } from "../../utils/http-error";
 
@@ -141,6 +145,31 @@ export const WarrantyService = {
     }
 
     return updated;
+  },
+
+  // Update the claim workflow on a warranty (owner-scoped). Stamps
+  // claimUpdatedAt whenever the status moves off NONE; clearing back to NONE
+  // resets the note + timestamp.
+  updateClaim: async (
+    id: number,
+    ownerUserId: number,
+    data: ClaimUpdateInput
+  ) => {
+    const current = await prisma.garantie.findFirst({
+      where: { garantieId: id, ownerUserId },
+      select: { garantieId: true },
+    });
+    if (!current) throw createHttpError(404, "Warranty not found");
+
+    const isNone = data.status === "NONE";
+    return prisma.garantie.update({
+      where: { garantieId: id },
+      data: {
+        claimStatus: data.status,
+        claimNote: isNone ? null : (data.note ?? null),
+        claimUpdatedAt: isNone ? null : new Date(),
+      },
+    });
   },
 
   remove: async (id: number, ownerUserId: number) => {
