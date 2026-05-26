@@ -9,6 +9,11 @@ dist/
 build/
 coverage/
 
+# Playwright E2E artifacts
+apps/web/playwright-report/
+apps/web/test-results/
+apps/web/.playwright/
+
 # Env & secrets
 .env
 .env.*.local

@@ -65,6 +65,13 @@ npm --workspace apps/api run prisma:deploy            # apply (prod)
 npm --workspace apps/web run build        # vite build (runs prebuild → sharp icons)
 npm --workspace apps/web run dev          # local dev server
 DATABASE_URL=... npm --workspace apps/api run promote:admin -- email@x   # promote
+
+# Tests beyond the default `npm test` (vitest unit suites):
+# API integration (real Postgres) — self-skips unless the URL is set:
+INTEGRATION_DATABASE_URL=postgresql://… npm --workspace apps/api run test:integration
+# Web E2E (Playwright) — needs browsers (`npx playwright install chromium`);
+# the config builds + previews the app, so no extra server is needed:
+npm --workspace apps/web run test:e2e
 ```
 
 ## Conventions
