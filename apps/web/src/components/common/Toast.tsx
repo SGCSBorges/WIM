@@ -10,18 +10,24 @@ import React, {
 
 type ToastKind = "success" | "error" | "info";
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: number;
   kind: ToastKind;
   message: string;
   // ms before auto-dismiss; null = sticky until user closes
   ttl: number | null;
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
   show: (
     message: string,
-    options?: { kind?: ToastKind; ttl?: number | null }
+    options?: { kind?: ToastKind; ttl?: number | null; action?: ToastAction }
   ) => number;
   dismiss: (id: number) => void;
   clear: () => void;
@@ -63,7 +69,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const id = nextId++;
       const kind = options?.kind ?? "info";
       const ttl = options?.ttl === undefined ? 5000 : options.ttl;
-      setToasts((prev) => [...prev, { id, kind, message, ttl }]);
+      setToasts((prev) => [
+        ...prev,
+        { id, kind, message, ttl, action: options?.action },
+      ]);
       if (ttl !== null && ttl > 0) {
         const timer = setTimeout(() => dismiss(id), ttl);
         timersRef.current.set(id, timer);
@@ -113,6 +122,18 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               {KIND_ICON[t.kind]}
             </span>
             <p className="text-sm flex-1 break-words">{t.message}</p>
+            {t.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  t.action?.onClick();
+                  dismiss(t.id);
+                }}
+                className="text-sm font-semibold underline shrink-0 hover:opacity-70"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button
               type="button"
               aria-label="Dismiss"

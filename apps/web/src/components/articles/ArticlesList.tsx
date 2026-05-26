@@ -120,10 +120,6 @@ const ArticlesList: React.FC = () => {
     "articleId"
   > | null>(null);
 
-  const [confirmDeleteArticleId, setConfirmDeleteArticleId] = useState<
-    number | null
-  >(null);
-
   const [locations, setLocations] = useState<Location[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
@@ -391,15 +387,45 @@ const ArticlesList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (articleId: number) => {
-    setConfirmDeleteArticleId(null);
+  // Optimistic delete with an undo window: hide the row immediately, and only
+  // hit the server once the toast's grace period lapses. "Undo" cancels the
+  // pending deletion and restores the row.
+  const restoreArticle = (article: FetchedArticle) => {
+    setArticles((prev) =>
+      [...prev, article].sort((a, b) => b.articleId - a.articleId)
+    );
+    setTotal((t0) => t0 + 1);
+  };
+
+  const handleDelete = (article: FetchedArticle) => {
     setError(null);
-    try {
-      await articlesAPI.delete(articleId);
-      await fetchArticles();
-    } catch (err) {
-      setError(getErrorMessage(err, t("common.errorOccurred")));
-    }
+    setArticles((prev) =>
+      prev.filter((a) => a.articleId !== article.articleId)
+    );
+    setTotal((t0) => Math.max(0, t0 - 1));
+
+    const timer = setTimeout(() => {
+      articlesAPI.delete(article.articleId).catch((err) => {
+        restoreArticle(article);
+        toast.show(getErrorMessage(err, t("common.errorOccurred")), {
+          kind: "error",
+        });
+      });
+    }, 5000);
+
+    toast.show(
+      t("articles.delete.deleted").replace("{name}", article.articleNom),
+      {
+        ttl: 5000,
+        action: {
+          label: t("common.undo"),
+          onClick: () => {
+            clearTimeout(timer);
+            restoreArticle(article);
+          },
+        },
+      }
+    );
   };
 
   const loadSavedViews = () =>
@@ -510,6 +536,7 @@ const ArticlesList: React.FC = () => {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={t("articles.search.placeholder")}
+            aria-label={t("articles.search.placeholder")}
             className="ui-input px-3 py-2 rounded-md text-sm w-52"
           />
 
@@ -518,6 +545,7 @@ const ArticlesList: React.FC = () => {
             onChange={(e) =>
               updateParams({ location: e.target.value || undefined })
             }
+            aria-label={t("common.allLocations")}
             className="ui-select px-3 py-2 rounded-md"
           >
             <option value="">{t("common.allLocations")}</option>
@@ -992,34 +1020,12 @@ const ArticlesList: React.FC = () => {
                           />
                         </span>
 
-                        {confirmDeleteArticleId === article.articleId ? (
-                          <span className="inline-flex items-center gap-2">
-                            <span className="text-xs ui-text-error">
-                              {t("articles.delete.confirm")}
-                            </span>
-                            <button
-                              onClick={() => handleDelete(article.articleId)}
-                              className="text-xs px-2 py-1 ui-btn-danger rounded"
-                            >
-                              {t("common.yes")}
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteArticleId(null)}
-                              className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
-                            >
-                              {t("common.no")}
-                            </button>
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() =>
-                              setConfirmDeleteArticleId(article.articleId)
-                            }
-                            className="ui-action-danger"
-                          >
-                            {t("common.delete")}
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleDelete(article)}
+                          className="ui-action-danger"
+                        >
+                          {t("common.delete")}
+                        </button>
                       </td>
                     </tr>
                   </React.Fragment>

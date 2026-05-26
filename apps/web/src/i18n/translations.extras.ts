@@ -71,6 +71,8 @@ export const extras = {
     "articles.bulk.assignSuccess": "Updated {count} article(s).",
     "articles.bulk.clear": "Clear selection",
     "articles.bulk.selectAll": "Select all on page",
+    "common.undo": "Undo",
+    "articles.delete.deleted": "Deleted “{name}”.",
 
     "export.title": "Export your data",
     "export.subtitle":
@@ -343,6 +345,8 @@ export const extras = {
     "articles.bulk.assignSuccess": "{count} article(s) mis à jour.",
     "articles.bulk.clear": "Effacer la sélection",
     "articles.bulk.selectAll": "Tout sélectionner sur cette page",
+    "common.undo": "Annuler",
+    "articles.delete.deleted": "« {name} » supprimé.",
 
     "export.title": "Exporter vos données",
     "export.subtitle":
@@ -503,7 +507,8 @@ export const extras = {
     "claim.title": "Réclamation",
     "claim.save": "Enregistrer la réclamation",
     "claim.saved": "Réclamation mise à jour.",
-    "claim.notePlaceholder": "Note de réclamation (référence, résultat, contact)…",
+    "claim.notePlaceholder":
+      "Note de réclamation (référence, résultat, contact)…",
     "claim.status.NONE": "Aucune réclamation",
     "claim.status.OPEN": "Ouverte",
     "claim.status.APPROVED": "Approuvée",
@@ -620,6 +625,8 @@ export const extras = {
     "articles.bulk.assignSuccess": "{count} artigo(s) atualizado(s).",
     "articles.bulk.clear": "Limpar seleção",
     "articles.bulk.selectAll": "Selecionar tudo nesta página",
+    "common.undo": "Anular",
+    "articles.delete.deleted": "“{name}” eliminado.",
 
     "export.title": "Exportar os seus dados",
     "export.subtitle":
@@ -780,7 +787,8 @@ export const extras = {
     "claim.title": "Reclamação",
     "claim.save": "Guardar reclamação",
     "claim.saved": "Reclamação atualizada.",
-    "claim.notePlaceholder": "Nota de reclamação (referência, resultado, contacto)…",
+    "claim.notePlaceholder":
+      "Nota de reclamação (referência, resultado, contacto)…",
     "claim.status.NONE": "Sem reclamação",
     "claim.status.OPEN": "Aberta",
     "claim.status.APPROVED": "Aprovada",
