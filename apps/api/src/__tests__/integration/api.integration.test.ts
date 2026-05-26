@@ -129,6 +129,20 @@ suite("API integration (real Postgres)", () => {
     expect(search.body.total).toBe(1);
     expect(search.body.items[0].articleNom).toBe("Cordless Drill");
 
+    // Multi-term: each term must match somewhere (name "Cordless", model
+    // "DW-100" is unrelated, so "cordless drill" hits name only — both terms
+    // are in the name).
+    const multi = await agent.get("/api/articles?q=cordless%20drill");
+    expect(multi.body.total).toBe(1);
+
+    // Partial substring still matches (trigram-accelerated ILIKE).
+    const partial = await agent.get("/api/articles?q=cord");
+    expect(partial.body.total).toBe(1);
+
+    // Every term must match: an unrelated extra term excludes the row.
+    const strict = await agent.get("/api/articles?q=cordless%20hammer");
+    expect(strict.body.total).toBe(0);
+
     // A non-matching query returns nothing — confirms the filter is applied.
     const empty = await agent.get("/api/articles?q=Nonexistent");
     expect(empty.body.total).toBe(0);

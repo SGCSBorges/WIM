@@ -71,12 +71,20 @@ function buildArticleWhere(
   if (f.locationId) where.locations = { some: { locationId: f.locationId } };
   if (f.tagId) where.tags = { some: { tagId: f.tagId } };
   if (f.q && f.q.trim()) {
-    const q = f.q.trim();
-    where.OR = [
-      { articleNom: { contains: q, mode: "insensitive" } },
-      { articleModele: { contains: q, mode: "insensitive" } },
-      { articleDescription: { contains: q, mode: "insensitive" } },
-    ];
+    // Split into terms and require every term to match somewhere (name, model
+    // or description). This makes multi-word queries like "cordless drill"
+    // match an item named "Cordless" with model "Drill", while each term is
+    // still a case-insensitive substring so incremental typing keeps working.
+    // The pg_trgm GIN indexes accelerate these ILIKE lookups. Cap the term
+    // count so a pathological query can't explode the AND clause.
+    const terms = f.q.trim().split(/\s+/).slice(0, 6);
+    where.AND = terms.map((term) => ({
+      OR: [
+        { articleNom: { contains: term, mode: "insensitive" } },
+        { articleModele: { contains: term, mode: "insensitive" } },
+        { articleDescription: { contains: term, mode: "insensitive" } },
+      ],
+    }));
   }
   if (f.priceMin != null || f.priceMax != null) {
     where.purchasePrice = {

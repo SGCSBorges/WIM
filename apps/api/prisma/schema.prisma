@@ -159,6 +159,12 @@ model Article {
   @@index([articleNom, articleModele])
   @@index([sharedWithPowerUsers])
   @@index([sharedWithPowerUsers, updatedAt(sort: Desc)])
+  // Trigram GIN indexes accelerate the substring ILIKE search (see
+  // article.service buildArticleWhere). Requires the pg_trgm extension,
+  // created in the same migration.
+  @@index([articleNom(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_articleNom_trgm_idx")
+  @@index([articleModele(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_articleModele_trgm_idx")
+  @@index([articleDescription(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_articleDescription_trgm_idx")
 }
 
 model Tag {

@@ -5,6 +5,7 @@ vi.mock("../../libs/prisma", () => ({
     article: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
+      count: vi.fn(),
       create: vi.fn(),
       delete: vi.fn(),
     },
@@ -27,6 +28,8 @@ vi.mock("../../libs/prisma", () => ({
     // test's tx client mirrors prisma's surface so callbacks reach the
     // mocked methods.
     $transaction: vi.fn(async (cb: unknown) => {
+      // Array form (used by list): resolve the batch of queries.
+      if (Array.isArray(cb)) return Promise.all(cb);
       if (typeof cb !== "function") return undefined;
       const p = prisma as unknown as Record<
         string,
@@ -162,5 +165,37 @@ describe("ArticleService.bulkAssign", () => {
     const result = await ArticleService.bulkAssign([5, 6], 1, [], []);
     expect(result).toEqual({ count: 0 });
     expect(mockPrisma.article.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("ArticleService.list — search", () => {
+  beforeEach(() => {
+    mockPrisma.article.findMany.mockResolvedValue([]);
+    mockPrisma.article.count.mockResolvedValue(0);
+  });
+
+  it("requires every search term to match name, model, or description", async () => {
+    await ArticleService.list(7, { q: "cordless drill" });
+
+    const arg = mockPrisma.article.findMany.mock.calls[0][0];
+    expect(arg.where).toMatchObject({ ownerUserId: 7 });
+    expect(arg.where.AND).toHaveLength(2);
+    expect(arg.where.AND[0]).toEqual({
+      OR: [
+        { articleNom: { contains: "cordless", mode: "insensitive" } },
+        { articleModele: { contains: "cordless", mode: "insensitive" } },
+        { articleDescription: { contains: "cordless", mode: "insensitive" } },
+      ],
+    });
+    expect(arg.where.AND[1].OR[0]).toEqual({
+      articleNom: { contains: "drill", mode: "insensitive" },
+    });
+  });
+
+  it("omits the text clause when no query is given", async () => {
+    await ArticleService.list(7, { locationId: 3 });
+    const arg = mockPrisma.article.findMany.mock.calls[0][0];
+    expect(arg.where.AND).toBeUndefined();
+    expect(arg.where.locations).toEqual({ some: { locationId: 3 } });
   });
 });
