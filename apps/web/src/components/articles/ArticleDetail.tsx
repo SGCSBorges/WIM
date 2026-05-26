@@ -23,6 +23,8 @@ type Attachment = {
   attachmentId: number;
   fileName: string;
   fileUrl: string;
+  thumbUrl?: string | null;
+  mimeType?: string;
   type: string;
 };
 
@@ -101,6 +103,64 @@ export default function ArticleDetail() {
       });
     }
   };
+
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const uploadPhotos = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadingPhoto(true);
+    try {
+      for (const file of Array.from(files)) {
+        await attachmentsAPI.uploadFile(file, "OTHER", { articleId });
+      }
+      const atts = await attachmentsAPI.getAll({ articleId }).catch(() => []);
+      setAttachments(atts as Attachment[]);
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const setPrimaryPhoto = async (url: string) => {
+    try {
+      const updated = await articlesAPI.setPrimaryImage(articleId, url);
+      setArticle((prev) =>
+        prev ? { ...prev, productImageUrl: updated.productImageUrl } : prev
+      );
+      toast.show(t("gallery.primarySet"), { kind: "success" });
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
+  };
+
+  const deletePhoto = async (att: Attachment) => {
+    try {
+      await attachmentsAPI.deleteAttachment(att.attachmentId, {
+        removeFile: true,
+      });
+      setAttachments((prev) =>
+        prev.filter((a) => a.attachmentId !== att.attachmentId)
+      );
+      // If the primary image pointed at the deleted file, clear it.
+      if (article?.productImageUrl === att.fileUrl) {
+        const updated = await articlesAPI.setPrimaryImage(articleId, null);
+        setArticle((prev) =>
+          prev ? { ...prev, productImageUrl: updated.productImageUrl } : prev
+        );
+      }
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
+  };
+
+  const photos = attachments.filter((a) => a.mimeType?.startsWith("image/"));
 
   if (loading) {
     return (
@@ -229,6 +289,73 @@ export default function ArticleDetail() {
           </p>
         </div>
       )}
+
+      <div className="ui-card rounded-lg p-6 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-semibold ui-title">{t("gallery.title")}</h2>
+          <label className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm cursor-pointer">
+            {uploadingPhoto ? t("common.loading") : t("gallery.add")}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={uploadingPhoto}
+              onChange={(e) => {
+                void uploadPhotos(e.target.files);
+                e.target.value = "";
+              }}
+              className="sr-only"
+            />
+          </label>
+        </div>
+        {photos.length === 0 ? (
+          <p className="text-sm ui-text-muted">{t("gallery.empty")}</p>
+        ) : (
+          <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {photos.map((att) => {
+              const isPrimary = article.productImageUrl === att.fileUrl;
+              return (
+                <li
+                  key={att.attachmentId}
+                  className="space-y-1 border ui-divider rounded-md p-2"
+                >
+                  <a href={att.fileUrl} target="_blank" rel="noreferrer">
+                    <img
+                      src={att.thumbUrl || att.fileUrl}
+                      alt={att.fileName}
+                      loading="lazy"
+                      className="w-full h-24 object-cover rounded"
+                    />
+                  </a>
+                  <div className="flex items-center justify-between gap-1 text-xs">
+                    {isPrimary ? (
+                      <span className="ui-badge-info px-1.5 py-0.5 rounded">
+                        {t("gallery.primary")}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setPrimaryPhoto(att.fileUrl)}
+                        className="ui-action-primary hover:underline"
+                      >
+                        {t("gallery.setPrimary")}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => deletePhoto(att)}
+                      className="ui-action-danger"
+                      aria-label={`${t("common.delete")} ${att.fileName}`}
+                    >
+                      {t("common.delete")}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
       <div className="ui-card rounded-lg p-6 space-y-3">
         <h2 className="font-semibold ui-title">

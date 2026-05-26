@@ -162,8 +162,13 @@ router.post(
       );
     }
 
-    const { type } = z
-      .object({ type: AttachmentTypeSchema.optional() })
+    const { type, articleId } = z
+      .object({
+        type: AttachmentTypeSchema.optional(),
+        // Optional link to an article (e.g. the photo gallery). Ownership is
+        // enforced in AttachmentService.create.
+        articleId: z.coerce.number().int().positive().optional(),
+      })
       .parse(req.body);
     const attachmentType: AttachmentType = type ?? "OTHER";
 
@@ -191,6 +196,7 @@ router.post(
         fileSize: file.size,
         fileUrl,
         thumbUrl,
+        ...(articleId !== undefined ? { articleId } : {}),
         ownerUserId: req.user!.sub,
       });
     } catch (err) {

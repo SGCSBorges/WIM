@@ -273,6 +273,19 @@ export const articlesAPI = {
     return response.json();
   },
 
+  // Partial update to set (or clear) the primary product image. The server's
+  // update schema is partial, so other fields are left untouched.
+  async setPrimaryImage(id: number, productImageUrl: string | null) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ productImageUrl }),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update image"));
+    return response.json();
+  },
+
   async getShares(articleId: number) {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/articles/${articleId}/shares`,
@@ -547,11 +560,14 @@ export const attachmentsAPI = {
 
   async uploadFile(
     file: File,
-    type: "INVOICE" | "WARRANTY" | "OTHER" = "OTHER"
+    type: "INVOICE" | "WARRANTY" | "OTHER" = "OTHER",
+    options: { articleId?: number } = {}
   ) {
     const form = new FormData();
     form.append("file", file);
     form.append("type", type);
+    if (options.articleId != null)
+      form.append("articleId", String(options.articleId));
 
     // No Content-Type header — let the browser set multipart/form-data boundary.
     // credentials: 'include' is added by fetchWithTimeout automatically.
