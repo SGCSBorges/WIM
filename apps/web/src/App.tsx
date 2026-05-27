@@ -19,6 +19,7 @@ import { authAPI, billingAPI, profileAPI } from "./services/api";
 import { useI18n } from "./i18n/i18n";
 import LanguageThemeSelector from "./components/common/LanguageThemeSelector";
 import InstallPwaButton from "./components/common/InstallPwaButton";
+import OfflineBanner from "./components/common/OfflineBanner";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 
 // Route-level code splitting: each lazy import becomes its own chunk so the
@@ -340,6 +341,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
+      <OfflineBanner />
       {/* Navigation */}
       <nav aria-label="Main navigation" className="ui-nav shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

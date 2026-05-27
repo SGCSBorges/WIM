@@ -17,6 +17,12 @@ const SHARE_CACHE = "wim-share-target";
 const SHARE_META_KEY = "/__wim_share__";
 const SHARE_PHOTO_KEY = "/__wim_share_photo__";
 
+// Stale-while-revalidate cache for the read-only articles list, so an
+// installed app can still show the last-seen inventory while offline.
+// Survives activate() so offline data persists across deploys; refreshed
+// from the network whenever the app loads online.
+const API_CACHE = "wim-api-articles";
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -34,7 +40,10 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k !== CACHE_VERSION && k !== SHARE_CACHE)
+            .filter(
+              (k) =>
+                k !== CACHE_VERSION && k !== SHARE_CACHE && k !== API_CACHE
+            )
             .map((k) => caches.delete(k))
         )
       )
@@ -80,6 +89,29 @@ async function handleShareTarget(req) {
   return Response.redirect("/articles?shared=1", 303);
 }
 
+// Serve the cached articles list immediately (if present) and refresh it in
+// the background; when there's no cache yet, fall back to the network so the
+// caller sees a real error/empty state. Only the list endpoint is cached —
+// detail reads and every mutation still go straight to the network.
+async function staleWhileRevalidateArticles(req) {
+  const cache = await caches.open(API_CACHE);
+  const cached = await cache.match(req);
+  const fetching = fetch(req)
+    .then((res) => {
+      if (res && res.ok) cache.put(req, res.clone());
+      return res;
+    })
+    .catch(() => null);
+
+  if (cached) {
+    // Revalidate without blocking the response; ignore background errors.
+    fetching.catch(() => undefined);
+    return cached;
+  }
+  const fresh = await fetching;
+  return fresh ?? Response.error();
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
@@ -90,7 +122,13 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (req.method !== "GET") return;
-  // Never intercept API calls — always go to the network so users see
+
+  // The articles list is cached for offline viewing (stale-while-revalidate).
+  if (url.pathname === "/api/articles") {
+    event.respondWith(staleWhileRevalidateArticles(req));
+    return;
+  }
+  // Never intercept other API calls — always go to the network so users see
   // current data and auth cookies aren't tripped up by a stale response.
   if (url.pathname.startsWith("/api/")) return;
 

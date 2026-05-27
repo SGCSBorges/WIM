@@ -72,6 +72,7 @@ export const extras = {
     "articles.bulk.clear": "Clear selection",
     "articles.bulk.selectAll": "Select all on page",
     "common.undo": "Undo",
+    "offline.banner": "You're offline — showing your last saved inventory.",
     "articles.delete.deleted": "Deleted “{name}”.",
 
     "export.title": "Export your data",
@@ -347,6 +348,8 @@ export const extras = {
     "articles.bulk.clear": "Effacer la sélection",
     "articles.bulk.selectAll": "Tout sélectionner sur cette page",
     "common.undo": "Annuler",
+    "offline.banner":
+      "Vous êtes hors ligne — affichage du dernier inventaire enregistré.",
     "articles.delete.deleted": "« {name} » supprimé.",
 
     "export.title": "Exporter vos données",
@@ -628,6 +631,7 @@ export const extras = {
     "articles.bulk.clear": "Limpar seleção",
     "articles.bulk.selectAll": "Selecionar tudo nesta página",
     "common.undo": "Anular",
+    "offline.banner": "Está offline — a mostrar o último inventário guardado.",
     "articles.delete.deleted": "“{name}” eliminado.",
 
     "export.title": "Exportar os seus dados",
