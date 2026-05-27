@@ -146,6 +146,14 @@ suite("API integration (real Postgres)", () => {
     // A non-matching query returns nothing — confirms the filter is applied.
     const empty = await agent.get("/api/articles?q=Nonexistent");
     expect(empty.body.total).toBe(0);
+
+    // QR-label sheet renders a PDF for the owner's articles.
+    const labels = await agent.get("/api/articles/export/labels.pdf");
+    expect(labels.status).toBe(200);
+    expect(labels.headers["content-type"]).toContain("application/pdf");
+    expect(labels.headers["content-disposition"]).toContain(
+      "article-labels.pdf"
+    );
   });
 
   it("rejects unauthenticated access to a protected route", async () => {

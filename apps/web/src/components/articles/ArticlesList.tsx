@@ -639,6 +639,25 @@ const ArticlesList: React.FC = () => {
           </button>
 
           <button
+            onClick={async () => {
+              try {
+                downloadBlob(
+                  "article-labels.pdf",
+                  await articlesAPI.labelsPdf()
+                );
+              } catch (e) {
+                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+                  kind: "error",
+                });
+              }
+            }}
+            disabled={articles.length === 0}
+            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+          >
+            {t("articles.export.labels")}
+          </button>
+
+          <button
             onClick={() => setShowImport(true)}
             className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
           >

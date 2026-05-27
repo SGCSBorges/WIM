@@ -3,7 +3,11 @@ import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { ArticleService } from "./article.service";
 import { importArticles } from "./article.import";
-import { streamArticleClaimPdf, streamInventoryPdf } from "./article.pdf";
+import {
+  streamArticleClaimPdf,
+  streamInventoryPdf,
+  streamLabelsPdf,
+} from "./article.pdf";
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
@@ -296,6 +300,18 @@ router.get(
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const currency = await userCurrency(req.user!.sub);
     await streamInventoryPdf(res, req.user!.sub, currency);
+  })
+);
+
+/** GET printable QR-label sheet (one label per article, deep-linking back). */
+router.get(
+  "/export/labels.pdf",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const appBaseUrl =
+      process.env.APP_URL?.replace(/\/$/, "") ??
+      `${req.protocol}://${req.get("host")}`;
+    await streamLabelsPdf(res, req.user!.sub, appBaseUrl);
   })
 );
 

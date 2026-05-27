@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import PDFDocument from "pdfkit";
+import QRCode from "qrcode";
 import type { Response } from "express";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
@@ -196,6 +197,101 @@ export async function streamInventoryPdf(
         currency
       )}`
     );
+  }
+
+  doc.end();
+}
+
+/**
+ * Stream a printable sheet of QR labels — one per article, each encoding a
+ * deep link to the article's detail page so a scanned physical tag opens the
+ * right record. `appBaseUrl` is the web origin (no trailing slash).
+ */
+export async function streamLabelsPdf(
+  res: Response,
+  ownerUserId: number,
+  appBaseUrl: string
+) {
+  const articles = await prisma.article.findMany({
+    where: { ownerUserId },
+    orderBy: { articleNom: "asc" },
+    select: { articleId: true, articleNom: true, articleModele: true },
+  });
+
+  // Pre-render each QR to a PNG buffer (await before we start streaming).
+  const labels = await Promise.all(
+    articles.map(async (a) => ({
+      ...a,
+      qr: await QRCode.toBuffer(`${appBaseUrl}/articles/${a.articleId}`, {
+        type: "png",
+        width: 140,
+        margin: 1,
+      }),
+    }))
+  );
+
+  const doc = new PDFDocument({ size: "A4", margin: 40 });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="article-labels.pdf"'
+  );
+  doc.pipe(res);
+
+  doc.fontSize(16).text("Article labels");
+  doc
+    .fontSize(9)
+    .fillColor("#555")
+    .text(`${labels.length} label(s) — scan to open in WIM`);
+  doc.fillColor("#000").moveDown();
+
+  // 3-column grid of fixed-height cells, positioned absolutely so the layout
+  // is independent of text flow. A new page starts when the cells are full.
+  const cols = 3;
+  const cellW = (doc.page.width - doc.page.margins.left * 2) / cols;
+  const cellH = 170;
+  const qrSize = 110;
+  const firstPageTop = doc.y;
+  const usableH = doc.page.height - doc.page.margins.bottom - firstPageTop;
+  const rowsPerPage = Math.max(1, Math.floor(usableH / cellH));
+  const perPage = cols * rowsPerPage;
+
+  let slot = 0;
+  let pageTop = firstPageTop;
+  for (const label of labels) {
+    if (slot === perPage) {
+      doc.addPage();
+      slot = 0;
+      pageTop = doc.page.margins.top;
+    }
+    const col = slot % cols;
+    const row = Math.floor(slot / cols);
+    const x = doc.page.margins.left + col * cellW;
+    const y = pageTop + row * cellH;
+
+    doc.image(label.qr, x + (cellW - qrSize) / 2, y, {
+      width: qrSize,
+      height: qrSize,
+    });
+    doc
+      .fontSize(9)
+      .fillColor("#000")
+      .text(label.articleNom, x + 4, y + qrSize + 4, {
+        width: cellW - 8,
+        align: "center",
+        ellipsis: true,
+        height: 12,
+      });
+    doc
+      .fontSize(8)
+      .fillColor("#555")
+      .text(label.articleModele, x + 4, y + qrSize + 18, {
+        width: cellW - 8,
+        align: "center",
+        ellipsis: true,
+        height: 12,
+      });
+    slot++;
   }
 
   doc.end();

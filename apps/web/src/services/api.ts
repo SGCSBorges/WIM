@@ -207,6 +207,16 @@ export const articlesAPI = {
     return response.blob();
   },
 
+  async labelsPdf(): Promise<Blob> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/export/labels.pdf`,
+      { headers: { Accept: "application/pdf" } }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to generate PDF"));
+    return response.blob();
+  },
+
   async getById(id: number): Promise<FetchedArticle> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles/${id}`, {
       headers: getHeaders(),
