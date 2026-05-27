@@ -1,5 +1,6 @@
 import express, { Response } from "express";
 import cookieParser from "cookie-parser";
+import { randomUUID } from "crypto";
 import pinoHttp from "pino-http";
 import { security } from "./config/security";
 import { errorHandler } from "./middlewares/error";
@@ -61,6 +62,16 @@ export function createApp() {
   app.use(
     pinoHttp({
       autoLogging: true,
+      // Correlate each request's logs with the response: reuse an inbound
+      // X-Request-Id when present, else mint one, and echo it back on the
+      // response header so a client/support can quote it to find the logs.
+      genReqId: (req, res) => {
+        const inbound = req.headers["x-request-id"];
+        const id =
+          (Array.isArray(inbound) ? inbound[0] : inbound) || randomUUID();
+        res.setHeader("X-Request-Id", id);
+        return id;
+      },
       // level: "info", // optionnel
     })
   );

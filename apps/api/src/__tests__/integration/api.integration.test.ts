@@ -161,6 +161,11 @@ suite("API integration (real Postgres)", () => {
     expect(res.status).toBe(401);
   });
 
+  it("stamps every response with an X-Request-Id for traceability", async () => {
+    const res = await request(app).get("/health");
+    expect(res.headers["x-request-id"]).toMatch(/.+/);
+  });
+
   it("enables a calendar feed and serves it by token without a cookie", async () => {
     const agent = await register("carol@example.com");
     const enable = await agent.post("/api/calendar/token").set("Origin", ORIGIN);

@@ -9,6 +9,8 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
+  // Set by pino-http's genReqId; ties a client-visible error to its server log.
+  const requestId = res.getHeader("X-Request-Id");
   // Validation Zod
   if (err instanceof ZodError) {
     const msg = err.issues[0]?.message ?? "Validation error";
@@ -41,6 +43,9 @@ export function errorHandler(
   }
 
   // Fallback
-  logger.error({ err }, "[UnhandledError]");
-  return res.status(500).json({ error: "Internal server error" });
+  logger.error({ err, requestId }, "[UnhandledError]");
+  return res.status(500).json({
+    error: "Internal server error",
+    ...(requestId ? { requestId } : {}),
+  });
 }

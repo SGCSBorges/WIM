@@ -95,7 +95,17 @@ async function extractError(
   const data = await response
     .json()
     .catch(() => ({}) as Record<string, unknown>);
-  return (data as { error?: string }).error ?? fallback;
+  const message = (data as { error?: string }).error ?? fallback;
+  // For server errors only, append the request id so a user can quote the
+  // reference when reporting a problem (4xx are user-actionable — kept clean).
+  if (response.status >= 500) {
+    const requestId =
+      (data as { requestId?: string }).requestId ??
+      response.headers.get("x-request-id") ??
+      undefined;
+    if (requestId) return `${message} (ref: ${requestId})`;
+  }
+  return message;
 }
 
 // Auth API
