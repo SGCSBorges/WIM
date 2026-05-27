@@ -4,7 +4,7 @@ type AsyncRequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction
-) => Promise<any> | any;
+) => Promise<unknown> | unknown;
 
 /** Wraps an async route handler and forwards any thrown errors to Express. */
 export function asyncHandler(fn: AsyncRequestHandler): RequestHandler {

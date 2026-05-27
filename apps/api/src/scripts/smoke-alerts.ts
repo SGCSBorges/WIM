@@ -8,7 +8,7 @@ async function main() {
   // Prefer userId=1, but fall back to any existing user to satisfy FK constraints.
   const preferredUserId = 1;
   const user = await prisma.user.findFirst({
-    where: { userId: preferredUserId } as any,
+    where: { userId: preferredUserId },
     orderBy: { userId: "asc" },
   });
   const fallbackUser =
@@ -31,7 +31,7 @@ async function main() {
   // Ensure a warranty exists; if DB is empty, create a minimal Article+Garantie.
   // NOTE: this assumes ownerUserId=1 exists in DB; adjust if your seed creates a different user.
   let existing = await prisma.garantie.findFirst({
-    where: { ownerUserId } as any,
+    where: { ownerUserId },
     orderBy: { garantieId: "desc" },
   });
 
@@ -62,7 +62,7 @@ async function main() {
   await AlertService.rescheduleForWarranty({
     ownerUserId,
     garantieId: existing.garantieId,
-    articleId: (existing as any).garantieArticleId ?? null,
+    articleId: existing.garantieArticleId ?? null,
     garantieFin,
   });
 
@@ -70,7 +70,7 @@ async function main() {
     where: {
       ownerUserId,
       alerteGarantieId: existing.garantieId,
-    } as any,
+    },
     orderBy: { alerteDate: "asc" },
   });
 
@@ -84,7 +84,7 @@ async function main() {
     alerts.map((a: (typeof alerts)[number]) => ({
       id: a.alerteId,
       date: a.alerteDate,
-      status: (a as any).status,
+      status: a.status,
       name: a.alerteNom,
     }))
   );

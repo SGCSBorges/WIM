@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
@@ -83,7 +83,7 @@ async function main() {
 
       // Create alerts for warranties that expire in the future
       if (!isExpired && actualEndDate > new Date()) {
-        const alerts = [];
+        const alerts: Prisma.AlerteCreateManyInput[] = [];
 
         // J-30 alert
         const j30 = new Date(actualEndDate);
@@ -113,7 +113,7 @@ async function main() {
 
         if (alerts.length > 0) {
           await prisma.alerte.createMany({
-            data: alerts as any,
+            data: alerts,
           });
         }
       }

@@ -1,6 +1,6 @@
 import helmet from "helmet";
 import cors from "cors";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 
 // Browsers send the Origin header WITHOUT a trailing slash, so any trailing
 // slash on CORS_ORIGIN values would silently break the match (and thereby
