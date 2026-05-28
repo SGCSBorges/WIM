@@ -55,6 +55,9 @@ export default function AlertsView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"ALL" | AlertStatus>("ALL");
+  const [kindFilter, setKindFilter] = useState<"ALL" | "WARRANTY" | "CUSTOM">(
+    "ALL"
+  );
   const [sortBy, setSortBy] = useState<"date" | "status" | "name">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [busyId, setBusyId] = useState<number | null>(null);
@@ -73,7 +76,10 @@ export default function AlertsView() {
     setError(null);
     try {
       const data = await alertsAPI.getAll(
-        statusFilter === "ALL" ? undefined : statusFilter
+        statusFilter === "ALL" ? undefined : statusFilter,
+        undefined,
+        undefined,
+        kindFilter === "ALL" ? undefined : kindFilter
       );
       setItems(data);
     } catch (e: unknown) {
@@ -84,7 +90,7 @@ export default function AlertsView() {
     // t is intentionally excluded: translating the fallback error in the closure
     // is acceptable; excluding it prevents an unnecessary refetch on language change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [statusFilter, kindFilter]);
 
   useEffect(() => {
     fetchAll();
@@ -270,6 +276,7 @@ export default function AlertsView() {
               onChange={(e) =>
                 setStatusFilter(e.target.value as "ALL" | AlertStatus)
               }
+              aria-label={t("alerts.filters.status")}
               className="ui-select px-2 py-1 rounded-md text-sm"
             >
               <option value="ALL">{t("alerts.filters.all")}</option>
@@ -277,6 +284,19 @@ export default function AlertsView() {
               <option value="SENT">{t("alerts.status.sent")}</option>
               <option value="CANCELLED">{t("alerts.status.cancelled")}</option>
               <option value="FAILED">{t("alerts.status.failed")}</option>
+            </select>
+
+            <select
+              value={kindFilter}
+              onChange={(e) =>
+                setKindFilter(e.target.value as "ALL" | "WARRANTY" | "CUSTOM")
+              }
+              aria-label={t("alerts.filters.kind")}
+              className="ui-select px-2 py-1 rounded-md text-sm"
+            >
+              <option value="ALL">{t("alerts.filters.allKinds")}</option>
+              <option value="WARRANTY">{t("alerts.kind.warranty")}</option>
+              <option value="CUSTOM">{t("alerts.kind.custom")}</option>
             </select>
 
             {loading ? (

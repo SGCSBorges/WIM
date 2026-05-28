@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { AlerteStatus } from "@prisma/client";
+import { AlerteKind, AlerteStatus } from "@prisma/client";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
@@ -39,7 +39,8 @@ router.get(
         ownerUserId,
         q.status as AlerteStatus | undefined,
         page,
-        limit
+        limit,
+        q.kind as AlerteKind | undefined
       )
     );
   })

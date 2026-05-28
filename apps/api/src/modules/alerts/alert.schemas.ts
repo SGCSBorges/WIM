@@ -7,9 +7,12 @@ export const AlertStatusSchema = z.enum([
   "FAILED",
 ]);
 
+export const AlertKindSchema = z.enum(["WARRANTY", "CUSTOM"]);
+
 export const AlertListQuerySchema = z.object({
   ownerUserId: z.coerce.number().int().positive().optional(),
   status: AlertStatusSchema.optional(),
+  kind: AlertKindSchema.optional(),
 });
 
 export const AlertCancelSchema = z.object({

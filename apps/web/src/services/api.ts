@@ -829,9 +829,15 @@ export const calendarAPI = {
 
 // Alerts API
 export const alertsAPI = {
-  async getAll(status?: string, page?: number, limit?: number) {
+  async getAll(
+    status?: string,
+    page?: number,
+    limit?: number,
+    kind?: "WARRANTY" | "CUSTOM"
+  ) {
     const url = new URL(`${API_BASE_URL}/alerts`);
     if (status) url.searchParams.set("status", status);
+    if (kind) url.searchParams.set("kind", kind);
     if (page != null) url.searchParams.set("page", String(page));
     if (limit != null) url.searchParams.set("limit", String(limit));
 
