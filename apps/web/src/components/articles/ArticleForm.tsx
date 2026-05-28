@@ -248,6 +248,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         prev.includes(created.tagId) ? prev : [...prev, created.tagId]
       );
       setNewTagName("");
+      toast.show(
+        t("articles.form.tagCreated").replace("{name}", created.name),
+        { kind: "success" }
+      );
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
         kind: "error",
@@ -391,6 +395,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         prev.includes(loc.locationId) ? prev : [...prev, loc.locationId]
       );
       setNewLocationName("");
+      toast.show(
+        t("articles.form.locationCreated").replace("{name}", loc.name),
+        { kind: "success" }
+      );
     } catch (e) {
       setLocCreateError(getErrorMessage(e, t("locations.error.create")));
     } finally {
