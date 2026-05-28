@@ -1,23 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
-import { locationsAPI } from "../../services/api";
+import { locationsAPI, profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
+import { formatMoney } from "../../utils/money";
 
 type LocationRow = {
   locationId: number;
   name: string;
   description?: string | null;
+  totalValue?: number;
 };
 
 export default function LocationsView() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const toast = useToast();
 
   const [items, setItems] = useState<LocationRow[]>([]);
   const [counts, setCounts] = useState<Record<number, number>>({});
+  const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,6 +69,11 @@ export default function LocationsView() {
 
   useEffect(() => {
     fetchAll();
+    // Pull the user's display currency so totals render in the right unit.
+    profileAPI
+      .getMe()
+      .then((me) => me.currency && setCurrency(me.currency))
+      .catch(() => {});
   }, [fetchAll]);
 
   const create = async () => {
@@ -221,6 +229,11 @@ export default function LocationsView() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium truncate">{l.name}</span>
+                          {l.totalValue !== undefined && l.totalValue > 0 && (
+                            <span className="text-xs ui-badge px-2 py-0.5 rounded">
+                              {formatMoney(l.totalValue, currency, language)}
+                            </span>
+                          )}
                           {articleCount !== undefined && articleCount >= 0 && (
                             <span className="text-xs ui-badge px-2 py-0.5 rounded">
                               {t("locations.articleCount").replace(

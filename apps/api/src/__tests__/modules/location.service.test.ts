@@ -34,6 +34,38 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
+// list
+// ---------------------------------------------------------------------------
+
+describe("LocationService.list", () => {
+  it("returns totalValue=0 with no extra queries when no locations exist", async () => {
+    mockPrisma.location.findMany.mockResolvedValue([]);
+    const result = await LocationService.list(1);
+    expect(result).toEqual([]);
+    expect(mockPrisma.articleLocation.findMany).not.toHaveBeenCalled();
+  });
+
+  it("sums purchasePrice per location and ignores null prices", async () => {
+    mockPrisma.location.findMany.mockResolvedValue([
+      { locationId: 1, name: "Home", _count: { articles: 3 } },
+      { locationId: 2, name: "Office", _count: { articles: 1 } },
+    ]);
+    mockPrisma.articleLocation.findMany.mockResolvedValue([
+      { locationId: 1, article: { purchasePrice: "100.50" } },
+      { locationId: 1, article: { purchasePrice: 49.5 } },
+      { locationId: 1, article: { purchasePrice: null } },
+      { locationId: 2, article: { purchasePrice: "250" } },
+    ]);
+
+    const result = await LocationService.list(1);
+    expect(result).toMatchObject([
+      { locationId: 1, totalValue: 150 },
+      { locationId: 2, totalValue: 250 },
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // update
 // ---------------------------------------------------------------------------
 

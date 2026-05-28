@@ -3,8 +3,11 @@ import { LocationCreateInput, LocationUpdateInput } from "./location.schemas";
 import { createHttpError } from "../../utils/http-error";
 
 export const LocationService = {
-  list: (ownerUserId: number, page = 1, limit = 50) =>
-    prisma.location.findMany({
+  // The list response carries each location's article count and the sum of
+  // its articles' purchase prices, so the Locations page can render
+  // "{count} · {money}" without N+1 round-trips.
+  list: async (ownerUserId: number, page = 1, limit = 50) => {
+    const locations = await prisma.location.findMany({
       where: { ownerUserId },
       take: limit,
       skip: (page - 1) * limit,
@@ -12,7 +15,35 @@ export const LocationService = {
       include: {
         _count: { select: { articles: true } },
       },
-    }),
+    });
+    if (locations.length === 0) {
+      return locations.map((l) => ({ ...l, totalValue: 0 }));
+    }
+
+    const ids = locations.map((l) => l.locationId);
+    // Restrict to articles the caller owns (defence-in-depth — locations
+    // are owner-scoped above already).
+    const rows = await prisma.articleLocation.findMany({
+      where: { locationId: { in: ids }, article: { ownerUserId } },
+      select: {
+        locationId: true,
+        article: { select: { purchasePrice: true } },
+      },
+    });
+
+    const sums = new Map<number, number>();
+    for (const r of rows) {
+      const price = r.article.purchasePrice
+        ? Number(r.article.purchasePrice)
+        : 0;
+      sums.set(r.locationId, (sums.get(r.locationId) ?? 0) + price);
+    }
+
+    return locations.map((l) => ({
+      ...l,
+      totalValue: sums.get(l.locationId) ?? 0,
+    }));
+  },
 
   get: (locationId: number, ownerUserId: number) =>
     prisma.location.findFirst({
