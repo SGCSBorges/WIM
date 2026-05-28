@@ -1,12 +1,19 @@
 import { Router, Request, Response } from "express";
 import { asyncHandler } from "../common/http";
 import { AuthService } from "./auth.service";
-import { RegisterSchema, LoginSchema } from "./auth.schemas";
+import {
+  ForgotPasswordSchema,
+  LoginSchema,
+  RegisterSchema,
+  ResetPasswordSchema,
+} from "./auth.schemas";
 import { authGuard, AuthRequest } from "./auth.middleware";
 import { auditAction } from "../common/audit";
 import { denyToken } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
 import { cookieOptsFor } from "./cookies";
+import { PasswordResetService } from "./password-reset.service";
+import { security } from "../../config/security";
 
 const router = Router();
 
@@ -103,6 +110,45 @@ router.post(
     });
 
     res.json({ ok: true, email: user.email, role: "ADMIN" });
+  })
+);
+
+/**
+ * POST /auth/forgot-password
+ *
+ * Always 204 — the response is deliberately the same whether the email
+ * matches an account or not, to keep this endpoint from being a free
+ * enumeration oracle. The destructiveRateLimiter caps per-IP attempts.
+ */
+router.post(
+  "/forgot-password",
+  security.destructiveRateLimiter,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { email } = ForgotPasswordSchema.parse(req.body);
+    await PasswordResetService.request(email);
+    res.status(204).send();
+  })
+);
+
+/**
+ * POST /auth/reset-password
+ *
+ * Consume a reset token + set a new password. Same rate limit as the issue
+ * endpoint so a leaked link can't be paired with a brute-force probe of
+ * other tokens. The new password meets the registration policy.
+ */
+router.post(
+  "/reset-password",
+  security.destructiveRateLimiter,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { token, newPassword } = ResetPasswordSchema.parse(req.body);
+    await PasswordResetService.consume(token, newPassword);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      metadata: { field: "password", via: "reset" },
+    });
+    res.status(204).send();
   })
 );
 

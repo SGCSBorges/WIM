@@ -28,6 +28,7 @@ const TABLES = [
   "Garantie",
   "SavedView",
   "PushSubscription",
+  "PasswordResetToken",
   "InventoryShare",
   "ShareInvite",
   "Article",
@@ -381,6 +382,64 @@ suite("API integration (real Postgres)", () => {
     expect(reset.body.claimStatus).toBe("NONE");
     expect(reset.body.claimNote).toBeNull();
     expect(reset.body.claimUpdatedAt).toBeNull();
+  });
+
+  it("runs the forgot-password → reset-password → re-login flow", async () => {
+    const agent = await register("juno@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+
+    const forgot = await request(app)
+      .post("/api/auth/forgot-password")
+      .set("Origin", ORIGIN)
+      .send({ email: "juno@example.com" });
+    expect(forgot.status).toBe(204);
+
+    // EmailService is no-op in tests (no RESEND_API_KEY) — the token row is
+    // in the DB, so we grab it directly to simulate the user clicking the
+    // emailed link.
+    const tokens = await prisma.passwordResetToken.findMany({
+      where: { userId: ownerUserId },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(tokens).toHaveLength(1);
+    // We can't recover the plaintext from the hash; mint a parallel record
+    // for the reset assertion using a known plaintext, then exercise it.
+    const { createHash, randomBytes } = await import("crypto");
+    const plain = randomBytes(32).toString("hex");
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: ownerUserId,
+        tokenHash: createHash("sha256").update(plain).digest("hex"),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
+    });
+
+    const reset = await request(app)
+      .post("/api/auth/reset-password")
+      .set("Origin", ORIGIN)
+      .send({ token: plain, newPassword: "Newpass1!" });
+    expect(reset.status).toBe(204);
+
+    // Old password no longer works; new one does.
+    const fresh = request.agent(app);
+    const stale = await fresh
+      .post("/api/auth/login")
+      .set("Origin", ORIGIN)
+      .send({ email: "juno@example.com", password: "Passw0rd!" });
+    expect(stale.status).toBe(401);
+    const ok = await fresh
+      .post("/api/auth/login")
+      .set("Origin", ORIGIN)
+      .send({ email: "juno@example.com", password: "Newpass1!" });
+    expect(ok.status).toBe(200);
+
+    // Replaying the same reset token is rejected.
+    const replay = await request(app)
+      .post("/api/auth/reset-password")
+      .set("Origin", ORIGIN)
+      .send({ token: plain, newPassword: "Anotherp1!" });
+    expect(replay.status).toBe(400);
   });
 
   it("changes the profile email and login with the new address works", async () => {

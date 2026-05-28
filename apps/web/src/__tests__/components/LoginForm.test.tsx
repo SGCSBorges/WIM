@@ -9,6 +9,7 @@ vi.mock("../../services/api", () => ({
   },
 }));
 
+import { MemoryRouter } from "react-router-dom";
 import LoginForm from "../../components/auth/LoginForm";
 import { authAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";
@@ -19,11 +20,13 @@ const mockedRegister = authAPI.register as unknown as ReturnType<typeof vi.fn>;
 
 function renderForm(onLogin = vi.fn()) {
   const result = render(
-    <I18nProvider>
-      <ThemeProvider>
-        <LoginForm onLogin={onLogin} />
-      </ThemeProvider>
-    </I18nProvider>
+    <MemoryRouter>
+      <I18nProvider>
+        <ThemeProvider>
+          <LoginForm onLogin={onLogin} />
+        </ThemeProvider>
+      </I18nProvider>
+    </MemoryRouter>
   );
   const submitButton = () =>
     result.container.querySelector(

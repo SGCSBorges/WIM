@@ -29,5 +29,18 @@ export const LoginSchema = z.object({
   password: z.string().min(1),
 });
 
+export const ForgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .email()
+    .transform((s) => s.toLowerCase().trim()),
+});
+
+export const ResetPasswordSchema = z.object({
+  // 64 hex chars (32-byte token in `randomBytes(32).toString("hex")`).
+  token: z.string().regex(/^[a-f0-9]{64}$/, "Invalid token"),
+  newPassword: passwordSchema,
+});
+
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;

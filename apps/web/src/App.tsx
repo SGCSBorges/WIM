@@ -15,6 +15,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import LoginForm from "./components/auth/LoginForm";
+import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
+import ResetPasswordForm from "./components/auth/ResetPasswordForm";
 import { authAPI, billingAPI, profileAPI } from "./services/api";
 import { useI18n } from "./i18n/i18n";
 import LanguageThemeSelector from "./components/common/LanguageThemeSelector";
@@ -264,6 +266,9 @@ export default function App() {
   }
 
   if (authStatus === "unauthed") {
+    // Routes that don't need a session — password reset flow lands here.
+    if (location.pathname === "/auth/forgot") return <ForgotPasswordForm />;
+    if (location.pathname === "/auth/reset") return <ResetPasswordForm />;
     return <LoginForm onLogin={handleLogin} />;
   }
 

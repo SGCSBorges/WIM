@@ -161,6 +161,36 @@ export const authAPI = {
     return _cachedRole;
   },
 
+  async forgotPassword(email: string): Promise<void> {
+    // The endpoint always 204s (no enumeration). Surface a thrown error only
+    // for transport / 5xx issues so the UI can show generic success copy.
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/forgot-password`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ email }),
+      }
+    );
+    if (!response.ok && response.status >= 500) {
+      throw new Error(await extractError(response, "Request failed"));
+    }
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/reset-password`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ token, newPassword }),
+      }
+    );
+    if (!response.ok) {
+      throw new Error(await extractError(response, "Reset failed"));
+    }
+  },
+
   // Temporary helper: hits the one-shot bootstrap endpoint that promotes
   // admin@admin.com to ADMIN if no admin exists yet. Remove this once the
   // seed admin is in place.

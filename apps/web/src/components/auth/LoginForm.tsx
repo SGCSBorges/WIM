@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authAPI } from "../../services/api";
@@ -190,6 +191,17 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 ? t("auth.login")
                 : t("auth.register")}
           </button>
+
+          {isLogin && (
+            <div className="text-center text-sm">
+              <Link
+                to="/auth/forgot"
+                className="ui-action-primary hover:underline"
+              >
+                {t("auth.forgot.link")}
+              </Link>
+            </div>
+          )}
         </form>
 
         <div className="mt-6 pt-4 border-t ui-divider flex flex-col items-center gap-3">

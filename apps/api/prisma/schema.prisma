@@ -123,6 +123,22 @@ model User {
   articleNotes ArticleNote[]
   savedViews  SavedView[]
   pushSubscriptions PushSubscription[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  // SHA-256 hex of the plaintext token we email out. The plaintext never
+  // hits the DB, so a stolen dump can't be used to consume an unused token.
+  tokenHash  String    @unique @db.VarChar(64)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model PushSubscription {
