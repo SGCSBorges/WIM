@@ -77,4 +77,25 @@ describe("CalendarService", () => {
     expect(ics).toContain("SUMMARY:Fridge \\— warranty expires".replace("\\—", "—"));
     expect(ics).toContain("SUMMARY:Filter change");
   });
+
+  it("feedForToken emits a VEVENT per in-flight warranty claim", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.garantie.findMany
+      // First call: warranties (expiry events).
+      .mockResolvedValueOnce([])
+      // Second call: claims with a non-NONE status + claimUpdatedAt.
+      .mockResolvedValueOnce([
+        {
+          garantieId: 9,
+          garantieNom: "Camera",
+          claimStatus: "OPEN",
+          claimUpdatedAt: new Date("2026-05-12T00:00:00Z"),
+        },
+      ]);
+    mockPrisma.alerte.findMany.mockResolvedValue([]);
+    const ics = (await CalendarService.feedForToken("t")) as string;
+    expect(ics).toContain("UID:claim-9-OPEN@wim");
+    expect(ics).toContain("SUMMARY:Warranty claim OPEN: Camera");
+    expect(ics).toContain("DTSTART;VALUE=DATE:20260512");
+  });
 });

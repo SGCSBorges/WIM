@@ -74,14 +74,31 @@ export const CalendarService = {
     });
     if (!user) return null;
 
-    const [warranties, alerts] = await Promise.all([
+    const [warranties, alerts, claims] = await Promise.all([
       prisma.garantie.findMany({
         where: { ownerUserId: user.userId },
         select: { garantieId: true, garantieNom: true, garantieFin: true },
       }),
+      // SCHEDULED captures both kinds (warranty J-30/J-7/J-1 reminders and
+      // custom alerts the user created themselves).
       prisma.alerte.findMany({
         where: { ownerUserId: user.userId, status: AlerteStatus.SCHEDULED },
         select: { alerteId: true, alerteNom: true, alerteDate: true },
+      }),
+      // Warranty claims in flight (anything off NONE) so the workflow shows
+      // up on the subscribed calendar at its last status-change date.
+      prisma.garantie.findMany({
+        where: {
+          ownerUserId: user.userId,
+          NOT: { claimStatus: "NONE" },
+          claimUpdatedAt: { not: null },
+        },
+        select: {
+          garantieId: true,
+          garantieNom: true,
+          claimStatus: true,
+          claimUpdatedAt: true,
+        },
       }),
     ]);
 
@@ -96,6 +113,17 @@ export const CalendarService = {
         date: a.alerteDate,
         summary: a.alerteNom,
       })),
+      ...claims.flatMap((c) =>
+        c.claimUpdatedAt
+          ? [
+              {
+                uid: `claim-${c.garantieId}-${c.claimStatus}@wim`,
+                date: c.claimUpdatedAt,
+                summary: `Warranty claim ${c.claimStatus}: ${c.garantieNom}`,
+              },
+            ]
+          : []
+      ),
     ];
 
     return buildCalendar(events);
