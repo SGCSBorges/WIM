@@ -10,6 +10,14 @@ vi.mock("../../services/api", () => ({
     update: vi.fn(),
     delete: vi.fn(),
   },
+  profileAPI: {
+    getMe: vi.fn().mockResolvedValue({
+      userId: 1,
+      email: "u@e.com",
+      role: "USER",
+      currency: "USD",
+    }),
+  },
 }));
 
 import LocationsView from "../../components/locations/LocationsView";

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { statisticsAPI, profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -49,7 +50,8 @@ interface StatCardProps {
   value: number | string;
   icon: React.ReactNode;
   color: string;
-  subtitle?: string;
+  // ReactNode so callers can embed a Link to a filtered view.
+  subtitle?: React.ReactNode;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -192,11 +194,20 @@ const Dashboard: React.FC = () => {
           )}
           icon="💰"
           color="ui-icon-success"
-          subtitle={`${formatMoney(
-            statistics.inventoryValue.atRisk,
-            currency,
-            language
-          )} ${t("dashboard.valueAtRisk")}`}
+          subtitle={
+            <Link
+              to="/articles?warranty=expired"
+              className="hover:underline"
+              title={t("dashboard.showExpired")}
+            >
+              {formatMoney(
+                statistics.inventoryValue.atRisk,
+                currency,
+                language
+              )}{" "}
+              {t("dashboard.valueAtRisk")}
+            </Link>
+          }
         />
 
         <StatCard
@@ -228,7 +239,15 @@ const Dashboard: React.FC = () => {
           value={statistics.warranties.active}
           icon="🛡️"
           color="ui-icon-success"
-          subtitle={`${statistics.warranties.expiringSoon} ${t("dashboard.expiringSoon")}`}
+          subtitle={
+            <Link
+              to="/articles?warranty=expiringSoon"
+              className="hover:underline"
+              title={t("dashboard.showExpiringSoon")}
+            >
+              {statistics.warranties.expiringSoon} {t("dashboard.expiringSoon")}
+            </Link>
+          }
         />
 
         <StatCard

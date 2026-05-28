@@ -16,6 +16,7 @@ vi.mock("../../services/api", () => ({
   },
 }));
 
+import { MemoryRouter } from "react-router-dom";
 import Dashboard from "../../components/dashboard/Dashboard";
 import { statisticsAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";
@@ -48,11 +49,13 @@ const STATS = {
 
 function renderDashboard() {
   return render(
-    <I18nProvider>
-      <ThemeProvider>
-        <Dashboard />
-      </ThemeProvider>
-    </I18nProvider>
+    <MemoryRouter>
+      <I18nProvider>
+        <ThemeProvider>
+          <Dashboard />
+        </ThemeProvider>
+      </I18nProvider>
+    </MemoryRouter>
   );
 }
 
