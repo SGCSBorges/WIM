@@ -8,6 +8,8 @@ vi.mock("../../services/api", () => ({
   attachmentsAPI: { getAll: vi.fn() },
   notesAPI: { list: vi.fn(), create: vi.fn(), remove: vi.fn() },
   profileAPI: { getMe: vi.fn() },
+  alertsAPI: { getAll: vi.fn().mockResolvedValue([]) },
+  warrantiesAPI: { updateClaim: vi.fn() },
 }));
 
 import ArticleDetail from "../../components/articles/ArticleDetail";
@@ -93,6 +95,8 @@ describe("<ArticleDetail />", () => {
         "OTHER"
       );
     });
-    expect(await screen.findByText("Replaced battery")).toBeInTheDocument();
+    // The note appears in the timeline AND the notes list — at least one is
+    // enough.
+    expect((await screen.findAllByText("Replaced battery")).length).toBeGreaterThan(0);
   });
 });

@@ -40,7 +40,8 @@ router.get(
         q.status as AlerteStatus | undefined,
         page,
         limit,
-        q.kind as AlerteKind | undefined
+        q.kind as AlerteKind | undefined,
+        q.articleId
       )
     );
   })

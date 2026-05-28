@@ -13,6 +13,8 @@ export const AlertListQuerySchema = z.object({
   ownerUserId: z.coerce.number().int().positive().optional(),
   status: AlertStatusSchema.optional(),
   kind: AlertKindSchema.optional(),
+  // Restrict to alerts linked to one article (Article-detail timeline uses this).
+  articleId: z.coerce.number().int().positive().optional(),
 });
 
 export const AlertCancelSchema = z.object({

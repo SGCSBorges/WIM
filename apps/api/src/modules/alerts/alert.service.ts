@@ -37,13 +37,15 @@ export const AlertService = {
     status?: AlerteStatus,
     page = 1,
     limit = 50,
-    kind?: AlerteKind
+    kind?: AlerteKind,
+    articleId?: number
   ) => {
     return prisma.alerte.findMany({
       where: {
         ownerUserId,
         ...(status ? { status } : {}),
         ...(kind ? { kind } : {}),
+        ...(articleId ? { alerteArticleId: articleId } : {}),
       },
       take: limit,
       skip: (page - 1) * limit,

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import {
+  alertsAPI,
   articlesAPI,
   attachmentsAPI,
   notesAPI,
@@ -36,6 +37,15 @@ type Attachment = {
   thumbUrl?: string | null;
   mimeType?: string;
   type: string;
+  createdAt?: string;
+};
+
+type TimelineEntry = {
+  key: string;
+  date: string;
+  kind: "note" | "attachment" | "claim" | "alert";
+  title: string;
+  body?: string;
 };
 
 function safeDate(iso: string | null | undefined): string {
@@ -64,19 +74,34 @@ export default function ArticleDetail() {
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [editingKind, setEditingKind] = useState<ArticleNoteKind>("OTHER");
+  // Article-scoped alerts power the activity timeline below. Best-effort —
+  // a fetch failure leaves the timeline lighter, not broken.
+  const [articleAlerts, setArticleAlerts] = useState<
+    Array<{
+      alerteId: number;
+      alerteNom: string;
+      alerteDate: string;
+      status: string;
+      kind: string;
+    }>
+  >([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [a, atts, ns] = await Promise.all([
+      const [a, atts, ns, al] = await Promise.all([
         articlesAPI.getById(articleId),
         attachmentsAPI.getAll({ articleId }).catch(() => []),
         notesAPI.list(articleId).catch(() => []),
+        alertsAPI
+          .getAll(undefined, undefined, undefined, undefined, articleId)
+          .catch(() => []),
       ]);
       setArticle(a);
       setAttachments(atts as Attachment[]);
       setNotes(ns);
+      setArticleAlerts(al as typeof articleAlerts);
     } catch (e) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
@@ -362,6 +387,84 @@ export default function ArticleDetail() {
           )}
         </div>
       </div>
+
+      {(() => {
+        const entries: TimelineEntry[] = [
+          ...notes.map((n) => ({
+            key: `note-${n.noteId}`,
+            date: n.createdAt,
+            kind: "note" as const,
+            title: t(`notes.kind.${n.kind ?? "OTHER"}`),
+            body: n.content,
+          })),
+          ...attachments
+            .filter((a) => a.createdAt)
+            .map((a) => ({
+              key: `att-${a.attachmentId}`,
+              date: a.createdAt!,
+              kind: "attachment" as const,
+              title: t("timeline.attachmentAdded"),
+              body: a.fileName,
+            })),
+          ...(article.garantie?.claimUpdatedAt &&
+          article.garantie.claimStatus &&
+          article.garantie.claimStatus !== "NONE"
+            ? [
+                {
+                  key: `claim-${article.garantie.garantieId}-${article.garantie.claimStatus}`,
+                  date: article.garantie.claimUpdatedAt,
+                  kind: "claim" as const,
+                  title: `${t("timeline.claimUpdated")}: ${t(`claim.status.${article.garantie.claimStatus}`)}`,
+                  body: article.garantie.claimNote ?? undefined,
+                },
+              ]
+            : []),
+          ...articleAlerts.map((al) => ({
+            key: `alert-${al.alerteId}`,
+            date: al.alerteDate,
+            kind: "alert" as const,
+            title: al.alerteNom,
+            body: al.status,
+          })),
+        ].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+        if (entries.length === 0) return null;
+        const KIND_BADGE = {
+          note: "ui-badge",
+          attachment: "ui-badge-info",
+          claim: "ui-badge-warning",
+          alert: "ui-badge-success",
+        } as const;
+        return (
+          <div className="ui-card rounded-lg p-6 space-y-3">
+            <h2 className="font-semibold ui-title">{t("timeline.title")}</h2>
+            <ul className="divide-y ui-divider">
+              {entries.map((e) => (
+                <li key={e.key} className="py-2 space-y-0.5">
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span
+                        className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded ${KIND_BADGE[e.kind]}`}
+                      >
+                        {t(`timeline.kind.${e.kind}`)}
+                      </span>
+                      <span className="font-medium truncate">{e.title}</span>
+                    </span>
+                    <span className="text-xs ui-text-muted shrink-0">
+                      {safeDate(e.date)}
+                    </span>
+                  </div>
+                  {e.body && (
+                    <p className="text-xs ui-text-muted break-words">
+                      {e.body}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })()}
 
       {article.garantie && (
         <div className="ui-card rounded-lg p-6 space-y-1">
