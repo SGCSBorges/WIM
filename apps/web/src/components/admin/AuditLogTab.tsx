@@ -132,7 +132,40 @@ export default function AuditLogTab() {
       )}
 
       <div className="ui-card rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile: stacked-card layout — the desktop table below is hidden
+            at the same breakpoint. */}
+        <ul className="sm:hidden divide-y ui-divider">
+          {entries.map((e) => (
+            <li key={`m-${e.id}`} className="p-3 space-y-1 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs">{e.action}</span>
+                <span className="text-xs ui-text-muted">
+                  {new Date(e.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="text-xs ui-text-muted">
+                {e.user?.email ?? (e.userId ? `#${e.userId}` : "—")}
+                {" · "}
+                <span className="font-mono">
+                  {e.entity}
+                  {e.entityId ? `#${e.entityId}` : ""}
+                </span>
+              </div>
+              {e.metadata && Object.keys(e.metadata).length > 0 ? (
+                <pre className="text-[10px] whitespace-pre-wrap break-all">
+                  {JSON.stringify(e.metadata, null, 0)}
+                </pre>
+              ) : null}
+            </li>
+          ))}
+          {entries.length === 0 && !loading && (
+            <li className="p-4 text-center ui-text-muted text-sm">
+              {t("admin.auditLog.empty")}
+            </li>
+          )}
+        </ul>
+
+        <div className="hidden sm:block overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="ui-panel">
               <tr className="text-left ui-text-muted">
