@@ -8,6 +8,7 @@ import { auditAction } from "../common/audit";
 import { security } from "../../config/security";
 import { createHttpError } from "../../utils/http-error";
 import { idParam } from "../common/schemas";
+import { alertQueue, maintenanceQueue } from "../../jobs/queues";
 import { passwordSchema } from "../auth/auth.schemas";
 import { ShareService } from "../shares/share.service";
 import { AdminDbService, ImportPayloadSchema } from "./admin.db.service";
@@ -621,6 +622,33 @@ router.post(
       // been wiped and re-seeded, the caller's tokenVersion is no longer
       // authoritative.
       sessionInvalidated: true,
+    });
+  })
+);
+
+/**
+ * GET /api/admin/jobs
+ *
+ * Per-queue counts (waiting / active / delayed / completed / failed) for the
+ * two BullMQ queues + the next-scheduled timestamp for the audit-prune
+ * repeatable. ADMIN-only. The endpoint is a thin read; if Redis is down the
+ * counters return null so the UI can render "degraded" instead of erroring.
+ */
+router.get(
+  "/jobs",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (_req, res) => {
+    const [alertCounts, maintenanceCounts, repeatables] = await Promise.all([
+      alertQueue.getJobCounts().catch(() => null),
+      maintenanceQueue.getJobCounts().catch(() => null),
+      maintenanceQueue.getRepeatableJobs().catch(() => []),
+    ]);
+    const auditPrune = repeatables.find((r) => r.id === "audit-prune-daily");
+    res.json({
+      alerts: alertCounts,
+      maintenance: maintenanceCounts,
+      auditPruneNextRun: auditPrune?.next ?? null,
     });
   })
 );

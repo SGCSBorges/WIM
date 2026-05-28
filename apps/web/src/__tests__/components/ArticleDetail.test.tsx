@@ -97,6 +97,8 @@ describe("<ArticleDetail />", () => {
     });
     // The note appears in the timeline AND the notes list — at least one is
     // enough.
-    expect((await screen.findAllByText("Replaced battery")).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByText("Replaced battery")).length
+    ).toBeGreaterThan(0);
   });
 });

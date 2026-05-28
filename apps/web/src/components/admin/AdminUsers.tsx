@@ -10,6 +10,7 @@ import { getErrorMessage } from "../../utils/error";
 import CreateUserModal from "./CreateUserModal";
 import ResetPasswordModal from "./ResetPasswordModal";
 import AuditLogTab from "./AuditLogTab";
+import JobsTab from "./JobsTab";
 import AdminDbBackup from "./AdminDbBackup";
 import { DashboardStatsSkeleton } from "../common/Skeleton";
 
@@ -87,7 +88,7 @@ export default function AdminUsers() {
   const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "users" | "auditLog"
+    "dashboard" | "users" | "auditLog" | "jobs"
   >("dashboard");
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -301,6 +302,16 @@ export default function AdminUsers() {
             }`}
           >
             {t("admin.auditLog")}
+          </button>
+          <button
+            onClick={() => setActiveTab("jobs")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "jobs"
+                ? "ui-tab-active"
+                : "border-transparent ui-text-muted hover:border-[var(--border)]"
+            }`}
+          >
+            {t("admin.jobs")}
           </button>
         </nav>
       </div>
@@ -728,6 +739,7 @@ export default function AdminUsers() {
       )}
 
       {activeTab === "auditLog" && <AuditLogTab />}
+      {activeTab === "jobs" && <JobsTab />}
 
       {createOpen && (
         <CreateUserModal

@@ -1164,6 +1164,19 @@ export const adminAPI = {
   // Full-database export: returns the raw JSON blob so the caller can save
   // it to disk. No type because the shape is opaque to the client — the
   // import endpoint round-trips it as-is.
+  async getJobs(): Promise<{
+    alerts: Record<string, number> | null;
+    maintenance: Record<string, number> | null;
+    auditPruneNextRun: number | null;
+  }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/jobs`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch jobs"));
+    return response.json();
+  },
+
   async exportDatabase(): Promise<{ blob: Blob; filename: string }> {
     // 5 minutes: large dumps + cold-start API + slow connection can stack up.
     const response = await fetchWithTimeout(
