@@ -58,6 +58,7 @@ export default function AlertsView() {
   const [sortBy, setSortBy] = useState<"date" | "status" | "name">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [customSnoozeId, setCustomSnoozeId] = useState<number | null>(null);
 
   // New-alert form
   const [showCreate, setShowCreate] = useState(false);
@@ -146,6 +147,7 @@ export default function AlertsView() {
     try {
       await alertsAPI.snooze(alerteId, days);
       toast.show(t("alerts.snooze.success"), { kind: "success" });
+      setCustomSnoozeId(null);
       await fetchAll();
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
@@ -154,6 +156,18 @@ export default function AlertsView() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  // Convert a date-picker value (YYYY-MM-DD, midnight local) to a day delta
+  // from today, rounded up to the next whole day so "today" still moves the
+  // reminder forward by 1.
+  const snoozeUntil = async (alerteId: number, isoDate: string) => {
+    if (!isoDate) return;
+    const target = new Date(isoDate);
+    if (Number.isNaN(target.getTime())) return;
+    const ms = target.getTime() - Date.now();
+    const days = Math.max(1, Math.ceil(ms / (24 * 60 * 60 * 1000)));
+    await snoozeAlert(alerteId, days);
   };
 
   const cancelAlert = async (alerteId: number) => {
@@ -377,7 +391,14 @@ export default function AlertsView() {
                   </span>
 
                   {a.status === "SCHEDULED" && (
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-1">
+                      <button
+                        onClick={() => snoozeAlert(a.alerteId, 1)}
+                        disabled={busyId === a.alerteId}
+                        className="text-xs ui-btn-ghost border ui-divider rounded px-2 py-1"
+                      >
+                        {t("alerts.snooze.tomorrow")}
+                      </button>
                       <button
                         onClick={() => snoozeAlert(a.alerteId, 7)}
                         disabled={busyId === a.alerteId}
@@ -392,6 +413,29 @@ export default function AlertsView() {
                       >
                         {t("alerts.snooze.30d")}
                       </button>
+                      {customSnoozeId === a.alerteId ? (
+                        <input
+                          type="date"
+                          aria-label={t("alerts.snooze.customLabel")}
+                          min={new Date(Date.now() + 86400_000)
+                            .toISOString()
+                            .slice(0, 10)}
+                          onChange={(e) =>
+                            void snoozeUntil(a.alerteId, e.target.value)
+                          }
+                          onBlur={() => setCustomSnoozeId(null)}
+                          disabled={busyId === a.alerteId}
+                          className="text-xs ui-input rounded px-2 py-1"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => setCustomSnoozeId(a.alerteId)}
+                          disabled={busyId === a.alerteId}
+                          className="text-xs ui-btn-ghost border ui-divider rounded px-2 py-1"
+                        >
+                          {t("alerts.snooze.custom")}
+                        </button>
+                      )}
                       <button
                         onClick={() => cancelAlert(a.alerteId)}
                         disabled={busyId === a.alerteId}
