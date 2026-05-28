@@ -136,9 +136,9 @@ export const AlertService = {
       await alertQueue.add("reminder", payload, {
         jobId,
         delay,
-        removeOnComplete: true,
-        removeOnFail: false,
         attempts: 3,
+        // Long backoff because retries here cover server-side rate limits
+        // (push provider / email) rather than tight network blips.
         backoff: { type: "exponential", delay: 30_000 },
       });
     }
@@ -254,8 +254,6 @@ export const AlertService = {
     await alertQueue.add("reminder", payload, {
       jobId: customJobId(alerteId),
       delay: Math.max(0, when.getTime() - Date.now()),
-      removeOnComplete: true,
-      removeOnFail: false,
       attempts: 3,
       backoff: { type: "exponential", delay: 30_000 },
     });
