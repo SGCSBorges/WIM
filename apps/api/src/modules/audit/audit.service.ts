@@ -1,37 +1,11 @@
 import { Prisma } from "@prisma/client";
+import type { AuditAction, AuditEntity } from "@wim/types";
 import { prisma } from "../../libs/prisma";
 
 export type AuditInput = {
   userId?: number | null;
-  action:
-    | "CREATE"
-    | "UPDATE"
-    | "DELETE"
-    | "LOGIN"
-    | "LOGOUT"
-    | "ACCEPT"
-    | "FORCE_LOGOUT"
-    | "BILLING_CHECKOUT_STARTED"
-    | "BILLING_PORTAL_OPENED"
-    | "BILLING_CANCEL_REQUESTED"
-    | "BILLING_UPGRADE"
-    | "BILLING_DOWNGRADE"
-    | "DB_EXPORT"
-    | "DB_IMPORT";
-  entity:
-    | "Article"
-    | "Garantie"
-    | "Alerte"
-    | "User"
-    | "Location"
-    | "Attachment"
-    | "ShareInvite"
-    | "InventoryShare"
-    | "ArticleLocation"
-    | "Tag"
-    | "ArticleNote"
-    | "SavedView"
-    | "Database";
+  action: AuditAction;
+  entity: AuditEntity;
   entityId?: number | null;
   metadata?: Record<string, unknown>;
   ip?: string | null;

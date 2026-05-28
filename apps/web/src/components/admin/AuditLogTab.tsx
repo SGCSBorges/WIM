@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { AUDIT_ACTIONS, AUDIT_ENTITIES } from "@wim/types";
 
 type Entry = {
   id: number;
@@ -17,19 +18,11 @@ type Entry = {
   user: { email: string } | null;
 };
 
-const ACTIONS = [
-  "",
-  "CREATE",
-  "UPDATE",
-  "DELETE",
-  "LOGIN",
-  "LOGOUT",
-  "ACCEPT",
-  "FORCE_LOGOUT",
-  "BILLING_CHECKOUT_STARTED",
-  "BILLING_PORTAL_OPENED",
-  "BILLING_CANCEL_REQUESTED",
-];
+// Sourced from @wim/types so a new audit action only needs to be added in one
+// place; the previous hardcoded list silently drifted (BILLING_UPGRADE/DOWNGRADE,
+// DB_EXPORT/IMPORT were never filterable).
+const ACTIONS = ["", ...AUDIT_ACTIONS];
+const ENTITIES = ["", ...AUDIT_ENTITIES];
 
 export default function AuditLogTab() {
   const { t } = useI18n();
@@ -39,6 +32,7 @@ export default function AuditLogTab() {
   const [error, setError] = useState<string | null>(null);
   const [filterUserId, setFilterUserId] = useState<string>("");
   const [filterAction, setFilterAction] = useState<string>("");
+  const [filterEntity, setFilterEntity] = useState<string>("");
 
   const load = useCallback(
     async (reset: boolean) => {
@@ -48,6 +42,7 @@ export default function AuditLogTab() {
         const data = await adminAPI.listAuditLog({
           userId: filterUserId ? Number(filterUserId) : undefined,
           action: filterAction || undefined,
+          entity: filterEntity || undefined,
           limit: 50,
           cursor: reset ? undefined : (nextCursor ?? undefined),
         });
@@ -61,13 +56,13 @@ export default function AuditLogTab() {
         setLoading(false);
       }
     },
-    [filterUserId, filterAction, nextCursor, t]
+    [filterUserId, filterAction, filterEntity, nextCursor, t]
   );
 
   useEffect(() => {
     load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterUserId, filterAction]);
+  }, [filterUserId, filterAction, filterEntity]);
 
   return (
     <div className="space-y-4">
@@ -104,6 +99,26 @@ export default function AuditLogTab() {
             {ACTIONS.map((a) => (
               <option key={a} value={a}>
                 {a || t("admin.auditLog.allActions")}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="al-entity"
+            className="block text-xs font-medium ui-text-muted mb-1"
+          >
+            {t("admin.auditLog.filterByEntity")}
+          </label>
+          <select
+            id="al-entity"
+            value={filterEntity}
+            onChange={(e) => setFilterEntity(e.target.value)}
+            className="ui-input px-3 py-2 rounded-md"
+          >
+            {ENTITIES.map((e) => (
+              <option key={e} value={e}>
+                {e || t("admin.auditLog.allEntities")}
               </option>
             ))}
           </select>

@@ -11,6 +11,44 @@ export interface Location {
   name: string;
 }
 
+// Audit log action / entity unions. Defined as const tuples so both the API
+// (which logs and validates them) and the web (which renders filter
+// dropdowns) read from a single source of truth — no drift.
+export const AUDIT_ACTIONS = [
+  "CREATE",
+  "UPDATE",
+  "DELETE",
+  "LOGIN",
+  "LOGOUT",
+  "ACCEPT",
+  "FORCE_LOGOUT",
+  "BILLING_CHECKOUT_STARTED",
+  "BILLING_PORTAL_OPENED",
+  "BILLING_CANCEL_REQUESTED",
+  "BILLING_UPGRADE",
+  "BILLING_DOWNGRADE",
+  "DB_EXPORT",
+  "DB_IMPORT",
+] as const;
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+
+export const AUDIT_ENTITIES = [
+  "Article",
+  "Garantie",
+  "Alerte",
+  "User",
+  "Location",
+  "Attachment",
+  "ShareInvite",
+  "InventoryShare",
+  "ArticleLocation",
+  "Tag",
+  "ArticleNote",
+  "SavedView",
+  "Database",
+] as const;
+export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
+
 export type ClaimStatus =
   | "NONE"
   | "OPEN"
