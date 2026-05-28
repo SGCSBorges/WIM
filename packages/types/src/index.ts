@@ -126,11 +126,26 @@ export interface ArticleListResult {
   limit: number;
 }
 
+export type ArticleNoteKind =
+  | "SERVICE"
+  | "WARRANTY_CLAIM"
+  | "MAINTENANCE"
+  | "OTHER";
+
+export const ARTICLE_NOTE_KINDS: ArticleNoteKind[] = [
+  "SERVICE",
+  "WARRANTY_CLAIM",
+  "MAINTENANCE",
+  "OTHER",
+];
+
 export interface ArticleNote {
   noteId: number;
   articleId: number;
   content: string;
+  kind?: ArticleNoteKind;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface SavedView {

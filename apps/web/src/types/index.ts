@@ -5,6 +5,7 @@ export type {
   ArticleListParams,
   ArticleListResult,
   ArticleNote,
+  ArticleNoteKind,
   ArticleWarranty,
   BillingSubscription,
   ClaimStatus,

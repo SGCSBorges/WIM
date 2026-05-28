@@ -52,6 +52,13 @@ enum ClaimStatus {
   RESOLVED
 }
 
+enum ArticleNoteKind {
+  SERVICE
+  WARRANTY_CLAIM
+  MAINTENANCE
+  OTHER
+}
+
 model Location {
   locationId  Int      @id @default(autoincrement())
   ownerUserId Int
@@ -200,11 +207,16 @@ model ArticleTag {
 }
 
 model ArticleNote {
-  noteId      Int      @id @default(autoincrement())
+  noteId      Int             @id @default(autoincrement())
   articleId   Int
   ownerUserId Int
-  content     String   @db.VarChar(2000)
-  createdAt   DateTime @default(now())
+  content     String          @db.VarChar(2000)
+  // Categorize the entry (service log, claim event, maintenance, generic
+  // observation) so the timeline can be filtered. Defaults to OTHER so the
+  // backfill of existing rows stays neutral.
+  kind        ArticleNoteKind @default(OTHER)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   article Article @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
   owner   User    @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)

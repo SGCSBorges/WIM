@@ -86,7 +86,12 @@ describe("<ArticleDetail />", () => {
     await user.click(screen.getByRole("button", { name: /add note/i }));
 
     await waitFor(() => {
-      expect(mocked.notesCreate).toHaveBeenCalledWith(5, "Replaced battery");
+      // Default kind defaults to OTHER (the picker is reset between adds).
+      expect(mocked.notesCreate).toHaveBeenCalledWith(
+        5,
+        "Replaced battery",
+        "OTHER"
+      );
     });
     expect(await screen.findByText("Replaced battery")).toBeInTheDocument();
   });

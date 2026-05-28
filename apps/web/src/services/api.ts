@@ -3,6 +3,7 @@ import type {
   ArticleListParams,
   ArticleListResult,
   ArticleNote,
+  ArticleNoteKind,
   BillingSubscription,
   ClaimStatus,
   FetchedArticle,
@@ -19,6 +20,7 @@ export type {
   ArticleListParams,
   ArticleListResult,
   ArticleNote,
+  ArticleNoteKind,
   BillingSubscription,
   SavedView,
   ShareInviteItem,
@@ -675,17 +677,39 @@ export const notesAPI = {
     return response.json();
   },
 
-  async create(articleId: number, content: string): Promise<ArticleNote> {
+  async create(
+    articleId: number,
+    content: string,
+    kind?: ArticleNoteKind
+  ): Promise<ArticleNote> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/articles/${articleId}/notes`,
       {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, ...(kind ? { kind } : {}) }),
       }
     );
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to add note"));
+    return response.json();
+  },
+
+  async update(
+    articleId: number,
+    noteId: number,
+    patch: { content?: string; kind?: ArticleNoteKind }
+  ): Promise<ArticleNote> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/notes/${noteId}`,
+      {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(patch),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update note"));
     return response.json();
   },
 

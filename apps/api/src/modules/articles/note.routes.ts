@@ -9,9 +9,26 @@ import { createHttpError } from "../../utils/http-error";
 
 const router = Router();
 
+const NoteKindSchema = z.enum([
+  "SERVICE",
+  "WARRANTY_CLAIM",
+  "MAINTENANCE",
+  "OTHER",
+]);
+
 const NoteCreateSchema = z.object({
   content: z.string().trim().min(1).max(2000),
+  kind: NoteKindSchema.optional(),
 });
+
+const NoteUpdateSchema = z
+  .object({
+    content: z.string().trim().min(1).max(2000).optional(),
+    kind: NoteKindSchema.optional(),
+  })
+  .refine((d) => d.content !== undefined || d.kind !== undefined, {
+    message: "Provide content or kind",
+  });
 
 // Confirm the article belongs to the caller before touching its notes.
 async function assertArticleOwned(articleId: number, ownerUserId: number) {
@@ -42,17 +59,46 @@ router.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const articleId = idParam.parse(req.params.id);
     await assertArticleOwned(articleId, req.user!.sub);
-    const { content } = NoteCreateSchema.parse(req.body);
+    const body = NoteCreateSchema.parse(req.body);
     const note = await prisma.articleNote.create({
-      data: { articleId, ownerUserId: req.user!.sub, content },
+      data: {
+        articleId,
+        ownerUserId: req.user!.sub,
+        content: body.content,
+        ...(body.kind ? { kind: body.kind } : {}),
+      },
     });
     await auditAction(req, {
       action: "CREATE",
       entity: "ArticleNote",
       entityId: note.noteId,
-      metadata: { articleId },
+      metadata: { articleId, kind: note.kind },
     });
     res.status(201).json(note);
+  })
+);
+
+router.patch(
+  "/:id/notes/:noteId",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const articleId = idParam.parse(req.params.id);
+    const noteId = idParam.parse(req.params.noteId);
+    const data = NoteUpdateSchema.parse(req.body);
+    // Owner-scoped update via updateMany so a foreign id never escapes a 404.
+    const result = await prisma.articleNote.updateMany({
+      where: { noteId, articleId, ownerUserId: req.user!.sub },
+      data,
+    });
+    if (result.count === 0) throw createHttpError(404, "Note not found");
+    const updated = await prisma.articleNote.findUnique({ where: { noteId } });
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "ArticleNote",
+      entityId: noteId,
+      metadata: { articleId, fields: Object.keys(data) },
+    });
+    res.json(updated);
   })
 );
 

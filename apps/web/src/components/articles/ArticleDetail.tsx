@@ -10,7 +10,8 @@ import {
   warrantiesAPI,
   type ArticleNote,
 } from "../../services/api";
-import type { ClaimStatus, FetchedArticle } from "../../types";
+import type { ArticleNoteKind, ClaimStatus, FetchedArticle } from "../../types";
+import { ARTICLE_NOTE_KINDS } from "@wim/types";
 
 const CLAIM_STATUSES: ClaimStatus[] = [
   "NONE",
@@ -56,7 +57,13 @@ export default function ArticleDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [noteInput, setNoteInput] = useState("");
+  const [noteKind, setNoteKind] = useState<ArticleNoteKind>("OTHER");
   const [savingNote, setSavingNote] = useState(false);
+  const [noteFilter, setNoteFilter] = useState<ArticleNoteKind | "ALL">("ALL");
+  // When set, the row of that noteId is editable.
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [editingKind, setEditingKind] = useState<ArticleNoteKind>("OTHER");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -90,7 +97,7 @@ export default function ArticleDetail() {
     if (!content) return;
     setSavingNote(true);
     try {
-      const note = await notesAPI.create(articleId, content);
+      const note = await notesAPI.create(articleId, content, noteKind);
       setNotes((prev) => [note, ...prev]);
       setNoteInput("");
     } catch (e) {
@@ -106,6 +113,36 @@ export default function ArticleDetail() {
     try {
       await notesAPI.remove(articleId, noteId);
       setNotes((prev) => prev.filter((n) => n.noteId !== noteId));
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
+  };
+
+  const startEditNote = (note: {
+    noteId: number;
+    content: string;
+    kind?: ArticleNoteKind;
+  }) => {
+    setEditingNoteId(note.noteId);
+    setEditingContent(note.content);
+    setEditingKind(note.kind ?? "OTHER");
+  };
+
+  const saveEditNote = async () => {
+    if (editingNoteId == null) return;
+    const content = editingContent.trim();
+    if (!content) return;
+    try {
+      const updated = await notesAPI.update(articleId, editingNoteId, {
+        content,
+        kind: editingKind,
+      });
+      setNotes((prev) =>
+        prev.map((n) => (n.noteId === updated.noteId ? updated : n))
+      );
+      setEditingNoteId(null);
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
         kind: "error",
@@ -480,7 +517,19 @@ export default function ArticleDetail() {
 
       <div className="ui-card rounded-lg p-6 space-y-3">
         <h2 className="font-semibold ui-title">{t("notes.title")}</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <select
+            value={noteKind}
+            onChange={(e) => setNoteKind(e.target.value as ArticleNoteKind)}
+            aria-label={t("notes.kindLabel")}
+            className="ui-select px-2 py-2 rounded-md text-sm"
+          >
+            {ARTICLE_NOTE_KINDS.map((k) => (
+              <option key={k} value={k}>
+                {t(`notes.kind.${k}`)}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             value={noteInput}
@@ -492,7 +541,7 @@ export default function ArticleDetail() {
               }
             }}
             placeholder={t("notes.placeholder")}
-            className="ui-input flex-1 px-3 py-2 rounded-md"
+            className="ui-input flex-1 min-w-0 px-3 py-2 rounded-md"
             maxLength={2000}
           />
           <button
@@ -503,31 +552,126 @@ export default function ArticleDetail() {
             {t("notes.add")}
           </button>
         </div>
-        {notes.length === 0 ? (
-          <p className="text-sm ui-text-muted">{t("notes.empty")}</p>
-        ) : (
-          <ul className="divide-y ui-divider">
-            {notes.map((n) => (
-              <li
-                key={n.noteId}
-                className="py-2 flex items-start justify-between gap-3"
+
+        {notes.length > 0 && (
+          <div
+            role="group"
+            aria-label={t("notes.filterLabel")}
+            className="flex flex-wrap items-center gap-1 text-xs"
+          >
+            <button
+              type="button"
+              onClick={() => setNoteFilter("ALL")}
+              className={`px-2 py-0.5 rounded-full border ui-divider ${
+                noteFilter === "ALL" ? "ui-badge-info" : "ui-btn-ghost"
+              }`}
+            >
+              {t("notes.filter.all")}
+            </button>
+            {ARTICLE_NOTE_KINDS.map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setNoteFilter(k)}
+                className={`px-2 py-0.5 rounded-full border ui-divider ${
+                  noteFilter === k ? "ui-badge-info" : "ui-btn-ghost"
+                }`}
               >
-                <div className="min-w-0">
-                  <p className="text-sm break-words">{n.content}</p>
-                  <p className="text-xs ui-text-muted">
-                    {safeDate(n.createdAt)}
-                  </p>
-                </div>
-                <button
-                  onClick={() => removeNote(n.noteId)}
-                  className="text-xs ui-action-danger shrink-0"
-                >
-                  {t("common.delete")}
-                </button>
-              </li>
+                {t(`notes.kind.${k}`)}
+              </button>
             ))}
-          </ul>
+          </div>
         )}
+
+        {(() => {
+          const visible = notes.filter(
+            (n) => noteFilter === "ALL" || (n.kind ?? "OTHER") === noteFilter
+          );
+          if (visible.length === 0) {
+            return <p className="text-sm ui-text-muted">{t("notes.empty")}</p>;
+          }
+          return (
+            <ul className="divide-y ui-divider">
+              {visible.map((n) => {
+                const kind = n.kind ?? "OTHER";
+                const isEditing = editingNoteId === n.noteId;
+                return (
+                  <li key={n.noteId} className="py-2 space-y-1">
+                    {isEditing ? (
+                      <div className="flex flex-wrap items-start gap-2">
+                        <select
+                          value={editingKind}
+                          onChange={(e) =>
+                            setEditingKind(e.target.value as ArticleNoteKind)
+                          }
+                          aria-label={t("notes.kindLabel")}
+                          className="ui-select px-2 py-1 rounded-md text-sm"
+                        >
+                          {ARTICLE_NOTE_KINDS.map((k) => (
+                            <option key={k} value={k}>
+                              {t(`notes.kind.${k}`)}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="text"
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          maxLength={2000}
+                          className="ui-input flex-1 min-w-0 px-3 py-1 rounded-md text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={saveEditNote}
+                          disabled={!editingContent.trim()}
+                          className="text-xs ui-btn-primary px-2 py-1 rounded"
+                        >
+                          {t("common.save")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingNoteId(null)}
+                          className="text-xs ui-btn-ghost border ui-divider px-2 py-1 rounded"
+                        >
+                          {t("common.cancel")}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] ui-badge px-1.5 py-0.5 rounded uppercase tracking-wide">
+                              {t(`notes.kind.${kind}`)}
+                            </span>
+                            <p className="text-sm break-words">{n.content}</p>
+                          </div>
+                          <p className="text-xs ui-text-muted">
+                            {safeDate(n.createdAt)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => startEditNote(n)}
+                            className="text-xs ui-action-primary"
+                          >
+                            {t("common.edit")}
+                          </button>
+                          <button
+                            onClick={() => removeNote(n.noteId)}
+                            className="text-xs ui-action-danger"
+                          >
+                            {t("common.delete")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        })()}
       </div>
     </div>
   );
