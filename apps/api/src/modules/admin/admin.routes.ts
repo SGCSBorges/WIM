@@ -132,6 +132,7 @@ router.get(
 /** DELETE /api/admin/users/:id - Delete user and all their data (Admin only) */
 router.delete(
   "/users/:id",
+  security.destructiveRateLimiter,
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (req: AuthRequest, res) => {
@@ -302,6 +303,7 @@ router.patch(
 /** POST /api/admin/users/:id/reset-password - Set a new password (Admin only) */
 router.post(
   "/users/:id/reset-password",
+  security.destructiveRateLimiter,
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (req: AuthRequest, res) => {

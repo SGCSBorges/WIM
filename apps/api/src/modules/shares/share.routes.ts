@@ -10,12 +10,16 @@ import {
 import { ShareService } from "./share.service";
 import { auditAction } from "../common/audit";
 import { paginationQuery } from "../common/schemas";
+import { security } from "../../config/security";
 
 const router = Router();
 
 // émettre une invitation (POWER_USER ou OWNER)
 router.post(
   "/invites",
+  // Per-IP cap so a compromised POWER_USER account can't be weaponized
+  // to spam invite emails (and phishing links) to a wide audience.
+  security.destructiveRateLimiter,
   authGuard,
   requireRole("POWER_USER"),
   asyncHandler(async (req: AuthRequest, res) => {
