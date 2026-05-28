@@ -103,6 +103,16 @@ router.get(
   })
 );
 
+const UserListQuerySchema = z.object({
+  // Substring match on email (case-insensitive). Trim to keep accidental
+  // whitespace from silently breaking the filter.
+  q: z.string().trim().max(120).optional(),
+  sort: z.enum(["email", "role", "createdAt"]).optional(),
+  dir: z.enum(["asc", "desc"]).optional(),
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(500).optional(),
+});
+
 /** GET /api/admin/users - List all users (Admin only) */
 router.get(
   "/users",
@@ -111,9 +121,15 @@ router.get(
   asyncHandler(async (req, res) => {
     // Paginatable so instances with >500 users aren't silently truncated.
     // Defaults preserve the previous behaviour (first 500, newest first).
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(500, Math.max(1, Number(req.query.limit) || 500));
+    const query = UserListQuerySchema.parse(req.query);
+    const page = query.page ?? 1;
+    const limit = Math.min(500, query.limit ?? 500);
+    const sortField = query.sort ?? "createdAt";
+    const sortDir = query.dir ?? "desc";
     const users = await prisma.user.findMany({
+      where: query.q
+        ? { email: { contains: query.q, mode: "insensitive" } }
+        : undefined,
       select: {
         userId: true,
         email: true,
@@ -123,7 +139,7 @@ router.get(
       },
       take: limit,
       skip: (page - 1) * limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: { [sortField]: sortDir },
     });
     res.json(users);
   })

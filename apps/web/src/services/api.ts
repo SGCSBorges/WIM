@@ -1028,8 +1028,18 @@ export const profileAPI = {
 
 // Admin API
 export const adminAPI = {
-  async listUsers() {
-    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/users`, {
+  async listUsers(
+    options: {
+      q?: string;
+      sort?: "email" | "role" | "createdAt";
+      dir?: "asc" | "desc";
+    } = {}
+  ) {
+    const url = new URL(`${API_BASE_URL}/admin/users`);
+    if (options.q) url.searchParams.set("q", options.q);
+    if (options.sort) url.searchParams.set("sort", options.sort);
+    if (options.dir) url.searchParams.set("dir", options.dir);
+    const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
     if (!response.ok)

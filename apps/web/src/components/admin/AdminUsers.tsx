@@ -108,6 +108,11 @@ export default function AdminUsers() {
     null
   );
   const [editingRoleValue, setEditingRoleValue] = useState<Role>("USER");
+  const [userSearch, setUserSearch] = useState("");
+  const [userSort, setUserSort] = useState<"createdAt" | "email" | "role">(
+    "createdAt"
+  );
+  const [userDir, setUserDir] = useState<"asc" | "desc">("desc");
 
   const role = authAPI.getRole();
 
@@ -128,14 +133,18 @@ export default function AdminUsers() {
     setLoadingUsers(true);
     setError(null);
     try {
-      const data = await adminAPI.listUsers();
+      const data = await adminAPI.listUsers({
+        q: userSearch.trim() || undefined,
+        sort: userSort,
+        dir: userDir,
+      });
       setUsers(data);
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("admin.error.fetchUsers")));
     } finally {
       setLoadingUsers(false);
     }
-  }, [t]);
+  }, [t, userSearch, userSort, userDir]);
 
   const fetchInventory = async (userId: number) => {
     setLoadingInventory(true);
@@ -224,10 +233,16 @@ export default function AdminUsers() {
     }
   };
 
+  // Debounce the users fetch so a typed search/sort change doesn't fire a
+  // request per keystroke. Statistics is independent and fetched once.
   useEffect(() => {
-    fetchUsers();
+    const handle = setTimeout(fetchUsers, 300);
+    return () => clearTimeout(handle);
+  }, [fetchUsers]);
+
+  useEffect(() => {
     fetchStatistics();
-  }, [fetchUsers, fetchStatistics]);
+  }, [fetchStatistics]);
 
   if (role !== "ADMIN") {
     return (
@@ -380,20 +395,61 @@ export default function AdminUsers() {
       {activeTab === "users" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="ui-card rounded-lg">
-            <div className="p-4 border-b ui-divider flex items-center justify-between gap-2">
-              <h2 className="font-semibold">{t("admin.users")}</h2>
-              <div className="flex items-center gap-2">
-                {loadingUsers && (
-                  <span className="text-xs ui-text-muted">
-                    {t("common.loading")}
-                  </span>
-                )}
-                <button
-                  onClick={() => setCreateOpen(true)}
-                  className="text-sm px-3 py-1.5 ui-btn-primary rounded"
+            <div className="p-4 border-b ui-divider space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-semibold">{t("admin.users")}</h2>
+                <div className="flex items-center gap-2">
+                  {loadingUsers && (
+                    <span className="text-xs ui-text-muted">
+                      {t("common.loading")}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => setCreateOpen(true)}
+                    className="text-sm px-3 py-1.5 ui-btn-primary rounded"
+                  >
+                    + {t("admin.createUser.button")}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="search"
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  placeholder={t("admin.users.searchPlaceholder")}
+                  aria-label={t("admin.users.searchPlaceholder")}
+                  className="ui-input px-3 py-1.5 rounded-md text-sm flex-1 min-w-[160px]"
+                />
+                <select
+                  value={`${userSort}:${userDir}`}
+                  onChange={(e) => {
+                    const [s, d] = e.target.value.split(":") as [
+                      typeof userSort,
+                      typeof userDir,
+                    ];
+                    setUserSort(s);
+                    setUserDir(d);
+                  }}
+                  aria-label={t("admin.users.sortLabel")}
+                  className="ui-select px-2 py-1.5 rounded-md text-sm"
                 >
-                  + {t("admin.createUser.button")}
-                </button>
+                  <option value="createdAt:desc">
+                    {t("admin.users.sort.newest")}
+                  </option>
+                  <option value="createdAt:asc">
+                    {t("admin.users.sort.oldest")}
+                  </option>
+                  <option value="email:asc">
+                    {t("admin.users.sort.emailAsc")}
+                  </option>
+                  <option value="email:desc">
+                    {t("admin.users.sort.emailDesc")}
+                  </option>
+                  <option value="role:asc">
+                    {t("admin.users.sort.roleAsc")}
+                  </option>
+                </select>
               </div>
             </div>
             <div className="divide-y">
