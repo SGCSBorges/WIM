@@ -193,6 +193,34 @@ describe("ArticleService.list — search", () => {
     });
   });
 
+  it("defaults to {articleId: desc} ordering when sort is unset", async () => {
+    await ArticleService.list(7, {});
+    const arg = mockPrisma.article.findMany.mock.calls[0][0];
+    expect(arg.orderBy).toEqual({ articleId: "desc" });
+  });
+
+  it("passes sort=articleNom + dir=asc through to Prisma orderBy", async () => {
+    await ArticleService.list(7, { sort: "articleNom", dir: "asc" });
+    const arg = mockPrisma.article.findMany.mock.calls[0][0];
+    expect(arg.orderBy).toEqual({ articleNom: "asc" });
+  });
+
+  it("nulls-last when sorting by purchasePrice (column is nullable)", async () => {
+    await ArticleService.list(7, { sort: "purchasePrice", dir: "desc" });
+    const arg = mockPrisma.article.findMany.mock.calls[0][0];
+    expect(arg.orderBy).toEqual({
+      purchasePrice: { sort: "desc", nulls: "last" },
+    });
+  });
+
+  it("translates createdFrom/createdTo to a createdAt range", async () => {
+    const from = new Date("2026-01-01");
+    const to = new Date("2026-02-01");
+    await ArticleService.list(7, { createdFrom: from, createdTo: to });
+    const arg = mockPrisma.article.findMany.mock.calls[0][0];
+    expect(arg.where.createdAt).toEqual({ gte: from, lte: to });
+  });
+
   it("omits the text clause when no query is given", async () => {
     await ArticleService.list(7, { locationId: 3 });
     const arg = mockPrisma.article.findMany.mock.calls[0][0];

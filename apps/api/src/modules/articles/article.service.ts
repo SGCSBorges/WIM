@@ -59,6 +59,10 @@ export type ArticleListFilters = {
   warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
   priceMin?: number;
   priceMax?: number;
+  createdFrom?: Date;
+  createdTo?: Date;
+  sort?: "articleId" | "articleNom" | "purchasePrice" | "createdAt";
+  dir?: "asc" | "desc";
   page?: number;
   limit?: number;
 };
@@ -93,6 +97,12 @@ function buildArticleWhere(
       ...(f.priceMax != null ? { lte: f.priceMax } : {}),
     };
   }
+  if (f.createdFrom || f.createdTo) {
+    where.createdAt = {
+      ...(f.createdFrom ? { gte: f.createdFrom } : {}),
+      ...(f.createdTo ? { lte: f.createdTo } : {}),
+    };
+  }
   if (f.warrantyStatus) {
     const now = new Date();
     if (f.warrantyStatus === "none") {
@@ -116,12 +126,20 @@ export const ArticleService = {
     const page = filters.page && filters.page > 0 ? filters.page : 1;
     const limit = filters.limit && filters.limit > 0 ? filters.limit : 50;
     const where = buildArticleWhere(ownerUserId, filters);
+    // Default ordering keeps existing behaviour (newest first). Sorting by a
+    // nullable column (purchasePrice) puts nulls at the end of the result.
+    const sortField = filters.sort ?? "articleId";
+    const sortDir = filters.dir ?? "desc";
+    const orderBy: Prisma.ArticleOrderByWithRelationInput =
+      sortField === "purchasePrice"
+        ? { purchasePrice: { sort: sortDir, nulls: "last" } }
+        : { [sortField]: sortDir };
     const [items, total] = await prisma.$transaction([
       prisma.article.findMany({
         where,
         take: limit,
         skip: (page - 1) * limit,
-        orderBy: { articleId: "desc" },
+        orderBy,
         include: articleInclude,
       }),
       prisma.article.count({ where }),

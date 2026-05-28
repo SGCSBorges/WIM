@@ -134,6 +134,10 @@ const ArticlesList: React.FC = () => {
   const warrantyStatus = searchParams.get("warranty") ?? "";
   const priceMin = searchParams.get("priceMin") ?? "";
   const priceMax = searchParams.get("priceMax") ?? "";
+  const createdFrom = searchParams.get("createdFrom") ?? "";
+  const createdTo = searchParams.get("createdTo") ?? "";
+  const sortParam = searchParams.get("sort") ?? "";
+  const dirParam = searchParams.get("dir") ?? "";
   const locationFilterId = searchParams.get("location")
     ? Number(searchParams.get("location"))
     : undefined;
@@ -147,6 +151,8 @@ const ArticlesList: React.FC = () => {
     warrantyStatus ||
     priceMin ||
     priceMax ||
+    createdFrom ||
+    createdTo ||
     locationFilterId ||
     tagFilterId
   );
@@ -200,6 +206,16 @@ const ArticlesList: React.FC = () => {
             | "") || undefined,
         priceMin: priceMin ? Number(priceMin) : undefined,
         priceMax: priceMax ? Number(priceMax) : undefined,
+        createdFrom: createdFrom || undefined,
+        createdTo: createdTo || undefined,
+        sort:
+          (sortParam as
+            | "articleId"
+            | "articleNom"
+            | "purchasePrice"
+            | "createdAt"
+            | "") || undefined,
+        dir: (dirParam as "asc" | "desc" | "") || undefined,
         page,
         limit: LIMIT,
       });
@@ -228,6 +244,10 @@ const ArticlesList: React.FC = () => {
     warrantyStatus,
     priceMin,
     priceMax,
+    createdFrom,
+    createdTo,
+    sortParam,
+    dirParam,
     page,
     t,
   ]);
@@ -611,6 +631,56 @@ const ArticlesList: React.FC = () => {
             className="ui-input px-3 py-2 rounded-md text-sm w-24"
             aria-label={t("articles.filter.priceMax")}
           />
+
+          <input
+            type="date"
+            value={createdFrom}
+            onChange={(e) => updateParams({ createdFrom: e.target.value })}
+            className="ui-input px-3 py-2 rounded-md text-sm"
+            aria-label={t("articles.filter.createdFrom")}
+            title={t("articles.filter.createdFrom")}
+          />
+          <input
+            type="date"
+            value={createdTo}
+            onChange={(e) => updateParams({ createdTo: e.target.value })}
+            className="ui-input px-3 py-2 rounded-md text-sm"
+            aria-label={t("articles.filter.createdTo")}
+            title={t("articles.filter.createdTo")}
+          />
+
+          <select
+            value={`${sortParam || "articleId"}:${dirParam || "desc"}`}
+            onChange={(e) => {
+              const [s, d] = e.target.value.split(":");
+              updateParams({ sort: s, dir: d });
+            }}
+            aria-label={t("articles.filter.sort")}
+            className="ui-select px-3 py-2 rounded-md text-sm"
+          >
+            <option value="articleId:desc">
+              {t("articles.sort.newestFirst")}
+            </option>
+            <option value="articleId:asc">
+              {t("articles.sort.oldestFirst")}
+            </option>
+            <option value="articleNom:asc">{t("articles.sort.nameAsc")}</option>
+            <option value="articleNom:desc">
+              {t("articles.sort.nameDesc")}
+            </option>
+            <option value="purchasePrice:desc">
+              {t("articles.sort.priceDesc")}
+            </option>
+            <option value="purchasePrice:asc">
+              {t("articles.sort.priceAsc")}
+            </option>
+            <option value="createdAt:desc">
+              {t("articles.sort.createdDesc")}
+            </option>
+            <option value="createdAt:asc">
+              {t("articles.sort.createdAsc")}
+            </option>
+          </select>
 
           <button
             onClick={exportToCsv}

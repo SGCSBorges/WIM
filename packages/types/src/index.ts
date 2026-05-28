@@ -108,6 +108,12 @@ export interface FetchedArticle extends Article {
   updatedAt: string;
 }
 
+export type ArticleSort =
+  | "articleId"
+  | "articleNom"
+  | "purchasePrice"
+  | "createdAt";
+
 export interface ArticleListParams {
   locationId?: number;
   tagId?: number;
@@ -115,6 +121,11 @@ export interface ArticleListParams {
   warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
   priceMin?: number;
   priceMax?: number;
+  // Inclusive createdAt range; ISO date strings (YYYY-MM-DD or full ISO).
+  createdFrom?: string;
+  createdTo?: string;
+  sort?: ArticleSort;
+  dir?: "asc" | "desc";
   page?: number;
   limit?: number;
 }

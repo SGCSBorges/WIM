@@ -53,6 +53,16 @@ const ArticleListQuerySchema = z.object({
     .optional(),
   priceMin: z.coerce.number().nonnegative().optional(),
   priceMax: z.coerce.number().nonnegative().optional(),
+  // Inclusive createdAt date range. Coerce from YYYY-MM-DD strings the web
+  // <input type="date"> emits — z.coerce.date() handles both ISO and date-only.
+  createdFrom: z.coerce.date().optional(),
+  createdTo: z.coerce.date().optional(),
+  // Sort dimension + direction. The default (articleId desc) matches
+  // existing behaviour so callers that don't opt in see no change.
+  sort: z
+    .enum(["articleId", "articleNom", "purchasePrice", "createdAt"])
+    .optional(),
+  dir: z.enum(["asc", "desc"]).optional(),
   page: z.coerce.number().int().positive().optional(),
   limit: z.coerce.number().int().positive().max(200).optional(),
 });
@@ -70,6 +80,10 @@ router.get(
       warrantyStatus: q.warrantyStatus,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
+      createdFrom: q.createdFrom,
+      createdTo: q.createdTo,
+      sort: q.sort,
+      dir: q.dir,
       page: q.page,
       limit: q.limit,
     });

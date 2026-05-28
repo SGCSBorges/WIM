@@ -156,6 +156,37 @@ suite("API integration (real Postgres)", () => {
     );
   });
 
+  it("sorts the article list by name when sort=articleNom is requested", async () => {
+    const agent = await register("dave@example.com");
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Workshop" });
+    for (const [nom, modele] of [
+      ["Zeta", "Z1"],
+      ["Alpha", "A1"],
+      ["Mu", "M1"],
+    ]) {
+      await agent
+        .post("/api/articles")
+        .set("Origin", ORIGIN)
+        .send({
+          articleNom: nom,
+          articleModele: modele,
+          locationIds: [loc.body.locationId],
+        });
+    }
+
+    const asc = await agent.get("/api/articles?sort=articleNom&dir=asc");
+    expect(asc.body.items.map((a: { articleNom: string }) => a.articleNom)).toEqual(
+      ["Alpha", "Mu", "Zeta"]
+    );
+    const desc = await agent.get("/api/articles?sort=articleNom&dir=desc");
+    expect(
+      desc.body.items.map((a: { articleNom: string }) => a.articleNom)
+    ).toEqual(["Zeta", "Mu", "Alpha"]);
+  });
+
   it("rejects unauthenticated access to a protected route", async () => {
     const res = await request(app).get("/api/articles");
     expect(res.status).toBe(401);
