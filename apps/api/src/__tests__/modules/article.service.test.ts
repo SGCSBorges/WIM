@@ -11,6 +11,7 @@ vi.mock("../../libs/prisma", () => ({
     },
     attachment: {
       findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
     },
     location: {
       count: vi.fn(),

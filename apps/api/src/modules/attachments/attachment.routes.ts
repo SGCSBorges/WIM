@@ -18,6 +18,7 @@ import { idParam, paginationQuery } from "../common/schemas";
 import { logger } from "../../config/logger";
 import { verifyFileSignature } from "../../utils/file-signature";
 import { makeImageThumbnail, thumbnailName } from "./attachment.thumbnail";
+import { unlinkAttachmentFiles } from "./attachment.fs";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
 const router = Router();
@@ -273,24 +274,7 @@ router.delete(
       return res.status(404).json({ error: "Attachment not found" });
 
     if (removeFile) {
-      for (const fileUrl of [attachment.fileUrl, attachment.thumbUrl]) {
-        if (!fileUrl) continue;
-        try {
-          const url = new URL(fileUrl);
-          const pathname = decodeURIComponent(url.pathname);
-          if (pathname.startsWith("/uploads/")) {
-            const storedName = pathname.replace("/uploads/", "");
-            const fullPath = path.resolve(UPLOAD_DIR, storedName);
-            // Guard against path traversal: ensure fullPath stays inside UPLOAD_DIR.
-            if (!fullPath.startsWith(UPLOAD_DIR + path.sep)) {
-              throw new Error("Invalid file path");
-            }
-            await fs.promises.unlink(fullPath);
-          }
-        } catch {
-          // ignore parse/unlink errors (file may already be gone)
-        }
-      }
+      await unlinkAttachmentFiles(attachment);
     }
 
     await AttachmentService.remove(id, req.user!.sub);

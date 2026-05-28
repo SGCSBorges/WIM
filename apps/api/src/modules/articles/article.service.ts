@@ -4,6 +4,7 @@ import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";
 import { addMonths } from "../common/date";
 import { createHttpError } from "../../utils/http-error";
 import { AlertService } from "../alerts/alert.service";
+import { unlinkAttachmentFiles } from "../attachments/attachment.fs";
 
 // Reject a create/update that references location rows the caller does not own.
 // A single round trip: count owned rows in the requested set and compare. Any
@@ -442,6 +443,23 @@ export const ArticleService = {
       });
     }
 
+    // Unlink attachment files on disk before the DB cascade drops the rows —
+    // covers both article-linked attachments and warranty-linked proofs so
+    // /uploads doesn't accumulate orphans. Best-effort: a missing/unreadable
+    // file is logged in the helper and doesn't block the delete.
+    const garantieIds = existing.garantie ? [existing.garantie.garantieId] : [];
+    const attachments = await prisma.attachment.findMany({
+      where: {
+        ownerUserId,
+        OR: [
+          { articleId: id },
+          ...(garantieIds.length ? [{ garantieId: { in: garantieIds } }] : []),
+        ],
+      },
+      select: { fileUrl: true, thumbUrl: true },
+    });
+    for (const a of attachments) await unlinkAttachmentFiles(a);
+
     return prisma.article.delete({ where: { articleId: id } });
   },
 
@@ -473,6 +491,25 @@ export const ArticleService = {
         });
       }
     }
+
+    // Same orphan-file cleanup as the single-article remove.
+    const ownedArticleIds = owned.map((a) => a.articleId);
+    const ownedGarantieIds = owned
+      .map((a) => a.garantie?.garantieId)
+      .filter((g): g is number => typeof g === "number");
+    const attachments = await prisma.attachment.findMany({
+      where: {
+        ownerUserId,
+        OR: [
+          { articleId: { in: ownedArticleIds } },
+          ...(ownedGarantieIds.length
+            ? [{ garantieId: { in: ownedGarantieIds } }]
+            : []),
+        ],
+      },
+      select: { fileUrl: true, thumbUrl: true },
+    });
+    for (const a of attachments) await unlinkAttachmentFiles(a);
 
     const result = await prisma.article.deleteMany({
       where: {
