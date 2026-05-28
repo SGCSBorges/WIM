@@ -7,6 +7,11 @@ import { ALERT_QUEUE_NAME } from "./queues";
 
 let workerSingleton: Worker<AlertJobPayload> | null = null;
 
+/** Returns the singleton alert worker (null when JOBS_ENABLED=false). */
+export function getAlertWorker(): Worker<AlertJobPayload> | null {
+  return workerSingleton;
+}
+
 export function startWorkers() {
   if (workerSingleton) return;
 

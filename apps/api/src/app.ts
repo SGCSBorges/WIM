@@ -31,6 +31,7 @@ import path from "path";
 import fs from "fs";
 import { startWorkersOnce } from "./config/jobs";
 import { prisma } from "./libs/prisma";
+import { runHealthChecks } from "./health";
 import { authGuard, AuthRequest } from "./modules/auth/auth.middleware";
 
 export function createApp() {
@@ -77,12 +78,8 @@ export function createApp() {
   );
 
   app.get("/health", async (_req, res) => {
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      res.json({ status: "ok" });
-    } catch {
-      res.status(503).json({ status: "error", reason: "database unavailable" });
-    }
+    const report = await runHealthChecks();
+    res.status(report.status === "error" ? 503 : 200).json(report);
   });
 
   // Friendly root — most people who hit https://wimapi.../ in a browser are

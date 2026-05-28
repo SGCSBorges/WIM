@@ -166,6 +166,13 @@ suite("API integration (real Postgres)", () => {
     expect(res.headers["x-request-id"]).toMatch(/.+/);
   });
 
+  it("reports each dependency on /health (db up, redis skipped in test env)", async () => {
+    const res = await request(app).get("/health");
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ status: expect.any(String), db: "ok" });
+    expect(["ok", "fail", "skipped"]).toContain(res.body.redis);
+  });
+
   it("enables a calendar feed and serves it by token without a cookie", async () => {
     const agent = await register("carol@example.com");
     const enable = await agent.post("/api/calendar/token").set("Origin", ORIGIN);
