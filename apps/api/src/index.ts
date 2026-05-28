@@ -2,7 +2,7 @@ import "dotenv/config";
 import { validateEnv } from "./utils/validate-env";
 import { createApp } from "./app";
 import { logger } from "./config/logger";
-import { getAlertWorker } from "./jobs/workers";
+import { getAlertWorker, getMaintenanceWorker } from "./jobs/workers";
 import { getRedis } from "./libs/redis";
 import { prisma } from "./libs/prisma";
 import { installSignalHandlers } from "./utils/shutdown";
@@ -22,6 +22,7 @@ const server = app.listen(port, () =>
 installSignalHandlers({
   server,
   worker: getAlertWorker(),
+  extraWorkers: [getMaintenanceWorker()],
   redisQuit: async () => {
     const r = getRedis();
     if (r) await r.quit();

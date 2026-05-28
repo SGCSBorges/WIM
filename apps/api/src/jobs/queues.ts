@@ -25,3 +25,27 @@ export const alertQueue = new Queue<AlertJobPayload>(ALERT_QUEUE_NAME, {
   connection: createRedisConnection(),
   defaultJobOptions: ALERT_QUEUE_DEFAULTS,
 });
+
+// Housekeeping queue: long-running periodic jobs (audit retention pruning
+// today, more to come). Separate from the alert queue so latency-sensitive
+// reminder delivery never queues behind a sweep.
+export const MAINTENANCE_QUEUE_NAME = "wim-maintenance";
+
+export type MaintenanceJobPayload = {
+  type: "audit_prune";
+  retentionDays: number;
+};
+
+export const maintenanceQueue = new Queue<MaintenanceJobPayload>(
+  MAINTENANCE_QUEUE_NAME,
+  {
+    connection: createRedisConnection(),
+    defaultJobOptions: {
+      attempts: 1,
+      // Keep the last successful sweep for visibility, drop older ones; keep
+      // failed ones a week so an operator can see why a run blew up.
+      removeOnComplete: { count: 5 },
+      removeOnFail: { age: 60 * 60 * 24 * 7 },
+    },
+  }
+);

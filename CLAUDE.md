@@ -46,6 +46,11 @@ loads into every new Claude Code session.
     SDK dependency — a plain `fetch`), respecting each user's
     `User.emailReminders` opt-out (Profile toggle). Unset = no-op + log,
     exactly like `PushService`.
+  - API (optional, Audit retention): `AUDIT_RETENTION_DAYS` (default 90;
+    `0` disables the schedule). Once a day at 03:00 UTC the maintenance
+    worker deletes AuditLog rows older than the window via the
+    `wim-maintenance` BullMQ queue. The one-shot script under
+    `src/scripts/prune-audit-log.ts` still works for manual runs.
   - Web: `VITE_API_BASE_URL=https://wimapi.onrender.com/api`.
 - Render free-tier Postgres expires after ~30 days and the API container
   cold-starts in ~30 s. The fetch timeout in `apps/web/src/services/api.ts`

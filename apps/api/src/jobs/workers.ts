@@ -3,13 +3,69 @@ import { createRedisConnection } from "./redis";
 import { AlertJobPayload } from "../modules/alerts/alert.types";
 // Using dynamic import avoids TS module-resolution edge cases in some workspace configs.
 import { logger } from "../config/logger";
-import { ALERT_QUEUE_NAME } from "./queues";
+import {
+  ALERT_QUEUE_NAME,
+  MAINTENANCE_QUEUE_NAME,
+  MaintenanceJobPayload,
+  maintenanceQueue,
+} from "./queues";
 
 let workerSingleton: Worker<AlertJobPayload> | null = null;
+let maintenanceWorkerSingleton: Worker<MaintenanceJobPayload> | null = null;
 
 /** Returns the singleton alert worker (null when JOBS_ENABLED=false). */
 export function getAlertWorker(): Worker<AlertJobPayload> | null {
   return workerSingleton;
+}
+
+/** Returns the singleton maintenance worker, or null. */
+export function getMaintenanceWorker(): Worker<MaintenanceJobPayload> | null {
+  return maintenanceWorkerSingleton;
+}
+
+// Daily audit-log prune is the only maintenance job today. Read the retention
+// window from env: 0 (or invalid/missing) disables the schedule entirely so
+// an operator can opt out without code changes.
+const AUDIT_PRUNE_REPEAT_KEY = "audit-prune-daily";
+function auditRetentionDays(): number {
+  const raw = process.env.AUDIT_RETENTION_DAYS;
+  if (raw === undefined) return 90;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return 90;
+  return n;
+}
+
+async function scheduleMaintenance() {
+  const retentionDays = auditRetentionDays();
+  if (retentionDays === 0) {
+    logger.info("[maintenance] AUDIT_RETENTION_DAYS=0 → audit prune disabled");
+    return;
+  }
+  // Re-register on every boot so a retention-days change picks up cleanly.
+  // BullMQ keys repeatables by (name, cron, jobId) — drop the old one first.
+  try {
+    const existing = await maintenanceQueue.getRepeatableJobs();
+    for (const r of existing) {
+      if (r.id === AUDIT_PRUNE_REPEAT_KEY) {
+        await maintenanceQueue.removeRepeatableByKey(r.key);
+      }
+    }
+    await maintenanceQueue.add(
+      "audit_prune",
+      { type: "audit_prune", retentionDays },
+      {
+        jobId: AUDIT_PRUNE_REPEAT_KEY,
+        repeat: { pattern: "0 3 * * *", tz: "UTC" },
+      }
+    );
+    logger.info(
+      { retentionDays, cron: "0 3 * * *" },
+      "[maintenance] audit prune scheduled"
+    );
+  } catch (err) {
+    // Redis unavailable in dev — log and move on; reminders + API still work.
+    logger.warn({ err }, "[maintenance] could not schedule audit prune");
+  }
 }
 
 export function startWorkers() {
@@ -42,4 +98,28 @@ export function startWorkers() {
   worker.on("failed", (job, err) => {
     logger.error({ jobId: job?.id, err }, "[alerts] job failed");
   });
+
+  // Maintenance worker + schedule. Dynamic import keeps the worker's
+  // processor (which pulls in Prisma) out of the API hot path.
+  const maintenance = new Worker<MaintenanceJobPayload>(
+    MAINTENANCE_QUEUE_NAME,
+    async (job) => {
+      const mod =
+        (await import("./processors/maintenance.processor")) as typeof import("./processors/maintenance.processor");
+      await mod.MaintenanceProcessor.handle(job);
+    },
+    { connection: createRedisConnection() }
+  );
+  maintenanceWorkerSingleton = maintenance;
+  maintenance.on("ready", () =>
+    logger.info({ queue: MAINTENANCE_QUEUE_NAME }, "[maintenance] worker ready")
+  );
+  maintenance.on("error", (err) =>
+    logger.error({ err }, "[maintenance] worker error")
+  );
+  maintenance.on("failed", (job, err) =>
+    logger.error({ jobId: job?.id, err }, "[maintenance] job failed")
+  );
+
+  void scheduleMaintenance();
 }

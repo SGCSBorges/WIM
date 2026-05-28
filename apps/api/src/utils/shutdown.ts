@@ -10,6 +10,8 @@ const PRISMA_DISCONNECT_MS = 3_000;
 export interface ShutdownDeps {
   server?: Server | null;
   worker?: Worker | null;
+  // Additional workers (e.g. the maintenance queue) drained after `worker`.
+  extraWorkers?: Array<Worker | null>;
   redisQuit?: () => Promise<unknown>;
   prismaDisconnect?: () => Promise<unknown>;
 }
@@ -62,6 +64,15 @@ export async function gracefulShutdown(deps: ShutdownDeps): Promise<void> {
       () => deps.worker!.close(),
       WORKER_DRAIN_MS,
       "worker.close"
+    );
+  }
+
+  for (const extra of deps.extraWorkers ?? []) {
+    if (!extra) continue;
+    await withTimeout(
+      () => extra.close(),
+      WORKER_DRAIN_MS,
+      "extraWorker.close"
     );
   }
 
