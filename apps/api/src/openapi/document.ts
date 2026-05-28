@@ -1,16 +1,14 @@
 /**
  * OpenAPI document for the WIM API.
  *
- * The document is generated from the Zod schemas already used at runtime
- * for request validation, so endpoint shapes can't drift from what the
- * server actually accepts. To document a new endpoint:
+ * Hand-built from the Zod schemas already used at runtime for request
+ * validation, so endpoint shapes can't drift from what the server
+ * actually accepts. To document a new endpoint, add an entry under
+ * `paths` below and reference its Zod input/output schemas inline.
  *
- *   1. Add an entry under `paths` below.
- *   2. Reference its Zod input/output schemas inline.
- *
- * What's covered today: the auth, articles, and locations modules. The
- * remaining modules can be filled in incrementally — anything missing here
- * still works at runtime, it just isn't in the spec yet.
+ * Auth, articles, locations, warranties, alerts, attachments, notes,
+ * shares, tags, saved-views, calendar, push, billing, profile, admin,
+ * statistics, and the meta endpoints are all listed below.
  */
 
 import { z } from "zod";
@@ -282,13 +280,808 @@ export function buildOpenApiDocument() {
         },
       },
 
+      "/api/warranties": {
+        get: {
+          tags: ["warranties"],
+          summary: "List the caller's warranties.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Paginated list" } },
+        },
+        post: {
+          tags: ["warranties"],
+          summary: "Create a warranty (linked to an article).",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/warranties/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["warranties"],
+          summary: "Get one warranty.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "OK" },
+            "404": { description: "Not found" },
+          },
+        },
+        put: {
+          tags: ["warranties"],
+          summary: "Update a warranty.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+        delete: {
+          tags: ["warranties"],
+          summary: "Delete a warranty.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+      "/api/warranties/{id}/claim": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        patch: {
+          tags: ["warranties"],
+          summary: "Update the warranty claim workflow (status + note).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+
+      "/api/alerts": {
+        get: {
+          tags: ["alerts"],
+          summary: "List the caller's alerts, optionally filtered by status.",
+          security: [cookieAuth],
+          parameters: [
+            {
+              name: "status",
+              in: "query",
+              required: false,
+              schema: {
+                type: "string",
+                enum: ["SCHEDULED", "SENT", "CANCELLED", "FAILED"],
+              },
+            },
+          ],
+          responses: { "200": { description: "Paginated list" } },
+        },
+        post: {
+          tags: ["alerts"],
+          summary: "Create a one-shot or recurring custom alert.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/alerts/{id}/snooze": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["alerts"],
+          summary: "Snooze a SCHEDULED alert by N days.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Snoozed" } },
+        },
+      },
+      "/api/alerts/{id}/cancel": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["alerts"],
+          summary: "Cancel an alert.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Cancelled" } },
+        },
+      },
+
+      "/api/attachments": {
+        get: {
+          tags: ["attachments"],
+          summary: "List the caller's attachments.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Paginated list" } },
+        },
+        post: {
+          tags: ["attachments"],
+          summary: "Create an attachment metadata record.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/attachments/upload": {
+        post: {
+          tags: ["attachments"],
+          summary:
+            "Upload a file (multipart). Generates a WebP thumbnail for images.",
+          security: [cookieAuth],
+          requestBody: {
+            content: {
+              "multipart/form-data": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    file: { type: "string", format: "binary" },
+                    type: {
+                      type: "string",
+                      enum: ["INVOICE", "WARRANTY", "OTHER"],
+                    },
+                    articleId: { type: "integer", minimum: 1 },
+                  },
+                  required: ["file"],
+                },
+              },
+            },
+            required: true,
+          },
+          responses: {
+            "201": { description: "Uploaded" },
+            "415": { description: "Unsupported file type" },
+          },
+        },
+      },
+      "/api/attachments/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["attachments"],
+          summary: "Get one attachment.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        put: {
+          tags: ["attachments"],
+          summary: "Update attachment metadata.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+        delete: {
+          tags: ["attachments"],
+          summary:
+            "Delete an attachment record (and the file when removeFile=true).",
+          security: [cookieAuth],
+          parameters: [
+            {
+              name: "removeFile",
+              in: "query",
+              required: false,
+              schema: { type: "boolean", default: false },
+            },
+          ],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+
+      "/api/articles/{id}/notes": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["notes"],
+          summary: "List the article's notes.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        post: {
+          tags: ["notes"],
+          summary: "Add a note (with optional kind).",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/articles/{id}/notes/{noteId}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+          {
+            name: "noteId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        patch: {
+          tags: ["notes"],
+          summary: "Update a note's content and/or kind.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+        delete: {
+          tags: ["notes"],
+          summary: "Delete a note.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+
+      "/api/tags": {
+        get: {
+          tags: ["tags"],
+          summary: "List the caller's tags.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        post: {
+          tags: ["tags"],
+          summary: "Create a tag.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/tags/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["tags"],
+          summary: "Delete a tag.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+
+      "/api/saved-views": {
+        get: {
+          tags: ["saved-views"],
+          summary: "List saved Articles filter presets.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        post: {
+          tags: ["saved-views"],
+          summary: "Save the current filter querystring under a name.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/saved-views/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["saved-views"],
+          summary: "Delete a saved view.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+
+      "/api/shares/invites": {
+        post: {
+          tags: ["shares"],
+          summary: "Mint a share invite for a POWER_USER recipient.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/shares/invites/accept": {
+        post: {
+          tags: ["shares"],
+          summary: "Accept a share invite token.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Accepted" } },
+        },
+      },
+      "/api/shares/invites/sent": {
+        get: {
+          tags: ["shares"],
+          summary: "List invites the caller has sent.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/shares/owned": {
+        get: {
+          tags: ["shares"],
+          summary: "List active InventoryShares the caller owns.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/shares/{targetUserId}": {
+        parameters: [
+          {
+            name: "targetUserId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["shares"],
+          summary: "Revoke a per-user inventory share.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Revoked" } },
+        },
+      },
+      "/api/shared/articles": {
+        get: {
+          tags: ["shares"],
+          summary: "List articles shared with the caller (per-user + public).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/shared/articles/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        put: {
+          tags: ["shares"],
+          summary: "Edit a shared article (WRITE permission only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+
+      "/api/articles/{id}/share": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["articles"],
+          summary: "Toggle the public share flag on an article.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+        delete: {
+          tags: ["articles"],
+          summary: "Unshare an article publicly.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Unshared" } },
+        },
+      },
+      "/api/articles/{id}/shares": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["articles"],
+          summary: "Read the share state for one article.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/articles/bulk-delete": {
+        post: {
+          tags: ["articles"],
+          summary: "Delete multiple articles owned by the caller.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Deleted" } },
+        },
+      },
+      "/api/articles/bulk-share": {
+        post: {
+          tags: ["articles"],
+          summary: "Bulk toggle the public share flag.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+      "/api/articles/bulk-assign": {
+        post: {
+          tags: ["articles"],
+          summary: "Bulk add locations and/or tags to articles.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+      "/api/articles/import": {
+        post: {
+          tags: ["articles"],
+          summary:
+            "Import articles from parsed CSV rows; ?dryRun=1 validates without writing.",
+          security: [cookieAuth],
+          parameters: [
+            {
+              name: "dryRun",
+              in: "query",
+              required: false,
+              schema: { type: "boolean", default: false },
+            },
+          ],
+          responses: { "200": { description: "Per-row report" } },
+        },
+      },
+      "/api/articles/export/inventory.pdf": {
+        get: {
+          tags: ["articles"],
+          summary: "Stream the full-inventory manifest PDF.",
+          security: [cookieAuth],
+          responses: { "200": { description: "PDF" } },
+        },
+      },
+      "/api/articles/export/labels.pdf": {
+        get: {
+          tags: ["articles"],
+          summary: "Stream a printable QR-label sheet (one per article).",
+          security: [cookieAuth],
+          responses: { "200": { description: "PDF" } },
+        },
+      },
+      "/api/articles/{id}/claim.pdf": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["articles"],
+          summary: "Stream the single-article insurance/claim PDF.",
+          security: [cookieAuth],
+          responses: { "200": { description: "PDF" } },
+        },
+      },
+
+      "/api/calendar/token": {
+        post: {
+          tags: ["calendar"],
+          summary: "Mint (or rotate) the read-only iCalendar feed token.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Token issued" } },
+        },
+        delete: {
+          tags: ["calendar"],
+          summary: "Disable the feed (revokes the token).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Disabled" } },
+        },
+      },
+      "/api/calendar/feed/{token}.ics": {
+        parameters: [
+          {
+            name: "token",
+            in: "path",
+            required: true,
+            schema: { type: "string", pattern: "^[a-f0-9]{64}$" },
+          },
+        ],
+        get: {
+          tags: ["calendar"],
+          summary:
+            "Serve the user's calendar (no auth cookie required — token is the capability).",
+          responses: { "200": { description: "text/calendar" } },
+        },
+      },
+
+      "/api/push/public-key": {
+        get: {
+          tags: ["push"],
+          summary:
+            "Return the VAPID public key, or 404 when push isn't configured.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "Key" },
+            "404": { description: "Not configured" },
+          },
+        },
+      },
+      "/api/push/subscribe": {
+        post: {
+          tags: ["push"],
+          summary: "Register a browser push subscription.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Subscribed" } },
+        },
+      },
+      "/api/push/unsubscribe": {
+        post: {
+          tags: ["push"],
+          summary: "Drop a push subscription by endpoint.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Unsubscribed" } },
+        },
+      },
+
+      "/api/billing/upgrade/power-user/checkout": {
+        post: {
+          tags: ["billing"],
+          summary: "Create a Stripe Checkout session for the POWER_USER plan.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Redirect URL" } },
+        },
+      },
+      "/api/billing/portal": {
+        post: {
+          tags: ["billing"],
+          summary: "Open a Stripe Customer Portal session.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Portal URL" } },
+        },
+      },
+      "/api/billing/cancel/power-user": {
+        post: {
+          tags: ["billing"],
+          summary: "Cancel the subscription at period end.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Scheduled" } },
+        },
+      },
+      "/api/billing/me": {
+        get: {
+          tags: ["billing"],
+          summary: "Live-from-Stripe subscription + role lookup.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/billing/sync": {
+        post: {
+          tags: ["billing"],
+          summary:
+            "Force-resync subscription state from Stripe (post-checkout fallback).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Synced" } },
+        },
+      },
+      "/api/billing/webhook": {
+        post: {
+          tags: ["billing"],
+          summary: "Stripe webhook (signature-verified).",
+          responses: { "200": { description: "Received" } },
+        },
+      },
+
+      "/api/profile/me": {
+        get: {
+          tags: ["profile"],
+          summary: "Return the caller's profile.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        delete: {
+          tags: ["profile"],
+          summary: "Delete the caller's account (requires currentPassword).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+      "/api/profile/me/email": {
+        put: {
+          tags: ["profile"],
+          summary: "Change the caller's email address.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+      "/api/profile/me/password": {
+        put: {
+          tags: ["profile"],
+          summary: "Change the caller's password (bumps tokenVersion).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+      "/api/profile/me/currency": {
+        put: {
+          tags: ["profile"],
+          summary: "Set the caller's display currency (ISO 4217).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+      "/api/profile/me/email-reminders": {
+        put: {
+          tags: ["profile"],
+          summary: "Toggle the caller's email-reminders opt-out.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+
+      "/api/statistics/dashboard": {
+        get: {
+          tags: ["statistics"],
+          summary: "Aggregate dashboard statistics for the caller.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/statistics/basic": {
+        get: {
+          tags: ["statistics"],
+          summary: "Lightweight counts (articles / warranties / alerts).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/statistics/admin": {
+        get: {
+          tags: ["statistics"],
+          summary: "Global statistics across every user (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+
+      "/api/admin/users": {
+        get: {
+          tags: ["admin"],
+          summary: "List every user (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        post: {
+          tags: ["admin"],
+          summary: "Create a user (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/admin/users/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        patch: {
+          tags: ["admin"],
+          summary: "Update a user's role or email (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+        delete: {
+          tags: ["admin"],
+          summary: "Delete a user (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+      "/api/admin/users/{id}/reset-password": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["admin"],
+          summary: "Set a user's password (ADMIN only). Bumps tokenVersion.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Reset" } },
+        },
+      },
+      "/api/admin/users/{id}/force-logout": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["admin"],
+          summary:
+            "Bump a user's tokenVersion (invalidates every active session).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Done" } },
+        },
+      },
+      "/api/admin/users/{id}/inventory": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["admin"],
+          summary: "Read another user's inventory (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/admin/audit-log": {
+        get: {
+          tags: ["admin"],
+          summary: "Cursor-paginated audit log (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/admin/db/export": {
+        get: {
+          tags: ["admin"],
+          summary: "Dump every table as one JSON file (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "JSON dump" } },
+        },
+      },
+      "/api/admin/db/import": {
+        post: {
+          tags: ["admin"],
+          summary:
+            "Replace every table from a JSON dump (ADMIN only — destructive).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Imported" } },
+        },
+      },
+
       "/health": {
         get: {
           tags: ["meta"],
-          summary: "Liveness probe — verifies database connectivity.",
+          summary: "Readiness probe — reports db + redis + queue depth.",
           responses: {
-            "200": { description: "OK" },
-            "503": { description: "Database unavailable" },
+            "200": {
+              description: "OK or degraded (db up, redis/queue may fail)",
+            },
+            "503": { description: "Database unreachable" },
           },
         },
       },
