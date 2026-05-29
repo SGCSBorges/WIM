@@ -17,11 +17,13 @@ export default defineConfig({
       ],
       // Ratchet baseline: thresholds sit just below current coverage so they
       // guard against regressions without failing today. Raise as we add tests.
+      // Round-9 lift — current (statements/branches/functions/lines):
+      // 44.87 / 76.11 / 64.70 / 44.87.
       thresholds: {
-        statements: 31,
-        branches: 72,
-        functions: 58,
-        lines: 31,
+        statements: 40,
+        branches: 75,
+        functions: 62,
+        lines: 40,
       },
     },
   },

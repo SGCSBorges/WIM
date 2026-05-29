@@ -23,11 +23,13 @@ export default defineConfig({
         "src/vite-env.d.ts",
       ],
       // Ratchet baseline (see apps/api/vitest.config.ts) — just below current.
+      // Round-9 lift — current (statements/branches/functions/lines):
+      // 44.6 / 63.63 / 29.06 / 44.6.
       thresholds: {
-        statements: 38,
-        branches: 55,
-        functions: 25,
-        lines: 38,
+        statements: 42,
+        branches: 60,
+        functions: 28,
+        lines: 42,
       },
     },
   },
