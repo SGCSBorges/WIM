@@ -1,7 +1,26 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError, ZodIssue } from "zod";
 import { Prisma } from "@prisma/client";
+import { MulterError } from "multer";
 import { logger } from "../config/logger";
+
+const FRIENDLY_FIELD: Record<string, string> = {
+  email: "Email already registered",
+  stripeCustomerId: "Stripe customer already linked",
+  stripeSubscriptionId: "Stripe subscription already linked",
+  tokenHash: "Reset token already used",
+  calendarToken: "Calendar token already issued",
+};
+
+function p2002Message(target: unknown): string {
+  if (Array.isArray(target) && target.length > 0) {
+    const field = String(target[0]);
+    return (
+      FRIENDLY_FIELD[field] ?? `A record with this ${field} already exists`
+    );
+  }
+  return "A record with this value already exists";
+}
 
 export function errorHandler(
   err: unknown,
@@ -11,16 +30,19 @@ export function errorHandler(
 ) {
   // Set by pino-http's genReqId; ties a client-visible error to its server log.
   const requestId = res.getHeader("X-Request-Id");
-  // Validation Zod
+  const isProd = process.env.NODE_ENV === "production";
+
   if (err instanceof ZodError) {
     const msg = err.issues[0]?.message ?? "Validation error";
+    // In production, surface only the path + code (no internal messages or
+    // expected/received hints, which can leak schema shape).
     return res.status(400).json({
       error: msg,
-      issues: err.issues.map((e: ZodIssue) => ({
-        path: e.path,
-        message: e.message,
-        code: e.code,
-      })),
+      issues: err.issues.map((e: ZodIssue) =>
+        isProd
+          ? { path: e.path, code: e.code }
+          : { path: e.path, message: e.message, code: e.code }
+      ),
     });
   }
 
@@ -30,14 +52,24 @@ export function errorHandler(
     return res.status(e.status).json({ error: e.message });
   }
 
-  // Prisma constraint errors that slip past application-level checks (e.g. a
-  // unique insert losing a race). The column name is intentionally omitted to
-  // avoid leaking schema details / enabling enumeration.
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    if (err.code === "P2002")
+  // Multer file-upload errors → proper HTTP status (413 for oversized).
+  if (err instanceof MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
       return res
-        .status(409)
-        .json({ error: "A record with this value already exists" });
+        .status(413)
+        .json({ error: "File is too large for this endpoint" });
+    }
+    return res.status(400).json({ error: err.message });
+  }
+
+  // Prisma unique-constraint errors that slip past application-level checks.
+  // Include the offending field via meta.target so the client can map back to
+  // the form input (the meta is well-known, not user input).
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2002") {
+      const target = (err.meta as { target?: unknown } | undefined)?.target;
+      return res.status(409).json({ error: p2002Message(target) });
+    }
     if (err.code === "P2025")
       return res.status(404).json({ error: "Record not found" });
   }
