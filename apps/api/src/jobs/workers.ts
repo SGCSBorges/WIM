@@ -28,6 +28,14 @@ export function getMaintenanceWorker(): Worker<MaintenanceJobPayload> | null {
 // an operator can opt out without code changes.
 const AUDIT_PRUNE_REPEAT_KEY = "audit-prune-daily";
 const TRASH_PURGE_REPEAT_KEY = "article-trash-purge-daily";
+const WARRANTY_DIGEST_REPEAT_KEY = "warranty-digest-weekly";
+
+function warrantyDigestEnabled(): boolean {
+  return (
+    String(process.env.WARRANTY_DIGEST_ENABLED ?? "true").toLowerCase() !==
+    "false"
+  );
+}
 
 function auditRetentionDays(): number {
   const raw = process.env.AUDIT_RETENTION_DAYS;
@@ -51,7 +59,11 @@ async function scheduleMaintenance() {
   try {
     const existing = await maintenanceQueue.getRepeatableJobs();
     for (const r of existing) {
-      if (r.id === AUDIT_PRUNE_REPEAT_KEY || r.id === TRASH_PURGE_REPEAT_KEY) {
+      if (
+        r.id === AUDIT_PRUNE_REPEAT_KEY ||
+        r.id === TRASH_PURGE_REPEAT_KEY ||
+        r.id === WARRANTY_DIGEST_REPEAT_KEY
+      ) {
         await maintenanceQueue.removeRepeatableByKey(r.key);
       }
     }
@@ -89,6 +101,26 @@ async function scheduleMaintenance() {
       logger.info(
         { retentionDays: trashDays, cron: "30 3 * * *" },
         "[maintenance] article trash purge scheduled"
+      );
+    }
+    if (!warrantyDigestEnabled()) {
+      logger.info(
+        "[maintenance] WARRANTY_DIGEST_ENABLED=false → weekly digest disabled"
+      );
+    } else {
+      await maintenanceQueue.add(
+        "warranty_digest_weekly",
+        { type: "warranty_digest_weekly" },
+        {
+          jobId: WARRANTY_DIGEST_REPEAT_KEY,
+          // Mondays 09:00 UTC — early-week reminder cadence that aligns with
+          // most users' planning window.
+          repeat: { pattern: "0 9 * * 1", tz: "UTC" },
+        }
+      );
+      logger.info(
+        { cron: "0 9 * * 1" },
+        "[maintenance] warranty digest weekly scheduled"
       );
     }
   } catch (err) {

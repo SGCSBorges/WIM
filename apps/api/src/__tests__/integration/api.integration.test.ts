@@ -472,6 +472,28 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("toggles the weekly-digest opt-in on the profile endpoint", async () => {
+    const agent = await register("digest@example.com");
+
+    // Default is false on a freshly registered user.
+    const meBefore = await agent.get("/api/auth/me");
+    expect(meBefore.status).toBe(200);
+
+    const on = await agent
+      .put("/api/profile/me/weekly-digest")
+      .set("Origin", ORIGIN)
+      .send({ enabled: true });
+    expect(on.status).toBe(200);
+    expect(on.body.weeklyDigest).toBe(true);
+
+    const off = await agent
+      .put("/api/profile/me/weekly-digest")
+      .set("Origin", ORIGIN)
+      .send({ enabled: false });
+    expect(off.status).toBe(200);
+    expect(off.body.weeklyDigest).toBe(false);
+  });
+
   it("duplicates an article keeping locations + tags, dropping warranty/attachments", async () => {
     const agent = await register("dup@example.com");
     const loc = await agent

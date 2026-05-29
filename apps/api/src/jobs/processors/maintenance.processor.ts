@@ -2,6 +2,7 @@ import type { Job } from "bullmq";
 import { logger } from "../../config/logger";
 import { AuditService } from "../../modules/audit/audit.service";
 import { ArticleService } from "../../modules/articles/article.service";
+import { WarrantyDigestService } from "../../modules/warranties/warranty.digest.service";
 import type { MaintenanceJobPayload } from "../queues";
 
 export const MaintenanceProcessor = {
@@ -22,6 +23,16 @@ export const MaintenanceProcessor = {
       logger.info(
         { deleted, elapsedMs: Date.now() - t0, retentionDays },
         "[maintenance] audit prune done"
+      );
+      return;
+    }
+    if (data.type === "warranty_digest_weekly") {
+      logger.info("[maintenance] warranty digest weekly starting");
+      const t0 = Date.now();
+      const counts = await WarrantyDigestService.sendWeeklyDigests();
+      logger.info(
+        { ...counts, elapsedMs: Date.now() - t0 },
+        "[maintenance] warranty digest weekly done"
       );
       return;
     }

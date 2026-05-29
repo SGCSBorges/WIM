@@ -47,6 +47,7 @@ export const ProfileService = {
         role: true,
         currency: true,
         emailReminders: true,
+        weeklyDigest: true,
       },
     });
   },
@@ -69,6 +70,22 @@ export const ProfileService = {
         role: true,
         currency: true,
         emailReminders: true,
+        weeklyDigest: true,
+      },
+    });
+  },
+
+  async updateWeeklyDigest(userId: number, enabled: boolean) {
+    return prisma.user.update({
+      where: { userId },
+      data: { weeklyDigest: enabled },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        currency: true,
+        emailReminders: true,
+        weeklyDigest: true,
       },
     });
   },

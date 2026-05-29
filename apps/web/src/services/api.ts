@@ -1086,6 +1086,22 @@ export const profileAPI = {
     return response.json();
   },
 
+  async updateWeeklyDigest(enabled: boolean) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/weekly-digest`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ enabled }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update weekly digest")
+      );
+    return response.json();
+  },
+
   async updateCurrency(currency: string) {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/profile/me/currency`,

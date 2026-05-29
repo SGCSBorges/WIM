@@ -35,3 +35,8 @@ export const UpdateEmailRemindersSchema = z.object({
 export type UpdateEmailRemindersInput = z.infer<
   typeof UpdateEmailRemindersSchema
 >;
+
+export const UpdateWeeklyDigestSchema = z.object({
+  enabled: z.boolean(),
+});
+export type UpdateWeeklyDigestInput = z.infer<typeof UpdateWeeklyDigestSchema>;

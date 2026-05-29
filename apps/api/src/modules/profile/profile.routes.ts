@@ -12,6 +12,7 @@ import {
   UpdateEmailRemindersSchema,
   UpdateEmailSchema,
   UpdatePasswordSchema,
+  UpdateWeeklyDigestSchema,
 } from "./profile.schemas";
 import { ProfileService } from "./profile.service";
 
@@ -88,6 +89,25 @@ router.put(
       entity: "User",
       entityId: req.user!.sub,
       metadata: { field: "emailReminders", enabled },
+    });
+    res.json(updated);
+  })
+);
+
+router.put(
+  "/me/weekly-digest",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { enabled } = UpdateWeeklyDigestSchema.parse(req.body);
+    const updated = await ProfileService.updateWeeklyDigest(
+      req.user!.sub,
+      enabled
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { field: "weeklyDigest", enabled },
     });
     res.json(updated);
   })

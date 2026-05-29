@@ -28,6 +28,7 @@ type Me = {
   role: string;
   currency?: string;
   emailReminders?: boolean;
+  weeklyDigest?: boolean;
 };
 
 // A small curated list keeps the selector usable; the API accepts any ISO code.
@@ -223,6 +224,18 @@ export default function ProfileView() {
         prev ? { ...prev, emailReminders: updated.emailReminders } : prev
       );
       showSuccess(t("emailReminders.success"));
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    }
+  };
+
+  const toggleWeeklyDigest = async (enabled: boolean) => {
+    try {
+      const updated = await profileAPI.updateWeeklyDigest(enabled);
+      setMe((prev) =>
+        prev ? { ...prev, weeklyDigest: updated.weeklyDigest } : prev
+      );
+      showSuccess(t("weeklyDigest.success"));
     } catch (e: unknown) {
       showFailure(getErrorMessage(e, t("common.errorOccurred")));
     }
@@ -531,6 +544,22 @@ export default function ProfileView() {
           />
           {t("emailReminders.toggle")}
         </label>
+        <div className="pt-2 border-t ui-divider">
+          <p className="text-sm font-medium ui-title mt-2">
+            {t("weeklyDigest.title")}
+          </p>
+          <p className="text-xs ui-text-muted mb-1">
+            {t("weeklyDigest.subtitle")}
+          </p>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={me?.weeklyDigest ?? false}
+              onChange={(e) => toggleWeeklyDigest(e.target.checked)}
+            />
+            {t("weeklyDigest.toggle")}
+          </label>
+        </div>
       </div>
 
       {me?.role === "POWER_USER" && (

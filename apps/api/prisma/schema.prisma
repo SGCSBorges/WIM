@@ -102,6 +102,10 @@ model User {
   // having a subscription). Defaults on; the Profile page can disable it.
   emailReminders Boolean @default(true)
 
+  // Opt-in weekly digest of warranties expiring in the next 30 days. Default
+  // off so existing users stay quiet until they choose to subscribe.
+  weeklyDigest   Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

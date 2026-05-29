@@ -33,7 +33,8 @@ export const MAINTENANCE_QUEUE_NAME = "wim-maintenance";
 
 export type MaintenanceJobPayload =
   | { type: "audit_prune"; retentionDays: number }
-  | { type: "article_trash_purge"; retentionDays: number };
+  | { type: "article_trash_purge"; retentionDays: number }
+  | { type: "warranty_digest_weekly" };
 
 export const maintenanceQueue = new Queue<MaintenanceJobPayload>(
   MAINTENANCE_QUEUE_NAME,
