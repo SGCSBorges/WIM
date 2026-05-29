@@ -68,7 +68,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (message, options) => {
       const id = nextId++;
       const kind = options?.kind ?? "info";
-      const ttl = options?.ttl === undefined ? 5000 : options.ttl;
+      // Toasts that carry an Undo (action) get a longer default window so the
+      // user can react before they vanish; explicit ttl wins.
+      const defaultTtl = options?.action ? 8000 : 5000;
+      const ttl = options?.ttl === undefined ? defaultTtl : options.ttl;
       setToasts((prev) => [
         ...prev,
         { id, kind, message, ttl, action: options?.action },
@@ -78,6 +81,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         timersRef.current.set(id, timer);
       }
       return id;
+    },
+    [dismiss]
+  );
+
+  // Pause the auto-dismiss timer while the pointer is over a toast so a user
+  // reading the message (or reaching for Undo) doesn't lose it mid-glance.
+  const pause = useCallback((id: number) => {
+    const timer = timersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
+  }, []);
+
+  const resume = useCallback(
+    (id: number, ttl: number | null) => {
+      if (ttl === null || ttl <= 0) return;
+      if (timersRef.current.has(id)) return;
+      const timer = setTimeout(() => dismiss(id), ttl);
+      timersRef.current.set(id, timer);
     },
     [dismiss]
   );
@@ -116,6 +139,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             role={t.kind === "error" ? "alert" : "status"}
+            onMouseEnter={() => pause(t.id)}
+            onMouseLeave={() => resume(t.id, t.ttl)}
+            onFocus={() => pause(t.id)}
+            onBlur={() => resume(t.id, t.ttl)}
             className={`pointer-events-auto border rounded-lg p-3 flex items-start gap-3 shadow-md ${KIND_CLASS[t.kind]}`}
           >
             <span aria-hidden="true" className="text-base leading-none mt-0.5">
