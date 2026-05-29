@@ -430,6 +430,9 @@ model ShareInvite {
   @@index([ownerUserId])
   @@index([email])
   @@index([status])
+  // createInvite filters on all three together (owner + email + PENDING); a
+  // compound index collapses that to a single seek under concurrent invites.
+  @@index([ownerUserId, email, status])
 }
 
 // Persistent record of every Stripe webhook event we have already
