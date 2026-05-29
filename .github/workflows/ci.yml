@@ -48,6 +48,19 @@ jobs:
       - name: Lint (all workspaces)
         run: npm run lint
 
+      # Round-8 cost an extra round-trip when prettier formatting errors hid
+      # inside `npm run lint` output. A dedicated format check surfaces the
+      # same failures with a distinct red step name. Scope mirrors the
+      # per-workspace ESLint globs (API ignores src/__tests__/**) so this
+      # check stays consistent with `npm run lint`.
+      - name: Format check (prettier)
+        run: |
+          npx prettier --check \
+            "apps/api/src/**/*.{ts,js}" \
+            "!apps/api/src/__tests__/**" \
+            "apps/web/src/**/*.{ts,tsx}" \
+            "packages/**/src/**/*.ts"
+
       - name: API - Prisma generate
         working-directory: apps/api
         run: npm run prisma:generate
@@ -105,9 +118,12 @@ jobs:
           name: web-dist
           path: apps/web/dist
 
-      - name: npm audit (high+, advisory only)
+      # On pushes to main/dev, a high-severity vuln fails CI so a fresh CVE
+      # can't ship to prod undetected. On PRs we keep it advisory so a new
+      # contributor isn't blocked mid-review by a transitive upstream issue.
+      - name: npm audit (high+)
         run: npm audit --audit-level=high
-        continue-on-error: true
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
 
   dependency-review:
     if: github.event_name == 'pull_request'
