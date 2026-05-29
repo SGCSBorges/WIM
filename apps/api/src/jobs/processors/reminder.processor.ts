@@ -96,6 +96,8 @@ export const ReminderProcessor = {
         {
           jobId: job.id,
           alerteId: data.alerteId,
+          attempt: job.attemptsMade,
+          maxAttempts: job.opts.attempts,
           err,
         },
         "[alerts] reminder failed"
@@ -148,7 +150,16 @@ export const ReminderProcessor = {
         }
       }
     } catch (err) {
-      logger.error({ jobId: job.id, alerteId, err }, "[alerts] custom failed");
+      logger.error(
+        {
+          jobId: job.id,
+          alerteId,
+          attempt: job.attemptsMade,
+          maxAttempts: job.opts.attempts,
+          err,
+        },
+        "[alerts] custom failed"
+      );
       await AlertService.markFailed(alerteId, err);
       throw err;
     }

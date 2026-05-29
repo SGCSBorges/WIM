@@ -56,16 +56,27 @@ export default function JobsTab() {
         )}
       </div>
       <dl className="grid grid-cols-5 gap-2 text-sm">
-        {COUNT_FIELDS.map((field) => (
-          <div key={field} className="space-y-0.5 text-center">
-            <dd className="font-semibold tabular-nums">
-              {counts?.[field] ?? "—"}
-            </dd>
-            <dt className="text-xs ui-text-muted">
-              {t(`admin.jobs.count.${field}`)}
-            </dt>
-          </div>
-        ))}
+        {COUNT_FIELDS.map((field) => {
+          const value = counts?.[field];
+          // Failed > 0 deserves attention: render the cell with the warn
+          // styling so an operator's eye lands on it during the routine scan.
+          const isAlert = field === "failed" && typeof value === "number" && value > 0;
+          return (
+            <div
+              key={field}
+              className={
+                isAlert
+                  ? "space-y-0.5 text-center ui-alert-error rounded px-1 py-1"
+                  : "space-y-0.5 text-center"
+              }
+            >
+              <dd className="font-semibold tabular-nums">{value ?? "—"}</dd>
+              <dt className="text-xs ui-text-muted">
+                {t(`admin.jobs.count.${field}`)}
+              </dt>
+            </div>
+          );
+        })}
       </dl>
     </div>
   );

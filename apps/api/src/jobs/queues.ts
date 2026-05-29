@@ -41,7 +41,10 @@ export const maintenanceQueue = new Queue<MaintenanceJobPayload>(
   {
     connection: createRedisConnection(),
     defaultJobOptions: {
-      attempts: 1,
+      // Three attempts with exponential backoff lets a transient DB blip
+      // self-heal between scheduled runs instead of waiting a full day.
+      attempts: 3,
+      backoff: { type: "exponential" as const, delay: 30_000 },
       // Keep the last successful sweep for visibility, drop older ones; keep
       // failed ones a week so an operator can see why a run blew up.
       removeOnComplete: { count: 5 },
