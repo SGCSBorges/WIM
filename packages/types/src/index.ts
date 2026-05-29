@@ -70,6 +70,9 @@ export interface ArticleWarranty {
   claimStatus?: ClaimStatus;
   claimNote?: string | null;
   claimUpdatedAt?: string | null;
+  providerName?: string | null;
+  providerPhone?: string | null;
+  providerUrl?: string | null;
   garantieImageAttachment?: {
     fileName: string;
     mimeType: string;

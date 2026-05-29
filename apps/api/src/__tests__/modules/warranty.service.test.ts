@@ -86,6 +86,29 @@ describe("WarrantyService.create", () => {
       expect.objectContaining({ garantieId: 10, ownerUserId: 1 })
     );
   });
+
+  it("persists optional provider contact fields on create", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue({ articleId: 5 });
+    mockPrisma.garantie.findUnique.mockResolvedValue(null);
+    mockPrisma.garantie.create.mockResolvedValue({
+      garantieId: 11,
+      ownerUserId: 1,
+      garantieArticleId: 5,
+      garantieFin: new Date("2026-01-01"),
+    });
+
+    await WarrantyService.create({
+      ...baseInput,
+      providerName: "Acme Warranty Co",
+      providerPhone: "+1-555-0100",
+      providerUrl: "https://example.com/claims",
+    });
+
+    const call = mockPrisma.garantie.create.mock.calls[0][0];
+    expect(call.data.providerName).toBe("Acme Warranty Co");
+    expect(call.data.providerPhone).toBe("+1-555-0100");
+    expect(call.data.providerUrl).toBe("https://example.com/claims");
+  });
 });
 
 describe("WarrantyService.update", () => {

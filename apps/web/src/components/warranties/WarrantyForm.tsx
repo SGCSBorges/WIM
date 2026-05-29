@@ -8,6 +8,9 @@ interface Warranty {
   garantieDateAchat: string;
   garantieDuration: number;
   garantieArticleId: number;
+  providerName?: string | null;
+  providerPhone?: string | null;
+  providerUrl?: string | null;
 }
 
 interface WarrantyFormProps {
@@ -32,6 +35,9 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
       warranty?.garantieDateAchat || new Date().toISOString().split("T")[0],
     garantieDuration: warranty?.garantieDuration || 12,
     garantieArticleId: warranty?.garantieArticleId || articleId || 0,
+    providerName: warranty?.providerName ?? "",
+    providerPhone: warranty?.providerPhone ?? "",
+    providerUrl: warranty?.providerUrl ?? "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -69,7 +75,12 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     e.preventDefault();
 
     if (validateForm()) {
-      onSubmit(formData);
+      onSubmit({
+        ...formData,
+        providerName: formData.providerName?.trim() || null,
+        providerPhone: formData.providerPhone?.trim() || null,
+        providerUrl: formData.providerUrl?.trim() || null,
+      });
     }
   };
 
@@ -191,6 +202,72 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             </p>
           </div>
         )}
+
+        <fieldset className="border-t ui-divider pt-4 space-y-3">
+          <legend className="text-sm font-medium ui-text-muted px-1">
+            {t("warrantyForm.provider")}
+          </legend>
+          <div>
+            <label
+              htmlFor="providerName"
+              className="block text-sm font-medium mb-2"
+            >
+              {t("warrantyForm.providerName")}
+            </label>
+            <input
+              type="text"
+              id="providerName"
+              value={formData.providerName ?? ""}
+              onChange={(e) =>
+                handleInputChange("providerName", e.target.value)
+              }
+              className="ui-input w-full px-3 py-2 rounded-md"
+              maxLength={120}
+              disabled={isLoading}
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="providerPhone"
+                className="block text-sm font-medium mb-2"
+              >
+                {t("warrantyForm.providerPhone")}
+              </label>
+              <input
+                type="tel"
+                id="providerPhone"
+                value={formData.providerPhone ?? ""}
+                onChange={(e) =>
+                  handleInputChange("providerPhone", e.target.value)
+                }
+                className="ui-input w-full px-3 py-2 rounded-md"
+                maxLength={40}
+                disabled={isLoading}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="providerUrl"
+                className="block text-sm font-medium mb-2"
+              >
+                {t("warrantyForm.providerUrl")}
+              </label>
+              <input
+                type="url"
+                id="providerUrl"
+                value={formData.providerUrl ?? ""}
+                onChange={(e) =>
+                  handleInputChange("providerUrl", e.target.value)
+                }
+                placeholder="https://"
+                className="ui-input w-full px-3 py-2 rounded-md"
+                maxLength={2048}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+        </fieldset>
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-4 pt-4 border-t ui-divider">

@@ -5,6 +5,20 @@ export const WarrantyCreateSchema = z.object({
   garantieNom: z.string().trim().min(1).max(100),
   garantieDateAchat: z.coerce.date(),
   garantieDuration: z.number().int().min(1).max(120),
+  // Optional provider contact. URL is loose (http/https only); phone is free
+  // text so international formats stay flexible.
+  providerName: z.string().trim().max(120).optional().nullable(),
+  providerPhone: z.string().trim().max(40).optional().nullable(),
+  providerUrl: z
+    .string()
+    .trim()
+    .max(2048)
+    .url()
+    .refine((u) => /^https?:\/\//i.test(u), {
+      message: "providerUrl must be an http(s) URL",
+    })
+    .optional()
+    .nullable(),
 });
 
 export const WarrantyUpdateSchema = WarrantyCreateSchema.partial();

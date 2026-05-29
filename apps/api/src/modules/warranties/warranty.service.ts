@@ -61,6 +61,15 @@ export const WarrantyService = {
           garantieFin: fin,
           garantieIsValide: true,
           ownerUserId: data.ownerUserId,
+          ...(data.providerName !== undefined
+            ? { providerName: data.providerName }
+            : {}),
+          ...(data.providerPhone !== undefined
+            ? { providerPhone: data.providerPhone }
+            : {}),
+          ...(data.providerUrl !== undefined
+            ? { providerUrl: data.providerUrl }
+            : {}),
         },
       });
     } catch (e) {

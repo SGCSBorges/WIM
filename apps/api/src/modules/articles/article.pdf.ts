@@ -120,6 +120,21 @@ export async function streamArticleClaimPdf(
         row("Claim note:", article.garantie.claimNote);
     }
 
+    if (
+      article.garantie.providerName ||
+      article.garantie.providerPhone ||
+      article.garantie.providerUrl
+    ) {
+      doc.moveDown(0.5);
+      doc.fontSize(12).text("Warranty provider");
+      if (article.garantie.providerName)
+        row("Name:", article.garantie.providerName);
+      if (article.garantie.providerPhone)
+        row("Phone:", article.garantie.providerPhone);
+      if (article.garantie.providerUrl)
+        row("Web:", article.garantie.providerUrl);
+    }
+
     const proof = localUploadImagePath(
       article.garantie.garantieImageAttachment?.fileUrl,
       article.garantie.garantieImageAttachment?.mimeType

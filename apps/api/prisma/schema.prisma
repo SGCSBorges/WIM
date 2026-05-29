@@ -293,6 +293,12 @@ model Garantie {
   claimNote      String?     @db.VarChar(2000)
   claimUpdatedAt DateTime?
 
+  // Provider contact details — surfaced on the claim PDF and as a
+  // "Contact provider" block in the UI so the owner knows who to call.
+  providerName  String? @db.VarChar(120)
+  providerPhone String? @db.VarChar(40)
+  providerUrl   String? @db.VarChar(2048)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -15,6 +15,11 @@ export const extras = {
     "articleForm.placeholder.brand": "e.g. Sony, DeWalt",
     "articleForm.placeholder.serialNumber": "e.g. SN-1234567",
     "articleDetail.serialNumber": "S/N",
+    "articleDetail.contactProvider": "Contact provider",
+    "warrantyForm.provider": "Provider",
+    "warrantyForm.providerName": "Provider name",
+    "warrantyForm.providerPhone": "Provider phone",
+    "warrantyForm.providerUrl": "Claim portal URL",
 
     "shared.editing.note":
       "Editing on behalf of the owner. Warranty and locations are not editable here.",
@@ -371,6 +376,11 @@ export const extras = {
     "articleForm.placeholder.brand": "ex. Sony, DeWalt",
     "articleForm.placeholder.serialNumber": "ex. SN-1234567",
     "articleDetail.serialNumber": "N/S",
+    "articleDetail.contactProvider": "Contacter le fournisseur",
+    "warrantyForm.provider": "Fournisseur",
+    "warrantyForm.providerName": "Nom du fournisseur",
+    "warrantyForm.providerPhone": "Téléphone",
+    "warrantyForm.providerUrl": "URL du portail de réclamations",
 
     "shared.editing.note":
       "Modification au nom du propriétaire. La garantie et les emplacements ne sont pas modifiables ici.",
@@ -742,6 +752,11 @@ export const extras = {
     "articleForm.placeholder.brand": "ex. Sony, DeWalt",
     "articleForm.placeholder.serialNumber": "ex. SN-1234567",
     "articleDetail.serialNumber": "N/S",
+    "articleDetail.contactProvider": "Contactar fornecedor",
+    "warrantyForm.provider": "Fornecedor",
+    "warrantyForm.providerName": "Nome do fornecedor",
+    "warrantyForm.providerPhone": "Telefone",
+    "warrantyForm.providerUrl": "URL do portal de reclamações",
 
     "shared.editing.note":
       "A editar em nome do proprietário. A garantia e as localizações não são editáveis aqui.",

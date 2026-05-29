@@ -487,6 +487,41 @@ export default function ArticleDetail() {
             {safeDate(article.garantie.garantieFin)}
           </p>
 
+          {(article.garantie.providerName ||
+            article.garantie.providerPhone ||
+            article.garantie.providerUrl) && (
+            <div className="pt-2 text-sm space-y-1">
+              <p className="font-medium ui-text-muted">
+                {t("articleDetail.contactProvider")}
+              </p>
+              {article.garantie.providerName && (
+                <p>{article.garantie.providerName}</p>
+              )}
+              {article.garantie.providerPhone && (
+                <p>
+                  <a
+                    href={`tel:${article.garantie.providerPhone}`}
+                    className="ui-link"
+                  >
+                    {article.garantie.providerPhone}
+                  </a>
+                </p>
+              )}
+              {article.garantie.providerUrl && (
+                <p>
+                  <a
+                    href={article.garantie.providerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ui-link break-all"
+                  >
+                    {article.garantie.providerUrl}
+                  </a>
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="pt-3 mt-2 border-t ui-divider space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <label htmlFor="claim-status" className="text-sm font-medium">
