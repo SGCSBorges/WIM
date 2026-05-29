@@ -466,6 +466,24 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("normalizes a mixed-case email on profile update so it stays a single account", async () => {
+    const agent = await register("kate-norm@example.com");
+    const change = await agent
+      .put("/api/profile/me/email")
+      .set("Origin", ORIGIN)
+      .send({ email: "Kate.NEW@Example.COM", currentPassword: "Passw0rd!" });
+    expect(change.status).toBe(200);
+    expect(change.body.email).toBe("kate.new@example.com");
+
+    // Login with the lowercased form works (the stored value was normalized).
+    const fresh = request.agent(app);
+    const login = await fresh
+      .post("/api/auth/login")
+      .set("Origin", ORIGIN)
+      .send({ email: "kate.new@example.com", password: "Passw0rd!" });
+    expect(login.status).toBe(200);
+  });
+
   it("soft-deletes an article, lists it in Trash, restores it back to live", async () => {
     const agent = await register("trasher@example.com");
     const loc = await agent

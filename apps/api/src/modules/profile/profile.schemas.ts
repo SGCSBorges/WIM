@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { passwordSchema } from "../auth/auth.schemas";
+import { normalizedEmail } from "../common/schemas";
 
 export const UpdateEmailSchema = z.object({
-  email: z.string().trim().email(),
+  email: normalizedEmail,
   currentPassword: z.string().min(1),
 });
 export type UpdateEmailInput = z.infer<typeof UpdateEmailSchema>;
