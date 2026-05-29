@@ -7,43 +7,7 @@ import { formatMoney } from "../../utils/money";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import { ErrorBanner } from "../common/States";
 import BarList from "../common/BarList";
-
-interface DashboardStatistics {
-  articles: {
-    total: number;
-    withWarranty: number;
-    withoutWarranty: number;
-  };
-  locations: {
-    byLocation: Array<{
-      locationId: number;
-      name: string;
-      articlesCount: number;
-    }>;
-    unassigned: number;
-  };
-  warranties: {
-    total: number;
-    active: number;
-    expired: number;
-    expiringSoon: number;
-    withAttachment: number;
-  };
-  alerts: {
-    total: number;
-  };
-  sharing: {
-    ownedSharedArticles: number;
-    totalSharedArticles: number;
-  };
-  inventoryValue: {
-    total: number;
-    currentTotal: number;
-    atRisk: number;
-    byLocation: Array<{ locationId: number; name: string; value: number }>;
-    byTag: Array<{ tagId: number; name: string; value: number }>;
-  };
-}
+import type { DashboardStatistics } from "@wim/types";
 
 interface StatCardProps {
   title: string;

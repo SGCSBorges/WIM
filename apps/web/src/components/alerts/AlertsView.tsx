@@ -5,33 +5,7 @@ import { alertsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner } from "../common/States";
 import { useToast } from "../common/Toast";
-
-type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
-
-type Alert = {
-  alerteId: number;
-  alerteNom: string;
-  alerteDate: string;
-  alerteDescription?: string | null;
-  status: AlertStatus;
-  kind?: "WARRANTY" | "CUSTOM";
-  recurrenceMonths?: number | null;
-  snoozedUntil?: string | null;
-  sentAt?: string | null;
-  failedAt?: string | null;
-  errorMessage?: string | null;
-  alerteGarantieId?: number | null;
-  alerteArticleId?: number | null;
-  garantie?: {
-    garantieId: number;
-    garantieNom: string;
-  } | null;
-  article?: {
-    articleId: number;
-    articleNom: string;
-    articleModele: string;
-  } | null;
-};
+import type { AlertItem as Alert, AlertStatus } from "@wim/types";
 
 function statusBadge(status: AlertStatus) {
   switch (status) {

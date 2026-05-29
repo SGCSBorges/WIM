@@ -9,6 +9,9 @@
 export interface Location {
   locationId: number;
   name: string;
+  description?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Audit log action / entity unions. Defined as const tuples so both the API
@@ -229,4 +232,103 @@ export interface BillingSubscription {
   cancelAt: number | null;
   endedAt: number | null;
   plan: "monthly" | "yearly" | null;
+}
+
+export type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
+export type AlertKind = "WARRANTY" | "CUSTOM";
+
+export interface AlertItem {
+  alerteId: number;
+  alerteNom: string;
+  alerteDate: string;
+  alerteDescription?: string | null;
+  status: AlertStatus;
+  kind?: AlertKind;
+  recurrenceMonths?: number | null;
+  snoozedUntil?: string | null;
+  sentAt?: string | null;
+  failedAt?: string | null;
+  errorMessage?: string | null;
+  alerteGarantieId?: number | null;
+  alerteArticleId?: number | null;
+  garantie?: {
+    garantieId: number;
+    garantieNom: string;
+  } | null;
+  article?: {
+    articleId: number;
+    articleNom: string;
+    articleModele: string;
+  } | null;
+}
+
+export type AttachmentType = "INVOICE" | "WARRANTY" | "OTHER";
+
+export interface AttachmentItem {
+  attachmentId: number;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  fileUrl: string;
+  thumbUrl?: string | null;
+  type: AttachmentType;
+  createdAt: string;
+  updatedAt?: string;
+  articleId?: number | null;
+  garantieId?: number | null;
+  article?: {
+    articleId: number;
+    articleNom: string;
+    articleModele: string;
+  } | null;
+  garantie?: {
+    garantieId: number;
+    garantieNom: string;
+  } | null;
+}
+
+/** Monthly bucket for dashboard time-series. `month` is `YYYY-MM`. */
+export interface MonthlyBucket {
+  month: string;
+  count: number;
+}
+
+export interface DashboardStatistics {
+  articles: {
+    total: number;
+    withWarranty: number;
+    withoutWarranty: number;
+  };
+  locations: {
+    byLocation: Array<{
+      locationId: number;
+      name: string;
+      articlesCount: number;
+    }>;
+    unassigned: number;
+  };
+  warranties: {
+    total: number;
+    active: number;
+    expired: number;
+    expiringSoon: number;
+    withAttachment: number;
+  };
+  alerts: {
+    total: number;
+  };
+  sharing: {
+    ownedSharedArticles: number;
+    totalSharedArticles: number;
+  };
+  inventoryValue: {
+    total: number;
+    currentTotal: number;
+    atRisk: number;
+    byLocation: Array<{ locationId: number; name: string; value: number }>;
+    byTag: Array<{ tagId: number; name: string; value: number }>;
+  };
+  // Populated by F3 dashboard forecasting; optional so consumers guard with ?? [].
+  warrantyExpirationsByMonth?: MonthlyBucket[];
+  articlesAddedByMonth?: MonthlyBucket[];
 }

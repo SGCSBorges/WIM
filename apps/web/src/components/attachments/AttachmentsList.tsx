@@ -5,28 +5,7 @@ import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner } from "../common/States";
-
-interface Attachment {
-  attachmentId: number;
-  fileName: string;
-  mimeType: string;
-  fileSize: number;
-  fileUrl: string;
-  thumbUrl?: string | null;
-  type: "INVOICE" | "WARRANTY" | "OTHER";
-  createdAt: string;
-  articleId?: number;
-  garantieId?: number;
-  article?: {
-    articleId: number;
-    articleNom: string;
-    articleModele: string;
-  };
-  garantie?: {
-    garantieId: number;
-    garantieNom: string;
-  };
-}
+import type { AttachmentItem as Attachment } from "@wim/types";
 
 interface AttachmentsListProps {
   articleId?: number;
