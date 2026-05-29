@@ -88,6 +88,8 @@ function buildArticleWhere(
         { articleNom: { contains: term, mode: "insensitive" } },
         { articleModele: { contains: term, mode: "insensitive" } },
         { articleDescription: { contains: term, mode: "insensitive" } },
+        { brand: { contains: term, mode: "insensitive" } },
+        { serialNumber: { contains: term, mode: "insensitive" } },
       ],
     }));
   }

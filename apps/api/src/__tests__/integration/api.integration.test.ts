@@ -466,6 +466,32 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("finds an article by its serial number through the substring search", async () => {
+    const agent = await register("ralph@example.com");
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Office" });
+    expect(loc.status).toBe(201);
+    const create = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Laptop",
+        articleModele: "X1 Carbon",
+        brand: "Lenovo",
+        serialNumber: "PF3K7Q9X",
+        locationIds: [loc.body.locationId],
+      });
+    expect(create.status).toBe(201);
+
+    const bySerial = await agent.get("/api/articles?q=PF3K7Q9X");
+    expect(bySerial.status).toBe(200);
+    expect(bySerial.body.items.length).toBe(1);
+    expect(bySerial.body.items[0].serialNumber).toBe("PF3K7Q9X");
+    expect(bySerial.body.items[0].brand).toBe("Lenovo");
+  });
+
   it("records a LOGOUT audit row and filters the admin audit log by date", async () => {
     // Promote an admin (authGuard reads role from DB per request, so the
     // existing cookie becomes admin immediately).

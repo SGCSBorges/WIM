@@ -82,6 +82,8 @@ export interface Article {
   articleNom: string;
   articleModele: string;
   articleDescription?: string | null;
+  serialNumber?: string | null;
+  brand?: string | null;
   productImageUrl?: string | null;
   // Purchase price for inventory-value tracking. Serialized as a string
   // (Prisma Decimal) on reads; accepts number on writes.

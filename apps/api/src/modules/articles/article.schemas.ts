@@ -4,6 +4,9 @@ export const ArticleCreateSchema = z.object({
   articleNom: z.string().trim().min(1).max(100),
   articleModele: z.string().trim().min(1).max(100),
   articleDescription: z.string().trim().max(255).optional().nullable(),
+  // Identity fields — optional, folded into the substring search.
+  serialNumber: z.string().trim().max(120).optional().nullable(),
+  brand: z.string().trim().max(120).optional().nullable(),
   productImageUrl: z
     .string()
     .url()

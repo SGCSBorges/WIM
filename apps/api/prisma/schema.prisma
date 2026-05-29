@@ -162,6 +162,11 @@ model Article {
   articleDescription String?  @db.VarChar(255)
   productImageUrl    String?  @db.VarChar(500)
 
+  // Identity fields for power-user lookups ("find my laptop by serial").
+  // Folded into the substring `q` filter alongside name/model/description.
+  serialNumber       String?  @db.VarChar(120)
+  brand              String?  @db.VarChar(120)
+
   // Purchase price for inventory-value tracking. Decimal to avoid float
   // rounding; serialized as a string over JSON and formatted on the client.
   purchasePrice      Decimal? @db.Decimal(12, 2)

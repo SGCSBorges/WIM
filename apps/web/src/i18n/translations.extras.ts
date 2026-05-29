@@ -10,6 +10,11 @@
 export const extras = {
   en: {
     "articles.table.image": "Image",
+    "articleForm.brand": "Brand",
+    "articleForm.serialNumber": "Serial number",
+    "articleForm.placeholder.brand": "e.g. Sony, DeWalt",
+    "articleForm.placeholder.serialNumber": "e.g. SN-1234567",
+    "articleDetail.serialNumber": "S/N",
 
     "shared.editing.note":
       "Editing on behalf of the owner. Warranty and locations are not editable here.",
@@ -361,6 +366,11 @@ export const extras = {
   },
   fr: {
     "articles.table.image": "Image",
+    "articleForm.brand": "Marque",
+    "articleForm.serialNumber": "Numéro de série",
+    "articleForm.placeholder.brand": "ex. Sony, DeWalt",
+    "articleForm.placeholder.serialNumber": "ex. SN-1234567",
+    "articleDetail.serialNumber": "N/S",
 
     "shared.editing.note":
       "Modification au nom du propriétaire. La garantie et les emplacements ne sont pas modifiables ici.",
@@ -727,6 +737,11 @@ export const extras = {
   },
   pt: {
     "articles.table.image": "Imagem",
+    "articleForm.brand": "Marca",
+    "articleForm.serialNumber": "Número de série",
+    "articleForm.placeholder.brand": "ex. Sony, DeWalt",
+    "articleForm.placeholder.serialNumber": "ex. SN-1234567",
+    "articleDetail.serialNumber": "N/S",
 
     "shared.editing.note":
       "A editar em nome do proprietário. A garantia e as localizações não são editáveis aqui.",

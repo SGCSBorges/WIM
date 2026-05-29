@@ -327,7 +327,15 @@ export default function ArticleDetail() {
         />
         <div className="flex-1 space-y-2">
           <h1 className="text-2xl font-bold ui-title">{article.articleNom}</h1>
-          <p className="ui-text-muted">{article.articleModele}</p>
+          <p className="ui-text-muted">
+            {article.brand ? `${article.brand} · ` : ""}
+            {article.articleModele}
+          </p>
+          {article.serialNumber && (
+            <p className="text-xs ui-text-muted font-mono select-all">
+              {t("articleDetail.serialNumber")}: {article.serialNumber}
+            </p>
+          )}
           {article.articleDescription && (
             <p className="text-sm">{article.articleDescription}</p>
           )}

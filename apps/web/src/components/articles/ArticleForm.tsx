@@ -80,6 +80,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     articleNom: article?.articleNom || "",
     articleModele: article?.articleModele || "",
     articleDescription: article?.articleDescription || "",
+    brand: article?.brand || "",
+    serialNumber: article?.serialNumber || "",
     productImageUrl: article?.productImageUrl || "",
   });
   const [purchasePrice, setPurchasePrice] = useState<string>(
@@ -132,6 +134,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       articleNom: article?.articleNom || "",
       articleModele: article?.articleModele || "",
       articleDescription: article?.articleDescription || "",
+      brand: article?.brand || "",
+      serialNumber: article?.serialNumber || "",
       productImageUrl: article?.productImageUrl || "",
     });
     setPurchasePrice(
@@ -327,6 +331,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     const submitData: Omit<Article, "articleId"> = {
       ...formData,
       articleDescription: formData.articleDescription?.trim() || null,
+      brand: formData.brand?.toString().trim() || null,
+      serialNumber: formData.serialNumber?.toString().trim() || null,
       productImageUrl: formData.productImageUrl?.trim() || null,
       purchasePrice: purchasePrice.trim() === "" ? null : Number(purchasePrice),
       depreciationRate:
@@ -503,6 +509,45 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             }}
           />
         )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label
+              htmlFor="brand"
+              className="block text-sm font-medium ui-text-muted mb-1"
+            >
+              {t("articleForm.brand")}
+            </label>
+            <input
+              type="text"
+              id="brand"
+              name="brand"
+              value={formData.brand?.toString() ?? ""}
+              onChange={handleChange}
+              className="w-full px-3 py-2 ui-input rounded-md"
+              maxLength={120}
+              placeholder={t("articleForm.placeholder.brand")}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="serialNumber"
+              className="block text-sm font-medium ui-text-muted mb-1"
+            >
+              {t("articleForm.serialNumber")}
+            </label>
+            <input
+              type="text"
+              id="serialNumber"
+              name="serialNumber"
+              value={formData.serialNumber?.toString() ?? ""}
+              onChange={handleChange}
+              className="w-full px-3 py-2 ui-input rounded-md font-mono"
+              maxLength={120}
+              placeholder={t("articleForm.placeholder.serialNumber")}
+            />
+          </div>
+        </div>
 
         <div>
           <label
