@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
 import {
@@ -57,6 +57,8 @@ function safeDate(iso: string | null | undefined): string {
 export default function ArticleDetail() {
   const { t, language } = useI18n();
   const toast = useToast();
+  const navigate = useNavigate();
+  const [duplicating, setDuplicating] = useState(false);
   const { id } = useParams<{ id: string }>();
   const articleId = Number(id);
 
@@ -300,23 +302,46 @@ export default function ArticleDetail() {
         <Link to="/articles" className="text-sm ui-action-primary">
           ← {t("articleDetail.back")}
         </Link>
-        <button
-          onClick={async () => {
-            try {
-              downloadBlob(
-                `article-${articleId}-claim.pdf`,
-                await articlesAPI.claimPdf(articleId)
-              );
-            } catch (e) {
-              toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-                kind: "error",
-              });
-            }
-          }}
-          className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm"
-        >
-          {t("articleDetail.downloadPdf")}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={async () => {
+              if (duplicating) return;
+              setDuplicating(true);
+              try {
+                const created = await articlesAPI.duplicate(articleId);
+                toast.show(t("articleDetail.duplicated"), { kind: "success" });
+                navigate(`/articles/${created.articleId}`);
+              } catch (e) {
+                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+                  kind: "error",
+                });
+              } finally {
+                setDuplicating(false);
+              }
+            }}
+            disabled={duplicating}
+            className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm"
+          >
+            {t("articleDetail.duplicate")}
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                downloadBlob(
+                  `article-${articleId}-claim.pdf`,
+                  await articlesAPI.claimPdf(articleId)
+                );
+              } catch (e) {
+                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+                  kind: "error",
+                });
+              }
+            }}
+            className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm"
+          >
+            {t("articleDetail.downloadPdf")}
+          </button>
+        </div>
       </div>
 
       <div className="ui-card rounded-lg p-6 flex flex-col sm:flex-row gap-6">

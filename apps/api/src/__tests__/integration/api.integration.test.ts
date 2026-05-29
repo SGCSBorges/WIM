@@ -46,8 +46,11 @@ suite("API integration (real Postgres)", () => {
     process.env.DATABASE_URL = INTEGRATION_URL;
     process.env.JWT_SECRET ??= "integration-test-secret";
     process.env.JOBS_ENABLED = "false";
-    // The whole suite shares one IP; lift the auth rate cap so cumulative
-    // register/login/logout calls across tests don't trip the 20/15min bucket.
+    // The whole suite shares one IP; lift every per-IP cap so cumulative
+    // calls across tests don't trip the rate-limit buckets. RATE_LIMIT_MAX is
+    // the global limiter (100/min default), which the larger suite would now
+    // cross in a one-minute window of fast tests.
+    process.env.RATE_LIMIT_MAX = "5000";
     process.env.AUTH_RATE_LIMIT_MAX = "1000";
     // Same reasoning for the per-resource creation bucket — cumulative
     // location/article creates across tests would otherwise hit the 40/5min cap.
@@ -467,6 +470,51 @@ suite("API integration (real Postgres)", () => {
       .set("Origin", ORIGIN)
       .send({ email: "ivan-new@example.com", password: "Passw0rd!" });
     expect(login.status).toBe(200);
+  });
+
+  it("duplicates an article keeping locations + tags, dropping warranty/attachments", async () => {
+    const agent = await register("dup@example.com");
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Garage" });
+    const tag = await agent
+      .post("/api/tags")
+      .set("Origin", ORIGIN)
+      .send({ name: "tools" });
+    // Warranty intentionally omitted from the fixture — the duplicate path's
+    // contract is that warranty is never copied (1:1 unique), and including
+    // one here would just push the test through the BullMQ scheduling path
+    // (Redis-bound) without strengthening the assertion.
+    const create = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Drill",
+        articleModele: "Cordless",
+        brand: "DeWalt",
+        serialNumber: "DW-001",
+        purchasePrice: 199.99,
+        locationIds: [loc.body.locationId],
+        tagIds: [tag.body.tagId],
+      });
+    expect(create.status).toBe(201);
+    const srcId = create.body.articleId as number;
+
+    const dup = await agent
+      .post(`/api/articles/${srcId}/duplicate`)
+      .set("Origin", ORIGIN);
+    expect(dup.status).toBe(201);
+    expect(dup.body.articleId).not.toBe(srcId);
+    expect(dup.body.articleNom).toBe("Drill (copy)");
+    expect(dup.body.brand).toBe("DeWalt");
+    expect(dup.body.serialNumber).toBe("DW-001");
+    expect(dup.body.locations.map((l: { locationId: number }) => l.locationId))
+      .toEqual([loc.body.locationId]);
+    expect(dup.body.tags.map((tg: { tagId: number }) => tg.tagId)).toEqual([
+      tag.body.tagId,
+    ]);
+    expect(dup.body.garantie).toBeFalsy();
   });
 
   it("renames a tag and rejects a collision with another owned tag", async () => {

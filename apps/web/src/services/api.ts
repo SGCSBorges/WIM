@@ -406,6 +406,18 @@ export const articlesAPI = {
   },
 
   /** List soft-deleted articles for the current user. */
+  async duplicate(id: number): Promise<FetchedArticle> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${id}/duplicate`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to duplicate article")
+      );
+    return response.json();
+  },
+
   async listTrash(): Promise<{ items: FetchedArticle[] }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles/trash`, {
       headers: getHeaders(),

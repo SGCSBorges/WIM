@@ -280,6 +280,39 @@ export const ArticleService = {
     return created;
   },
 
+  // Copy an article's identity + location + tag links into a fresh row. We do
+  // NOT copy the warranty (1:1 unique on garantieArticleId) or attachments
+  // (file ownership / disk-cost ambiguity). The new article is appended with
+  // " (copy)" so the list disambiguates at a glance.
+  duplicate: async (id: number, ownerUserId: number) => {
+    const source = await prisma.article.findFirst({
+      where: { articleId: id, ownerUserId, deletedAt: null },
+      include: {
+        locations: { select: { locationId: true } },
+        tags: { select: { tagId: true } },
+      },
+    });
+    if (!source) throw createHttpError(404, "Article not found");
+
+    return ArticleService.create({
+      ownerUserId,
+      articleNom: `${source.articleNom} (copy)`.slice(0, 100),
+      articleModele: source.articleModele,
+      articleDescription: source.articleDescription,
+      brand: source.brand,
+      serialNumber: source.serialNumber,
+      productImageUrl: source.productImageUrl,
+      purchasePrice:
+        source.purchasePrice != null ? Number(source.purchasePrice) : null,
+      depreciationRate:
+        source.depreciationRate != null
+          ? Number(source.depreciationRate)
+          : null,
+      locationIds: source.locations.map((l) => l.locationId),
+      tagIds: source.tags.map((t) => t.tagId),
+    });
+  },
+
   update: async (id: number, ownerUserId: number, data: ArticleUpdateInput) => {
     const { locationIds, tagIds, garantie, removeGarantie, ...patch } = data;
 

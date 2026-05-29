@@ -211,6 +211,24 @@ router.put(
   })
 );
 
+/** POST duplicate an article — copies identity + locations + tags, but not
+ *  warranty (1:1 unique) or attachments. */
+router.post(
+  "/:id/duplicate",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const created = await ArticleService.duplicate(id, req.user!.sub);
+    await auditAction(req, {
+      action: "CREATE",
+      entity: "Article",
+      entityId: created.articleId,
+      metadata: { duplicatedFrom: id },
+    });
+    res.status(201).json(created);
+  })
+);
+
 /** DELETE supprimer un article — 🔐 protégé */
 router.delete(
   "/:id",
