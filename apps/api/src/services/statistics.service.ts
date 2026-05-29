@@ -52,6 +52,9 @@ export interface DashboardStatistics {
       value: number;
     }>;
   };
+  // Time-series buckets for forecasting/trends. `month` is `YYYY-MM`.
+  warrantyExpirationsByMonth: Array<{ month: string; count: number }>;
+  articlesAddedByMonth: Array<{ month: string; count: number }>;
 }
 
 export interface AdminStatistics {
@@ -190,6 +193,28 @@ export async function getDashboardStatistics(
       }),
     ]);
 
+    // Time-series: rolling 12-month windows around today.
+    const twelveMonthsAgo = new Date(currentDate);
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+    const twelveMonthsAhead = new Date(currentDate);
+    twelveMonthsAhead.setMonth(twelveMonthsAhead.getMonth() + 12);
+    const [
+      upcomingWarrantyExpirations,
+      recentArticleCreations,
+    ] = await Promise.all([
+      prisma.garantie.findMany({
+        where: {
+          ownerUserId,
+          garantieFin: { gte: currentDate, lte: twelveMonthsAhead },
+        },
+        select: { garantieFin: true },
+      }),
+      prisma.article.findMany({
+        where: { ownerUserId, createdAt: { gte: twelveMonthsAgo } },
+        select: { createdAt: true },
+      }),
+    ]);
+
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
 
     // Aggregate inventory value per location in JS (Prisma groupBy can't sum
@@ -270,6 +295,38 @@ export async function getDashboardStatistics(
           })
         : 0;
 
+    // Bucket dates into YYYY-MM keys; pre-seed each rolling window so months
+    // with zero events still appear (the bar chart needs a contiguous axis).
+    const monthKey = (d: Date) =>
+      `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    const seedWindow = (fromMonthOffset: number, length: number) => {
+      const out = new Map<string, number>();
+      const base = new Date(currentDate);
+      base.setUTCDate(1);
+      base.setUTCHours(0, 0, 0, 0);
+      base.setUTCMonth(base.getUTCMonth() + fromMonthOffset);
+      for (let i = 0; i < length; i++) {
+        const d = new Date(base);
+        d.setUTCMonth(base.getUTCMonth() + i);
+        out.set(monthKey(d), 0);
+      }
+      return out;
+    };
+    const expirationBuckets = seedWindow(0, 12);
+    for (const g of upcomingWarrantyExpirations) {
+      const k = monthKey(new Date(g.garantieFin));
+      if (expirationBuckets.has(k))
+        expirationBuckets.set(k, (expirationBuckets.get(k) ?? 0) + 1);
+    }
+    const additionBuckets = seedWindow(-11, 12);
+    for (const a of recentArticleCreations) {
+      const k = monthKey(new Date(a.createdAt));
+      if (additionBuckets.has(k))
+        additionBuckets.set(k, (additionBuckets.get(k) ?? 0) + 1);
+    }
+    const toSeries = (m: Map<string, number>) =>
+      Array.from(m.entries()).map(([month, count]) => ({ month, count }));
+
     return {
       articles: {
         total: articlesTotal,
@@ -309,6 +366,8 @@ export async function getDashboardStatistics(
           value: v.value,
         })),
       },
+      warrantyExpirationsByMonth: toSeries(expirationBuckets),
+      articlesAddedByMonth: toSeries(additionBuckets),
     };
   } catch (error) {
     logger.error(

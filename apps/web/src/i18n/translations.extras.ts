@@ -16,6 +16,9 @@ export const extras = {
     "articleForm.placeholder.serialNumber": "e.g. SN-1234567",
     "articleDetail.serialNumber": "S/N",
     "articleDetail.contactProvider": "Contact provider",
+    "dashboard.charts.warrantyExpirations12m":
+      "Warranty expirations · next 12 months",
+    "dashboard.charts.articlesAdded12m": "Articles added · last 12 months",
     "warrantyForm.provider": "Provider",
     "warrantyForm.providerName": "Provider name",
     "warrantyForm.providerPhone": "Provider phone",
@@ -377,6 +380,10 @@ export const extras = {
     "articleForm.placeholder.serialNumber": "ex. SN-1234567",
     "articleDetail.serialNumber": "N/S",
     "articleDetail.contactProvider": "Contacter le fournisseur",
+    "dashboard.charts.warrantyExpirations12m":
+      "Expirations de garantie · 12 prochains mois",
+    "dashboard.charts.articlesAdded12m":
+      "Articles ajoutés · 12 derniers mois",
     "warrantyForm.provider": "Fournisseur",
     "warrantyForm.providerName": "Nom du fournisseur",
     "warrantyForm.providerPhone": "Téléphone",
@@ -753,6 +760,10 @@ export const extras = {
     "articleForm.placeholder.serialNumber": "ex. SN-1234567",
     "articleDetail.serialNumber": "N/S",
     "articleDetail.contactProvider": "Contactar fornecedor",
+    "dashboard.charts.warrantyExpirations12m":
+      "Expirações de garantia · próximos 12 meses",
+    "dashboard.charts.articlesAdded12m":
+      "Artigos adicionados · últimos 12 meses",
     "warrantyForm.provider": "Fornecedor",
     "warrantyForm.providerName": "Nome do fornecedor",
     "warrantyForm.providerPhone": "Telefone",

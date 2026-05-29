@@ -19,6 +19,7 @@ vi.mock("../../libs/prisma", () => ({
     },
     garantie: {
       count: vi.fn(),
+      findMany: vi.fn(),
     },
     alerte: {
       count: vi.fn(),
@@ -92,6 +93,8 @@ function setupDashboardMocks({
     .mockResolvedValueOnce(warrantiesExpiringSoon)
     .mockResolvedValueOnce(warrantiesWithAttachment);
   mockPrisma.alerte.count.mockResolvedValue(alertsTotal);
+  // Time-series queries used by the forecasting buckets default to empty.
+  mockPrisma.garantie.findMany.mockResolvedValue([]);
 }
 
 beforeEach(() => {
@@ -177,6 +180,7 @@ describe("getDashboardStatistics", () => {
       .mockResolvedValueOnce(0)
       .mockResolvedValueOnce(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
+    mockPrisma.garantie.findMany.mockResolvedValue([]);
 
     const result = await getDashboardStatistics({
       userId: 1,
@@ -214,6 +218,7 @@ describe("getDashboardStatistics", () => {
     mockPrisma.article.findMany.mockResolvedValue([]);
     mockPrisma.garantie.count.mockResolvedValue(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
+    mockPrisma.garantie.findMany.mockResolvedValue([]);
 
     const result = await getDashboardStatistics({ userId: 1, role: "USER" });
 
@@ -291,6 +296,47 @@ describe("getDashboardStatistics", () => {
     await expect(
       getDashboardStatistics({ userId: 1, role: "USER" })
     ).rejects.toThrow("Failed to fetch dashboard statistics");
+  });
+
+  it("buckets warranty expirations + article additions into monthly series", async () => {
+    setupDashboardMocks();
+    // Two warranties expiring in the same upcoming month + one farther out.
+    const now = new Date();
+    const inOneMonth = new Date(now);
+    inOneMonth.setMonth(inOneMonth.getMonth() + 1);
+    inOneMonth.setDate(15);
+    const inTenMonths = new Date(now);
+    inTenMonths.setMonth(inTenMonths.getMonth() + 10);
+    inTenMonths.setDate(5);
+    mockPrisma.garantie.findMany.mockResolvedValue([
+      { garantieFin: inOneMonth },
+      { garantieFin: inOneMonth },
+      { garantieFin: inTenMonths },
+    ]);
+    // Two articles created last month + one this month.
+    const lastMonth = new Date(now);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    lastMonth.setDate(10);
+    mockPrisma.article.findMany.mockResolvedValueOnce([]); // value rows query
+    mockPrisma.article.findMany.mockResolvedValueOnce([
+      { createdAt: lastMonth },
+      { createdAt: lastMonth },
+      { createdAt: now },
+    ]);
+
+    const result = await getDashboardStatistics({ userId: 1, role: "USER" });
+    expect(result.warrantyExpirationsByMonth).toHaveLength(12);
+    const expSum = result.warrantyExpirationsByMonth.reduce(
+      (s, b) => s + b.count,
+      0
+    );
+    expect(expSum).toBe(3);
+    expect(result.articlesAddedByMonth).toHaveLength(12);
+    const addSum = result.articlesAddedByMonth.reduce(
+      (s, b) => s + b.count,
+      0
+    );
+    expect(addSum).toBe(3);
   });
 });
 
