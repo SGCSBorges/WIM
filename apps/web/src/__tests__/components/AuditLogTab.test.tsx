@@ -74,10 +74,7 @@ describe("<AuditLogTab />", () => {
 
     // The label is just "Action" in en; match exactly to avoid the
     // "Entity"-prefixed label.
-    await user.selectOptions(
-      screen.getByLabelText("Action"),
-      "LOGOUT"
-    );
+    await user.selectOptions(screen.getByLabelText("Action"), "LOGOUT");
     await waitFor(() => {
       expect(list).toHaveBeenLastCalledWith(
         expect.objectContaining({ action: "LOGOUT" })
