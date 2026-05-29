@@ -50,9 +50,7 @@ router.post(
     // remains cryptographically valid; bound how stale we'll accept. Ack with
     // 200 so Stripe doesn't retry an event we won't process. Configurable to
     // allow a wider window in laggy test environments.
-    const maxAgeSec = Number(
-      process.env.STRIPE_WEBHOOK_MAX_AGE_SEC ?? 5 * 60
-    );
+    const maxAgeSec = Number(process.env.STRIPE_WEBHOOK_MAX_AGE_SEC ?? 5 * 60);
     const ageSec = Math.floor(Date.now() / 1000) - event.created;
     if (ageSec > maxAgeSec) {
       logger.warn(

@@ -51,15 +51,14 @@ async function scheduleMaintenance() {
   try {
     const existing = await maintenanceQueue.getRepeatableJobs();
     for (const r of existing) {
-      if (
-        r.id === AUDIT_PRUNE_REPEAT_KEY ||
-        r.id === TRASH_PURGE_REPEAT_KEY
-      ) {
+      if (r.id === AUDIT_PRUNE_REPEAT_KEY || r.id === TRASH_PURGE_REPEAT_KEY) {
         await maintenanceQueue.removeRepeatableByKey(r.key);
       }
     }
     if (auditDays === 0) {
-      logger.info("[maintenance] AUDIT_RETENTION_DAYS=0 → audit prune disabled");
+      logger.info(
+        "[maintenance] AUDIT_RETENTION_DAYS=0 → audit prune disabled"
+      );
     } else {
       await maintenanceQueue.add(
         "audit_prune",

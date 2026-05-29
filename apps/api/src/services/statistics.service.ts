@@ -202,26 +202,24 @@ export async function getDashboardStatistics(
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
     const twelveMonthsAhead = new Date(currentDate);
     twelveMonthsAhead.setMonth(twelveMonthsAhead.getMonth() + 12);
-    const [
-      upcomingWarrantyExpirations,
-      recentArticleCreations,
-    ] = await Promise.all([
-      prisma.garantie.findMany({
-        where: {
-          ownerUserId,
-          garantieFin: { gte: currentDate, lte: twelveMonthsAhead },
-        },
-        select: { garantieFin: true },
-      }),
-      prisma.article.findMany({
-        where: {
-          ownerUserId,
-          deletedAt: null,
-          createdAt: { gte: twelveMonthsAgo },
-        },
-        select: { createdAt: true },
-      }),
-    ]);
+    const [upcomingWarrantyExpirations, recentArticleCreations] =
+      await Promise.all([
+        prisma.garantie.findMany({
+          where: {
+            ownerUserId,
+            garantieFin: { gte: currentDate, lte: twelveMonthsAhead },
+          },
+          select: { garantieFin: true },
+        }),
+        prisma.article.findMany({
+          where: {
+            ownerUserId,
+            deletedAt: null,
+            createdAt: { gte: twelveMonthsAgo },
+          },
+          select: { createdAt: true },
+        }),
+      ]);
 
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
 

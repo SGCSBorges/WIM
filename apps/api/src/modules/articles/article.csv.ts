@@ -30,8 +30,7 @@ const ESCAPE = /[",\n\r]/;
  *  comma, double-quote, or newline; double up internal quotes. */
 export function csvEscape(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const s =
-    value instanceof Date ? value.toISOString() : String(value);
+  const s = value instanceof Date ? value.toISOString() : String(value);
   if (s === "") return "";
   if (!ESCAPE.test(s)) return s;
   return `"${s.replace(/"/g, '""')}"`;

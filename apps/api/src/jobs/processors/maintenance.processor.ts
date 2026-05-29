@@ -34,11 +34,13 @@ export const MaintenanceProcessor = {
         );
         return;
       }
-      logger.info({ retentionDays }, "[maintenance] article trash purge starting");
-      const t0 = Date.now();
-      const { deleted } = await ArticleService.purgeTrashOlderThan(
-        retentionDays
+      logger.info(
+        { retentionDays },
+        "[maintenance] article trash purge starting"
       );
+      const t0 = Date.now();
+      const { deleted } =
+        await ArticleService.purgeTrashOlderThan(retentionDays);
       logger.info(
         { deleted, elapsedMs: Date.now() - t0, retentionDays },
         "[maintenance] article trash purge done"

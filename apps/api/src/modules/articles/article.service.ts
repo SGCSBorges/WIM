@@ -495,7 +495,9 @@ export const ArticleService = {
   restore: async (id: number, ownerUserId: number) => {
     const existing = await prisma.article.findFirst({
       where: { articleId: id, ownerUserId, NOT: { deletedAt: null } },
-      include: { garantie: { select: { garantieId: true, garantieFin: true } } },
+      include: {
+        garantie: { select: { garantieId: true, garantieFin: true } },
+      },
     });
     if (!existing) throw createHttpError(404, "Article not found in trash");
 
