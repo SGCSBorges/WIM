@@ -8,6 +8,8 @@ vi.mock("../../libs/prisma", () => ({
       count: vi.fn(),
       create: vi.fn(),
       delete: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
     },
     attachment: {
       findFirst: vi.fn(),
@@ -82,12 +84,12 @@ describe("ArticleService.remove", () => {
     expect(AlertService.cancelForWarranty).not.toHaveBeenCalled();
   });
 
-  it("cancels warranty alerts before deleting article that has a warranty", async () => {
+  it("cancels warranty alerts before soft-deleting an article that has a warranty", async () => {
     mockPrisma.article.findFirst.mockResolvedValue({
       articleId: 5,
       garantie: { garantieId: 42 },
     });
-    mockPrisma.article.delete.mockResolvedValue({});
+    mockPrisma.article.update.mockResolvedValue({ articleId: 5 });
 
     await ArticleService.remove(5, 1);
 
@@ -95,24 +97,24 @@ describe("ArticleService.remove", () => {
       ownerUserId: 1,
       garantieId: 42,
     });
-    expect(mockPrisma.article.delete).toHaveBeenCalledWith({
-      where: { articleId: 5 },
-    });
+    const updateCall = mockPrisma.article.update.mock.calls[0][0];
+    expect(updateCall.where).toEqual({ articleId: 5 });
+    expect(updateCall.data.deletedAt).toBeInstanceOf(Date);
   });
 
-  it("deletes article without calling AlertService when there is no warranty", async () => {
+  it("soft-deletes the article without calling AlertService when there is no warranty", async () => {
     mockPrisma.article.findFirst.mockResolvedValue({
       articleId: 7,
       garantie: null,
     });
-    mockPrisma.article.delete.mockResolvedValue({});
+    mockPrisma.article.update.mockResolvedValue({ articleId: 7 });
 
     await ArticleService.remove(7, 1);
 
     expect(AlertService.cancelForWarranty).not.toHaveBeenCalled();
-    expect(mockPrisma.article.delete).toHaveBeenCalledWith({
-      where: { articleId: 7 },
-    });
+    const updateCall = mockPrisma.article.update.mock.calls[0][0];
+    expect(updateCall.where).toEqual({ articleId: 7 });
+    expect(updateCall.data.deletedAt).toBeInstanceOf(Date);
   });
 });
 

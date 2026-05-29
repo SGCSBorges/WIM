@@ -57,7 +57,11 @@ router.post(
     // If linked to an article, it must belong to the caller.
     if (body.alerteArticleId != null) {
       const owned = await prisma.article.findFirst({
-        where: { articleId: body.alerteArticleId, ownerUserId: req.user!.sub },
+        where: {
+          articleId: body.alerteArticleId,
+          ownerUserId: req.user!.sub,
+          deletedAt: null,
+        },
         select: { articleId: true },
       });
       if (!owned)

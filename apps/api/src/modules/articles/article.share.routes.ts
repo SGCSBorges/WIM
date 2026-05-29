@@ -23,7 +23,7 @@ router.get(
     const ownerUserId = req.user!.sub;
     const { page, limit } = paginationQuery.parse(req.query);
     const articles = await prisma.article.findMany({
-      where: { ownerUserId, sharedWithPowerUsers: true },
+      where: { ownerUserId, sharedWithPowerUsers: true, deletedAt: null },
       orderBy: { updatedAt: "desc" },
       take: limit,
       skip: (page - 1) * limit,
@@ -52,7 +52,7 @@ router.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const ownerUserId = req.user!.sub;
     const result = await prisma.article.updateMany({
-      where: { ownerUserId, sharedWithPowerUsers: true },
+      where: { ownerUserId, sharedWithPowerUsers: true, deletedAt: null },
       data: { sharedWithPowerUsers: false },
     });
 
@@ -79,7 +79,7 @@ router.post(
 
     // Only the article owner can share it.
     const article = await prisma.article.findFirst({
-      where: { articleId, ownerUserId },
+      where: { articleId, ownerUserId, deletedAt: null },
       select: { articleId: true },
     });
     if (!article) {
@@ -114,7 +114,7 @@ router.get(
     const ownerUserId = req.user!.sub;
 
     const article = await prisma.article.findFirst({
-      where: { articleId, ownerUserId },
+      where: { articleId, ownerUserId, deletedAt: null },
       select: { articleId: true, sharedWithPowerUsers: true, updatedAt: true },
     });
     if (!article) {
@@ -134,7 +134,7 @@ router.delete(
     const ownerUserId = req.user!.sub;
 
     const article = await prisma.article.findFirst({
-      where: { articleId, ownerUserId },
+      where: { articleId, ownerUserId, deletedAt: null },
       select: { articleId: true },
     });
     if (!article) {

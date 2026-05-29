@@ -125,9 +125,9 @@ export async function getDashboardStatistics(
       tagValueRows,
       valueArticles,
     ] = await Promise.all([
-      prisma.article.count({ where: { ownerUserId } }),
+      prisma.article.count({ where: { ownerUserId, deletedAt: null } }),
       prisma.article.count({
-        where: { ownerUserId, garantie: { isNot: null } },
+        where: { ownerUserId, garantie: { isNot: null }, deletedAt: null },
       }),
       prisma.location.findMany({
         where: { ownerUserId },
@@ -136,7 +136,7 @@ export async function getDashboardStatistics(
       }),
       prisma.articleLocation.groupBy({
         by: ["locationId"],
-        where: { article: { ownerUserId } },
+        where: { article: { ownerUserId, deletedAt: null } },
         _count: { articleId: true },
       }),
       prisma.garantie.count({ where: { ownerUserId } }),
@@ -157,25 +157,29 @@ export async function getDashboardStatistics(
       }),
       prisma.alerte.count({ where: { ownerUserId } }),
       prisma.article.count({
-        where: { ownerUserId, sharedWithPowerUsers: true },
+        where: { ownerUserId, sharedWithPowerUsers: true, deletedAt: null },
       }),
       prisma.article.aggregate({
-        where: { ownerUserId },
+        where: { ownerUserId, deletedAt: null },
         _sum: { purchasePrice: true },
       }),
       prisma.article.aggregate({
-        where: { ownerUserId, garantie: { garantieFin: { lt: currentDate } } },
+        where: {
+          ownerUserId,
+          deletedAt: null,
+          garantie: { garantieFin: { lt: currentDate } },
+        },
         _sum: { purchasePrice: true },
       }),
       prisma.articleLocation.findMany({
-        where: { article: { ownerUserId } },
+        where: { article: { ownerUserId, deletedAt: null } },
         select: {
           locationId: true,
           article: { select: { purchasePrice: true } },
         },
       }),
       prisma.articleTag.findMany({
-        where: { article: { ownerUserId } },
+        where: { article: { ownerUserId, deletedAt: null } },
         select: {
           tagId: true,
           tag: { select: { name: true } },
@@ -183,7 +187,7 @@ export async function getDashboardStatistics(
         },
       }),
       prisma.article.findMany({
-        where: { ownerUserId, purchasePrice: { not: null } },
+        where: { ownerUserId, purchasePrice: { not: null }, deletedAt: null },
         select: {
           purchasePrice: true,
           depreciationRate: true,
@@ -210,7 +214,11 @@ export async function getDashboardStatistics(
         select: { garantieFin: true },
       }),
       prisma.article.findMany({
-        where: { ownerUserId, createdAt: { gte: twelveMonthsAgo } },
+        where: {
+          ownerUserId,
+          deletedAt: null,
+          createdAt: { gte: twelveMonthsAgo },
+        },
         select: { createdAt: true },
       }),
     ]);

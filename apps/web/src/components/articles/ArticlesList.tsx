@@ -721,6 +721,13 @@ const ArticlesList: React.FC = () => {
             {t("articles.import.csv")}
           </button>
 
+          <Link
+            to="/articles/trash"
+            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+          >
+            {t("trash.link")}
+          </Link>
+
           <button
             onClick={() => setShowForm(true)}
             className="ui-btn-primary px-4 py-2 rounded-md"

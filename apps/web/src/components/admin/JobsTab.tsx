@@ -60,7 +60,8 @@ export default function JobsTab() {
           const value = counts?.[field];
           // Failed > 0 deserves attention: render the cell with the warn
           // styling so an operator's eye lands on it during the routine scan.
-          const isAlert = field === "failed" && typeof value === "number" && value > 0;
+          const isAlert =
+            field === "failed" && typeof value === "number" && value > 0;
           return (
             <div
               key={field}

@@ -27,6 +27,8 @@ export function getMaintenanceWorker(): Worker<MaintenanceJobPayload> | null {
 // window from env: 0 (or invalid/missing) disables the schedule entirely so
 // an operator can opt out without code changes.
 const AUDIT_PRUNE_REPEAT_KEY = "audit-prune-daily";
+const TRASH_PURGE_REPEAT_KEY = "article-trash-purge-daily";
+
 function auditRetentionDays(): number {
   const raw = process.env.AUDIT_RETENTION_DAYS;
   if (raw === undefined) return 90;
@@ -35,36 +37,64 @@ function auditRetentionDays(): number {
   return n;
 }
 
+function articleTrashRetentionDays(): number {
+  const raw = process.env.ARTICLE_TRASH_RETENTION_DAYS;
+  if (raw === undefined) return 30;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return 30;
+  return n;
+}
+
 async function scheduleMaintenance() {
-  const retentionDays = auditRetentionDays();
-  if (retentionDays === 0) {
-    logger.info("[maintenance] AUDIT_RETENTION_DAYS=0 → audit prune disabled");
-    return;
-  }
-  // Re-register on every boot so a retention-days change picks up cleanly.
-  // BullMQ keys repeatables by (name, cron, jobId) — drop the old one first.
+  const auditDays = auditRetentionDays();
+  const trashDays = articleTrashRetentionDays();
   try {
     const existing = await maintenanceQueue.getRepeatableJobs();
     for (const r of existing) {
-      if (r.id === AUDIT_PRUNE_REPEAT_KEY) {
+      if (
+        r.id === AUDIT_PRUNE_REPEAT_KEY ||
+        r.id === TRASH_PURGE_REPEAT_KEY
+      ) {
         await maintenanceQueue.removeRepeatableByKey(r.key);
       }
     }
-    await maintenanceQueue.add(
-      "audit_prune",
-      { type: "audit_prune", retentionDays },
-      {
-        jobId: AUDIT_PRUNE_REPEAT_KEY,
-        repeat: { pattern: "0 3 * * *", tz: "UTC" },
-      }
-    );
-    logger.info(
-      { retentionDays, cron: "0 3 * * *" },
-      "[maintenance] audit prune scheduled"
-    );
+    if (auditDays === 0) {
+      logger.info("[maintenance] AUDIT_RETENTION_DAYS=0 → audit prune disabled");
+    } else {
+      await maintenanceQueue.add(
+        "audit_prune",
+        { type: "audit_prune", retentionDays: auditDays },
+        {
+          jobId: AUDIT_PRUNE_REPEAT_KEY,
+          repeat: { pattern: "0 3 * * *", tz: "UTC" },
+        }
+      );
+      logger.info(
+        { retentionDays: auditDays, cron: "0 3 * * *" },
+        "[maintenance] audit prune scheduled"
+      );
+    }
+    if (trashDays === 0) {
+      logger.info(
+        "[maintenance] ARTICLE_TRASH_RETENTION_DAYS=0 → trash purge disabled"
+      );
+    } else {
+      await maintenanceQueue.add(
+        "article_trash_purge",
+        { type: "article_trash_purge", retentionDays: trashDays },
+        {
+          jobId: TRASH_PURGE_REPEAT_KEY,
+          repeat: { pattern: "30 3 * * *", tz: "UTC" },
+        }
+      );
+      logger.info(
+        { retentionDays: trashDays, cron: "30 3 * * *" },
+        "[maintenance] article trash purge scheduled"
+      );
+    }
   } catch (err) {
     // Redis unavailable in dev — log and move on; reminders + API still work.
-    logger.warn({ err }, "[maintenance] could not schedule audit prune");
+    logger.warn({ err }, "[maintenance] could not schedule maintenance jobs");
   }
 }
 

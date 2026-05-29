@@ -18,9 +18,7 @@ function Trigger({
         toast.show(message, {
           kind: "info",
           ttl,
-          action: withAction
-            ? { label: "Undo", onClick: vi.fn() }
-            : undefined,
+          action: withAction ? { label: "Undo", onClick: vi.fn() } : undefined,
         })
       }
     >

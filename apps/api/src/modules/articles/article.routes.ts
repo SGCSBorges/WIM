@@ -92,6 +92,53 @@ router.get(
   })
 );
 
+/** GET soft-deleted articles for the current user (Trash view). Must precede
+ *  the `/:id` GET so the static segment wins the matcher. */
+router.get(
+  "/trash",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const items = await ArticleService.listTrash(req.user!.sub);
+    res.json({ items });
+  })
+);
+
+/** POST restore a soft-deleted article. */
+router.post(
+  "/:id/restore",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const restored = await ArticleService.restore(id, req.user!.sub);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      entityId: id,
+      metadata: { restored: true },
+    });
+    res.json(restored);
+  })
+);
+
+/** DELETE permanent removal (purge). Used by the Trash view to skip the
+ *  retention window when the owner is sure. */
+router.delete(
+  "/:id/purge",
+  security.destructiveRateLimiter,
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    await ArticleService.hardRemove(id, req.user!.sub);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "Article",
+      entityId: id,
+      metadata: { purge: true },
+    });
+    res.status(204).send();
+  })
+);
+
 /** GET un article par ID */
 router.get(
   "/:id",

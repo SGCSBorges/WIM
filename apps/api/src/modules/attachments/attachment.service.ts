@@ -16,7 +16,7 @@ async function assertArticleOwned(
 ) {
   if (articleId == null) return;
   const owned = await prisma.article.findFirst({
-    where: { articleId, ownerUserId },
+    where: { articleId, ownerUserId, deletedAt: null },
     select: { articleId: true },
   });
   if (!owned)

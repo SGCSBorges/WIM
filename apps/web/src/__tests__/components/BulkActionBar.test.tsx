@@ -3,7 +3,9 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import BulkActionBar from "../../components/articles/BulkActionBar";
 import { I18nProvider } from "../../i18n/i18n";
 
-function renderBar(overrides: Partial<React.ComponentProps<typeof BulkActionBar>> = {}) {
+function renderBar(
+  overrides: Partial<React.ComponentProps<typeof BulkActionBar>> = {}
+) {
   const props: React.ComponentProps<typeof BulkActionBar> = {
     selectedCount: 3,
     canShare: true,
@@ -18,7 +20,14 @@ function renderBar(overrides: Partial<React.ComponentProps<typeof BulkActionBar>
     onAssignTag: vi.fn(),
     ...overrides,
   };
-  return { props, ...render(<I18nProvider><BulkActionBar {...props} /></I18nProvider>) };
+  return {
+    props,
+    ...render(
+      <I18nProvider>
+        <BulkActionBar {...props} />
+      </I18nProvider>
+    ),
+  };
 }
 
 describe("<BulkActionBar />", () => {
@@ -41,7 +50,9 @@ describe("<BulkActionBar />", () => {
 
   it("hides Share / Unshare when the caller can't share (USER role)", () => {
     renderBar({ canShare: false });
-    expect(screen.queryByRole("button", { name: /share publicly/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /share publicly/i })
+    ).toBeNull();
     expect(screen.queryByRole("button", { name: /unshare/i })).toBeNull();
   });
 

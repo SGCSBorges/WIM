@@ -68,11 +68,13 @@ export type ArticleListFilters = {
 };
 
 // Translate the filter set into a Prisma where-clause (all owner-scoped).
+// Trashed rows (deletedAt != null) are never returned by the live list; the
+// dedicated /trash endpoint reads from `listTrash` instead.
 function buildArticleWhere(
   ownerUserId: number,
   f: ArticleListFilters
 ): Prisma.ArticleWhereInput {
-  const where: Prisma.ArticleWhereInput = { ownerUserId };
+  const where: Prisma.ArticleWhereInput = { ownerUserId, deletedAt: null };
   if (f.locationId) where.locations = { some: { locationId: f.locationId } };
   if (f.tagId) where.tags = { some: { tagId: f.tagId } };
   if (f.q && f.q.trim()) {
@@ -171,7 +173,7 @@ export const ArticleService = {
 
   get: (id: number, ownerUserId: number) =>
     prisma.article.findFirst({
-      where: { articleId: id, ownerUserId },
+      where: { articleId: id, ownerUserId, deletedAt: null },
       include: articleInclude,
     }),
 
@@ -299,7 +301,7 @@ export const ArticleService = {
     }>;
     const existing: ArticleWithGarantie | null = await prisma.article.findFirst(
       {
-        where: { articleId: id, ownerUserId },
+        where: { articleId: id, ownerUserId, deletedAt: null },
         include: { garantie: true },
       }
     );
@@ -469,13 +471,14 @@ export const ArticleService = {
 
   remove: async (id: number, ownerUserId: number) => {
     const existing = await prisma.article.findFirst({
-      where: { articleId: id, ownerUserId },
+      where: { articleId: id, ownerUserId, deletedAt: null },
       include: { garantie: { select: { garantieId: true } } },
     });
     if (!existing) throw createHttpError(404, "Article not found");
 
-    // Cancel BullMQ jobs before cascade-delete removes the warranty from DB,
-    // otherwise the jobs fire against a non-existent warranty.
+    // Cancel BullMQ jobs first so a soft-deleted warranty doesn't continue to
+    // notify the user. (Attachments stay on disk until the trash-purge worker
+    // runs so a restore can recover them.)
     if (existing.garantie) {
       await AlertService.cancelForWarranty({
         ownerUserId,
@@ -483,10 +486,57 @@ export const ArticleService = {
       });
     }
 
-    // Unlink attachment files on disk before the DB cascade drops the rows —
-    // covers both article-linked attachments and warranty-linked proofs so
-    // /uploads doesn't accumulate orphans. Best-effort: a missing/unreadable
-    // file is logged in the helper and doesn't block the delete.
+    return prisma.article.update({
+      where: { articleId: id },
+      data: { deletedAt: new Date() },
+    });
+  },
+
+  restore: async (id: number, ownerUserId: number) => {
+    const existing = await prisma.article.findFirst({
+      where: { articleId: id, ownerUserId, NOT: { deletedAt: null } },
+      include: { garantie: { select: { garantieId: true, garantieFin: true } } },
+    });
+    if (!existing) throw createHttpError(404, "Article not found in trash");
+
+    const restored = await prisma.article.update({
+      where: { articleId: id },
+      data: { deletedAt: null },
+      include: articleInclude,
+    });
+
+    // Re-arm the warranty reminders we cancelled on soft-delete; safe to call
+    // even if the warranty is already past its end (scheduleForWarranty drops
+    // past dates).
+    if (existing.garantie) {
+      await AlertService.scheduleForWarranty({
+        ownerUserId,
+        garantieId: existing.garantie.garantieId,
+        articleId: id,
+        garantieFin: existing.garantie.garantieFin,
+      });
+    }
+
+    return restored;
+  },
+
+  // Permanent delete. Used by the trash purge worker and the manual
+  // "delete forever" action from the Trash view. Unlinks attachment files
+  // before the cascade so /uploads doesn't accumulate orphans.
+  hardRemove: async (id: number, ownerUserId: number) => {
+    const existing = await prisma.article.findFirst({
+      where: { articleId: id, ownerUserId },
+      include: { garantie: { select: { garantieId: true } } },
+    });
+    if (!existing) throw createHttpError(404, "Article not found");
+
+    if (existing.garantie) {
+      await AlertService.cancelForWarranty({
+        ownerUserId,
+        garantieId: existing.garantie.garantieId,
+      });
+    }
+
     const garantieIds = existing.garantie ? [existing.garantie.garantieId] : [];
     const attachments = await prisma.attachment.findMany({
       where: {
@@ -503,6 +553,37 @@ export const ArticleService = {
     return prisma.article.delete({ where: { articleId: id } });
   },
 
+  listTrash: (ownerUserId: number) =>
+    prisma.article.findMany({
+      where: { ownerUserId, NOT: { deletedAt: null } },
+      orderBy: { deletedAt: "desc" },
+      include: articleInclude,
+    }),
+
+  // Purge trashed articles older than `retentionDays` for every owner.
+  // Iterates row-by-row so the per-article `unlinkAttachmentFiles` cleanup
+  // runs deterministically before the cascade drops the rows.
+  purgeTrashOlderThan: async (
+    retentionDays: number
+  ): Promise<{ deleted: number }> => {
+    const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+    const due = await prisma.article.findMany({
+      where: { deletedAt: { lt: cutoff } },
+      select: { articleId: true, ownerUserId: true },
+    });
+    let deleted = 0;
+    for (const row of due) {
+      try {
+        await ArticleService.hardRemove(row.articleId, row.ownerUserId);
+        deleted++;
+      } catch {
+        // Best-effort: a single failure (e.g. an attachment file already
+        // gone) shouldn't abort the whole sweep.
+      }
+    }
+    return { deleted };
+  },
+
   /**
    * Bulk delete articles owned by the user. Silently skips ids that don't
    * belong to the caller (no separate error per row — the user shouldn't
@@ -515,7 +596,7 @@ export const ArticleService = {
     if (ids.length === 0) return { count: 0 };
 
     const owned = await prisma.article.findMany({
-      where: { articleId: { in: ids }, ownerUserId },
+      where: { articleId: { in: ids }, ownerUserId, deletedAt: null },
       select: {
         articleId: true,
         garantie: { select: { garantieId: true } },
@@ -532,30 +613,15 @@ export const ArticleService = {
       }
     }
 
-    // Same orphan-file cleanup as the single-article remove.
-    const ownedArticleIds = owned.map((a) => a.articleId);
-    const ownedGarantieIds = owned
-      .map((a) => a.garantie?.garantieId)
-      .filter((g): g is number => typeof g === "number");
-    const attachments = await prisma.attachment.findMany({
-      where: {
-        ownerUserId,
-        OR: [
-          { articleId: { in: ownedArticleIds } },
-          ...(ownedGarantieIds.length
-            ? [{ garantieId: { in: ownedGarantieIds } }]
-            : []),
-        ],
-      },
-      select: { fileUrl: true, thumbUrl: true },
-    });
-    for (const a of attachments) await unlinkAttachmentFiles(a);
-
-    const result = await prisma.article.deleteMany({
+    // Soft-delete: mark, don't unlink. The trash-purge worker will reap
+    // attachments when the retention window passes.
+    const result = await prisma.article.updateMany({
       where: {
         articleId: { in: owned.map((a) => a.articleId) },
         ownerUserId,
+        deletedAt: null,
       },
+      data: { deletedAt: new Date() },
     });
     return { count: result.count };
   },

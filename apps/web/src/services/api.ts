@@ -405,6 +405,40 @@ export const articlesAPI = {
     return null;
   },
 
+  /** List soft-deleted articles for the current user. */
+  async listTrash(): Promise<{ items: FetchedArticle[] }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/articles/trash`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load trash"));
+    return response.json();
+  },
+
+  /** Restore a soft-deleted article (clears deletedAt). */
+  async restore(id: number): Promise<FetchedArticle> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${id}/restore`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to restore article")
+      );
+    return response.json();
+  },
+
+  /** Permanently delete (skip the retention window). */
+  async purge(id: number) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${id}/purge`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to purge article"));
+    return null;
+  },
+
   // Bulk operations on the caller's owned articles.
   async bulkDelete(ids: number[]): Promise<{ count: number }> {
     const response = await fetchWithTimeout(

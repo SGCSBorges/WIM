@@ -27,6 +27,9 @@ import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 // Route-level code splitting: each lazy import becomes its own chunk so the
 // initial JS bundle only ships the login flow + shell. The rest is fetched
 // on first navigation.
+const ArticlesTrash = React.lazy(
+  () => import("./components/articles/ArticlesTrash")
+);
 const ArticlesList = React.lazy(
   () => import("./components/articles/ArticlesList")
 );
@@ -591,6 +594,7 @@ export default function App() {
 
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/articles" element={<ArticlesList />} />
+            <Route path="/articles/trash" element={<ArticlesTrash />} />
             <Route path="/articles/:id" element={<ArticleDetail />} />
             <Route path="/warranties" element={<WarrantiesView />} />
             <Route path="/attachments" element={<AttachmentsList />} />

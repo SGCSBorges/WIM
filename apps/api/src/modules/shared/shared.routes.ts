@@ -94,6 +94,7 @@ router.get(
     const articles: SharedArticleInclude[] = await prisma.article.findMany({
       where: {
         ownerUserId: { not: viewerUserId },
+        deletedAt: null,
         OR: orClauses,
       },
       take: limit,
@@ -134,8 +135,8 @@ router.put(
     const id = idParam.parse(req.params.id);
     const data = SharedArticleEditSchema.parse(req.body);
 
-    const article = await prisma.article.findUnique({
-      where: { articleId: id },
+    const article = await prisma.article.findFirst({
+      where: { articleId: id, deletedAt: null },
       select: { articleId: true, ownerUserId: true },
     });
     if (!article) throw createHttpError(404, "Article not found");

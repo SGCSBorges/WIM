@@ -74,15 +74,26 @@ export const CalendarService = {
     });
     if (!user) return null;
 
+    // Trashed-article warranties/alerts/claims must NOT appear on the feed —
+    // exclude them via the joined article.deletedAt filter where the row
+    // links to an article. Standalone (article-less) alerts still emit.
+    const liveArticleScope = {
+      OR: [{ article: null }, { article: { deletedAt: null } }],
+    };
+
     const [warranties, alerts, claims] = await Promise.all([
       prisma.garantie.findMany({
-        where: { ownerUserId: user.userId },
+        where: { ownerUserId: user.userId, ...liveArticleScope },
         select: { garantieId: true, garantieNom: true, garantieFin: true },
       }),
       // SCHEDULED captures both kinds (warranty J-30/J-7/J-1 reminders and
       // custom alerts the user created themselves).
       prisma.alerte.findMany({
-        where: { ownerUserId: user.userId, status: AlerteStatus.SCHEDULED },
+        where: {
+          ownerUserId: user.userId,
+          status: AlerteStatus.SCHEDULED,
+          ...liveArticleScope,
+        },
         select: { alerteId: true, alerteNom: true, alerteDate: true },
       }),
       // Warranty claims in flight (anything off NONE) so the workflow shows
@@ -92,6 +103,7 @@ export const CalendarService = {
           ownerUserId: user.userId,
           NOT: { claimStatus: "NONE" },
           claimUpdatedAt: { not: null },
+          ...liveArticleScope,
         },
         select: {
           garantieId: true,

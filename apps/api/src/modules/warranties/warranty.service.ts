@@ -33,6 +33,7 @@ export const WarrantyService = {
         where: {
           articleId: data.garantieArticleId,
           ownerUserId: data.ownerUserId,
+          deletedAt: null,
         },
       });
       if (!article)
@@ -110,7 +111,11 @@ export const WarrantyService = {
       data.garantieArticleId !== current.garantieArticleId
     ) {
       const article = await prisma.article.findFirst({
-        where: { articleId: data.garantieArticleId, ownerUserId },
+        where: {
+          articleId: data.garantieArticleId,
+          ownerUserId,
+          deletedAt: null,
+        },
       });
       if (!article)
         throw createHttpError(403, "Article not found or not owned by you");

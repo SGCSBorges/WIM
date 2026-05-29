@@ -48,7 +48,7 @@ export async function streamArticleClaimPdf(
   currency: string
 ) {
   const article = await prisma.article.findFirst({
-    where: { articleId, ownerUserId },
+    where: { articleId, ownerUserId, deletedAt: null },
     include: {
       garantie: { include: { garantieImageAttachment: true } },
       locations: { select: { location: { select: { name: true } } } },
@@ -168,7 +168,7 @@ export async function streamInventoryPdf(
   currency: string
 ) {
   const articles = await prisma.article.findMany({
-    where: { ownerUserId },
+    where: { ownerUserId, deletedAt: null },
     orderBy: { articleNom: "asc" },
     select: {
       articleNom: true,
@@ -228,7 +228,7 @@ export async function streamLabelsPdf(
   appBaseUrl: string
 ) {
   const articles = await prisma.article.findMany({
-    where: { ownerUserId },
+    where: { ownerUserId, deletedAt: null },
     orderBy: { articleNom: "asc" },
     select: { articleId: true, articleNom: true, articleModele: true },
   });

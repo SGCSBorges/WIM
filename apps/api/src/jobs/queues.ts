@@ -31,10 +31,9 @@ export const alertQueue = new Queue<AlertJobPayload>(ALERT_QUEUE_NAME, {
 // reminder delivery never queues behind a sweep.
 export const MAINTENANCE_QUEUE_NAME = "wim-maintenance";
 
-export type MaintenanceJobPayload = {
-  type: "audit_prune";
-  retentionDays: number;
-};
+export type MaintenanceJobPayload =
+  | { type: "audit_prune"; retentionDays: number }
+  | { type: "article_trash_purge"; retentionDays: number };
 
 export const maintenanceQueue = new Queue<MaintenanceJobPayload>(
   MAINTENANCE_QUEUE_NAME,

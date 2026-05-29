@@ -182,6 +182,10 @@ model Article {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // Soft-delete marker. Null = live. Live reads scope `deletedAt: null`; the
+  // Trash view lists rows where this is set. A daily maintenance job
+  // hard-deletes rows older than ARTICLE_TRASH_RETENTION_DAYS.
+  deletedAt DateTime?
 
   owner    User     @relation("UserArticles", fields: [ownerUserId], references: [userId], onDelete: Cascade)
   garantie Garantie?
@@ -192,6 +196,7 @@ model Article {
   notes    ArticleNote[]
 
   @@index([ownerUserId])
+  @@index([ownerUserId, deletedAt])
   @@index([articleNom, articleModele])
   @@index([sharedWithPowerUsers])
   @@index([sharedWithPowerUsers, updatedAt(sort: Desc)])

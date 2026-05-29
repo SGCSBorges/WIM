@@ -96,7 +96,9 @@ export const LocationService = {
     // Ensure both belong to the same owner
     const [location, article] = await Promise.all([
       prisma.location.findFirst({ where: { locationId, ownerUserId } }),
-      prisma.article.findFirst({ where: { articleId, ownerUserId } }),
+      prisma.article.findFirst({
+        where: { articleId, ownerUserId, deletedAt: null },
+      }),
     ]);
 
     if (!location) throw createHttpError(404, "Location not found");
@@ -120,7 +122,7 @@ export const LocationService = {
     if (!location) throw createHttpError(404, "Location not found");
 
     const article = await prisma.article.findFirst({
-      where: { articleId, ownerUserId },
+      where: { articleId, ownerUserId, deletedAt: null },
       select: { articleId: true },
     });
     if (!article)

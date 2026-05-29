@@ -466,6 +466,51 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("soft-deletes an article, lists it in Trash, restores it back to live", async () => {
+    const agent = await register("trasher@example.com");
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Office" });
+    const create = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Stapler",
+        articleModele: "Swingline",
+        locationIds: [loc.body.locationId],
+      });
+    const id = create.body.articleId as number;
+
+    // Soft-delete via DELETE /:id.
+    const del = await agent
+      .delete(`/api/articles/${id}`)
+      .set("Origin", ORIGIN);
+    expect(del.status).toBe(204);
+
+    // Live get returns 404; live list excludes it.
+    const liveGet = await agent.get(`/api/articles/${id}`);
+    expect(liveGet.status).toBe(404);
+    const list = await agent.get("/api/articles");
+    expect(list.body.items.find((a: { articleId: number }) => a.articleId === id)).toBeUndefined();
+
+    // Trash lists it.
+    const trash = await agent.get("/api/articles/trash");
+    expect(trash.status).toBe(200);
+    expect(trash.body.items.length).toBe(1);
+    expect(trash.body.items[0].articleId).toBe(id);
+
+    // Restore.
+    const restore = await agent
+      .post(`/api/articles/${id}/restore`)
+      .set("Origin", ORIGIN);
+    expect(restore.status).toBe(200);
+    const liveAgain = await agent.get(`/api/articles/${id}`);
+    expect(liveAgain.status).toBe(200);
+    const trashAgain = await agent.get("/api/articles/trash");
+    expect(trashAgain.body.items.length).toBe(0);
+  });
+
   it("streams an article CSV export with header + row for a created article", async () => {
     const agent = await register("eve@example.com");
     const loc = await agent
