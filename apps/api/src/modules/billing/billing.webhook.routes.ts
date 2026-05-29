@@ -46,6 +46,37 @@ router.post(
         .send(`Webhook signature verification failed: ${errMsg}`);
     }
 
+    // Belt-and-braces against payload replay. A leaked old payload+signature
+    // remains cryptographically valid; bound how stale we'll accept. Ack with
+    // 200 so Stripe doesn't retry an event we won't process. Configurable to
+    // allow a wider window in laggy test environments.
+    const maxAgeSec = Number(
+      process.env.STRIPE_WEBHOOK_MAX_AGE_SEC ?? 5 * 60
+    );
+    const ageSec = Math.floor(Date.now() / 1000) - event.created;
+    if (ageSec > maxAgeSec) {
+      logger.warn(
+        { eventId: event.id, type: event.type, ageSec, maxAgeSec },
+        "[stripe-webhook] dropping stale event"
+      );
+      return res.status(200).json({ received: true, stale: true });
+    }
+
+    // Whitelist of event types we actually handle. Anything else gets logged
+    // (so new Stripe events surface in ops) and acked.
+    const HANDLED = new Set([
+      "checkout.session.completed",
+      "customer.subscription.deleted",
+      "customer.subscription.updated",
+    ]);
+    if (!HANDLED.has(event.type)) {
+      logger.info(
+        { eventId: event.id, type: event.type },
+        "[stripe-webhook] unhandled event type"
+      );
+      return res.status(200).json({ received: true, unhandled: true });
+    }
+
     // Idempotency: the marker insert AND the business logic must commit
     // together. If business logic fails we want Stripe to redeliver, which
     // requires the marker to NOT have been saved. So we wrap both in one
