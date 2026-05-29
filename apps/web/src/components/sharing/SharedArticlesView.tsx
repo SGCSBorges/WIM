@@ -4,6 +4,7 @@ import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "../articles/ArticleThumb";
 import { ErrorBanner } from "../common/States";
+import { Skeleton } from "../common/Skeleton";
 
 type EditDraft = {
   articleNom: string;
@@ -80,8 +81,10 @@ export default function SharedArticlesView() {
 
   if (loading) {
     return (
-      <div className="ui-card rounded-lg p-6">
-        <div className="text-sm ui-text-muted">{t("common.loading")}</div>
+      <div className="ui-card rounded-lg p-6 space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} height={56} />
+        ))}
       </div>
     );
   }
