@@ -3,6 +3,7 @@ import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { ArticleService } from "./article.service";
 import { importArticles } from "./article.import";
+import { buildArticlesCsv } from "./article.csv";
 import {
   streamArticleClaimPdf,
   streamInventoryPdf,
@@ -306,6 +307,34 @@ async function userCurrency(userId: number): Promise<string> {
   });
   return u?.currency ?? "USD";
 }
+
+/** GET CSV export of all matching articles (same filter vocabulary as list).
+ *  Path mirrors the existing inventory.pdf route. */
+router.get(
+  "/export/inventory.csv",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const q = ArticleListQuerySchema.parse(req.query);
+    const rows = await ArticleService.listAll(req.user!.sub, {
+      locationId: q.locationId,
+      tagId: q.tag,
+      q: q.q,
+      warrantyStatus: q.warrantyStatus,
+      priceMin: q.priceMin,
+      priceMax: q.priceMax,
+      createdFrom: q.createdFrom,
+      createdTo: q.createdTo,
+      sort: q.sort,
+      dir: q.dir,
+    });
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="wim-inventory-${new Date().toISOString().slice(0, 10)}.csv"`
+    );
+    res.send(buildArticlesCsv(rows));
+  })
+);
 
 /** GET full-inventory manifest PDF (declared before /:id/* article routes). */
 router.get(

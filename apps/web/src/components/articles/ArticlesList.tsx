@@ -45,35 +45,22 @@ const ArticlesList: React.FC = () => {
     return Math.floor((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  const exportToCsv = () => {
-    const headers = [
-      t("articles.table.name"),
-      t("articles.table.model"),
-      t("articles.table.description"),
-      t("articles.table.value"),
-      t("articles.table.warranty"),
-      t("articles.table.expiresIn"),
-    ];
-    const rows = articles.map((a) => {
-      const ws = getWarrantyStatus(a.garantie);
-      const days = getDaysUntilExpiry(a.garantie?.garantieFin);
-      return [
-        a.articleNom,
-        a.articleModele,
-        a.articleDescription ?? "",
-        a.purchasePrice != null ? String(a.purchasePrice) : "",
-        ws.label,
-        days !== null ? `${days} ${t("articles.warranty.daysLeft")}` : "",
-      ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
-    });
-    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "articles.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+  // Defer to the server-side CSV export: it honours every list filter, returns
+  // a full structured export (locations/tags/warranty columns), and isn't
+  // capped to the current page like a client-side serializer would be.
+  const exportToCsv = async () => {
+    try {
+      const qs = searchParams.toString();
+      const blob = await articlesAPI.inventoryCsv(qs);
+      downloadBlob(
+        `wim-inventory-${new Date().toISOString().slice(0, 10)}.csv`,
+        blob
+      );
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
   };
 
   const getWarrantyStatus = (garantie: Article["garantie"]) => {

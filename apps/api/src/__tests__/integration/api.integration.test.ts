@@ -466,6 +466,30 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("streams an article CSV export with header + row for a created article", async () => {
+    const agent = await register("eve@example.com");
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Shed" });
+    await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Mower",
+        articleModele: "EGO Power",
+        locationIds: [loc.body.locationId],
+      });
+
+    const res = await agent.get("/api/articles/export/inventory.csv");
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toMatch(/text\/csv/);
+    const body = String(res.text);
+    expect(body).toContain("articleId,name,model");
+    expect(body).toContain("Mower");
+    expect(body).toContain("Shed");
+  });
+
   it("finds an article by its serial number through the substring search", async () => {
     const agent = await register("ralph@example.com");
     const loc = await agent

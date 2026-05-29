@@ -149,6 +149,26 @@ export const ArticleService = {
     return { items, total, page, limit };
   },
 
+  // Streaming-friendly "list all matching rows" used by the CSV export.
+  // No pagination; capped at MAX_EXPORT_ROWS so a runaway query can't OOM the
+  // process. Same filter and sort semantics as `list`.
+  listAll: async (ownerUserId: number, filters: ArticleListFilters = {}) => {
+    const MAX_EXPORT_ROWS = 10_000;
+    const where = buildArticleWhere(ownerUserId, filters);
+    const sortField = filters.sort ?? "articleId";
+    const sortDir = filters.dir ?? "desc";
+    const orderBy: Prisma.ArticleOrderByWithRelationInput =
+      sortField === "purchasePrice"
+        ? { purchasePrice: { sort: sortDir, nulls: "last" } }
+        : { [sortField]: sortDir };
+    return prisma.article.findMany({
+      where,
+      take: MAX_EXPORT_ROWS,
+      orderBy,
+      include: articleInclude,
+    });
+  },
+
   get: (id: number, ownerUserId: number) =>
     prisma.article.findFirst({
       where: { articleId: id, ownerUserId },

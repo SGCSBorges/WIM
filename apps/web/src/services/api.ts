@@ -253,6 +253,17 @@ export const articlesAPI = {
     return response.blob();
   },
 
+  /** CSV export honouring the same filters as the list endpoint. */
+  async inventoryCsv(qs: string = ""): Promise<Blob> {
+    const url = `${API_BASE_URL}/articles/export/inventory.csv${qs ? `?${qs}` : ""}`;
+    const response = await fetchWithTimeout(url, {
+      headers: { Accept: "text/csv" },
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to generate CSV"));
+    return response.blob();
+  },
+
   async labelsPdf(): Promise<Blob> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/articles/export/labels.pdf`,
