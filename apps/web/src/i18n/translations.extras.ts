@@ -9,6 +9,8 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "common.unsaved.discardConfirm":
+      "You have unsaved changes. Discard them and leave?",
     "articles.table.image": "Image",
     "articleForm.brand": "Brand",
     "articleForm.serialNumber": "Serial number",
@@ -388,6 +390,8 @@ export const extras = {
     "timeline.kind.alert": "Alert",
   },
   fr: {
+    "common.unsaved.discardConfirm":
+      "Vous avez des modifications non enregistrées. Les abandonner et quitter ?",
     "articles.table.image": "Image",
     "articleForm.brand": "Marque",
     "articleForm.serialNumber": "Numéro de série",
@@ -782,6 +786,8 @@ export const extras = {
     "timeline.kind.alert": "Alerte",
   },
   pt: {
+    "common.unsaved.discardConfirm":
+      "Tem alterações não guardadas. Descartá-las e sair?",
     "articles.table.image": "Imagem",
     "articleForm.brand": "Marca",
     "articleForm.serialNumber": "Número de série",

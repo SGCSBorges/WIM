@@ -14,6 +14,7 @@ import { useI18n } from "../../i18n/i18n";
 import type { Article, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
+import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
 import BarcodeScanner, { barcodeSupported } from "./BarcodeScanner";
 import {
   barcodeLookupEnabled,
@@ -34,6 +35,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const { t } = useI18n();
   const toast = useToast();
   const formErrorRef = useRef<HTMLDivElement | null>(null);
+  // Dirty tracking for the unsaved-changes guard. A form-level onChange flips
+  // this on any field edit; it resets on prop-sync and after a successful save.
+  const [dirty, setDirty] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
   const [locationsError, setLocationsError] = useState<string | null>(null);
@@ -165,8 +169,17 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     }
     setWarrantyProofError(null);
     setDeleteProofFromServer(false);
+    setDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article?.articleId]);
+
+  useUnsavedChangesGuard(dirty);
+
+  // Confirm before discarding unsaved edits via the explicit Cancel action.
+  const handleCancel = () => {
+    if (dirty && !window.confirm(t("common.unsaved.discardConfirm"))) return;
+    onCancel?.();
+  };
 
   const handleWarrantyProofSelected = async (file: File) => {
     try {
@@ -359,6 +372,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setSubmitting(true);
     try {
       await onSubmit(submitData);
+      // Saved — clear the dirty flag so navigation/cancel won't re-prompt.
+      setDirty(false);
     } catch (err) {
       const msg = getErrorMessage(err, t("common.errorOccurred"));
       setFormError(msg);
@@ -428,7 +443,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         {article ? t("articleForm.editTitle") : t("articleForm.createTitle")}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        onChange={() => setDirty(true)}
+        className="space-y-4"
+      >
         <div>
           <label
             htmlFor="articleNom"
@@ -907,7 +926,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           {onCancel && (
             <button
               type="button"
-              onClick={onCancel}
+              onClick={handleCancel}
               className="px-4 py-2 ui-btn-ghost border ui-divider rounded-md"
             >
               {t("common.cancel")}

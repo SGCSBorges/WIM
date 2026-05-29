@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
+import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
 
 interface Warranty {
   garantieId?: number;
@@ -41,6 +42,13 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChangesGuard(dirty);
+
+  const handleCancel = () => {
+    if (dirty && !window.confirm(t("common.unsaved.discardConfirm"))) return;
+    onCancel?.();
+  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -75,6 +83,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     e.preventDefault();
 
     if (validateForm()) {
+      setDirty(false);
       onSubmit({
         ...formData,
         providerName: formData.providerName?.trim() || null,
@@ -113,7 +122,11 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         {warranty ? t("warrantyForm.editTitle") : t("warrantyForm.addTitle")}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        onChange={() => setDirty(true)}
+        className="space-y-6"
+      >
         {/* Warranty Name */}
         <div>
           <label
@@ -286,7 +299,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
           {onCancel && (
             <button
               type="button"
-              onClick={onCancel}
+              onClick={handleCancel}
               className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider"
             >
               {t("common.cancel")}
