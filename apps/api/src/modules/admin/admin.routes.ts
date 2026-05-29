@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { asyncHandler } from "../common/http";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
@@ -45,6 +46,8 @@ const AuditLogQuerySchema = z.object({
   userId: z.coerce.number().int().positive().optional(),
   action: z.string().min(1).max(80).optional(),
   entity: z.string().min(1).max(80).optional(),
+  createdFrom: z.coerce.date().optional(),
+  createdTo: z.coerce.date().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   cursor: z.coerce.number().int().positive().optional(),
 });
@@ -390,10 +393,18 @@ router.get(
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
     const q = AuditLogQuerySchema.parse(req.query);
-    const where = {
+    const where: Prisma.AuditLogWhereInput = {
       ...(q.userId !== undefined ? { userId: q.userId } : {}),
       ...(q.action ? { action: q.action } : {}),
       ...(q.entity ? { entity: q.entity } : {}),
+      ...(q.createdFrom || q.createdTo
+        ? {
+            createdAt: {
+              ...(q.createdFrom ? { gte: q.createdFrom } : {}),
+              ...(q.createdTo ? { lte: q.createdTo } : {}),
+            },
+          }
+        : {}),
     };
 
     // Cursor pagination on `id` desc — stable + index-friendly.

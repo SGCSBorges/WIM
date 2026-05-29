@@ -52,7 +52,7 @@ export const security = {
   // Tighter limit for auth endpoints to slow brute-force attacks.
   authRateLimiter: rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 20,
+    max: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 20),
     standardHeaders: true,
     legacyHeaders: false,
     message: {

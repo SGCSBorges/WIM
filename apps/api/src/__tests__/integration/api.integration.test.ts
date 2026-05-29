@@ -46,6 +46,9 @@ suite("API integration (real Postgres)", () => {
     process.env.DATABASE_URL = INTEGRATION_URL;
     process.env.JWT_SECRET ??= "integration-test-secret";
     process.env.JOBS_ENABLED = "false";
+    // The whole suite shares one IP; lift the auth rate cap so cumulative
+    // register/login/logout calls across tests don't trip the 20/15min bucket.
+    process.env.AUTH_RATE_LIMIT_MAX = "1000";
 
     // Reset (not deploy) so the suite is robust to whatever state the target
     // DB is in — in CI it reuses the Postgres service that the drift check
@@ -461,5 +464,32 @@ suite("API integration (real Postgres)", () => {
       .set("Origin", ORIGIN)
       .send({ email: "ivan-new@example.com", password: "Passw0rd!" });
     expect(login.status).toBe(200);
+  });
+
+  it("records a LOGOUT audit row and filters the admin audit log by date", async () => {
+    // Promote an admin (authGuard reads role from DB per request, so the
+    // existing cookie becomes admin immediately).
+    const admin = await register("auditor@example.com");
+    await prisma.user.update({
+      where: { email: "auditor@example.com" },
+      data: { role: "ADMIN" },
+    });
+
+    // A second user logs out, which must now write a LOGOUT audit entry.
+    const user = await register("logger@example.com");
+    const logout = await user.post("/api/auth/logout").set("Origin", ORIGIN);
+    expect(logout.status).toBe(204);
+
+    const byAction = await admin.get("/api/admin/audit-log?action=LOGOUT");
+    expect(byAction.status).toBe(200);
+    expect(byAction.body.entries.length).toBeGreaterThan(0);
+    expect(byAction.body.entries[0].action).toBe("LOGOUT");
+
+    // A date window that ends before any activity returns nothing.
+    const past = await admin.get(
+      "/api/admin/audit-log?createdTo=2000-01-01T00:00:00.000Z"
+    );
+    expect(past.status).toBe(200);
+    expect(past.body.entries.length).toBe(0);
   });
 });

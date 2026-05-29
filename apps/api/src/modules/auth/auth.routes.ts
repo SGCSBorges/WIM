@@ -59,6 +59,12 @@ router.post(
       const ttl = req.user.exp - Math.floor(Date.now() / 1000);
       if (ttl > 0) await denyToken(req.user.jti, ttl);
     }
+    await auditAction(req, {
+      userId: req.user?.sub,
+      action: "LOGOUT",
+      entity: "User",
+      entityId: req.user?.sub,
+    });
     res.clearCookie("wim_token", cookieOptsFor(req));
     res.status(204).send();
   })

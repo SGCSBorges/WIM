@@ -33,6 +33,8 @@ export default function AuditLogTab() {
   const [filterUserId, setFilterUserId] = useState<string>("");
   const [filterAction, setFilterAction] = useState<string>("");
   const [filterEntity, setFilterEntity] = useState<string>("");
+  const [filterFrom, setFilterFrom] = useState<string>("");
+  const [filterTo, setFilterTo] = useState<string>("");
 
   const load = useCallback(
     async (reset: boolean) => {
@@ -43,6 +45,9 @@ export default function AuditLogTab() {
           userId: filterUserId ? Number(filterUserId) : undefined,
           action: filterAction || undefined,
           entity: filterEntity || undefined,
+          createdFrom: filterFrom || undefined,
+          // Make the end date inclusive of the whole day.
+          createdTo: filterTo ? `${filterTo}T23:59:59.999Z` : undefined,
           limit: 50,
           cursor: reset ? undefined : (nextCursor ?? undefined),
         });
@@ -56,13 +61,21 @@ export default function AuditLogTab() {
         setLoading(false);
       }
     },
-    [filterUserId, filterAction, filterEntity, nextCursor, t]
+    [
+      filterUserId,
+      filterAction,
+      filterEntity,
+      filterFrom,
+      filterTo,
+      nextCursor,
+      t,
+    ]
   );
 
   useEffect(() => {
     load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterUserId, filterAction, filterEntity]);
+  }, [filterUserId, filterAction, filterEntity, filterFrom, filterTo]);
 
   return (
     <div className="space-y-4">
@@ -122,6 +135,36 @@ export default function AuditLogTab() {
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label
+            htmlFor="al-from"
+            className="block text-xs font-medium ui-text-muted mb-1"
+          >
+            {t("admin.auditLog.filterFrom")}
+          </label>
+          <input
+            id="al-from"
+            type="date"
+            value={filterFrom}
+            onChange={(e) => setFilterFrom(e.target.value)}
+            className="ui-input px-3 py-2 rounded-md"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="al-to"
+            className="block text-xs font-medium ui-text-muted mb-1"
+          >
+            {t("admin.auditLog.filterTo")}
+          </label>
+          <input
+            id="al-to"
+            type="date"
+            value={filterTo}
+            onChange={(e) => setFilterTo(e.target.value)}
+            className="ui-input px-3 py-2 rounded-md"
+          />
         </div>
       </div>
 

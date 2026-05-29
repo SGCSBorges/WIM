@@ -1158,6 +1158,8 @@ export const adminAPI = {
     userId?: number;
     action?: string;
     entity?: string;
+    createdFrom?: string;
+    createdTo?: string;
     limit?: number;
     cursor?: number;
   }) {
@@ -1165,6 +1167,8 @@ export const adminAPI = {
     if (params.userId !== undefined) qs.set("userId", String(params.userId));
     if (params.action) qs.set("action", params.action);
     if (params.entity) qs.set("entity", params.entity);
+    if (params.createdFrom) qs.set("createdFrom", params.createdFrom);
+    if (params.createdTo) qs.set("createdTo", params.createdTo);
     if (params.limit !== undefined) qs.set("limit", String(params.limit));
     if (params.cursor !== undefined) qs.set("cursor", String(params.cursor));
     const url = `${API_BASE_URL}/admin/audit-log${qs.toString() ? `?${qs}` : ""}`;
