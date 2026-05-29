@@ -73,4 +73,16 @@ export const security = {
       error: "Too many destructive operations, please try again later.",
     },
   }),
+  // Bucket for cheap resource creation (tags, locations). Generous enough for
+  // a normal session of adding a dozen+ tags, but caps a script spamming rows
+  // to bloat the DB. Sits under the global 100/min as a per-resource guard.
+  createRateLimiter: rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: Number(process.env.CREATE_RATE_LIMIT_MAX ?? 40),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      error: "Too many items created, please slow down and try again shortly.",
+    },
+  }),
 };

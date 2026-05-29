@@ -3,6 +3,7 @@ import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
+import { security } from "../../config/security";
 import { TagCreateSchema } from "./tag.schemas";
 import { TagService } from "./tag.service";
 
@@ -18,6 +19,7 @@ router.get(
 
 router.post(
   "/",
+  security.createRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const { name } = TagCreateSchema.parse(req.body);

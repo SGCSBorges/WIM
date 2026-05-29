@@ -49,6 +49,9 @@ suite("API integration (real Postgres)", () => {
     // The whole suite shares one IP; lift the auth rate cap so cumulative
     // register/login/logout calls across tests don't trip the 20/15min bucket.
     process.env.AUTH_RATE_LIMIT_MAX = "1000";
+    // Same reasoning for the per-resource creation bucket — cumulative
+    // location/article creates across tests would otherwise hit the 40/5min cap.
+    process.env.CREATE_RATE_LIMIT_MAX = "1000";
 
     // Reset (not deploy) so the suite is robust to whatever state the target
     // DB is in — in CI it reuses the Postgres service that the drift check

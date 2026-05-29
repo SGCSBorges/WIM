@@ -9,6 +9,7 @@ import {
 } from "./location.schemas";
 import { LocationService } from "./location.service";
 import { idParam, paginationQuery } from "../common/schemas";
+import { security } from "../../config/security";
 
 const router = Router();
 
@@ -35,6 +36,7 @@ router.get(
 
 router.post(
   "/",
+  security.createRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = LocationCreateSchema.omit({ ownerUserId: true }).parse(
