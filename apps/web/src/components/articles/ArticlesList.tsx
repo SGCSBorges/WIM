@@ -26,6 +26,7 @@ import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
 import CsvImportModal from "./CsvImportModal";
+import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
 import { consumeSharedDraft } from "../../utils/shareTarget";
 
@@ -111,6 +112,7 @@ const ArticlesList: React.FC = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
   const [showImport, setShowImport] = useState(false);
+  const [showTagsManager, setShowTagsManager] = useState(false);
   const [total, setTotal] = useState(0);
 
   // All filter/search/pagination state lives in the URL so a filtered view is
@@ -441,14 +443,18 @@ const ArticlesList: React.FC = () => {
       .then(setSavedViews)
       .catch(() => {});
 
-  useEffect(() => {
-    fetchLocations();
+  const loadTags = useCallback(() => {
     tagsAPI
       .getAll()
       .then((data) =>
         setTags(data.map((tg) => ({ tagId: tg.tagId, name: tg.name })))
       )
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchLocations();
+    loadTags();
     loadSavedViews();
     // Load the user's display currency for the value column (best-effort).
     profileAPI
@@ -457,6 +463,7 @@ const ArticlesList: React.FC = () => {
         if (me.currency) setCurrency(me.currency);
       })
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -719,6 +726,13 @@ const ArticlesList: React.FC = () => {
             className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
           >
             {t("articles.import.csv")}
+          </button>
+
+          <button
+            onClick={() => setShowTagsManager(true)}
+            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+          >
+            {t("tags.manage.button")}
           </button>
 
           <Link
@@ -1253,6 +1267,15 @@ const ArticlesList: React.FC = () => {
         open={showImport}
         onClose={() => setShowImport(false)}
         onImported={fetchArticles}
+      />
+
+      <TagsManager
+        open={showTagsManager}
+        onClose={() => setShowTagsManager(false)}
+        onChanged={() => {
+          loadTags();
+          void fetchArticles();
+        }}
       />
     </div>
   );

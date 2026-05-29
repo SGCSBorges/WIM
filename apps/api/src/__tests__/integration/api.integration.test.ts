@@ -469,6 +469,79 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("renames a tag and rejects a collision with another owned tag", async () => {
+    const agent = await register("len-tags@example.com");
+    const tools = await agent
+      .post("/api/tags")
+      .set("Origin", ORIGIN)
+      .send({ name: "Tools" });
+    const garden = await agent
+      .post("/api/tags")
+      .set("Origin", ORIGIN)
+      .send({ name: "Garden" });
+    expect(tools.status).toBe(201);
+    expect(garden.status).toBe(201);
+
+    // Rename Tools -> Tools v2 succeeds.
+    const renamed = await agent
+      .put(`/api/tags/${tools.body.tagId}`)
+      .set("Origin", ORIGIN)
+      .send({ name: "Tools v2" });
+    expect(renamed.status).toBe(200);
+    expect(renamed.body.name).toBe("Tools v2");
+
+    // Renaming Garden -> "Tools v2" collides on the (ownerUserId, name)
+    // unique constraint and surfaces as a 409 via the global error handler.
+    const collision = await agent
+      .put(`/api/tags/${garden.body.tagId}`)
+      .set("Origin", ORIGIN)
+      .send({ name: "Tools v2" });
+    expect(collision.status).toBe(409);
+  });
+
+  it("merges one tag into another and re-tags the article in a single seek", async () => {
+    const agent = await register("merge-tags@example.com");
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Garage" });
+    const tA = await agent
+      .post("/api/tags")
+      .set("Origin", ORIGIN)
+      .send({ name: "tA" });
+    const tB = await agent
+      .post("/api/tags")
+      .set("Origin", ORIGIN)
+      .send({ name: "tB" });
+    const art = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Drill",
+        articleModele: "Cordless",
+        locationIds: [loc.body.locationId],
+        tagIds: [tA.body.tagId],
+      });
+    expect(art.status).toBe(201);
+
+    const merge = await agent
+      .post("/api/tags/merge")
+      .set("Origin", ORIGIN)
+      .send({ fromId: tA.body.tagId, intoId: tB.body.tagId });
+    expect(merge.status).toBe(200);
+    expect(merge.body.articlesAffected).toBe(1);
+
+    // tA is gone; the article now carries tB.
+    const tagsAfter = await agent.get("/api/tags");
+    expect(tagsAfter.body.map((tag: { name: string }) => tag.name)).toEqual([
+      "tB",
+    ]);
+    const get = await agent.get(`/api/articles/${art.body.articleId}`);
+    expect(get.body.tags.map((tg: { tagId: number }) => tg.tagId)).toEqual([
+      tB.body.tagId,
+    ]);
+  });
+
   it("normalizes a mixed-case email on profile update so it stays a single account", async () => {
     const agent = await register("kate-norm@example.com");
     const change = await agent

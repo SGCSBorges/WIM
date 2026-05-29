@@ -734,6 +734,34 @@ export const tagsAPI = {
     return response.json();
   },
 
+  async rename(
+    tagId: number,
+    name: string
+  ): Promise<{ tagId: number; name: string }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/tags/${tagId}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to rename tag"));
+    return response.json();
+  },
+
+  async merge(
+    fromId: number,
+    intoId: number
+  ): Promise<{ articlesAffected: number }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/tags/merge`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ fromId, intoId }),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to merge tags"));
+    return response.json();
+  },
+
   async remove(tagId: number): Promise<void> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/tags/${tagId}`, {
       method: "DELETE",

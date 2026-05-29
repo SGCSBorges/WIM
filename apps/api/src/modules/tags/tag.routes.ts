@@ -4,7 +4,11 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
 import { security } from "../../config/security";
-import { TagCreateSchema } from "./tag.schemas";
+import {
+  TagCreateSchema,
+  TagMergeSchema,
+  TagRenameSchema,
+} from "./tag.schemas";
 import { TagService } from "./tag.service";
 
 const router = Router();
@@ -31,6 +35,39 @@ router.post(
       metadata: { name },
     });
     res.status(201).json(created);
+  })
+);
+
+router.put(
+  "/:id",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const { name } = TagRenameSchema.parse(req.body);
+    const updated = await TagService.rename(id, req.user!.sub, name);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Tag",
+      entityId: id,
+      metadata: { name },
+    });
+    res.json(updated);
+  })
+);
+
+router.post(
+  "/merge",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { fromId, intoId } = TagMergeSchema.parse(req.body);
+    const result = await TagService.merge(fromId, intoId, req.user!.sub);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "Tag",
+      entityId: fromId,
+      metadata: { merge: true, intoId, ...result },
+    });
+    res.json(result);
   })
 );
 
