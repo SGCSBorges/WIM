@@ -52,4 +52,56 @@ describe("validateEnv", () => {
     validateEnv();
     expect(process.exit).toHaveBeenCalledWith(1);
   });
+
+  it("warns (and does not exit) when PORT is not a valid integer", async () => {
+    process.env.JWT_SECRET = "secret";
+    process.env.DATABASE_URL = "postgres://test";
+    process.env.NODE_ENV = "development";
+    process.env.PORT = "abc";
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { validateEnv } = await import("../../utils/validate-env");
+    validateEnv();
+    expect(process.exit).not.toHaveBeenCalled();
+    expect(
+      warn.mock.calls.some((args) =>
+        String(args[0]).includes('PORT="abc"')
+      )
+    ).toBe(true);
+    warn.mockRestore();
+  });
+
+  it("warns when a numeric env var (RATE_LIMIT_MAX) is not a number", async () => {
+    process.env.JWT_SECRET = "secret";
+    process.env.DATABASE_URL = "postgres://test";
+    process.env.NODE_ENV = "development";
+    process.env.RATE_LIMIT_MAX = "notanumber";
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { validateEnv } = await import("../../utils/validate-env");
+    validateEnv();
+    expect(
+      warn.mock.calls.some((args) =>
+        String(args[0]).includes("RATE_LIMIT_MAX")
+      )
+    ).toBe(true);
+    warn.mockRestore();
+  });
+
+  it("warns about missing VAPID and Resend vars in production", async () => {
+    process.env.JWT_SECRET = "secret";
+    process.env.DATABASE_URL = "postgres://test";
+    process.env.NODE_ENV = "production";
+    process.env.STRIPE_SECRET_KEY = "sk_test";
+    process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
+    delete process.env.VAPID_PUBLIC_KEY;
+    delete process.env.RESEND_API_KEY;
+    delete process.env.MAIL_FROM;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { validateEnv } = await import("../../utils/validate-env");
+    validateEnv();
+    const allWarnings = warn.mock.calls.map((args) => String(args[0])).join("\n");
+    expect(allWarnings).toMatch(/VAPID_PUBLIC_KEY/);
+    expect(allWarnings).toMatch(/RESEND_API_KEY/);
+    expect(allWarnings).toMatch(/MAIL_FROM/);
+    warn.mockRestore();
+  });
 });
