@@ -16,6 +16,62 @@ export default function ArticlesTrash() {
   const [error, setError] = useState<string | null>(null);
   const [confirmPurgeId, setConfirmPurgeId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  // Bulk selection state mirrors AttachmentsList / ArticlesList.
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [showBulkPurgeConfirm, setShowBulkPurgeConfirm] = useState(false);
+
+  const toggleSelected = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const bulkRestore = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    const ids = Array.from(selectedIds);
+    try {
+      const { count } = await articlesAPI.bulkRestoreTrash(ids);
+      setItems((prev) => prev.filter((a) => !selectedIds.has(a.articleId)));
+      setSelectedIds(new Set());
+      toast.show(
+        t("trash.bulk.restored").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("trash.error.restore")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkPurge = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    setShowBulkPurgeConfirm(false);
+    const ids = Array.from(selectedIds);
+    try {
+      const { count } = await articlesAPI.bulkPurgeTrash(ids);
+      setItems((prev) => prev.filter((a) => !selectedIds.has(a.articleId)));
+      setSelectedIds(new Set());
+      toast.show(
+        t("trash.bulk.purged").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("trash.error.purge")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -77,6 +133,71 @@ export default function ArticlesTrash() {
 
       {error && <ErrorBanner message={error} onRetry={load} />}
 
+      {selectedIds.size > 0 && (
+        <div
+          role="region"
+          aria-label={t("trash.bulk.selectionLabel")}
+          className="ui-card rounded-lg shadow p-3 flex flex-wrap items-center gap-3 sticky top-2 z-10"
+        >
+          <span className="font-medium text-sm">
+            {t("trash.bulk.selected").replace(
+              "{count}",
+              String(selectedIds.size)
+            )}
+          </span>
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              type="button"
+              onClick={bulkRestore}
+              disabled={bulkBusy}
+              className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+            >
+              {t("trash.bulk.restore")}
+            </button>
+            {showBulkPurgeConfirm ? (
+              <>
+                <span className="text-xs ui-text-error">
+                  {t("trash.confirmPurge")}
+                </span>
+                <button
+                  type="button"
+                  onClick={bulkPurge}
+                  disabled={bulkBusy}
+                  className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                >
+                  {t("trash.purgeNow")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkPurgeConfirm(false)}
+                  disabled={bulkBusy}
+                  className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+                >
+                  {t("common.cancel")}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowBulkPurgeConfirm(true)}
+                disabled={bulkBusy}
+                className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+              >
+                {t("trash.bulk.purge")}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              disabled={bulkBusy}
+              className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+            >
+              {t("trash.bulk.clear")}
+            </button>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <Skeleton className="h-32 rounded-lg" />
       ) : items.length === 0 ? (
@@ -90,6 +211,15 @@ export default function ArticlesTrash() {
               key={a.articleId}
               className="p-3 flex flex-wrap items-center gap-3"
             >
+              <input
+                type="checkbox"
+                aria-label={t("trash.bulk.selectRow").replace(
+                  "{name}",
+                  a.articleNom
+                )}
+                checked={selectedIds.has(a.articleId)}
+                onChange={() => toggleSelected(a.articleId)}
+              />
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{a.articleNom}</p>
                 <p className="text-xs ui-text-muted truncate">

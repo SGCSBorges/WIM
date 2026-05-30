@@ -103,6 +103,41 @@ router.get(
   })
 );
 
+/** POST bulk-restore soft-deleted articles. Reuses the round-7 BulkIdsSchema
+ *  + destructiveRateLimiter. */
+router.post(
+  "/trash/bulk-restore",
+  security.destructiveRateLimiter,
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { ids } = BulkIdsSchema.parse(req.body);
+    const { count } = await ArticleService.bulkRestore(ids, req.user!.sub);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      metadata: { bulk: true, restored: true, requested: ids.length, restored_count: count },
+    });
+    res.json({ count });
+  })
+);
+
+/** POST bulk-purge: permanent removal of trashed articles. */
+router.post(
+  "/trash/bulk-purge",
+  security.destructiveRateLimiter,
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { ids } = BulkIdsSchema.parse(req.body);
+    const { count } = await ArticleService.bulkHardRemove(ids, req.user!.sub);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "Article",
+      metadata: { bulk: true, purge: true, requested: ids.length, deleted: count },
+    });
+    res.json({ count });
+  })
+);
+
 /** POST restore a soft-deleted article. */
 router.post(
   "/:id/restore",

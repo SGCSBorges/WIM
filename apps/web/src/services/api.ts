@@ -451,6 +451,38 @@ export const articlesAPI = {
     return null;
   },
 
+  async bulkRestoreTrash(ids: number[]): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/trash/bulk-restore`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to restore articles")
+      );
+    return response.json();
+  },
+
+  async bulkPurgeTrash(ids: number[]): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/trash/bulk-purge`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to purge articles")
+      );
+    return response.json();
+  },
+
   // Bulk operations on the caller's owned articles.
   async bulkDelete(ids: number[]): Promise<{ count: number }> {
     const response = await fetchWithTimeout(

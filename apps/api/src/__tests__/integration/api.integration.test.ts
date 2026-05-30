@@ -474,6 +474,52 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("bulk-restores soft-deleted articles and drops them from the trash list", async () => {
+    const agent = await register("bulktrash@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    const loc = await prisma.location.create({
+      data: { ownerUserId, name: "Workshop" },
+    });
+    // Seed 3 articles linked to the location, then soft-delete all three.
+    const seeded = [];
+    for (let i = 1; i <= 3; i++) {
+      const a = await prisma.article.create({
+        data: {
+          ownerUserId,
+          articleNom: `Item ${i}`,
+          articleModele: "x",
+          deletedAt: new Date(),
+          locations: { create: [{ locationId: loc.locationId }] },
+        },
+      });
+      seeded.push(a.articleId);
+    }
+    expect((await agent.get("/api/articles/trash")).body.items.length).toBe(3);
+
+    // Bulk-restore the first two. Trash drops to 1, live list rises by 2.
+    const restore = await agent
+      .post("/api/articles/trash/bulk-restore")
+      .set("Origin", ORIGIN)
+      .send({ ids: [seeded[0], seeded[1]] });
+    expect(restore.status).toBe(200);
+    expect(restore.body.count).toBe(2);
+
+    const trashAfter = await agent.get("/api/articles/trash");
+    expect(trashAfter.body.items.length).toBe(1);
+    const live = await agent.get("/api/articles");
+    expect(live.body.total).toBe(2);
+
+    // Bulk-purge the remaining trashed article. Trash drops to 0.
+    const purge = await agent
+      .post("/api/articles/trash/bulk-purge")
+      .set("Origin", ORIGIN)
+      .send({ ids: [seeded[2]] });
+    expect(purge.status).toBe(200);
+    expect(purge.body.count).toBe(1);
+    expect((await agent.get("/api/articles/trash")).body.items.length).toBe(0);
+  });
+
   it("bulk-deletes attachments owned by the caller and silently skips foreign ids", async () => {
     const agent = await register("attmaster@example.com");
     const me = await agent.get("/api/auth/me");

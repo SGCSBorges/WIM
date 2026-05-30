@@ -595,6 +595,54 @@ export const ArticleService = {
       include: articleInclude,
     }),
 
+  // Bulk restore: re-arms warranty reminders per row via the existing
+  // single-row helper. Silently skips ids the caller doesn't own (same
+  // model as bulkRemove). Returns { count } for "Restored N article(s)".
+  bulkRestore: async (
+    ids: number[],
+    ownerUserId: number
+  ): Promise<{ count: number }> => {
+    if (ids.length === 0) return { count: 0 };
+    const owned = await prisma.article.findMany({
+      where: { articleId: { in: ids }, ownerUserId, NOT: { deletedAt: null } },
+      select: { articleId: true },
+    });
+    let count = 0;
+    for (const a of owned) {
+      try {
+        await ArticleService.restore(a.articleId, ownerUserId);
+        count++;
+      } catch {
+        // Best-effort — a failure on one row shouldn't abort the whole bulk.
+      }
+    }
+    return { count };
+  },
+
+  // Bulk hard-remove: permanent delete of trashed rows. Iterates the existing
+  // hardRemove so attachment file unlinking + warranty-alert cancellation
+  // run per-row.
+  bulkHardRemove: async (
+    ids: number[],
+    ownerUserId: number
+  ): Promise<{ count: number }> => {
+    if (ids.length === 0) return { count: 0 };
+    const owned = await prisma.article.findMany({
+      where: { articleId: { in: ids }, ownerUserId },
+      select: { articleId: true },
+    });
+    let count = 0;
+    for (const a of owned) {
+      try {
+        await ArticleService.hardRemove(a.articleId, ownerUserId);
+        count++;
+      } catch {
+        // Best-effort — same rationale as bulkRestore.
+      }
+    }
+    return { count };
+  },
+
   // Purge trashed articles older than `retentionDays` for every owner.
   // Iterates row-by-row so the per-article `unlinkAttachmentFiles` cleanup
   // runs deterministically before the cascade drops the rows.
