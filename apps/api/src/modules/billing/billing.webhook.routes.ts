@@ -1,3 +1,25 @@
+/**
+ * Stripe webhook handler — the canonical channel for role transitions
+ * (USER → POWER_USER on checkout.session.completed, POWER_USER → USER on
+ * cancel / unpaid / incomplete_expired / subscription deleted).
+ *
+ * Belt-and-braces guards layered here, in order:
+ *   1. Signature verification via stripe.webhooks.constructEvent.
+ *   2. Staleness window (STRIPE_WEBHOOK_MAX_AGE_SEC, default 5 min) —
+ *      ack 200 + skip; a leaked-payload-with-valid-signature replay
+ *      attack is otherwise unbounded.
+ *   3. Event-type whitelist — unrecognised types log + ack so Stripe
+ *      stops retrying.
+ *   4. Idempotency marker (`ProcessedStripeEvent.eventId` unique) inside
+ *      the same transaction as the business effect; a P2002 means
+ *      "already processed" → ack as success.
+ *   5. Zod-validated `metadata.targetRole` so a forged "ADMIN" can't
+ *      promote.
+ *
+ * On downgrade the transaction also runs `ShareService.cleanupSharingForUser`
+ * so a former POWER_USER's outgoing shares are deactivated atomically with
+ * their role.
+ */
 import express, { Router } from "express";
 import { z } from "zod";
 import Stripe from "stripe";

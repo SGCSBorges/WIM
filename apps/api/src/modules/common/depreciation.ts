@@ -1,3 +1,9 @@
+/**
+ * `currentValue(purchasePrice, depreciationRate, since)` — straight-line
+ * depreciation. `since` is whichever of (warranty purchase date / article
+ * createdAt) the caller deems the cost-basis date. Returns null when
+ * either input is null; floors at zero for fully-depreciated assets.
+ */
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 
 /**

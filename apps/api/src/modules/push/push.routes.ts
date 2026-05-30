@@ -1,3 +1,7 @@
+/**
+ * Push subscription routes — subscribe/unsubscribe + a /vapid-key endpoint
+ * exposing the public key the browser needs to call pushManager.subscribe().
+ */
 import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";

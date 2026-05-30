@@ -1,3 +1,7 @@
+/**
+ * Warranty routes. CRUD + the claim status PUT. Round-3 added the iCal
+ * "claim" event; round-9 added the provider metadata fields.
+ */
 import { Router } from "express";
 import { asyncHandler } from "../common/http";
 import { WarrantyService } from "./warranty.service";

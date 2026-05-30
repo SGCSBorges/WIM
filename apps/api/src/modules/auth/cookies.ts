@@ -1,3 +1,9 @@
+/**
+ * Cookie options helper. `cookieOptsFor(req)` returns the right
+ * combination of `secure` / `sameSite` for the request context — production
+ * (cross-site web/api on different Render subdomains) needs
+ * `sameSite: "none"` + `secure: true`; dev needs `lax`.
+ */
 import type { Request, CookieOptions } from "express";
 
 /**

@@ -1,3 +1,8 @@
+/**
+ * Auth service — register / login + JWT sign/verify helpers. Tokens carry
+ * `sub` (userId), `role`, `jti` (random uuid for the denylist), and `v`
+ * (the user's tokenVersion — bumping it invalidates every prior token).
+ */
 import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

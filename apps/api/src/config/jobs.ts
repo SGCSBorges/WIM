@@ -1,3 +1,8 @@
+/**
+ * Boots the BullMQ workers from the API process — see jobs/workers.ts for
+ * the workers and scheduled jobs. JOBS_ENABLED=false skips startup (used in
+ * tests / review apps that don't have Redis).
+ */
 import { startWorkers } from "../jobs/workers";
 import { logger } from "./logger";
 

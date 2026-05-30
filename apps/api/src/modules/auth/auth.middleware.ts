@@ -1,9 +1,24 @@
+/**
+ * Authentication + authorization middleware.
+ *
+ * `authGuard` is the gatekeeper on every protected route. Per request it:
+ *   1. Reads the JWT from the `wim_token` cookie and verifies the signature.
+ *   2. Checks the Redis denylist by `jti`; tokens explicitly revoked on
+ *      logout / password reset / admin force-logout fail-closed here.
+ *   3. Re-reads `tokenVersion` and `role` from the DB (one cheap select).
+ *      Bumping `User.tokenVersion` invalidates every token issued before the
+ *      bump; updating `User.role` propagates immediately without re-login.
+ *
+ * `requireRole(...)` is a thin wrapper used after authGuard for routes that
+ * need POWER_USER or ADMIN. It assumes `req.user.role` is already populated.
+ *
+ * JWT_SECRET is guaranteed present by validateEnv() at startup, so its use
+ * here doesn't need a runtime check.
+ */
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { isTokenDenied } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
-
-// JWT_SECRET is guaranteed present by validateEnv() called at startup.
 
 export interface AuthRequest extends Request {
   user?: { sub: number; role: string; jti?: string; exp?: number };

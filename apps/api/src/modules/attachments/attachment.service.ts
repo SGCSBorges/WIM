@@ -1,3 +1,9 @@
+/**
+ * Attachment service — owner-scoped Prisma helpers behind the file routes.
+ * Article / warranty ownership is re-checked on create/update via
+ * `assertArticleOwned` / `assertWarrantyOwned` so a forged FK can't slip
+ * past the Multer layer.
+ */
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { unlinkAttachmentFiles } from "./attachment.fs";

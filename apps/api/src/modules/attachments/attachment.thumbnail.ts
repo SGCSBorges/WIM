@@ -1,3 +1,8 @@
+/**
+ * Sharp-based thumbnail generation for image uploads. 256×256 cover fit,
+ * stored next to the original with a `.thumb.jpg` suffix. Non-image
+ * mime-types skip thumbnailing cleanly.
+ */
 import path from "path";
 import sharp from "sharp";
 import { logger } from "../../config/logger";

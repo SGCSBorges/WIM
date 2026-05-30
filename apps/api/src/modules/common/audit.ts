@@ -1,3 +1,10 @@
+/**
+ * `auditAction(req, {...})` — the wrapper every mutating route calls. It
+ * extracts the actor (req.user), IP (honouring a single proxy via
+ * `x-forwarded-for`), user-agent, method, path, and status, then writes
+ * an AuditLog row. Failures are caught so a broken audit write never
+ * cancels the user's operation.
+ */
 import { Request } from "express";
 import { AuthRequest } from "../auth/auth.middleware";
 import { AuditService, AuditInput } from "../audit/audit.service";

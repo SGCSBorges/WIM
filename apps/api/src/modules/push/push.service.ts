@@ -1,3 +1,10 @@
+/**
+ * Web Push delivery via VAPID. Best-effort: when VAPID_PUBLIC_KEY /
+ * VAPID_PRIVATE_KEY aren't set, every call no-ops + logs (the toggle in
+ * the Profile UI also hides itself). A 404/410 from the push service
+ * means the browser unsubscribed — those subscriptions are pruned from
+ * the DB so the next send doesn't re-attempt a dead endpoint.
+ */
 import webpush from "web-push";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";

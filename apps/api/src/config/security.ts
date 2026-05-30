@@ -1,3 +1,11 @@
+/**
+ * Centralised security middleware. Helmet defaults; CORS reading
+ * `CORS_ORIGIN` (comma-separated whitelist, trailing slashes stripped);
+ * four rate limiters: the global per-IP limiter (applied at app level), a
+ * tighter authRateLimiter mounted under /api/auth, a destructiveRateLimiter
+ * for bulk operations + DB import/export, and a createRateLimiter for
+ * resource creation (tags/locations) to prevent DB-bloat spam.
+ */
 import helmet from "helmet";
 import cors from "cors";
 import { rateLimit } from "express-rate-limit";

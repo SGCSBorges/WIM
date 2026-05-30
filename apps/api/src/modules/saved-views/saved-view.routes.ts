@@ -1,3 +1,4 @@
+/** Saved-view routes — per-user CRUD over the Articles-list filter views. */
 import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";

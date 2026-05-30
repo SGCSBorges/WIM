@@ -1,3 +1,11 @@
+/**
+ * Self-serve password reset. issueResetToken always responds the same way
+ * (no email enumeration) — internally it generates a random token, stores
+ * its sha256 hash with a TTL, and emails the user the raw token. On
+ * redeem, we re-hash the supplied token, look it up, set the new password,
+ * bump tokenVersion (invalidates every other active session), and delete
+ * the row so the token can't be reused.
+ */
 import { randomBytes, createHash } from "crypto";
 import bcrypt from "bcrypt";
 import { prisma } from "../../libs/prisma";

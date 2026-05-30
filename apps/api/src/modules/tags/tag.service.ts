@@ -1,3 +1,10 @@
+/**
+ * Tag service. Standard owner-scoped CRUD plus `merge(fromId, intoId)` —
+ * the non-obvious one: a single transaction rewires every ArticleTag row
+ * from `from` to `into`, deduplicating any articles that already carried
+ * `into`, then deletes the source. Rename collisions surface as a 409
+ * via the P2002 mapping in the global error handler.
+ */
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 

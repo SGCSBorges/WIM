@@ -1,3 +1,8 @@
+/**
+ * `createHttpError(status, message)` — the canonical way services raise
+ * application errors. The global error middleware reads `err.status` and
+ * serializes it; anything without `status` falls through to a generic 500.
+ */
 export interface HttpError extends Error {
   status: number;
 }

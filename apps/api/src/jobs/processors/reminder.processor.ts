@@ -1,3 +1,9 @@
+/**
+ * Reminder processor — runs each warranty + custom-alert job. Ordering is
+ * load-warranty → push (await; throw on hard failure so BullMQ retries) →
+ * email (best-effort; never throws) → markSent. Round 10 reordered this
+ * so a failed push doesn't mark the alert sent and lose the notification.
+ */
 import type { Job } from "bullmq";
 
 import { prisma } from "../../libs/prisma";

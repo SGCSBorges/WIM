@@ -1,3 +1,19 @@
+/**
+ * BullMQ queue declarations + queue helpers.
+ *
+ * Two queues:
+ *   • `wim-alerts` — latency-sensitive warranty + custom reminders. Three
+ *     attempts with exponential backoff (2s / 4s / 8s) so a transient
+ *     push/email blip self-heals without flooding the queue.
+ *   • `wim-maintenance` — long-running periodic sweeps (audit prune,
+ *     trash purge, weekly digest). Kept on its own queue so a slow sweep
+ *     never queues behind a reminder.
+ *
+ * `listFailedJobs` returns the most recent failed jobs across both queues
+ * for the Admin Jobs tab's "Recent failures" expander. Stacktraces are
+ * truncated to keep the JSON bounded; Redis-unreachable returns an empty
+ * list so the admin UI degrades to "Unavailable" instead of erroring.
+ */
 import { Queue } from "bullmq";
 
 import { createRedisConnection } from "./redis";

@@ -1,3 +1,12 @@
+/**
+ * Admin-only routes — every handler sits behind `requireRole("ADMIN")`.
+ *
+ * Covers: user list/search, inline role edit (with last-admin protection
+ * inside a serializable transaction), reset-password (bumps tokenVersion),
+ * force-logout (bumps tokenVersion), delete user, audit log (cursor-
+ * paginated, filterable by action/entity/date range), dashboard stats,
+ * job queue snapshot + failed-job inspector, and full-DB backup/restore.
+ */
 import express, { Router } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";

@@ -1,3 +1,8 @@
+/**
+ * `asyncHandler(fn)` — wraps an async route handler so any thrown / rejected
+ * value flows into Express's error middleware instead of becoming an
+ * unhandled promise rejection. Used on every async route in the codebase.
+ */
 import { NextFunction, Request, Response, RequestHandler } from "express";
 
 type AsyncRequestHandler = (

@@ -1,3 +1,11 @@
+/**
+ * Boot-time environment validation. Hard-fails if a required var is
+ * missing (JWT_SECRET, DATABASE_URL; plus Stripe in production). Warns on
+ * numeric env vars that don't parse (PORT must be a valid port; the
+ * others fall back to defaults). In production, warns on optional vars
+ * whose absence will silently disable a feature (VAPID = no push, Resend
+ * = no email + no weekly digest).
+ */
 const REQUIRED_VARS = ["JWT_SECRET", "DATABASE_URL"] as const;
 
 // Stripe vars are required in production; warn only in dev so local testing still works.

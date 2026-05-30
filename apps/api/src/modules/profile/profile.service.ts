@@ -1,3 +1,18 @@
+/**
+ * Profile service — self-serve account operations: email/password/currency
+ * change, reminder + digest toggles, and the destructive `deleteAccount`.
+ *
+ * `deleteAccount` is the most complex path. Once the password is verified:
+ *   1. Cancel any active Stripe subscription (best-effort; a Stripe outage
+ *      logs and proceeds — see profile.routes for the trade-off).
+ *   2. Cancel queued BullMQ jobs (warranty reminders + custom alerts) so a
+ *      reminder doesn't fire against a row that no longer exists.
+ *   3. Last-admin protection inside a serializable transaction: refuse the
+ *      delete if the caller is the only remaining ADMIN.
+ *   4. `chunkedDelete` walks every owned dependent table in capped batches —
+ *      avoids a single statement that holds row-level locks across the
+ *      whole inventory for minutes on a large account.
+ */
 import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";

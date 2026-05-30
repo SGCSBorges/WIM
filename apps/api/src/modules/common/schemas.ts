@@ -1,3 +1,9 @@
+/**
+ * Shared Zod primitives used across modules: `idParam` (positive integer
+ * route param), `paginationQuery` (page/limit defaults 1/50), and
+ * `normalizedEmail` (lowercase + trim, so `User@x.com` and `user@x.com`
+ * can never become two separate accounts).
+ */
 import { z } from "zod";
 
 export const idParam = z.coerce.number().int().positive();

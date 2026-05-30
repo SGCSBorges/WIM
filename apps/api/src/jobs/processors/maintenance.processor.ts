@@ -1,3 +1,8 @@
+/**
+ * Maintenance processor — dispatches the three repeatable jobs scheduled
+ * in `workers.ts`. Each branch is independent and logs duration + counts
+ * so the Admin Jobs tab can show how long the last sweep took.
+ */
 import type { Job } from "bullmq";
 import { logger } from "../../config/logger";
 import { AuditService } from "../../modules/audit/audit.service";

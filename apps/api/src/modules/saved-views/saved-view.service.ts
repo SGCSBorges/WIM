@@ -1,3 +1,8 @@
+/**
+ * Saved-view service. Per-user named filter views for the Articles list —
+ * the `query` field holds a URL search-string the UI re-applies via
+ * setSearchParams. Owner-scoped CRUD; nothing fancier.
+ */
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 

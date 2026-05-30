@@ -1,3 +1,8 @@
+/**
+ * Location routes. CRUD + the join-table helpers
+ * (POST/DELETE /:id/articles, GET /:id/articles paginated). POST / is
+ * behind `createRateLimiter` for the same reason tags are.
+ */
 import { Router } from "express";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";

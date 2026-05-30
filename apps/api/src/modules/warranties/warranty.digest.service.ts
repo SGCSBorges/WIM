@@ -1,3 +1,10 @@
+/**
+ * Weekly warranty digest sender. Maintenance worker calls this every
+ * Monday 09:00 UTC. Iterates users with `weeklyDigest=true` AND
+ * `emailReminders=true` AND at least one warranty expiring in the next
+ * 30 days, then sends a per-user summary via Resend. No-op + log when
+ * Resend isn't configured.
+ */
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { EmailService } from "../email/email.service";

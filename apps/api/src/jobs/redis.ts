@@ -1,3 +1,14 @@
+/**
+ * Redis connection options used by every BullMQ queue + worker.
+ *
+ * Prefers REDIS_URL when set; otherwise falls back to REDIS_HOST +
+ * REDIS_PORT (defaults 127.0.0.1 / 6379) so local dev works without env
+ * setup. Sets `maxRetriesPerRequest: null` because BullMQ relies on
+ * connection blocking — the default ioredis behaviour breaks BullMQ.
+ *
+ * REDIS_TLS=true switches to a TLS connection (Upstash / managed providers
+ * usually need this in production).
+ */
 import type { RedisOptions } from "ioredis";
 import { logger } from "../config/logger";
 

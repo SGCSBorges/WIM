@@ -1,3 +1,11 @@
+/**
+ * Auth routes — register, login, logout, forgot/reset password, /me, and
+ * the temporary bootstrap-admin endpoint. Every mutating handler emits an
+ * audit row (LOGIN/LOGOUT/PASSWORD_RESET/etc.). All four password-bearing
+ * flows hash with bcrypt; tokens are issued as httpOnly cookies. The
+ * `authRateLimiter` (15-min window, AUTH_RATE_LIMIT_MAX/IP) is applied at
+ * mount time in app.ts.
+ */
 import { Router, Request, Response } from "express";
 import { asyncHandler } from "../common/http";
 import { AuthService } from "./auth.service";

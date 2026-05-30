@@ -1,3 +1,13 @@
+/**
+ * Global error middleware. Maps:
+ *   • ZodError → 400 with field paths; in prod the human messages are
+ *     stripped so schema shape isn't leaked.
+ *   • Anything with a numeric `status` (createHttpError, etc.) → that status.
+ *   • Prisma P2002 → 409 with a friendly per-field message
+ *     (`meta.target` → "Email already registered", etc.).
+ *   • Multer LIMIT_FILE_SIZE → 413 Payload Too Large.
+ *   • Everything else → 500 with the request id (from pino-http's genReqId).
+ */
 import { NextFunction, Request, Response } from "express";
 import { ZodError, ZodIssue } from "zod";
 import { Prisma } from "@prisma/client";

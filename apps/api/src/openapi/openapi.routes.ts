@@ -1,3 +1,8 @@
+/**
+ * OpenAPI 3.1 document + Swagger UI. /api/openapi.json serves the doc,
+ * /api/docs serves the interactive UI. The doc itself is hand-maintained
+ * in openapi/document.ts and should be updated when routes / shapes change.
+ */
 import { Router } from "express";
 import swaggerUi from "swagger-ui-express";
 import { buildOpenApiDocument } from "./document";

@@ -1,3 +1,9 @@
+/**
+ * Transactional email via Resend's REST API — a single HTTPS POST per
+ * send, no SDK dependency. Best-effort like push: when RESEND_API_KEY or
+ * MAIL_FROM is unset, every call no-ops + logs. Errors are caught and
+ * logged so an email failure never re-fails the calling job.
+ */
 import { logger } from "../../config/logger";
 
 // Transactional email via Resend's REST API (no SDK dependency — a single

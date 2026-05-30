@@ -1,3 +1,19 @@
+/**
+ * Sharing service — POWER_USER → POWER_USER inventory invites + the
+ * `cleanupSharingForUser` helper that runs on every POWER_USER → USER
+ * transition.
+ *
+ * Invariants this module enforces:
+ *   • Invites are POWER_USER-only on both ends (`createInvite` rejects
+ *     non-POWER_USER recipients; the accept route re-checks via
+ *     requireRole at acceptance).
+ *   • An invite is consumed exactly once (atomic `updateMany` with
+ *     `status: PENDING` in the WHERE clause).
+ *   • `cleanupSharingForUser` is called inside the SAME transaction as the
+ *     role change at each of its three call sites (Stripe webhook,
+ *     billing.routes manual sync, admin role demote), so a partial cleanup
+ *     can never leave a former POWER_USER with active shares.
+ */
 import crypto from "crypto";
 import { Prisma, SharePermission, InviteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";

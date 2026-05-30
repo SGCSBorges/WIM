@@ -1,3 +1,24 @@
+/**
+ * Article service — the largest module in the API. Owns the inventory
+ * lifecycle:
+ *   • Filtered + paginated list / search (`buildArticleWhere` translates
+ *     the URL filter set into a Prisma where-clause; `q` runs across name /
+ *     model / description / brand / serialNumber via trigram GIN indexes).
+ *   • Create / update with owner-scoped pre-flight checks. Every FK ref
+ *     (locationIds, tagIds, attachment ids) goes through
+ *     `assertLocationsOwned` / `assertTagsOwned` (or an inline find)
+ *     INSIDE the same transaction as the insert, so a concurrent delete
+ *     can't slip a foreign id past the check.
+ *   • Soft-delete + restore via `Article.deletedAt`. Live reads filter on
+ *     `deletedAt: null`; the Trash view reads `NOT: { deletedAt: null }`.
+ *   • Bulk operations (delete / restore / purge / share / location-add /
+ *     tag-add) silently skip ids the caller doesn't own — never leak which
+ *     ids exist under other accounts.
+ *   • `purgeTrashOlderThan` is the maintenance-worker entry point.
+ *     Intentionally NOT owner-scoped at the query level (it's a system
+ *     sweep across every owner); per-row safety comes from re-passing the
+ *     row's `ownerUserId` into `hardRemove`.
+ */
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";

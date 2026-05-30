@@ -1,3 +1,9 @@
+/**
+ * On-disk helpers for attachment files. `unlinkAttachmentFiles` is the
+ * canonical cleanup — best-effort (logs and continues on ENOENT) so a
+ * missing file never blocks a DB delete. Used by single + bulk delete,
+ * article hard-remove, and the maintenance trash purge.
+ */
 import fs from "fs";
 import path from "path";
 import { logger } from "../../config/logger";

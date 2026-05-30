@@ -1,3 +1,8 @@
+/**
+ * Tag routes. CRUD + rename + merge. POST is rate-limited by
+ * `createRateLimiter` so a script can't spam thousands of junk rows;
+ * merge inherits the transactional dedup from the service layer.
+ */
 import { Router } from "express";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";

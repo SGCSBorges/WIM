@@ -1,3 +1,10 @@
+/**
+ * Full-database export + import. ADMIN-only operations exposed through
+ * /api/admin/db/{export,import}. The export is a structured JSON dump of
+ * every table; the import REPLACES every table (with a password tripwire
+ * + optional Stripe-id stripping). Used for ops/maintenance — not a user-
+ * facing feature.
+ */
 import { z } from "zod";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";

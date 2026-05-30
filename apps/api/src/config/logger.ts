@@ -1,3 +1,7 @@
+/**
+ * Pino logger singleton. JSON output in production (Render captures + ships
+ * to log drains); pretty output via `pino-pretty` in development.
+ */
 import pino from "pino";
 
 export const logger = pino({

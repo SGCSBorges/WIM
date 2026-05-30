@@ -1,3 +1,8 @@
+/**
+ * Graceful shutdown: stop accepting new requests, drain in-flight ones,
+ * close BullMQ workers + queues, then disconnect Prisma. Triggered on
+ * SIGTERM/SIGINT so Render's rolling restarts don't kill mid-request work.
+ */
 import type { Server } from "http";
 import type { Worker } from "bullmq";
 import { logger } from "../config/logger";

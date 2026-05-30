@@ -1,3 +1,9 @@
+/**
+ * Audit log read endpoint. ADMIN-only, cursor-paginated, with optional
+ * filters: action (from AUDIT_ACTIONS), entity (from AUDIT_ENTITIES),
+ * userId, and inclusive createdAt date range. Mirrors the Admin UI's
+ * filter controls 1:1.
+ */
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";

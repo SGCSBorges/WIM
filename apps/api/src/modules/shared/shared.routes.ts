@@ -1,3 +1,16 @@
+/**
+ * Recipient-side sharing routes — what a user sees when ANOTHER user has
+ * shared inventory with them. Two surfaces collapse together:
+ *   • Public flag (`Article.sharedWithPowerUsers`) — visible to every
+ *     POWER_USER, read-only.
+ *   • Per-user invites (`InventoryShare`) — recipient sees the sharer's
+ *     articles; WRITE recipients can edit a limited set of fields.
+ *
+ * Every share query filters on `active: true` so deactivated shares
+ * (cleaned up by `ShareService.cleanupSharingForUser` on role downgrade)
+ * disappear immediately. Live reads also scope `Article.deletedAt: null`
+ * so trashed articles don't leak across the sharing boundary.
+ */
 import { Router } from "express";
 import { z } from "zod";
 import { Prisma, SharePermission } from "@prisma/client";

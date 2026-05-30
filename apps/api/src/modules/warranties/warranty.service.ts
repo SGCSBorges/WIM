@@ -1,3 +1,11 @@
+/**
+ * Warranty service. Owner-scoped CRUD over the `Garantie` table plus the
+ * claim workflow (NONE → OPEN → APPROVED/REJECTED → RESOLVED). A 1:1
+ * unique constraint on `garantieArticleId` enforces "one warranty per
+ * article"; the P2002 fast-path surfaces as a 409 instead of a generic
+ * 500. Round-9 added the provider contact metadata
+ * (providerName/Phone/Url) printed on the claim PDF.
+ */
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { addMonths } from "../common/date";

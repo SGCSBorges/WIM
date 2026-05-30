@@ -1,3 +1,13 @@
+/**
+ * Audit log writer + retention pruner. Every mutating route calls
+ * `auditAction` via the `common/audit.ts` wrapper. The `action` and
+ * `entity` types come from @wim/types' const tuples — adding a new value
+ * means updating the tuple AND any admin-dropdown that filters by it.
+ *
+ * `pruneOlderThan` is the daily-maintenance entry point (see
+ * jobs/workers.ts). Deletion is chunked-safe via a single
+ * `deleteMany({ where: { createdAt: { lt: cutoff } } })`.
+ */
 import { Prisma } from "@prisma/client";
 import type { AuditAction, AuditEntity } from "@wim/types";
 import { prisma } from "../../libs/prisma";

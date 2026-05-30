@@ -1,3 +1,20 @@
+/**
+ * Alert service — schedules warranty reminders + custom user alerts on the
+ * BullMQ `wim-alerts` queue and tracks their lifecycle in the `Alerte`
+ * table.
+ *
+ * Warranty reminders fire at J-30 / J-7 / J-1 before `garantieFin`. Custom
+ * alerts can recur monthly (`recurrenceMonths`). Job IDs are deterministic
+ * (`warranty:<garantieId>:<kind>` / `custom:<alerteId>`) so re-scheduling
+ * the same reminder no-ops at the queue layer instead of duplicating.
+ *
+ * The `markFailed` path records the error message + stack so the Admin
+ * Jobs tab's "Recent failures" view can surface what went wrong.
+ *
+ * Note on naming: the Prisma model is `Alerte` (legacy French spelling
+ * carried from an early schema). The shared type union and string values
+ * are `AlertStatus` / `AlertKind` in @wim/types; the literal values match.
+ */
 import { AlerteStatus, AlerteKind, Alerte } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { alertQueue } from "../../jobs/queues";

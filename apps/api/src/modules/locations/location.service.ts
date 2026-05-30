@@ -1,3 +1,9 @@
+/**
+ * Location service. Owner-scoped CRUD + paginated articles-in-location
+ * reads. `listArticles` and `get` both return `{ items, total, page,
+ * limit }` and filter `article.deletedAt: null` so trashed items don't
+ * appear in a location's roster.
+ */
 import { prisma } from "../../libs/prisma";
 import { LocationCreateInput, LocationUpdateInput } from "./location.schemas";
 import { createHttpError } from "../../utils/http-error";

@@ -1,3 +1,13 @@
+/**
+ * Calendar feed service — builds the iCalendar feed (RFC 5545) served to
+ * external calendar clients via /api/calendar/feed/<token>.ics.
+ *
+ * Three event categories: warranty end dates, scheduled custom alerts,
+ * and warranty claim status changes. Warranties for trashed articles are
+ * excluded (every query joins on `article.deletedAt: null`). The
+ * per-user token (`User.calendarToken`) is a 64-char random — long enough
+ * to be unguessable, short enough to paste into a calendar app.
+ */
 import crypto from "crypto";
 import { AlerteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
