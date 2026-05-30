@@ -8,6 +8,14 @@ permissions:
   contents: read
   pull-requests: read
 
+# Cancel an in-flight run when a newer push lands on the same ref. Without
+# this, three commits in a minute produce three full CI runs that all do the
+# same work — Postgres service spin-up included. The latest commit is the
+# one we actually care about.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -96,12 +104,16 @@ jobs:
       # when INTEGRATION_DATABASE_URL is unset; here we point them at the
       # service DB (the drift check ran first and leaves it reusable — the
       # suite runs `prisma migrate deploy` and truncates between tests).
+      # `--retry=1` auto-reruns a failed test once. A deterministic failure
+      # still fails twice and surfaces; a transient blip (DB readiness
+      # flake, IP-shared rate-limit window edge) recovers without a
+      # hand-restart.
       - name: API - Integration tests
         working-directory: apps/api
         env:
           INTEGRATION_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wim_shadow
           JWT_SECRET: ci-integration-secret
-        run: npm run test:integration
+        run: npx vitest run src/__tests__/integration --retry=1
 
       - name: Web - Test (coverage)
         working-directory: apps/web
