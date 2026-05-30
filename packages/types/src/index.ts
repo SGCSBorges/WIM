@@ -2,8 +2,23 @@
  * Shared domain types for WIM.
  *
  * These describe the shape of objects exchanged between the API and the web
- * client. Keep this file framework-free (no Zod, no Prisma) so it can be
- * imported from both Node and browser bundles without pulling extra deps.
+ * client. **Keep this file framework-free** — no Zod, no `@prisma/client`,
+ * no React, no Node-only types — so it can be imported from both Node and
+ * browser bundles without pulling extra deps.
+ *
+ * Two patterns live here:
+ *
+ *   1. Plain interfaces for response shapes (`Article`, `FetchedArticle`,
+ *      `ShareInviteItem`, `DashboardStatistics`, …). The API layer wraps
+ *      each in a Zod schema (apps/api/src/modules/&#42;&#42;/&#42;.schemas.ts) — that's
+ *      where parsing + refinements live.
+ *   2. `as const` tuples (AUDIT_ACTIONS, AUDIT_ENTITIES, ARTICLE_NOTE_KINDS,
+ *      ATTACHMENT_TYPES, INVITE_STATUSES, SHARE_PERMISSIONS) — the single
+ *      source of truth for string unions appearing on both sides. The tuple
+ *      is iterable at runtime (e.g. to populate a &lt;select&gt;) and the
+ *      derived `(typeof TUPLE)[number]` type stays in lock-step with no
+ *      extra maintenance. New value? Add it to the tuple here and any
+ *      consumer that iterated for a dropdown picks it up automatically.
  */
 
 export interface Location {
