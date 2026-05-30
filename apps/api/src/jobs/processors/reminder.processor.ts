@@ -77,20 +77,28 @@ export const ReminderProcessor = {
         "[alerts] reminder event"
       );
 
-      await AlertService.markSent(data.alerteId);
-
       const path = data.articleId ? `/articles/${data.articleId}` : "/alerts";
-      // Best-effort Web Push (no-op when VAPID isn't configured).
+
+      // Deliver BEFORE markSent so a failed push (e.g., transient VAPID error)
+      // causes BullMQ to retry instead of marking the alert sent and dropping
+      // the notification on the floor. Push is the canonical channel; if it
+      // throws, the catch below records markFailed + rethrows for retry.
       await PushService.sendToUser(data.ownerUserId, {
         title: `Warranty reminder: ${g.garantieNom}`,
         body: `Warranty expires ${shortDate(g.garantieFin)}.`,
         url: path,
       });
+
+      // Email is best-effort and never throws (see emailReminder above), so
+      // we don't gate markSent on it — a failed SMTP doesn't justify a
+      // duplicate push on retry.
       await emailReminder(data.ownerUserId, {
         subject: `Warranty reminder: ${g.garantieNom}`,
         body: `Warranty "${g.garantieNom}" expires ${shortDate(g.garantieFin)}.`,
         path,
       });
+
+      await AlertService.markSent(data.alerteId);
     } catch (err) {
       logger.error(
         {
@@ -120,11 +128,12 @@ export const ReminderProcessor = {
         return;
       }
 
-      await AlertService.markSent(alerteId);
-
       const path = alerte.alerteArticleId
         ? `/articles/${alerte.alerteArticleId}`
         : "/alerts";
+
+      // Deliver BEFORE markSent (see warranty branch comment above) so a
+      // failed push triggers a retry instead of dropping the notification.
       await PushService.sendToUser(alerte.ownerUserId, {
         title: alerte.alerteNom,
         body: alerte.alerteDescription ?? "Maintenance reminder.",
@@ -135,6 +144,8 @@ export const ReminderProcessor = {
         body: alerte.alerteDescription ?? "Maintenance reminder.",
         path,
       });
+
+      await AlertService.markSent(alerteId);
 
       // Recurring CUSTOM alert: spawn the next occurrence. A failure here must
       // not re-fail the job — the alert is already SENT, so a retry would just

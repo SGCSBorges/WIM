@@ -49,8 +49,11 @@ const svc = AlertService as unknown as {
   createRecurrenceFollowUp: ReturnType<typeof vi.fn>;
 };
 
-// Minimal Job stub.
-const job = (data: unknown) => ({ id: "j1", data }) as never;
+// Minimal Job stub. `attemptsMade` + `opts.attempts` are read by the catch
+// block's structured log; supply both so failure-path tests don't trip on a
+// missing-property TypeError instead of the actual error they want to assert.
+const job = (data: unknown) =>
+  ({ id: "j1", data, attemptsMade: 0, opts: { attempts: 3 } }) as never;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -128,6 +131,53 @@ describe("ReminderProcessor", () => {
     );
     expect(svc.markSent).toHaveBeenCalledWith(13);
     expect(svc.createRecurrenceFollowUp).not.toHaveBeenCalled();
+  });
+
+  it("does NOT markSent when push delivery fails (warranty path) so BullMQ retries", async () => {
+    mockPrisma.garantie.findUnique.mockResolvedValue({
+      garantieId: 5,
+      garantieNom: "W",
+      garantieFin: new Date(),
+    });
+    push.sendToUser.mockRejectedValueOnce(new Error("VAPID transient"));
+    await expect(
+      ReminderProcessor.handle(
+        job({
+          type: "warranty_reminder",
+          ownerUserId: 1,
+          garantieId: 5,
+          reminderKind: "J30",
+          executeAt: new Date().toISOString(),
+          alerteId: 9,
+        })
+      )
+    ).rejects.toThrow(/VAPID transient/);
+    expect(svc.markSent).not.toHaveBeenCalled();
+  });
+
+  it("does NOT markSent when push delivery fails (custom path) so BullMQ retries", async () => {
+    mockPrisma.alerte.findUnique.mockResolvedValue({
+      alerteId: 21,
+      status: "SCHEDULED",
+      kind: "CUSTOM",
+      ownerUserId: 1,
+      alerteNom: "x",
+      alerteDescription: null,
+      alerteArticleId: null,
+      recurrenceMonths: null,
+    });
+    push.sendToUser.mockRejectedValueOnce(new Error("VAPID transient"));
+    await expect(
+      ReminderProcessor.handle(
+        job({
+          type: "custom_alert",
+          ownerUserId: 1,
+          alerteId: 21,
+          executeAt: new Date().toISOString(),
+        })
+      )
+    ).rejects.toThrow(/VAPID transient/);
+    expect(svc.markSent).not.toHaveBeenCalled();
   });
 
   it("skips a custom alert that is no longer scheduled", async () => {
