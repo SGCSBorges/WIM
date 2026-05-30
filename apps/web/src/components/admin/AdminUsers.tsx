@@ -272,8 +272,12 @@ export default function AdminUsers() {
 
       {/* Tabs */}
       <div className="border-b ui-divider">
-        <nav className="-mb-px flex space-x-8">
+        <nav role="tablist" className="-mb-px flex space-x-8">
           <button
+            role="tab"
+            id="admin-tab-dashboard"
+            aria-selected={activeTab === "dashboard"}
+            aria-controls="admin-panel-dashboard"
             onClick={() => setActiveTab("dashboard")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "dashboard"
@@ -284,6 +288,10 @@ export default function AdminUsers() {
             {t("admin.dashboard")}
           </button>
           <button
+            role="tab"
+            id="admin-tab-users"
+            aria-selected={activeTab === "users"}
+            aria-controls="admin-panel-users"
             onClick={() => setActiveTab("users")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "users"
@@ -294,6 +302,10 @@ export default function AdminUsers() {
             {t("admin.users")}
           </button>
           <button
+            role="tab"
+            id="admin-tab-auditLog"
+            aria-selected={activeTab === "auditLog"}
+            aria-controls="admin-panel-auditLog"
             onClick={() => setActiveTab("auditLog")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "auditLog"
@@ -304,6 +316,10 @@ export default function AdminUsers() {
             {t("admin.auditLog")}
           </button>
           <button
+            role="tab"
+            id="admin-tab-jobs"
+            aria-selected={activeTab === "jobs"}
+            aria-controls="admin-panel-jobs"
             onClick={() => setActiveTab("jobs")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "jobs"
@@ -323,7 +339,11 @@ export default function AdminUsers() {
       )}
 
       {activeTab === "dashboard" && (
-        <div>
+        <div
+          role="tabpanel"
+          id="admin-panel-dashboard"
+          aria-labelledby="admin-tab-dashboard"
+        >
           {loadingStats ? (
             <DashboardStatsSkeleton cards={4} />
           ) : statistics ? (
@@ -404,7 +424,12 @@ export default function AdminUsers() {
       )}
 
       {activeTab === "users" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div
+          role="tabpanel"
+          id="admin-panel-users"
+          aria-labelledby="admin-tab-users"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
           <div className="ui-card rounded-lg">
             <div className="p-4 border-b ui-divider space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -496,9 +521,11 @@ export default function AdminUsers() {
                             }
                             className="ui-input text-xs px-2 py-1 rounded"
                           >
-                            <option value="USER">USER</option>
-                            <option value="POWER_USER">POWER_USER</option>
-                            <option value="ADMIN">ADMIN</option>
+                            <option value="USER">{t("admin.role.USER")}</option>
+                            <option value="POWER_USER">
+                              {t("admin.role.POWER_USER")}
+                            </option>
+                            <option value="ADMIN">{t("admin.role.ADMIN")}</option>
                           </select>
                           <button
                             onClick={() => saveRole(u)}
@@ -738,8 +765,24 @@ export default function AdminUsers() {
         </div>
       )}
 
-      {activeTab === "auditLog" && <AuditLogTab />}
-      {activeTab === "jobs" && <JobsTab />}
+      {activeTab === "auditLog" && (
+        <div
+          role="tabpanel"
+          id="admin-panel-auditLog"
+          aria-labelledby="admin-tab-auditLog"
+        >
+          <AuditLogTab />
+        </div>
+      )}
+      {activeTab === "jobs" && (
+        <div
+          role="tabpanel"
+          id="admin-panel-jobs"
+          aria-labelledby="admin-tab-jobs"
+        >
+          <JobsTab />
+        </div>
+      )}
 
       {createOpen && (
         <CreateUserModal

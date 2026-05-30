@@ -103,9 +103,9 @@ export default function CreateUserModal({
               onChange={(e) => setRole(e.target.value as Role)}
               className="w-full ui-input px-3 py-2 rounded-md"
             >
-              <option value="USER">USER</option>
-              <option value="POWER_USER">POWER_USER</option>
-              <option value="ADMIN">ADMIN</option>
+              <option value="USER">{t("admin.role.USER")}</option>
+              <option value="POWER_USER">{t("admin.role.POWER_USER")}</option>
+              <option value="ADMIN">{t("admin.role.ADMIN")}</option>
             </select>
           </div>
           {error && (

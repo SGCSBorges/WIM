@@ -55,17 +55,29 @@ export default function DataExportPanel() {
               updatedAt: r.updatedAt,
             })),
             [
-              { key: "articleId", header: "Article ID" },
-              { key: "name", header: "Name" },
-              { key: "model", header: "Model" },
-              { key: "description", header: "Description" },
-              { key: "imageUrl", header: "Image URL" },
-              { key: "sharedPublicly", header: "Shared publicly" },
-              { key: "warrantyName", header: "Warranty name" },
-              { key: "warrantyEndDate", header: "Warranty end date" },
-              { key: "warrantyActive", header: "Warranty active" },
-              { key: "createdAt", header: "Created at" },
-              { key: "updatedAt", header: "Updated at" },
+              { key: "articleId", header: t("export.headers.articleId") },
+              { key: "name", header: t("export.headers.name") },
+              { key: "model", header: t("export.headers.model") },
+              { key: "description", header: t("export.headers.description") },
+              { key: "imageUrl", header: t("export.headers.imageUrl") },
+              {
+                key: "sharedPublicly",
+                header: t("export.headers.sharedPublicly"),
+              },
+              {
+                key: "warrantyName",
+                header: t("export.headers.warrantyName"),
+              },
+              {
+                key: "warrantyEndDate",
+                header: t("export.headers.warrantyEndDate"),
+              },
+              {
+                key: "warrantyActive",
+                header: t("export.headers.warrantyActive"),
+              },
+              { key: "createdAt", header: t("export.headers.createdAt") },
+              { key: "updatedAt", header: t("export.headers.updatedAt") },
             ]
           );
           downloadFile(filename, csv, "text/csv");
@@ -90,13 +102,19 @@ export default function DataExportPanel() {
               active: r.garantieIsValide ? "yes" : "no",
             })),
             [
-              { key: "garantieId", header: "Warranty ID" },
-              { key: "articleId", header: "Article ID" },
-              { key: "name", header: "Name" },
-              { key: "purchaseDate", header: "Purchase date" },
-              { key: "durationMonths", header: "Duration (months)" },
-              { key: "endDate", header: "End date" },
-              { key: "active", header: "Active" },
+              { key: "garantieId", header: t("export.headers.warrantyId") },
+              { key: "articleId", header: t("export.headers.articleId") },
+              { key: "name", header: t("export.headers.name") },
+              {
+                key: "purchaseDate",
+                header: t("export.headers.purchaseDate"),
+              },
+              {
+                key: "durationMonths",
+                header: t("export.headers.durationMonths"),
+              },
+              { key: "endDate", header: t("export.headers.endDate") },
+              { key: "active", header: t("export.headers.active") },
             ]
           );
           downloadFile(filename, csv, "text/csv");
@@ -135,15 +153,18 @@ export default function DataExportPanel() {
               })
             ),
             [
-              { key: "attachmentId", header: "Attachment ID" },
-              { key: "fileName", header: "File name" },
-              { key: "mimeType", header: "MIME type" },
-              { key: "fileSize", header: "Size (bytes)" },
-              { key: "type", header: "Type" },
-              { key: "articleId", header: "Article ID" },
-              { key: "garantieId", header: "Warranty ID" },
-              { key: "createdAt", header: "Created at" },
-              { key: "fileUrl", header: "File URL" },
+              {
+                key: "attachmentId",
+                header: t("export.headers.attachmentId"),
+              },
+              { key: "fileName", header: t("export.headers.fileName") },
+              { key: "mimeType", header: t("export.headers.mimeType") },
+              { key: "fileSize", header: t("export.headers.fileSize") },
+              { key: "type", header: t("export.headers.type") },
+              { key: "articleId", header: t("export.headers.articleId") },
+              { key: "garantieId", header: t("export.headers.warrantyId") },
+              { key: "createdAt", header: t("export.headers.createdAt") },
+              { key: "fileUrl", header: t("export.headers.fileUrl") },
             ]
           );
           downloadFile(filename, csv, "text/csv");
