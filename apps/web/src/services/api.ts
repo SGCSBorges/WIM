@@ -1,3 +1,31 @@
+/**
+ * Web API client — one shared `fetchWithTimeout` wrapper + per-domain
+ * client objects (authAPI, articlesAPI, …). Conventions worth knowing:
+ *
+ * • 45 s default timeout. Render free-tier API + Postgres cold-starts can
+ *   easily stack to ~30 s; 45 s gives headroom without leaving real hangs
+ *   unbounded. Per-call overrides exist for known-fast endpoints.
+ *
+ * • Cookie credentials always included (`credentials: "include"`) so the
+ *   httpOnly `wim_token` cookie rides every request. The API enforces
+ *   CSRF via Origin/Referer on mutating routes — fetch sends both
+ *   automatically.
+ *
+ * • `_cachedRole` — in-memory only. Populated on login / register / getMe;
+ *   cleared on logout. Lost on page reload, so the app re-fetches /me on
+ *   boot. Used by the router to gate role-aware nav items without an
+ *   extra fetch each render.
+ *
+ * • `extractError` — pulls the server-supplied `error` field. For 5xx,
+ *   appends the `requestId` (from the X-Request-Id header or response
+ *   body) so users can quote a reference when reporting a problem. For
+ *   4xx we keep the message clean — those are user-actionable.
+ *
+ * • Pagination contract for endpoints that return more than a flat array:
+ *   `{ items: T[], total: number, page: number, limit: number }`.
+ *   Examples: articlesAPI.getAll, locationsAPI.listArticles, importRows
+ *   (different shape — see method JSDoc).
+ */
 import type {
   Article,
   ArticleListParams,

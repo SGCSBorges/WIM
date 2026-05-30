@@ -1,3 +1,11 @@
+/**
+ * `usePwaInstall()` — drives the in-app "Install" prompt. Chromium fires a
+ * `beforeinstallprompt` event we stash and replay on the user's click;
+ * Safari/iOS doesn't, so the hook returns an `"ios-manual"` state that
+ * the UI uses to show a "Add to Home Screen" hint instead of a button.
+ * The `BeforeInstallPromptEvent` interface is declared inline because
+ * lib.dom.d.ts doesn't include it.
+ */
 import { useCallback, useEffect, useState } from "react";
 
 // The shape Chromium fires on `beforeinstallprompt`. Not in the standard

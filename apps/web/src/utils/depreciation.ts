@@ -1,3 +1,9 @@
+/**
+ * `currentValue(purchasePrice, depreciationRate, since)` — straight-line
+ * depreciation in the browser. Returns null when either input is null;
+ * floors at zero. Mirrors the server-side helper of the same name; both
+ * use the same MS_PER_YEAR so they always agree.
+ */
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 
 /**

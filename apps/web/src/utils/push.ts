@@ -1,3 +1,12 @@
+/**
+ * Browser-side Push helpers — `enablePush()` requests notification
+ * permission, registers the service worker if needed, calls
+ * pushManager.subscribe with the server's VAPID public key, then POSTs the
+ * subscription to the API. `disablePush()` reverses that. `isPushSubscribed`
+ * checks the current state for the Profile toggle. All three return false /
+ * no-op cleanly when the browser doesn't support web push or the VAPID key
+ * isn't published.
+ */
 import { pushAPI } from "../services/api";
 
 export function pushSupported(): boolean {

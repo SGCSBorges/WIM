@@ -1,3 +1,22 @@
+/**
+ * i18n provider + `t()` helper.
+ *
+ * Lookup chain (in order):
+ *   1. extras[lang][key]
+ *   2. translations[lang][key]
+ *   3. extras.en[key]
+ *   4. translations.en[key]
+ *   5. the raw key (so a missing translation is visible in dev)
+ *
+ * Convention: NEW keys go into `translations.extras.ts` so the 70 KB main
+ * dictionary stays low-churn. Extras can also OVERRIDE an existing key
+ * (priority 1 wins over 2) — useful for a copy fix without touching the
+ * big file.
+ *
+ * The `AnyKey` template-literal type accepts any string so `t(...)` can be
+ * called with a templated key (e.g. `t(\`claim.status.${status}\`)`); the
+ * lookup returns the raw key when no translation exists.
+ */
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { Language, translations } from "./translations";
 import { extras, ExtrasKey } from "./translations.extras";

@@ -1,3 +1,11 @@
+/**
+ * Theme provider. Four themes (`light` / `dark` / `ocean` / `cyber`) are
+ * driven by a `data-theme` attribute on `<html>`; the actual colour
+ * tokens live as CSS variables in `src/index.css`. Selection persists in
+ * `localStorage` under STORAGE_KEY. Shared components consume the
+ * variables via the `.ui-*` utility classes — don't hardcode Tailwind
+ * colours on shared widgets if you want them to respect every theme.
+ */
 import React, {
   createContext,
   useContext,

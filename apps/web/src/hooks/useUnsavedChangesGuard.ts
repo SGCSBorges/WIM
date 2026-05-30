@@ -1,3 +1,12 @@
+/**
+ * `useUnsavedChangesGuard(dirty)` — installs a `beforeunload` listener
+ * while `dirty` is true so the browser warns on refresh / tab-close /
+ * hard-nav. Limitation: in-app SPA navigation (clicking a router link)
+ * is NOT intercepted; React Router's `useBlocker` would handle that but
+ * needs a data-router, which this app's BrowserRouter setup doesn't
+ * expose. The forms that use this hook additionally confirm on their
+ * explicit Cancel action.
+ */
 import { useEffect } from "react";
 
 /**
