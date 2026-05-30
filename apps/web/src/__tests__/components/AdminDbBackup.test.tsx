@@ -92,7 +92,9 @@ describe("<AdminDbBackup />", () => {
     await user.click(checkbox);
     expect(checkbox).toBeChecked();
     // The password label is rendered now.
-    expect(screen.getByLabelText(/re-enter your password/i)).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/re-enter your password/i)
+    ).toBeInTheDocument();
     // No API call happens just from toggling.
     expect(importDb).not.toHaveBeenCalled();
   });

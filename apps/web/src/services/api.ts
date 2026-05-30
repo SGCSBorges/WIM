@@ -477,9 +477,7 @@ export const articlesAPI = {
       }
     );
     if (!response.ok)
-      throw new Error(
-        await extractError(response, "Failed to purge articles")
-      );
+      throw new Error(await extractError(response, "Failed to purge articles"));
     return response.json();
   },
 
@@ -1375,6 +1373,30 @@ export const adminAPI = {
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to fetch jobs"));
+    return response.json();
+  },
+
+  async getFailedJobs(): Promise<{
+    items: Array<{
+      queue: string;
+      id: string | undefined;
+      name: string;
+      failedReason: string | undefined;
+      stacktrace: string[];
+      attemptsMade: number;
+      maxAttempts: number | undefined;
+      data: unknown;
+      finishedOn: number | undefined;
+    }>;
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/failed-jobs`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch failed jobs")
+      );
     return response.json();
   },
 

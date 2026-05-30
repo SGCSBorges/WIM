@@ -38,10 +38,9 @@ export default function ArticlesTrash() {
       const { count } = await articlesAPI.bulkRestoreTrash(ids);
       setItems((prev) => prev.filter((a) => !selectedIds.has(a.articleId)));
       setSelectedIds(new Set());
-      toast.show(
-        t("trash.bulk.restored").replace("{count}", String(count)),
-        { kind: "success" }
-      );
+      toast.show(t("trash.bulk.restored").replace("{count}", String(count)), {
+        kind: "success",
+      });
     } catch (e) {
       toast.show(getErrorMessage(e, t("trash.error.restore")), {
         kind: "error",
@@ -60,10 +59,9 @@ export default function ArticlesTrash() {
       const { count } = await articlesAPI.bulkPurgeTrash(ids);
       setItems((prev) => prev.filter((a) => !selectedIds.has(a.articleId)));
       setSelectedIds(new Set());
-      toast.show(
-        t("trash.bulk.purged").replace("{count}", String(count)),
-        { kind: "success" }
-      );
+      toast.show(t("trash.bulk.purged").replace("{count}", String(count)), {
+        kind: "success",
+      });
     } catch (e) {
       toast.show(getErrorMessage(e, t("trash.error.purge")), {
         kind: "error",

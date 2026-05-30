@@ -115,7 +115,12 @@ router.post(
     await auditAction(req, {
       action: "UPDATE",
       entity: "Article",
-      metadata: { bulk: true, restored: true, requested: ids.length, restored_count: count },
+      metadata: {
+        bulk: true,
+        restored: true,
+        requested: ids.length,
+        restored_count: count,
+      },
     });
     res.json({ count });
   })
@@ -132,7 +137,12 @@ router.post(
     await auditAction(req, {
       action: "DELETE",
       entity: "Article",
-      metadata: { bulk: true, purge: true, requested: ids.length, deleted: count },
+      metadata: {
+        bulk: true,
+        purge: true,
+        requested: ids.length,
+        deleted: count,
+      },
     });
     res.json({ count });
   })

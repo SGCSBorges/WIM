@@ -21,7 +21,9 @@ import { articlesAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";
 import { ToastProvider } from "../../components/common/Toast";
 
-const importRows = articlesAPI.importRows as unknown as ReturnType<typeof vi.fn>;
+const importRows = articlesAPI.importRows as unknown as ReturnType<
+  typeof vi.fn
+>;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -50,12 +52,8 @@ describe("<CsvImportModal />", () => {
 
   it("renders the file picker when open=true", () => {
     renderModal(true);
-    expect(
-      screen.getByRole("dialog", { name: /import/i })
-    ).toBeInTheDocument();
-    expect(
-      document.querySelector('input[type="file"]')
-    ).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: /import/i })).toBeInTheDocument();
+    expect(document.querySelector('input[type="file"]')).toBeInTheDocument();
   });
 
   it("parses the picked file and posts only valid rows to importRows", async () => {

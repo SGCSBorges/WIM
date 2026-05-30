@@ -9,7 +9,11 @@ import { auditAction } from "../common/audit";
 import { security } from "../../config/security";
 import { createHttpError } from "../../utils/http-error";
 import { idParam } from "../common/schemas";
-import { alertQueue, maintenanceQueue } from "../../jobs/queues";
+import {
+  alertQueue,
+  maintenanceQueue,
+  listFailedJobs,
+} from "../../jobs/queues";
 import { passwordSchema } from "../auth/auth.schemas";
 import { ShareService } from "../shares/share.service";
 import { AdminDbService, ImportPayloadSchema } from "./admin.db.service";
@@ -661,6 +665,18 @@ router.get(
       maintenance: maintenanceCounts,
       auditPruneNextRun: auditPrune?.next ?? null,
     });
+  })
+);
+
+/** GET the last N (capped 100) failed jobs across both queues. Used by the
+ *  Admin Jobs tab's "Recent failures" expander. */
+router.get(
+  "/failed-jobs",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (_req, res) => {
+    const items = await listFailedJobs(50);
+    res.json({ items });
   })
 );
 

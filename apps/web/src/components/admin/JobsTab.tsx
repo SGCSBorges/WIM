@@ -11,6 +11,18 @@ type Snapshot = {
   auditPruneNextRun: number | null;
 };
 
+type FailedJob = {
+  queue: string;
+  id: string | undefined;
+  name: string;
+  failedReason: string | undefined;
+  stacktrace: string[];
+  attemptsMade: number;
+  maxAttempts: number | undefined;
+  data: unknown;
+  finishedOn: number | undefined;
+};
+
 // Stable column order so a flickering counter doesn't reshuffle the row.
 const COUNT_FIELDS = [
   "waiting",
@@ -25,6 +37,20 @@ export default function JobsTab() {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
+  const [failed, setFailed] = useState<FailedJob[] | null>(null);
+  const [showFailed, setShowFailed] = useState(false);
+  const [failedError, setFailedError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const loadFailed = useCallback(async () => {
+    try {
+      const { items } = await adminAPI.getFailedJobs();
+      setFailed(items);
+      setFailedError(null);
+    } catch (e) {
+      setFailedError(getErrorMessage(e, t("admin.jobs.fetchError")));
+    }
+  }, [t]);
 
   const refresh = useCallback(async () => {
     try {
@@ -106,6 +132,96 @@ export default function JobsTab() {
           ? new Date(snap.auditPruneNextRun).toLocaleString(language)
           : "—"}
       </p>
+
+      <div className="ui-card rounded-lg p-4 space-y-2">
+        <button
+          type="button"
+          onClick={() => {
+            const next = !showFailed;
+            setShowFailed(next);
+            if (next && failed === null) void loadFailed();
+          }}
+          aria-expanded={showFailed}
+          className="text-sm font-medium ui-btn-ghost border ui-divider rounded px-3 py-1"
+        >
+          {showFailed
+            ? `▾ ${t("admin.jobs.recentFailures")}`
+            : `▸ ${t("admin.jobs.recentFailures")}`}
+        </button>
+
+        {showFailed && (
+          <>
+            {failedError && (
+              <p className="text-sm ui-text-error">{failedError}</p>
+            )}
+            {failed === null && !failedError && (
+              <p className="text-sm ui-text-muted">{t("common.loading")}</p>
+            )}
+            {failed && failed.length === 0 && (
+              <p className="text-sm ui-text-muted">
+                {t("admin.jobs.recentFailuresEmpty")}
+              </p>
+            )}
+            {failed && failed.length > 0 && (
+              <ul className="divide-y ui-divider">
+                {failed.map((j) => {
+                  const exhausted =
+                    j.maxAttempts !== undefined &&
+                    j.attemptsMade >= j.maxAttempts;
+                  const rowKey = `${j.queue}:${j.id ?? j.finishedOn ?? j.name}`;
+                  return (
+                    <li
+                      key={rowKey}
+                      className={
+                        exhausted
+                          ? "py-2 ui-alert-error rounded px-2 my-1"
+                          : "py-2"
+                      }
+                    >
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="font-mono ui-text-muted">
+                          {j.queue}
+                        </span>
+                        <span className="font-medium">{j.name}</span>
+                        <span className="ui-text-muted">
+                          {t("admin.jobs.attempt")
+                            .replace("{n}", String(j.attemptsMade))
+                            .replace("{max}", String(j.maxAttempts ?? "?"))}
+                        </span>
+                        {j.finishedOn && (
+                          <span className="ui-text-muted">
+                            {new Date(j.finishedOn).toLocaleString(language)}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          className="ml-auto text-xs ui-btn-ghost border ui-divider rounded px-2"
+                          onClick={() =>
+                            setExpandedId((p) => (p === rowKey ? null : rowKey))
+                          }
+                          aria-expanded={expandedId === rowKey}
+                        >
+                          {expandedId === rowKey
+                            ? t("admin.jobs.hideDetails")
+                            : t("admin.jobs.viewDetails")}
+                        </button>
+                      </div>
+                      <p className="text-xs mt-1 break-words">
+                        {j.failedReason ?? t("admin.jobs.noReason")}
+                      </p>
+                      {expandedId === rowKey && j.stacktrace.length > 0 && (
+                        <pre className="mt-1 text-[10px] font-mono whitespace-pre-wrap ui-panel rounded p-2 overflow-x-auto">
+                          {j.stacktrace.join("\n")}
+                        </pre>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -525,7 +525,9 @@ export default function AdminUsers() {
                             <option value="POWER_USER">
                               {t("admin.role.POWER_USER")}
                             </option>
-                            <option value="ADMIN">{t("admin.role.ADMIN")}</option>
+                            <option value="ADMIN">
+                              {t("admin.role.ADMIN")}
+                            </option>
                           </select>
                           <button
                             onClick={() => saveRole(u)}
