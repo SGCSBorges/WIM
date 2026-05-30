@@ -1,3 +1,22 @@
+/**
+ * BullMQ worker bootstrap.
+ *
+ * Owns two singletons (alertQueue worker + maintenanceQueue worker) and
+ * registers three repeatable maintenance jobs. Times are chosen in early UTC
+ * to dodge US/EU business hours when the API is busiest:
+ *
+ *   • audit-prune-daily          cron `0 3 * * *`   (03:00 UTC, daily)
+ *       Trims AuditLog rows older than AUDIT_RETENTION_DAYS.
+ *   • article-trash-purge-daily  cron `30 3 * * *`  (03:30 UTC, daily)
+ *       Hard-deletes soft-deleted articles older than
+ *       ARTICLE_TRASH_RETENTION_DAYS, unlinking their attachment files.
+ *   • warranty-digest-weekly     cron `0 9 * * 1`   (09:00 UTC Mondays)
+ *       Sends the opt-in digest to users with weeklyDigest=true.
+ *
+ * Every schedule is opt-out via its corresponding env var (set the retention
+ * to 0, or WARRANTY_DIGEST_ENABLED=false). Workers degrade gracefully if
+ * Redis is unavailable — see queues.ts and individual processors.
+ */
 import { Worker } from "bullmq";
 import { createRedisConnection } from "./redis";
 import { AlertJobPayload } from "../modules/alerts/alert.types";
