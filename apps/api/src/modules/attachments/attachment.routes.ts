@@ -273,7 +273,6 @@ router.put(
   })
 );
 
-/** DELETE /api/attachments/:id — optionally removes the file from disk */
 /**
  * Bulk delete attachments owned by the caller. Returns { count } of rows
  * actually removed (ids the user doesn't own are silently skipped — same
@@ -295,6 +294,10 @@ router.post(
   })
 );
 
+/** DELETE /api/attachments/:id — optionally removes the file from disk
+ *  via the `?removeFile=true` query (default false). Always cascade-deletes
+ *  the DB row; the file flag is opt-in for callers that want to keep the
+ *  blob around (e.g. when re-pointing the attachment at a different row). */
 router.delete(
   "/:id",
   authGuard,
