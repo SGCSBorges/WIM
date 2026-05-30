@@ -1240,14 +1240,26 @@ export const profileAPI = {
     return response.json().catch(() => null);
   },
 
+  /**
+   * Deletes the current user's account. Throws a regular Error on failure,
+   * but attaches the HTTP status as `err.status` so callers can distinguish
+   * "wrong password" (401) from "account already gone" (404) without
+   * parsing the message text. The "already gone" case is treated as
+   * idempotent success by the UI.
+   */
   async deleteAccount(currentPassword: string) {
     const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
       method: "DELETE",
       headers: getHeaders(),
       body: JSON.stringify({ currentPassword }),
     });
-    if (!response.ok)
-      throw new Error(await extractError(response, "Failed to delete account"));
+    if (!response.ok) {
+      const err = new Error(
+        await extractError(response, "Failed to delete account")
+      ) as Error & { status?: number };
+      err.status = response.status;
+      throw err;
+    }
   },
 };
 

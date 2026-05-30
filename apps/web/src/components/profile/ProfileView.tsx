@@ -195,12 +195,17 @@ export default function ProfileView() {
       await profileAPI.deleteAccount(deletePassword);
       disconnectAndRedirect();
     } catch (e: unknown) {
-      const msg = getErrorMessage(e, "");
-      if (/4(01|04)/.test(msg) || /not found|unauthorized/i.test(msg)) {
+      // Idempotent: a 404 means the account is already gone — treat as
+      // success and disconnect. ANY other status (especially 401 "Invalid
+      // password") surfaces the error so a typo doesn't silently log the
+      // user out. Replaces a pre-round-11 regex on the error message that
+      // would have wrongly matched a reworded "Unauthorized" 401.
+      const status = (e as { status?: number })?.status;
+      if (status === 404) {
         disconnectAndRedirect();
         return;
       }
-      showFailure(msg || t("common.errorOccurred"));
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
