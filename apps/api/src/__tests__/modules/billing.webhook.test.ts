@@ -58,6 +58,41 @@ describe("Stripe webhook hardening", () => {
     expect(res.body).toMatchObject({ stale: true });
   });
 
+  it("acks checkout.session.completed but does NOT promote when targetRole is not in the whitelist", async () => {
+    const { prisma } = await import("../../libs/prisma");
+    const tx = {
+      processedStripeEvent: { create: vi.fn().mockResolvedValue({}) },
+      user: { findUnique: vi.fn(), update: vi.fn() },
+    };
+    (
+      prisma as unknown as { $transaction: ReturnType<typeof vi.fn> }
+    ).$transaction.mockImplementation(async (cb: (t: unknown) => unknown) =>
+      cb(tx)
+    );
+
+    const event = {
+      id: "evt_bad_role",
+      type: "checkout.session.completed",
+      created: Math.floor(Date.now() / 1000),
+      data: {
+        object: {
+          metadata: { userId: "42", targetRole: "SUPER_ADMIN" },
+          subscription: "sub_123",
+        },
+      },
+    };
+    const res = await request(makeApp())
+      .post("/billing/webhook")
+      .set("stripe-signature", "sig")
+      .set("content-type", "application/json")
+      .send(JSON.stringify(event));
+    expect(res.status).toBe(200);
+    // The transaction runs (marker insert) but the promotion branch is
+    // skipped because the targetRole failed Zod parsing.
+    expect(tx.user.findUnique).not.toHaveBeenCalled();
+    expect(tx.user.update).not.toHaveBeenCalled();
+  });
+
   it("acks unhandled event types without entering the processing transaction", async () => {
     const unhandled = {
       id: "evt_unhandled",

@@ -1,10 +1,16 @@
 import express, { Router } from "express";
+import { z } from "zod";
 import Stripe from "stripe";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { ShareService } from "../shares/share.service";
 import { AuditService } from "../audit/audit.service";
+
+// Whitelist of role transitions the webhook will honor. Keeps the
+// metadata.targetRole field honest as we add roles or remove them; anything
+// outside this set is logged and ignored.
+const TargetRoleSchema = z.enum(["POWER_USER"]);
 
 const router = Router();
 
@@ -91,7 +97,21 @@ router.post(
         if (event.type === "checkout.session.completed") {
           const session = event.data.object as Stripe.Checkout.Session;
           const userIdRaw = session.metadata?.userId;
-          const targetRole = session.metadata?.targetRole;
+          const targetRoleParsed = TargetRoleSchema.safeParse(
+            session.metadata?.targetRole
+          );
+          if (!targetRoleParsed.success) {
+            logger.info(
+              {
+                eventId: event.id,
+                received: session.metadata?.targetRole,
+              },
+              "[stripe-webhook] unknown targetRole — skipping promotion"
+            );
+          }
+          const targetRole = targetRoleParsed.success
+            ? targetRoleParsed.data
+            : undefined;
           const subscriptionId =
             typeof session.subscription === "string"
               ? session.subscription
