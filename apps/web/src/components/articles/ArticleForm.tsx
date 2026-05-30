@@ -35,6 +35,15 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const { t } = useI18n();
   const toast = useToast();
   const formErrorRef = useRef<HTMLDivElement | null>(null);
+  // Cancellation flag for setState inside slow async chains (barcode
+  // lookup can take up to ~6s — the form may unmount in between).
+  const mountedRef = useRef(true);
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+    },
+    []
+  );
   // Dirty tracking for the unsaved-changes guard. A form-level onChange flips
   // this on any field edit; it resets on prop-sync and after a successful save.
   const [dirty, setDirty] = useState(false);
@@ -510,7 +519,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               setShowScanner(false);
               if (barcodeLookupEnabled()) {
                 void lookupProduct(value).then((info) => {
-                  if (!info) return;
+                  // Bail if the form unmounted before the (slow) network
+                  // lookup resolved — setState would warn + leak.
+                  if (!mountedRef.current || !info) return;
                   setFormData((prev) => ({
                     ...prev,
                     articleNom:
