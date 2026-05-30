@@ -28,6 +28,16 @@ describe("acl.canReadInventory", () => {
     mock.inventoryShare.findFirst.mockResolvedValue(null);
     expect(await canReadInventory(2, 5)).toBe(false);
   });
+
+  it("queries with active: true so revoked shares don't grant read access", async () => {
+    mock.inventoryShare.findFirst.mockResolvedValue(null);
+    await canReadInventory(2, 5);
+    expect(mock.inventoryShare.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ active: true }),
+      })
+    );
+  });
 });
 
 describe("acl.canWriteInventory", () => {
@@ -48,5 +58,15 @@ describe("acl.canWriteInventory", () => {
   it("denies a non-owner with no share", async () => {
     mock.inventoryShare.findFirst.mockResolvedValue(null);
     expect(await canWriteInventory(2, 5)).toBe(false);
+  });
+
+  it("queries with active: true so a revoked WRITE share doesn't grant write access", async () => {
+    mock.inventoryShare.findFirst.mockResolvedValue(null);
+    await canWriteInventory(2, 5);
+    expect(mock.inventoryShare.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ active: true }),
+      })
+    );
   });
 });
