@@ -8,13 +8,12 @@ vi.mock("../../services/api", () => ({
 }));
 
 import AdminDbBackup from "../../components/admin/AdminDbBackup";
-import { adminAPI, authAPI } from "../../services/api";
+import { adminAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";
 import { ToastProvider } from "../../components/common/Toast";
 
 const exportDb = adminAPI.exportDatabase as unknown as ReturnType<typeof vi.fn>;
 const importDb = adminAPI.importDatabase as unknown as ReturnType<typeof vi.fn>;
-const logout = authAPI.logout as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();

@@ -272,7 +272,10 @@ export default function AdminUsers() {
 
       {/* Tabs */}
       <div className="border-b ui-divider">
-        <nav role="tablist" className="-mb-px flex space-x-8">
+        {/* div, not nav: jsx-a11y/no-noninteractive-element-to-interactive-role
+            rejects role="tablist" on a <nav>, which is a non-interactive
+            landmark. The tablist semantics belong on a plain container. */}
+        <div role="tablist" className="-mb-px flex space-x-8">
           <button
             role="tab"
             id="admin-tab-dashboard"
@@ -329,7 +332,7 @@ export default function AdminUsers() {
           >
             {t("admin.jobs")}
           </button>
-        </nav>
+        </div>
       </div>
 
       {error && (
