@@ -1,5 +1,6 @@
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
+import { unlinkAttachmentFiles } from "./attachment.fs";
 import {
   AttachmentCreateInput,
   AttachmentUpdateInput,
@@ -99,6 +100,32 @@ export const AttachmentService = {
     prisma.attachment.delete({
       where: { attachmentId: id, ownerUserId },
     }),
+
+  // Bulk delete: silently skips ids the caller doesn't own (no separate
+  // error per row — the user shouldn't have those ids in their UI anyway,
+  // and exposing which-ids-existed leaks info). Best-effort `unlink` of the
+  // on-disk file follows the round-8 article hardRemove pattern: a missing
+  // file is logged in the helper and doesn't block the row delete. Returns
+  // { count } of rows actually removed.
+  bulkRemove: async (
+    ids: number[],
+    ownerUserId: number
+  ): Promise<{ count: number }> => {
+    if (ids.length === 0) return { count: 0 };
+    const owned = await prisma.attachment.findMany({
+      where: { attachmentId: { in: ids }, ownerUserId },
+      select: { attachmentId: true, fileUrl: true, thumbUrl: true },
+    });
+    if (owned.length === 0) return { count: 0 };
+    for (const a of owned) await unlinkAttachmentFiles(a);
+    const result = await prisma.attachment.deleteMany({
+      where: {
+        attachmentId: { in: owned.map((a) => a.attachmentId) },
+        ownerUserId,
+      },
+    });
+    return { count: result.count };
+  },
 
   // Warranty image/proof: a warranty references at most one attachment.
   // Return [] when none is linked.

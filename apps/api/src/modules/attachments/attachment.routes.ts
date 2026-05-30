@@ -19,7 +19,14 @@ import { logger } from "../../config/logger";
 import { verifyFileSignature } from "../../utils/file-signature";
 import { makeImageThumbnail, thumbnailName } from "./attachment.thumbnail";
 import { unlinkAttachmentFiles } from "./attachment.fs";
+import { security } from "../../config/security";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
+
+// Cap mirrors article.bulk-delete — a single "select all" UI today is
+// scoped to the current page (50 attachments), 500 is generous safety.
+const BulkIdsSchema = z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(500),
+});
 
 const router = Router();
 
@@ -260,6 +267,27 @@ router.put(
 );
 
 /** DELETE /api/attachments/:id — optionally removes the file from disk */
+/**
+ * Bulk delete attachments owned by the caller. Returns { count } of rows
+ * actually removed (ids the user doesn't own are silently skipped — same
+ * model as article.bulk-delete). On-disk files are best-effort unlinked.
+ */
+router.post(
+  "/bulk-delete",
+  security.destructiveRateLimiter,
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { ids } = BulkIdsSchema.parse(req.body);
+    const { count } = await AttachmentService.bulkRemove(ids, req.user!.sub);
+    await auditAction(req, {
+      action: "DELETE",
+      entity: "Attachment",
+      metadata: { bulk: true, requested: ids.length, deleted: count },
+    });
+    res.json({ count });
+  })
+);
+
 router.delete(
   "/:id",
   authGuard,

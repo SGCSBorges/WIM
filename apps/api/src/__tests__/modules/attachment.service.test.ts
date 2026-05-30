@@ -9,6 +9,7 @@ vi.mock("../../libs/prisma", () => ({
       create: vi.fn(),
       updateMany: vi.fn(),
       delete: vi.fn(),
+      deleteMany: vi.fn(),
     },
     garantie: {
       findFirst: vi.fn(),
@@ -17,6 +18,10 @@ vi.mock("../../libs/prisma", () => ({
       findFirst: vi.fn(),
     },
   },
+}));
+
+vi.mock("../../modules/attachments/attachment.fs", () => ({
+  unlinkAttachmentFiles: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { prisma } from "../../libs/prisma";
@@ -141,5 +146,36 @@ describe("AttachmentService.update", () => {
       AttachmentService.update(1, 1, { articleId: 99 })
     ).rejects.toMatchObject({ status: 403 });
     expect(mockPrisma.attachment.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("AttachmentService.bulkRemove", () => {
+  it("returns count=0 for an empty id list without touching prisma", async () => {
+    const result = await AttachmentService.bulkRemove([], 1);
+    expect(result).toEqual({ count: 0 });
+    expect(mockPrisma.attachment.findMany).not.toHaveBeenCalled();
+    expect(mockPrisma.attachment.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("silently skips ids the caller does not own", async () => {
+    mockPrisma.attachment.findMany.mockResolvedValue([]);
+    const result = await AttachmentService.bulkRemove([10, 11], 1);
+    expect(result).toEqual({ count: 0 });
+    expect(mockPrisma.attachment.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("unlinks files for owned rows then deleteManys with the same id slice", async () => {
+    mockPrisma.attachment.findMany.mockResolvedValue([
+      { attachmentId: 7, fileUrl: "/u/a.pdf", thumbUrl: null },
+      { attachmentId: 9, fileUrl: "/u/b.pdf", thumbUrl: null },
+    ]);
+    mockPrisma.attachment.deleteMany.mockResolvedValue({ count: 2 });
+    const result = await AttachmentService.bulkRemove([7, 9, 99], 1);
+    expect(result).toEqual({ count: 2 });
+    const call = mockPrisma.attachment.deleteMany.mock.calls[0][0];
+    expect(call.where).toEqual({
+      attachmentId: { in: [7, 9] },
+      ownerUserId: 1,
+    });
   });
 });

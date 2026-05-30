@@ -738,6 +738,22 @@ export const attachmentsAPI = {
         )
       );
   },
+
+  async bulkDelete(ids: number[]): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/attachments/bulk-delete`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to delete attachments")
+      );
+    return response.json();
+  },
 };
 
 // Tags API

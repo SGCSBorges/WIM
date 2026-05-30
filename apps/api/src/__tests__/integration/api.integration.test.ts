@@ -474,6 +474,59 @@ suite("API integration (real Postgres)", () => {
     expect(login.status).toBe(200);
   });
 
+  it("bulk-deletes attachments owned by the caller and silently skips foreign ids", async () => {
+    const agent = await register("attmaster@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    // Seed three attachments directly via Prisma — POST /attachments goes
+    // through Multer which would need a multipart body. The bulk-delete
+    // contract is the same either way: ids in, count out.
+    const a1 = await prisma.attachment.create({
+      data: {
+        ownerUserId,
+        fileName: "a.pdf",
+        mimeType: "application/pdf",
+        fileSize: 10,
+        fileUrl: "/u/a.pdf",
+        type: "OTHER",
+      },
+    });
+    const a2 = await prisma.attachment.create({
+      data: {
+        ownerUserId,
+        fileName: "b.pdf",
+        mimeType: "application/pdf",
+        fileSize: 10,
+        fileUrl: "/u/b.pdf",
+        type: "OTHER",
+      },
+    });
+    const a3 = await prisma.attachment.create({
+      data: {
+        ownerUserId,
+        fileName: "c.pdf",
+        mimeType: "application/pdf",
+        fileSize: 10,
+        fileUrl: "/u/c.pdf",
+        type: "OTHER",
+      },
+    });
+
+    const res = await agent
+      .post("/api/attachments/bulk-delete")
+      .set("Origin", ORIGIN)
+      .send({ ids: [a1.attachmentId, a2.attachmentId, 999999] });
+    expect(res.status).toBe(200);
+    // 999999 isn't owned (or doesn't exist) → silently skipped, count=2.
+    expect(res.body.count).toBe(2);
+
+    const left = await prisma.attachment.findMany({
+      where: { ownerUserId },
+      select: { attachmentId: true },
+    });
+    expect(left.map((r) => r.attachmentId)).toEqual([a3.attachmentId]);
+  });
+
   it("paginates the articles within a location instead of silently truncating", async () => {
     const agent = await register("pager@example.com");
     const me = await agent.get("/api/auth/me");

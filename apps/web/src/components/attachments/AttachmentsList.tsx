@@ -42,6 +42,38 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  // Bulk-select state mirrors ArticlesList: a Set of attachmentIds + a busy
+  // flag that disables the action bar while a bulk operation runs.
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
+  const toggleSelected = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    setShowBulkDeleteConfirm(false);
+    const ids = Array.from(selectedIds);
+    try {
+      await attachmentsAPI.bulkDelete(ids);
+      setAttachments((prev) =>
+        prev.filter((a) => !selectedIds.has(a.attachmentId))
+      );
+      setSelectedIds(new Set());
+    } catch (e: unknown) {
+      setDeleteError(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setBulkBusy(false);
+    }
+  };
 
   const fetchAttachments = useCallback(async () => {
     setFetchError(null);
@@ -330,6 +362,65 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         </div>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div
+          role="region"
+          aria-label={t("attachments.bulk.selectionLabel")}
+          className="ui-card rounded-lg shadow p-3 flex flex-wrap items-center gap-3 sticky top-2 z-10"
+        >
+          <span className="font-medium text-sm">
+            {t("attachments.bulk.selected").replace(
+              "{count}",
+              String(selectedIds.size)
+            )}
+          </span>
+          <div className="flex items-center gap-2 ml-auto">
+            {showBulkDeleteConfirm ? (
+              <>
+                <span className="text-xs ui-text-error">
+                  {t("attachments.bulk.confirm")}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  disabled={bulkBusy}
+                  className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                >
+                  {t("attachments.bulk.confirmDelete")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkDeleteConfirm(false)}
+                  disabled={bulkBusy}
+                  className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+                >
+                  {t("common.cancel")}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkDeleteConfirm(true)}
+                  disabled={bulkBusy}
+                  className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                >
+                  {t("attachments.bulk.delete")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  disabled={bulkBusy}
+                  className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+                >
+                  {t("attachments.bulk.clear")}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Attachments Grid */}
       {filteredAndSortedAttachments.length === 0 ? (
         <div className="text-center py-12">
@@ -366,6 +457,16 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             >
               <div className="p-4">
                 <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    aria-label={t("attachments.bulk.selectRow").replace(
+                      "{name}",
+                      attachment.fileName
+                    )}
+                    checked={selectedIds.has(attachment.attachmentId)}
+                    onChange={() => toggleSelected(attachment.attachmentId)}
+                    className="mt-2"
+                  />
                   {attachment.thumbUrl ? (
                     <img
                       src={attachment.thumbUrl}
