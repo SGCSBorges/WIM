@@ -45,20 +45,45 @@ export const LocationService = {
     }));
   },
 
-  get: (locationId: number, ownerUserId: number) =>
-    prisma.location.findFirst({
+  // Returns the location plus a paginated slice of its (live) articles.
+  // Previously this method silently capped at 500 articles with no way to see
+  // the rest; large locations now expose `{ items, total, page, limit }` so
+  // the UI can page through every owned article in the location.
+  get: async (
+    locationId: number,
+    ownerUserId: number,
+    page = 1,
+    limit = 50
+  ) => {
+    const location = await prisma.location.findFirst({
       where: { locationId, ownerUserId },
-      include: {
-        articles: {
-          take: 500,
-          select: {
-            articleId: true,
-            assignedAt: true,
-            article: { select: { articleNom: true, articleModele: true } },
-          },
+    });
+    if (!location) return null;
+
+    const articleWhere = {
+      locationId,
+      article: { ownerUserId, deletedAt: null },
+    };
+    const [rows, total] = await prisma.$transaction([
+      prisma.articleLocation.findMany({
+        where: articleWhere,
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: { assignedAt: "desc" },
+        select: {
+          articleId: true,
+          assignedAt: true,
+          article: { select: { articleNom: true, articleModele: true } },
         },
-      },
-    }),
+      }),
+      prisma.articleLocation.count({ where: articleWhere }),
+    ]);
+
+    return {
+      ...location,
+      articles: { items: rows, total, page, limit },
+    };
+  },
 
   create: (data: LocationCreateInput) =>
     prisma.location.create({
@@ -145,24 +170,38 @@ export const LocationService = {
     });
     if (!location) throw createHttpError(404, "Location not found");
 
-    const rows = await prisma.articleLocation.findMany({
-      where: { locationId },
-      take: limit,
-      skip: (page - 1) * limit,
-      orderBy: { assignedAt: "desc" },
-      include: {
-        article: {
-          select: {
-            articleId: true,
-            articleNom: true,
-            articleModele: true,
-            articleDescription: true,
-            productImageUrl: true,
+    // Trashed articles (deletedAt != null) must not appear in the location
+    // view — same scoping as buildArticleWhere in article.service.ts.
+    const where = {
+      locationId,
+      article: { ownerUserId, deletedAt: null },
+    };
+    const [rows, total] = await prisma.$transaction([
+      prisma.articleLocation.findMany({
+        where,
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: { assignedAt: "desc" },
+        include: {
+          article: {
+            select: {
+              articleId: true,
+              articleNom: true,
+              articleModele: true,
+              articleDescription: true,
+              productImageUrl: true,
+            },
           },
         },
-      },
-    });
+      }),
+      prisma.articleLocation.count({ where }),
+    ]);
 
-    return rows.map((r) => ({ ...r.article, assignedAt: r.assignedAt }));
+    return {
+      items: rows.map((r) => ({ ...r.article, assignedAt: r.assignedAt })),
+      total,
+      page,
+      limit,
+    };
   },
 };

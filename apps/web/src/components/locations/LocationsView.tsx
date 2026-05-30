@@ -35,16 +35,17 @@ export default function LocationsView() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const refreshCounts = useCallback(async (rows: LocationRow[]) => {
-    // Fire all listArticles requests in parallel. Each is small so a wave
-    // of N is acceptable; pagination kicks in server-side at 50.
+    // Fire all listArticles requests in parallel. Each request returns the
+    // first page plus a `total`; we only need the total here, so request
+    // page=1 limit=1 to keep the payload small.
     const entries = await Promise.all(
       rows.map(async (r) => {
         try {
-          const articles = await locationsAPI.listArticles(r.locationId);
-          return [
-            r.locationId,
-            Array.isArray(articles) ? articles.length : 0,
-          ] as const;
+          const res = await locationsAPI.listArticles(r.locationId, {
+            page: 1,
+            limit: 1,
+          });
+          return [r.locationId, res.total ?? 0] as const;
         } catch {
           return [r.locationId, -1] as const;
         }

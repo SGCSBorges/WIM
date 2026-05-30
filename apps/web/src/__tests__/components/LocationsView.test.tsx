@@ -5,7 +5,9 @@ import userEvent from "@testing-library/user-event";
 vi.mock("../../services/api", () => ({
   locationsAPI: {
     getAll: vi.fn(),
-    listArticles: vi.fn().mockResolvedValue([]),
+    listArticles: vi
+      .fn()
+      .mockResolvedValue({ items: [], total: 0, page: 1, limit: 1 }),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),

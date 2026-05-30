@@ -28,7 +28,8 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
-    const location = await LocationService.get(id, req.user!.sub);
+    const { page, limit } = paginationQuery.parse(req.query);
+    const location = await LocationService.get(id, req.user!.sub, page, limit);
     if (!location) return res.status(404).json({ error: "Location not found" });
     res.json(location);
   })

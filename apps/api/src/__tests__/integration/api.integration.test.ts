@@ -318,8 +318,9 @@ suite("API integration (real Postgres)", () => {
     const fullB = await agent.get(
       `/api/locations/${locB.body.locationId}/articles`
     );
-    expect(fullA.body).toHaveLength(1);
-    expect(fullB.body).toHaveLength(1);
+    expect(fullA.body.items).toHaveLength(1);
+    expect(fullA.body.total).toBe(1);
+    expect(fullB.body.items).toHaveLength(1);
 
     // Remove from second; first link stays.
     const remove = await agent
@@ -335,8 +336,9 @@ suite("API integration (real Postgres)", () => {
     const afterB = await agent.get(
       `/api/locations/${locB.body.locationId}/articles`
     );
-    expect(afterA.body).toHaveLength(1);
-    expect(afterB.body).toHaveLength(0);
+    expect(afterA.body.items).toHaveLength(1);
+    expect(afterB.body.items).toHaveLength(0);
+    expect(afterB.body.total).toBe(0);
   });
 
   it("walks the warranty claim workflow OPEN → APPROVED → NONE", async () => {
@@ -470,6 +472,52 @@ suite("API integration (real Postgres)", () => {
       .set("Origin", ORIGIN)
       .send({ email: "ivan-new@example.com", password: "Passw0rd!" });
     expect(login.status).toBe(200);
+  });
+
+  it("paginates the articles within a location instead of silently truncating", async () => {
+    const agent = await register("pager@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    // Seed straight through Prisma so a 6-article fixture inserts in ms (a
+    // POST-per-article would push us over the test's 5s budget).
+    const loc = await prisma.location.create({
+      data: { ownerUserId, name: "Warehouse" },
+    });
+    for (let i = 1; i <= 6; i++) {
+      await prisma.article.create({
+        data: {
+          ownerUserId,
+          articleNom: `Item ${i}`,
+          articleModele: "x",
+          locations: { create: [{ locationId: loc.locationId }] },
+        },
+      });
+    }
+
+    // Page 1 with limit=4 returns 4 of 6 + the true total.
+    const p1 = await agent.get(
+      `/api/locations/${loc.locationId}/articles?page=1&limit=4`
+    );
+    expect(p1.status).toBe(200);
+    expect(p1.body.total).toBe(6);
+    expect(p1.body.items.length).toBe(4);
+    expect(p1.body.page).toBe(1);
+
+    // Page 2 returns the remaining 2.
+    const p2 = await agent.get(
+      `/api/locations/${loc.locationId}/articles?page=2&limit=4`
+    );
+    expect(p2.status).toBe(200);
+    expect(p2.body.total).toBe(6);
+    expect(p2.body.items.length).toBe(2);
+
+    // GET /api/locations/:id now also returns the paginated articles slice.
+    const detail = await agent.get(
+      `/api/locations/${loc.locationId}?page=1&limit=3`
+    );
+    expect(detail.status).toBe(200);
+    expect(detail.body.articles.total).toBe(6);
+    expect(detail.body.articles.items.length).toBe(3);
   });
 
   it("toggles the weekly-digest opt-in on the profile endpoint", async () => {

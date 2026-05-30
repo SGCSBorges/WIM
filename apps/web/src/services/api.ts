@@ -596,11 +596,29 @@ export const locationsAPI = {
       );
   },
 
-  async listArticles(locationId: number) {
-    const response = await fetchWithTimeout(
-      `${API_BASE_URL}/locations/${locationId}/articles`,
-      { headers: getHeaders() }
-    );
+  async listArticles(
+    locationId: number,
+    params: { page?: number; limit?: number } = {}
+  ): Promise<{
+    items: Array<{
+      articleId: number;
+      articleNom: string;
+      articleModele: string;
+      articleDescription: string | null;
+      productImageUrl: string | null;
+      assignedAt: string;
+    }>;
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const qs = new URLSearchParams();
+    if (params.page) qs.set("page", String(params.page));
+    if (params.limit) qs.set("limit", String(params.limit));
+    const url = `${API_BASE_URL}/locations/${locationId}/articles${
+      qs.toString() ? `?${qs.toString()}` : ""
+    }`;
+    const response = await fetchWithTimeout(url, { headers: getHeaders() });
     if (!response.ok)
       throw new Error(
         await extractError(response, "Failed to fetch location articles")
