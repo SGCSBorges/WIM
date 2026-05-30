@@ -473,4 +473,8 @@ model AuditLog {
   @@index([action])
   @@index([entity, entityId])
   @@index([createdAt])
+  // Admin views filter "user X, last N days" — a compound index turns the
+  // userId AND createdAt-range lookup into a single seek instead of two
+  // single-column scans intersected.
+  @@index([userId, createdAt(sort: Desc)])
 }
