@@ -192,12 +192,23 @@ export interface ShareItem {
   target: { userId: number; email: string };
 }
 
+export const INVITE_STATUSES = [
+  "PENDING",
+  "ACCEPTED",
+  "REVOKED",
+  "EXPIRED",
+] as const;
+export type InviteStatus = (typeof INVITE_STATUSES)[number];
+
+export const SHARE_PERMISSIONS = ["READ", "WRITE"] as const;
+export type SharePermission = (typeof SHARE_PERMISSIONS)[number];
+
 export interface ShareInviteItem {
   shareInviteId: number;
   email: string;
   token: string;
-  status: "PENDING" | "ACCEPTED" | "REVOKED" | "EXPIRED";
-  permission: "READ" | "WRITE";
+  status: InviteStatus;
+  permission: SharePermission;
   expiresAt: string;
   usedAt?: string;
   createdAt: string;
@@ -267,7 +278,8 @@ export interface AlertItem {
   } | null;
 }
 
-export type AttachmentType = "INVOICE" | "WARRANTY" | "OTHER";
+export const ATTACHMENT_TYPES = ["INVOICE", "WARRANTY", "OTHER"] as const;
+export type AttachmentType = (typeof ATTACHMENT_TYPES)[number];
 
 export interface AttachmentItem {
   attachmentId: number;
@@ -333,7 +345,10 @@ export interface DashboardStatistics {
     byLocation: Array<{ locationId: number; name: string; value: number }>;
     byTag: Array<{ tagId: number; name: string; value: number }>;
   };
-  // Populated by F3 dashboard forecasting; optional so consumers guard with ?? [].
-  warrantyExpirationsByMonth?: MonthlyBucket[];
-  articlesAddedByMonth?: MonthlyBucket[];
+  // Populated by F3 dashboard forecasting; always present in the API
+  // response. Round 10 promoted these to required so the API + shared type
+  // agree (the API used to declare them required locally; the local interface
+  // was dropped in T1).
+  warrantyExpirationsByMonth: MonthlyBucket[];
+  articlesAddedByMonth: MonthlyBucket[];
 }

@@ -6,56 +6,14 @@
 import { prisma } from "../libs/prisma";
 import { logger } from "../config/logger";
 import { currentValue } from "../modules/common/depreciation";
+// Single source of truth — the local interface that used to live here was
+// dropped in round 10 (T1) so the API and web client can't drift on
+// dashboard-statistics shape.
+import type { DashboardStatistics } from "@wim/types";
+
+export type { DashboardStatistics };
 
 type UserRole = "USER" | "POWER_USER" | "ADMIN";
-
-export interface DashboardStatistics {
-  articles: {
-    total: number;
-    withWarranty: number;
-    withoutWarranty: number;
-  };
-  locations: {
-    byLocation: Array<{
-      locationId: number;
-      name: string;
-      articlesCount: number;
-    }>;
-    unassigned: number;
-  };
-  warranties: {
-    total: number;
-    active: number;
-    expired: number;
-    expiringSoon: number; // expires in next 30 days
-    withAttachment: number;
-  };
-  alerts: {
-    total: number;
-  };
-  sharing: {
-    ownedSharedArticles: number;
-    totalSharedArticles: number;
-  };
-  inventoryValue: {
-    total: number;
-    currentTotal: number; // total after applying per-article depreciation
-    atRisk: number; // value of articles whose warranty has expired
-    byLocation: Array<{
-      locationId: number;
-      name: string;
-      value: number;
-    }>;
-    byTag: Array<{
-      tagId: number;
-      name: string;
-      value: number;
-    }>;
-  };
-  // Time-series buckets for forecasting/trends. `month` is `YYYY-MM`.
-  warrantyExpirationsByMonth: Array<{ month: string; count: number }>;
-  articlesAddedByMonth: Array<{ month: string; count: number }>;
-}
 
 export interface AdminStatistics {
   users: {
