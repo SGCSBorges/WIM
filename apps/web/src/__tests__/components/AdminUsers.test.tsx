@@ -32,22 +32,20 @@ beforeEach(() => {
     alerts: { total: 0 },
     sharing: { totalSharedArticles: 0 },
   });
-  listUsers.mockResolvedValue({
-    items: [
-      {
-        userId: 7,
-        email: "u@x.com",
-        role: "USER",
-        currency: "USD",
-        emailReminders: true,
-        weeklyDigest: false,
-        createdAt: new Date().toISOString(),
-      },
-    ],
-    total: 1,
-    page: 1,
-    limit: 50,
-  });
+  // adminAPI.listUsers returns a raw array — not the {items,total,page,limit}
+  // shape used by other paginated endpoints. setUsers(data) feeds users.map
+  // directly; an object wrapper here crashes the component.
+  listUsers.mockResolvedValue([
+    {
+      userId: 7,
+      email: "u@x.com",
+      role: "USER",
+      currency: "USD",
+      emailReminders: true,
+      weeklyDigest: false,
+      createdAt: new Date().toISOString(),
+    },
+  ]);
 });
 
 function renderAdmin() {
@@ -107,13 +105,9 @@ describe("<AdminUsers /> users tab", () => {
     await user.click(usersTab);
 
     await waitFor(() => expect(listUsers).toHaveBeenCalled());
-    // listUsers was called with sensible defaults (page 1, default limit).
-    const call = listUsers.mock.calls[0][0];
-    expect(call.page ?? 1).toBe(1);
-    expect(typeof (call.limit ?? 50)).toBe("number");
-    // The role-edit endpoint is wired but not triggered until a user clicks
-    // the row's Edit button; this test just verifies the tab activation
-    // path so we don't break it when refactoring AdminUsers later.
+    // listUsers takes an options object — q/sort/dir, no page/limit.
+    // We only assert the call happened, not its argument shape, so the
+    // test is robust to future opt additions.
     expect(updateUser).not.toHaveBeenCalled();
   });
 });
