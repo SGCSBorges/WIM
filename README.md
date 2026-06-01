@@ -109,7 +109,7 @@ For convenience on free-tier Render (Postgres expires monthly), there's also a t
 
 Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — clients must use `credentials: 'include'`. No `Authorization` header.
 
-The full OpenAPI 3.1 spec is served at `GET /api/docs` (Swagger UI) and `GET /api/openapi.json` (raw JSON).
+> **Canonical reference:** the live **Swagger UI** at `GET /api/docs` (and the raw spec at `GET /api/openapi.json`) is generated from the same Zod schemas the API validates against, so it never drifts. The tables below are a curated map of the resource surface — for exhaustive request/response shapes and query params, use Swagger. See also [`docs/api.md`](./docs/api.md) for the auth model and triage.
 
 ### Auth — `/api/auth`
 
@@ -119,17 +119,29 @@ The full OpenAPI 3.1 spec is served at `GET /api/docs` (Swagger UI) and `GET /ap
 | `POST` | `/login` | ✗ | Login — sets `wim_token` cookie |
 | `POST` | `/logout` | ✓ | Logout — adds jti to Redis denylist + clears cookie |
 | `GET`  | `/me` | ✓ | Current user profile |
+| `POST` | `/forgot-password` | ✗ | Request a reset link (uniform response — no email enumeration) |
+| `POST` | `/reset-password` | ✗ | Consume the emailed token + set a new password (bumps `tokenVersion`) |
 | `POST` | `/bootstrap-admin` | ✗ | One-shot promote `admin@admin.com` if no ADMIN exists yet (idempotent) |
 
 ### Articles — `/api/articles`
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/` | ✓ | List own articles (`?locationId=`, `?page=`, `?limit=`) |
-| `POST`   | `/` | ✓ | Create article (can include embedded warranty + locationIds) |
+| `GET`    | `/` | ✓ | List own articles — filters: `?q=` `?locationId=` `?tagId=` `?warrantyStatus=` `?priceMin=/priceMax=` `?createdFrom=/createdTo=` `?sort=/dir=` `?page=/limit=`. Returns `{ items, total, page, limit }` |
+| `POST`   | `/` | ✓ | Create article (can include embedded warranty + locationIds + tagIds) |
 | `GET`    | `/:id` | ✓ | Get single article |
-| `PUT`    | `/:id` | ✓ | Update article (and its warranty + locations) |
-| `DELETE` | `/:id` | ✓ | Delete article |
+| `PUT`    | `/:id` | ✓ | Update article (and its warranty + locations + tags) |
+| `DELETE` | `/:id` | ✓ | Soft-delete (moves to trash) |
+| `POST`   | `/:id/duplicate` | ✓ | Deep-copy an article (locations + tags; warranty intentionally skipped) |
+| `GET`    | `/trash` | ✓ | List soft-deleted articles |
+| `POST`   | `/:id/restore` | ✓ | Restore from trash |
+| `DELETE` | `/:id/purge` | ✓ | Permanently delete (skip retention) |
+| `POST`   | `/trash/bulk-restore` · `/trash/bulk-purge` | ✓ | Bulk restore / purge (`{ ids }`, ≤ 500) |
+| `POST`   | `/bulk-delete` · `/bulk-share` · `/bulk-assign` | ✓ | Bulk soft-delete / share-toggle / assign locations+tags (`{ ids, … }`) |
+| `POST`   | `/import` | ✓ | CSV import (`?dryRun=1` validates without writing) |
+| `GET`    | `/export/inventory.csv` · `/export/inventory.pdf` · `/export/labels.pdf` | ✓ | Exports (CSV honours list filters; labels carry QR codes) |
+| `GET`    | `/:id/claim.pdf` | ✓ | Warranty-claim sheet PDF |
+| `GET`/`POST`/`PATCH`/`DELETE` | `/:id/notes[/:noteId]` | ✓ | Article service/maintenance notes (kind: SERVICE/WARRANTY_CLAIM/MAINTENANCE/OTHER) |
 | `GET`    | `/shared-public` | POWER_USER | List own articles that are publicly shared |
 | `POST`   | `/unshare-all` | POWER_USER | Kill switch — unshare every publicly-shared article |
 | `POST`   | `/:id/share` | POWER_USER | Mark article shared-with-all-power-users (read-only) |
@@ -144,6 +156,7 @@ The full OpenAPI 3.1 spec is served at `GET /api/docs` (Swagger UI) and `GET /ap
 | `POST`   | `/` | ✓ | Create standalone warranty |
 | `GET`    | `/:id` | ✓ | Get warranty |
 | `PUT`    | `/:id` | ✓ | Update warranty (recalculates expiry + reschedules alerts) |
+| `PATCH`  | `/:id/claim` | ✓ | Update claim status (`NONE→OPEN→APPROVED\|REJECTED→RESOLVED`) + note |
 | `DELETE` | `/:id` | ✓ | Delete warranty (cancels its alerts) |
 
 ### Attachments — `/api/attachments`
@@ -158,16 +171,60 @@ Uploaded files are served behind auth at `GET /uploads/<filename>` — the owner
 
 ### Alerts — `/api/alerts`
 
-Read-only list of scheduled alerts (J-30, J-7, J-1 before warranty expiry — scheduled automatically by BullMQ).
+Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom alerts can recur monthly.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`  | `/` | ✓ | List alerts (`?status=` `?kind=` `?articleId=` `?page=/limit=`) |
+| `POST` | `/` | ✓ | Create a custom alert (optional `recurrenceMonths`) |
+| `POST` | `/:id/snooze` | ✓ | Snooze by N days |
+| `POST` | `/:id/cancel` | ✓ | Cancel an alert |
 
 ### Locations — `/api/locations`
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/` | ✓ | List own locations |
+| `GET`    | `/` | ✓ | List own locations (`?page=/limit=`) |
 | `POST`   | `/` | ✓ | Create location |
+| `PUT`    | `/:id` | ✓ | Update location |
+| `DELETE` | `/:id` | ✓ | Delete location |
+| `GET`    | `/:id/articles` | ✓ | Articles in a location (paginated `{ items, total, page, limit }`) |
 | `POST`   | `/:id/articles` | ✓ | Attach an article to a location |
 | `DELETE` | `/:id/articles/:articleId` | ✓ | Detach an article from a location |
+
+### Tags — `/api/tags`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | ✓ | List own tags (with per-tag article counts) |
+| `POST`   | `/` | ✓ | Create a tag |
+| `PUT`    | `/:id` | ✓ | Rename a tag |
+| `POST`   | `/merge` | ✓ | Merge one tag into another (`{ fromId, intoId }`; re-tags + dedupes) |
+| `DELETE` | `/:id` | ✓ | Delete a tag |
+
+### Saved views — `/api/saved-views`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | ✓ | List saved Articles-filter presets |
+| `POST`   | `/` | ✓ | Save a preset (`{ name, query }`) |
+| `DELETE` | `/:id` | ✓ | Delete a preset |
+
+### Calendar — `/api/calendar`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST`   | `/token` | ✓ | Enable the iCal feed (mints a capability token) |
+| `DELETE` | `/token` | ✓ | Disable the feed |
+| `GET`    | `/feed/:token.ics` | ✗ (token) | RFC-5545 feed of warranties/alerts — token-authenticated so calendar apps can subscribe |
+
+### Push — `/api/push`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`  | `/public-key` | ✓ | VAPID public key (404 when push isn't configured server-side) |
+| `POST` | `/subscribe` | ✓ | Register a Web Push subscription |
+| `POST` | `/unsubscribe` | ✓ | Remove a subscription |
 
 ### Sharing — `/api/shares`
 
@@ -206,6 +263,9 @@ Per-user inventory sharing (POWER_USER ↔ POWER_USER). All actions require POWE
 | `GET`    | `/me` | ✓ | Current user's profile |
 | `PUT`    | `/me/email` | ✓ | Update email (`{ email, currentPassword }`) |
 | `PUT`    | `/me/password` | ✓ | Update password (`{ currentPassword, newPassword }`) |
+| `PUT`    | `/me/currency` | ✓ | Set display currency (ISO 4217) for inventory-value formatting |
+| `PUT`    | `/me/email-reminders` | ✓ | Toggle emailed warranty reminders |
+| `PUT`    | `/me/weekly-digest` | ✓ | Toggle the opt-in weekly expirations digest |
 | `DELETE` | `/me` | ✓ | Delete account (`{ currentPassword }`) — 204 |
 
 ### Billing — `/api/billing`
@@ -236,6 +296,10 @@ All routes require ADMIN.
 | `POST`   | `/users/:id/reset-password` | Force a new password + bump `tokenVersion` |
 | `POST`   | `/users/:id/force-logout` | Bump `tokenVersion` so all their JWTs become invalid |
 | `GET`    | `/audit-log` | Cursor-paginated audit log (`?userId=`, `?action=`, `?entity=`, `?limit=`, `?cursor=`) |
+| `GET`    | `/jobs` | BullMQ queue state (alerts + maintenance) + next audit-prune run |
+| `GET`    | `/failed-jobs` | Recent failed jobs across both queues (reason + stacktrace) |
+| `GET`    | `/db/export` | Full-database JSON export (backup) |
+| `POST`   | `/db/import` | Full-database restore (`confirm: "REPLACE"` + current password; destructive) |
 
 ---
 
@@ -267,7 +331,7 @@ npm --workspace apps/api run test:watch     # watch mode
 npm --workspace apps/api run test:coverage  # coverage
 ```
 
-API tests live in `apps/api/src/__tests__/`. Web tests live in `apps/web/src/__tests__/`. Both use [Vitest](https://vitest.dev/).
+API tests live in `apps/api/src/__tests__/`. Web tests live in `apps/web/src/__tests__/`. Both use [Vitest](https://vitest.dev/). For the three test tiers (unit / integration / e2e) and their setup, see the [Testing section in CONTRIBUTING](./CONTRIBUTING.md#testing).
 
 ---
 
