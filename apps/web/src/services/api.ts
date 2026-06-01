@@ -235,6 +235,12 @@ export const authAPI = {
 
 // Articles API
 export const articlesAPI = {
+  /**
+   * Paginated article list. The full filter vocabulary the server accepts
+   * is mirrored on `params` (location, tag, q, warrantyStatus, price/date
+   * range, sort, dir, page, limit). Returns `{ items, total, page, limit }`
+   * so the caller can render a pager without a second fetch.
+   */
   async getAll(params: ArticleListParams = {}): Promise<ArticleListResult> {
     const url = new URL(`${API_BASE_URL}/articles`);
     const p = url.searchParams;
@@ -328,6 +334,14 @@ export const articlesAPI = {
     return response.json();
   },
 
+  /**
+   * Bulk-import articles from parsed CSV rows.
+   *
+   * `options.dryRun: true` returns a per-row validation report WITHOUT
+   * writing anything — the CsvImportModal uses this to render error rows
+   * before committing. Without dryRun the same rows persist + return
+   * `{ created, errors }` so the UI can show which rows failed mid-batch.
+   */
   async importRows(
     rows: Array<{
       name: string;
