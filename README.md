@@ -228,7 +228,7 @@ Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom 
 
 ### Sharing — `/api/shares`
 
-Per-user inventory sharing (POWER_USER ↔ POWER_USER). All actions require POWER_USER on both ends (invitee email must already be a registered POWER_USER; the accept route also gates on POWER_USER).
+Per-user inventory sharing between **share-capable** users. Sharing is the POWER_USER feature, and **ADMIN inherits it without a subscription** (authorization runs on a `USER < POWER_USER < ADMIN` hierarchy, so `requireRole("POWER_USER")` clears for ADMIN). All actions require share capability on both ends (the invitee must already be a registered POWER_USER or ADMIN; the accept route gates on `requireRole("POWER_USER")`).
 
 | Method | Path | Auth | Description |
 |---|---|---|---|

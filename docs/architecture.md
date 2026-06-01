@@ -87,9 +87,11 @@ them each leg is a logged no-op, and the rest of the flow is unaffected.
 
 ## Two sharing models
 
-Both are POWER_USER-only to share; canonical detail is in
-[`CLAUDE.md`](../CLAUDE.md#sharing-model-two-flavors-both-power_user-only-to-share).
-See UML `06` for the per-user sequence.
+Both require **share capability** (POWER_USER, or ADMIN which inherits it
+without a subscription — `requireRole` runs on the `USER < POWER_USER < ADMIN`
+hierarchy in `modules/common/roles.ts`). Canonical detail is in the "Sharing
+model" section of [`CLAUDE.md`](../CLAUDE.md). See UML `06` for the per-user
+sequence.
 
 - **Public** — `Article.sharedWithPowerUsers` (a bool). Always read-only,
   visible to every POWER_USER. Owner kill-switch:

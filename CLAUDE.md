@@ -111,27 +111,36 @@ npm --workspace apps/web run test:e2e
 - **Always edit existing files** rather than creating new ones unless
   the new file is genuinely needed.
 
-## Sharing model (two flavors, both POWER_USER-only to share)
+## Sharing model (two flavors; share-capable = POWER_USER or ADMIN)
+
+Sharing is the POWER_USER tier's exclusive feature. **ADMIN inherits it**
+without a subscription: authorization runs on a role hierarchy
+(`USER < POWER_USER < ADMIN`) in `modules/common/roles.ts` —
+`requireRole("POWER_USER")` clears for ADMIN too, while `requireRole("ADMIN")`
+stays admin-only. "POWER_USER-only" below means "share-capable" (POWER_USER or
+ADMIN).
 
 1. **Public** — `Article.sharedWithPowerUsers: bool`. Always read-only.
-   Visible to every POWER_USER. Toggled per article via
+   Visible to every share-capable user. Toggled per article via
    `articles/article.share.routes.ts`. Owner kill-switch:
    `POST /api/articles/unshare-all`.
 2. **Per-user (direct)** — `InventoryShare` with `permission READ|WRITE`,
-   created via `ShareInvite` (POWER_USER → POWER_USER, recipient must
+   created via `ShareInvite` (share-capable → share-capable, recipient must
    accept). WRITE recipients can edit basic article fields via
-   `PUT /api/shared/articles/:id`. Invites are POWER_USER-only on both
-   ends (createInvite enforces invitee role; accept route gates on
-   `requireRole("POWER_USER")`).
+   `PUT /api/shared/articles/:id`. Invites require share capability on both
+   ends (createInvite enforces invitee via `roleAtLeast(role,"POWER_USER")`;
+   accept route gates on `requireRole("POWER_USER")`, which ADMIN clears).
 
 Both surfaces collapse into the recipient's `/sharing` page (read), the
 owner's `/sharing` page (invite/manage), and the owner's `/profile` page
 ("Articles you've shared publicly" + "People you've invited").
 
-On every POWER_USER → USER transition (Stripe cancel webhook, manual
-`/api/billing/sync`, admin demote) `ShareService.cleanupSharingForUser`
-flips public articles back, deactivates outgoing per-user shares, and
-revokes pending invites — inside the same transaction as the role change.
+On every transition from a share-capable role to USER (Stripe cancel webhook,
+manual `/api/billing/sync`, admin demote — including ADMIN → USER)
+`ShareService.cleanupSharingForUser` flips public articles back, deactivates
+outgoing per-user shares, and revokes pending invites — inside the same
+transaction as the role change. (Billing only ever touches POWER_USER rows;
+the ADMIN → USER case is the admin-demote path.)
 
 ## Billing
 

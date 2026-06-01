@@ -102,9 +102,11 @@ Le parcours d'un partage direct entre Power Users : création d'une
 seule, édition si permission `WRITE`). Deux décisions de sécurité sont
 explicites : le gating `requireRole(POWER_USER)` **des deux côtés**, et
 l'**absence d'énumération d'e-mails** (même réponse si l'invité est introuvable
-ou de mauvais rôle). La note rappelle que `cleanupSharingForUser` désactive
-les partages et révoque les invitations lors d'une rétrogradation, dans la
-même transaction que le changement de rôle.
+ou de mauvais rôle). À noter : `requireRole` s'appuie sur la hiérarchie
+`USER < POWER_USER < ADMIN`, donc un **ADMIN hérite du partage** (sans
+abonnement) et peut être invité comme un Power User. La note rappelle que
+`cleanupSharingForUser` désactive les partages et révoque les invitations lors
+d'une rétrogradation, dans la même transaction que le changement de rôle.
 
 ### `07-component-deploiement.puml` — Composants / déploiement
 
