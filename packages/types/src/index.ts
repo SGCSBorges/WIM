@@ -21,6 +21,9 @@
  *      consumer that iterated for a dropdown picks it up automatically.
  */
 
+/** A user-owned location (a place the user keeps things). Articles join to
+ *  Location through the ArticleLocation junction; a location may carry
+ *  many articles, and an article may sit in many locations. */
 export interface Location {
   locationId: number;
   name: string;
@@ -67,6 +70,9 @@ export const AUDIT_ENTITIES = [
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 
+/** Warranty claim workflow state. NONE = no claim opened yet; the others
+ *  trace a workflow from filing through resolution. Surfaced on the
+ *  warranty row + the article timeline + the iCal feed. */
 export type ClaimStatus =
   | "NONE"
   | "OPEN"
@@ -74,6 +80,9 @@ export type ClaimStatus =
   | "REJECTED"
   | "RESOLVED";
 
+/** Warranty as embedded on an Article response (1:1 — at most one
+ *  warranty per article). Includes provider contact metadata that prints
+ *  on the claim PDF. */
 export interface ArticleWarranty {
   garantieId?: number;
   garantieNom: string;
@@ -95,6 +104,10 @@ export interface ArticleWarranty {
   } | null;
 }
 
+/** The main inventory item. articleId is optional because the same shape
+ *  serves both create-request bodies (no id) and read responses
+ *  (`FetchedArticle` narrows it to required). The write-side uses
+ *  `locationIds` + `tagIds`; the read-side carries the joined arrays. */
 export interface Article {
   articleId?: number;
   articleNom: string;
@@ -118,6 +131,8 @@ export interface Article {
   garantie?: ArticleWarranty | null;
 }
 
+/** Tag as returned by GET /api/tags. `articleCount` is the per-tag size
+ *  rendered in the Tags manager and the tag dropdowns. */
 export interface Tag {
   tagId: number;
   name: string;
@@ -131,12 +146,18 @@ export interface FetchedArticle extends Article {
   updatedAt: string;
 }
 
+/** Sortable column on the articles list. Keep in sync with the API's
+ *  Prisma `orderBy` whitelist in `article.service.ts`. */
 export type ArticleSort =
   | "articleId"
   | "articleNom"
   | "purchasePrice"
   | "createdAt";
 
+/** Query parameters accepted by `GET /api/articles`. Every field is
+ *  optional; omitting them returns the full owner-scoped list. `q` runs
+ *  the trigram search; the warranty/price/createdAt filters compose via
+ *  AND with each other and with `locationId`/`tagId`. */
 export interface ArticleListParams {
   locationId?: number;
   tagId?: number;
@@ -153,6 +174,9 @@ export interface ArticleListParams {
   limit?: number;
 }
 
+/** Paginated list payload returned by `GET /api/articles`. `total` is
+ *  the count after filters (not the owner's grand total) so the UI can
+ *  compute "page N of M". */
 export interface ArticleListResult {
   items: FetchedArticle[];
   total: number;
@@ -160,6 +184,8 @@ export interface ArticleListResult {
   limit: number;
 }
 
+/** Per-note category surfaced on the article timeline. Drives the
+ *  badge color + the icon, nothing else — kind is informational only. */
 export type ArticleNoteKind =
   | "SERVICE"
   | "WARRANTY_CLAIM"
@@ -173,6 +199,9 @@ export const ARTICLE_NOTE_KINDS: ArticleNoteKind[] = [
   "OTHER",
 ];
 
+/** A free-form note attached to an article (service log, warranty
+ *  claim record, etc.). Ordered newest-first by the article detail
+ *  view. */
 export interface ArticleNote {
   noteId: number;
   articleId: number;
@@ -182,12 +211,18 @@ export interface ArticleNote {
   updatedAt?: string;
 }
 
+/** A persisted "search/filter preset" — the serialized querystring
+ *  the user named (e.g. "expiring this month"). The web client
+ *  re-applies `query` directly to the URL on click. */
 export interface SavedView {
   id: number;
   name: string;
   query: string;
 }
 
+/** Warranty as returned by `GET /api/warranties` (the standalone list,
+ *  not the embedded `Article.garantie`). `garantieArticleId` is
+ *  nullable for warranties created before the article-link feature. */
 export interface WarrantyItem {
   garantieId: number;
   garantieNom: string;
@@ -198,6 +233,10 @@ export interface WarrantyItem {
   garantieArticleId: number | null;
 }
 
+/** A per-user inventory share as seen by the *owner*. `active=false`
+ *  means the share was deactivated (role downgrade or owner revoke)
+ *  but the row is kept for audit. The recipient view uses
+ *  `SharedArticleRow` instead. */
 export interface ShareItem {
   inventoryShareId: number;
   permission: "READ" | "WRITE";
@@ -218,6 +257,10 @@ export type InviteStatus = (typeof INVITE_STATUSES)[number];
 export const SHARE_PERMISSIONS = ["READ", "WRITE"] as const;
 export type SharePermission = (typeof SHARE_PERMISSIONS)[number];
 
+/** A pending/processed share invitation (POWER_USER → POWER_USER).
+ *  `token` is the opaque accept link; `usedAt` is set when the invitee
+ *  accepts and the matching `InventoryShare` is created. Status drives
+ *  the owner's "manage invites" UI. */
 export interface ShareInviteItem {
   shareInviteId: number;
   email: string;
@@ -229,6 +272,11 @@ export interface ShareInviteItem {
   createdAt: string;
 }
 
+/** One row in the recipient's `/sharing` page. Collapses both share
+ *  flavors into a uniform shape: `source` distinguishes a per-user
+ *  InventoryShare from the owner's public toggle. `rowId` is synthetic
+ *  (composed by the API) so React lists have a stable key across the
+ *  two sources. */
 export interface SharedArticleRow {
   rowId: number;
   /** "user" = via per-user InventoryShare; "global" = via owner toggling sharedWithPowerUsers. */
@@ -256,6 +304,10 @@ export interface SharedArticleRow {
   updatedAt: string;
 }
 
+/** The user's live Stripe subscription as returned by
+ *  `GET /api/billing/me`. Mirrors Stripe's terminology (status strings
+ *  are Stripe's own — `active`, `past_due`, `canceled`, …). Unix
+ *  epoch seconds, not ms, since they come straight from Stripe. */
 export interface BillingSubscription {
   status: string;
   cancelAtPeriodEnd: boolean;
@@ -265,9 +317,19 @@ export interface BillingSubscription {
   plan: "monthly" | "yearly" | null;
 }
 
+/** BullMQ-backed alert lifecycle. SCHEDULED rows have a pending job;
+ *  SENT means the worker delivered (push/email); CANCELLED is a user
+ *  snooze or warranty deletion; FAILED is set after retries exhaust. */
 export type AlertStatus = "SCHEDULED" | "SENT" | "CANCELLED" | "FAILED";
+/** WARRANTY = derived from a Garantie's J-30/J-7/J-1 reminders;
+ *  CUSTOM = user-created standalone alert. The reminder worker reads
+ *  this to decide which template to render. */
 export type AlertKind = "WARRANTY" | "CUSTOM";
 
+/** A scheduled or already-delivered reminder. Optional `garantie` and
+ *  `article` joins let the UI link back without a second fetch. The
+ *  legacy French `alerte*` field names are intentional — see the
+ *  enum-rename note in `schema.prisma`. */
 export interface AlertItem {
   alerteId: number;
   alerteNom: string;
@@ -296,6 +358,10 @@ export interface AlertItem {
 export const ATTACHMENT_TYPES = ["INVOICE", "WARRANTY", "OTHER"] as const;
 export type AttachmentType = (typeof ATTACHMENT_TYPES)[number];
 
+/** Uploaded file linked to an article and/or warranty. Both
+ *  `articleId` and `garantieId` may be set (warranty attached to an
+ *  article, then re-linked to the article timeline) or just one.
+ *  `thumbUrl` is populated for image MIME types by the upload pipeline. */
 export interface AttachmentItem {
   attachmentId: number;
   fileName: string;
@@ -325,6 +391,10 @@ export interface MonthlyBucket {
   count: number;
 }
 
+/** Aggregated counters + buckets for the `/dashboard` view. Computed
+ *  server-side per request (no caching) from a handful of grouped
+ *  Prisma queries. Counts here are *owner-scoped* — shared-in
+ *  articles are excluded so the dashboard reflects what the user owns. */
 export interface DashboardStatistics {
   articles: {
     total: number;
