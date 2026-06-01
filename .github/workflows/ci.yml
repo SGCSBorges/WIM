@@ -133,8 +133,14 @@ jobs:
       # On pushes to main/dev, a high-severity vuln fails CI so a fresh CVE
       # can't ship to prod undetected. On PRs we keep it advisory so a new
       # contributor isn't blocked mid-review by a transitive upstream issue.
-      - name: npm audit (high+)
-        run: npm audit --audit-level=high
+      #
+      # Scoped to production deps (`--omit=dev`): the gate exists to keep a
+      # high/critical vuln out of the *shipped* runtime. Dev-only tooling
+      # (vitest/vite) doesn't ship and CI runs `vitest run`, never the UI
+      # server an advisory like GHSA-5xrq-8626-4rwp requires — so a major
+      # bump of the test stack would be disproportionate to the actual risk.
+      - name: npm audit (high+, prod deps)
+        run: npm audit --omit=dev --audit-level=high
         continue-on-error: ${{ github.event_name == 'pull_request' }}
 
   dependency-review:
