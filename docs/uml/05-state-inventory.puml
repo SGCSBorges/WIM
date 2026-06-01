@@ -1,23 +1,42 @@
 @startuml
-title WIM – Diagramme d'etats (Inventaire)
+title WIM – Diagrammes d'états (Réclamation de garantie & Cycle de vie de l'article)
 
 skinparam state {
   BackgroundColor #ffffff
   BorderColor #555555
 }
-[*] --> Cree
 
-Cree --> Modifie : ajouter/supprimer article
-Modifie --> Valide : confirmer l'inventaire
-Valide --> Modifie : mise a jour
-Cree --> Detruit : suppression
-Valide --> Detruit : suppression definitive
+' --- (a) Workflow de réclamation de garantie (enum ClaimStatus) ---
+state "Réclamation de garantie" as Claim {
+  [*] --> NONE
+  NONE --> OPEN : ouvrir une réclamation
+  OPEN --> APPROVED : acceptée par le fournisseur
+  OPEN --> REJECTED : refusée
+  APPROVED --> RESOLVED : remplacement / réparation effectué
+  REJECTED --> RESOLVED : clôturée
+  RESOLVED --> [*]
+}
 
-Detruit --> [*]
+' --- (b) Cycle de vie de l'article (soft-delete + corbeille) ---
+state "Cycle de vie de l'article" as Lifecycle {
+  [*] --> Actif : créer
+  Actif --> Actif : modifier (tags, garantie, alertes...)
+  Actif --> Corbeille : supprimer (deletedAt renseigné)
+  Corbeille --> Actif : restaurer (deletedAt = null)
+  Corbeille --> Purgé : purge manuelle\nou job quotidien (> rétention)
+  Purgé --> [*]
+}
 
-note bottom
-L'inventaire peut etre consulte a tout moment (etat transverse).
-Les modifications incluent l'ajout de garanties et d'alertes sur les articles.
+note bottom of Claim
+claimStatus vit sur la Garantie. NONE tant qu'aucune réclamation
+n'est ouverte ; les transitions sont surfacées sur la timeline de
+l'article, le PDF de réclamation et le flux iCal.
+end note
+
+note bottom of Lifecycle
+La suppression est un soft-delete (deletedAt). Les lectures « live »
+filtrent deletedAt = null ; la Corbeille liste les lignes marquées.
+Le worker de maintenance hard-delete au-delà de
+ARTICLE_TRASH_RETENTION_DAYS.
 end note
 @enduml
-

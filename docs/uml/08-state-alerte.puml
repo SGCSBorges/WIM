@@ -1,0 +1,27 @@
+@startuml
+title WIM – Diagramme d'états (Cycle de vie d'une alerte)
+
+skinparam state {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+
+[*] --> SCHEDULED : planifiée (job BullMQ enfilé)
+
+SCHEDULED --> SCHEDULED : reporter (snooze : alerteDate déplacée)
+SCHEDULED --> SENT : livrée (push réussi, puis e-mail best-effort)
+SCHEDULED --> CANCELLED : garantie/article supprimé\nou annulation par l'utilisateur
+SCHEDULED --> FAILED : échec après épuisement des tentatives
+
+SENT --> [*]
+CANCELLED --> [*]
+FAILED --> [*]
+
+note right
+enum AlerteStatus (prisma) = enum AlertStatus (@wim/types).
+markSent n'intervient qu'APRÈS un push réussi : un push en
+échec laisse l'alerte SCHEDULED pour que BullMQ rejoue le job
+(corrigé au round 10). Les alertes CUSTOM récurrentes
+replanifient une nouvelle occurrence après SENT.
+end note
+@enduml

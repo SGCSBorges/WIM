@@ -1,0 +1,41 @@
+@startuml
+title WIM – Diagramme de séquence (partage par utilisateur)
+
+actor "Propriétaire\n(Power User)" as Owner
+actor "Destinataire\n(Power User)" as Target
+participant "PWA (Web)" as Web
+participant "API (Node)" as API
+database "PostgreSQL" as DB
+participant "E-mail (Resend)" as Mail
+
+== Création de l'invitation ==
+Owner -> Web : Inviter par e-mail (permission READ | WRITE)
+Web -> API : POST /api/shares/invites {email, permission}
+note right of API : requireRole(POWER_USER)\nMême erreur si introuvable / mauvais rôle\n(pas d'énumération d'e-mails)
+API -> DB : INSERT ShareInvite (token, status = PENDING)
+API -> Mail : Envoyer le lien d'invitation (best-effort)
+API --> Web : 201 (invitation en attente)
+
+== Acceptation ==
+Target -> Web : Ouvrir le lien / coller le token
+Web -> API : POST /api/shares/invites/accept {token}
+note right of API : requireRole(POWER_USER) côté destinataire
+API -> DB : Valider le token (PENDING + non expiré)
+API -> DB : INSERT InventoryShare (owner -> target, active = true)
+API -> DB : UPDATE ShareInvite status = ACCEPTED
+API --> Web : 200 (partage actif)
+
+== Lecture par le destinataire ==
+Target -> Web : Ouvrir « Partagés avec moi »
+Web -> API : GET /api/shared/articles
+API -> DB : SELECT via InventoryShare actifs (READ/WRITE)\n+ articles publics (sharedWithPowerUsers)
+DB --> API : lignes partagées
+API --> Web : 200 (liste en lecture seule, édition si WRITE)
+
+note over API, DB
+À la rétrogradation POWER_USER -> USER (annulation Stripe,
+sync manuelle, action admin), cleanupSharingForUser désactive
+les partages sortants et révoque les invitations en attente,
+dans la même transaction que le changement de rôle.
+end note
+@enduml

@@ -1,28 +1,37 @@
 @startuml
-title WIM – Diagramme de sequence (ajout article + garantie + alertes)
+title WIM – Diagramme de séquence (ajout article + garantie + alertes)
 
 actor Utilisateur as User
 participant "PWA (Web)" as Web
 participant "API (Node)" as API
 database "PostgreSQL" as DB
-queue "BullMQ/Redis" as Jobs
+queue "BullMQ / Redis" as Jobs
+participant "Push (VAPID)" as Push
+participant "E-mail (Resend)" as Mail
 
-User -> Web : Ouvrir formulaire Ajout Article
-Web -> API : POST /items {nom, modele, description}
-API -> DB : INSERT Article
+User -> Web : Ouvrir le formulaire d'ajout
+Web -> API : POST /api/articles\n{nom, modèle, desc, prix, tagIds, locationIds, garantie?}
+note right of API : authGuard (cookie + jti + tokenVersion)\npuis csrfGuard sur la mutation
+API -> DB : INSERT Article (+ ArticleTag / ArticleLocation)
 DB --> API : articleId
 
-alt Garantie saisie
-  Web -> API : POST /warranties {articleId, dateAchat, duree}
-  API -> API : Calculer dateFin = dateAchat + duree(mois)
-  API -> DB : INSERT Garantie (avec dateFin)
-  API -> Jobs : Enqueue alertes J-30, J-7, J-1
+alt Garantie incluse dans le corps
+  API -> API : garantieFin = dateAchat + durée (mois)
+  API -> DB : INSERT Garantie (avec garantieFin)
+  API -> Jobs : Planifier alertes J-30 / J-7 / J-1\n(file wim-alerts, jobId déterministe)
+end
+
+opt Pièce jointe
+  Web -> API : POST /api/attachments/upload (multipart)
+  API -> DB : INSERT Attachment (fileUrl -> /uploads/...)
 end
 
 API --> Web : 201 Created (article + garantie + alertes)
 
-== Execution differée ==
-Jobs -> API : Job echeance alerte
-API -> Web : Push Notification (via service worker)
-
+== Exécution différée (échéance d'un rappel) ==
+Jobs -> API : Job d'alerte arrivé à échéance
+API -> DB : Charger garantie / article + abonnements
+API -> Push : Envoyer la notification (await, rejoué si échec)
+API -> Mail : Envoyer l'e-mail (best-effort) [si configuré + opt-in]
+API -> DB : UPDATE Alerte status = SENT
 @enduml

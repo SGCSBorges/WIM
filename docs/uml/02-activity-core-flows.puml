@@ -11,21 +11,21 @@ skinparam noteBorderColor #6B7280
 
 start
 
-:Créer / sélectionner un inventaire;
-:Ajouter un article (nom, modèle, desc);
-if (Facture disponible ?) then (Oui)
-  :Joindre PDF/JPEG à l'article;
+:Ajouter un article (nom, modèle, desc, prix);
+:Associer tags & emplacements (optionnel);
+if (Facture / pièce disponible ?) then (Oui)
+  :Téléverser PDF/JPEG (vérif. signature + miniature);
 else (Non)
   :Poursuivre sans pièce jointe;
 endif
 
 if (Ajouter une garantie ?) then (Oui)
   :Saisir date d'achat et durée (mois);
-  :Calculer date de fin = achat + durée;
-  :Enregistrer garantie liée à l'article;
+  :API calcule garantieFin = achat + durée;
+  :Enregistrer la garantie liée à l'article;
   if (Configurer alertes ?) then (Oui)
     :Proposer J-30 / J-7 / J-1 (éditables);
-    :Créer alertes planifiées;
+    :Planifier des jobs BullMQ (file wim-alerts);
   else (Non)
     :Poursuivre sans alertes;
   endif
@@ -33,25 +33,33 @@ else (Non)
   :Article sans garantie;
 endif
 
-:Sauvegarder en base (Article/Garantie/Alerte);
+:Sauvegarder (Article / Garantie / Alerte) + journaliser l'audit;
 
-' Boucle de contrôle des alertes (scheduler)
-repeat
-  :Tâche planifiée (BullMQ)\nParcourir alertes du jour;
-  if (Alerte à échéance ?) then (Oui)
-    :Envoyer notification push\n(au device abonné);
-  else (Non)
-    :Aucune action;
-  endif
-repeat while (Vérification périodique)
+' Déclenchement asynchrone d'un rappel planifié
+:[Plus tard] Échéance d'un job d'alerte;
+:Charger le contexte (garantie / article);
+:Envoyer la notification push (obligatoire, rejouée si échec);
+if (E-mail configuré ET opt-in utilisateur ?) then (Oui)
+  :Envoyer l'e-mail (best-effort, n'échoue jamais le job);
+else (Non)
+  :Ignorer l'e-mail;
+endif
+:Marquer l'alerte SENT;
+if (Alerte custom récurrente ?) then (Oui)
+  :Replanifier la prochaine occurrence (+N mois);
+else (Non)
+  :Fin du cycle de cette alerte;
+endif
 
 stop
 
 note right
-Hypothèses MVP :
-- Notifications Web Push uniquement
-- Planification via jobs (BullMQ + Redis)
-- Fin de garantie calculée côté service
-- Import/Export CSV disponible hors du flux
+Hypothèses (état actuel) :
+- Push (VAPID) + e-mail (Resend), tous deux best-effort
+- Ordre : push -> e-mail -> markSent
+  (un push en échec ne marque PAS l'alerte envoyée)
+- Planification via jobs BullMQ + Redis
+- garantieFin calculée côté service
+- Import/Export CSV hors de ce flux
 end note
 @enduml

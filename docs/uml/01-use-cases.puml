@@ -1,5 +1,5 @@
 @startuml
-title WIM – Diagramme de cas d'utilisation (MVP)
+title WIM – Diagramme de cas d'utilisation
 
 left to right direction
 skinparam packageStyle rectangle
@@ -15,25 +15,41 @@ actor "Administrateur" as Admin
 
 rectangle "WIM (PWA)" {
   (S'authentifier / Se déconnecter) as UC_Auth
-  (Gérer l'inventaire) as UC_Items
-  (Joindre une facture PDF/JPEG) as UC_Attach
+  (Gérer l'inventaire (articles)) as UC_Items
+  (Organiser : tags & emplacements) as UC_Organize
+  (Joindre des pièces (facture PDF/JPEG)) as UC_Attach
   (Gérer la garantie) as UC_Warranty
+  (Suivre une réclamation de garantie) as UC_Claim
   (Configurer des alertes J-30 / J-7 / J-1) as UC_Alerts
-  (Recevoir des notifications push) as UC_Push
-  (Importer / Exporter CSV) as UC_ImportExport
-  (Consulter des statistiques simples) as UC_Stats
+  (Recevoir notifications push / e-mail) as UC_Notify
+  (Recevoir le digest hebdomadaire) as UC_Digest
+  (S'abonner au flux iCal) as UC_Ical
+  (Importer / Exporter (CSV)) as UC_ImportExport
+  (Exporter en PDF (réclamation, inventaire, étiquettes)) as UC_Pdf
+  (Consulter le tableau de bord & la valeur) as UC_Stats
+  (Enregistrer des vues filtrées) as UC_Views
+  (Corbeille : supprimer / restaurer / purger) as UC_Trash
   (Partager l'inventaire) as UC_Sharing
-  (Gérer les utilisateurs & logs d’audit) as UC_Admin
+  (Souscrire l'offre Power User (Stripe)) as UC_Billing
+  (Administrer : utilisateurs, audit, jobs, sauvegarde) as UC_Admin
 }
 
 User --> UC_Auth
 User --> UC_Items
+User --> UC_Organize
 User --> UC_Attach
 User --> UC_Warranty
+User --> UC_Claim
 User --> UC_Alerts
-User --> UC_Push
+User --> UC_Notify
+User --> UC_Digest
+User --> UC_Ical
 User --> UC_ImportExport
+User --> UC_Pdf
 User --> UC_Stats
+User --> UC_Views
+User --> UC_Trash
+User --> UC_Billing
 
 PowerUser --|> User
 PowerUser --> UC_Sharing
@@ -43,16 +59,20 @@ Admin --> UC_Admin
 UC_Items ..> UC_Attach : <<extend>> ajout de pièce jointe
 UC_Items ..> UC_Warranty : <<extend>> associer une garantie
 UC_Warranty ..> UC_Alerts : <<extend>> proposer des rappels
-UC_Alerts ..> UC_Push : <<include>> envoi de notification
+UC_Warranty ..> UC_Claim : <<extend>> ouvrir une réclamation
+UC_Alerts ..> UC_Notify : <<include>> envoi de notification
+UC_Billing ..> UC_Sharing : <<include>> débloque le partage
 
 note bottom
-Portée MVP :
-- Inventaire, garanties (fin auto), alertes J-30/J-7/J-1
-- Pièces jointes (factures)
-- Import/Export CSV
-- Notifications push
-- Partage = option "Power User"
-- Admin = basique (sécurité, logs)
-Hors-scope V1 (V2) : OCR, scan code-barres, e-mail/SMS, iOS, stats avancées
+Portée actuelle (post-MVP) :
+- Inventaire + tags + emplacements (M:N), recherche plein-texte (trigram)
+- Garanties (fin calculée), réclamations (états), prix/dépréciation
+- Alertes J-30/J-7/J-1 + alertes custom récurrentes (BullMQ)
+- Notifications Web Push ET e-mail (Resend) + digest hebdo opt-in
+- Pièces jointes, import/export CSV, exports PDF, flux iCal
+- Corbeille (soft-delete) + purge planifiée
+- Partage = option "Power User" (public + par utilisateur)
+- Facturation Stripe (mensuel/annuel)
+- Admin : utilisateurs, logs d'audit, jobs, export/import BDD
 end note
 @enduml

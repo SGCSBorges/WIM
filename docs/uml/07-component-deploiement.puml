@@ -1,0 +1,54 @@
+@startuml
+title WIM – Diagramme de composants / déploiement
+
+skinparam componentStyle rectangle
+skinparam node {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+skinparam database {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+
+actor "Navigateur\n(PWA installable)" as Browser
+
+node "Render – Site statique\nwim-web.onrender.com" as WebHost {
+  component "apps/web\n(Vite + React 19)" as Web
+  component "Service Worker\n(sw.js)" as SW
+}
+
+node "Render – Service Node\nwimapi.onrender.com" as ApiHost {
+  component "apps/api\n(Express + Prisma)" as Api
+  component "Workers BullMQ\n(in-process)" as Workers
+}
+
+database "PostgreSQL\n(Render)" as PG
+database "Redis\n(denylist + BullMQ)" as Redis
+
+cloud "Stripe" as Stripe
+cloud "Resend\n(e-mail)" as Resend
+cloud "Web Push\n(VAPID)" as Push
+
+Browser --> Web : HTTPS
+Web ..> SW : enregistre (prod)
+Web --> Api : fetch(credentials: include)\ncookie httpOnly wim_token + CSRF (Origin/Referer)
+
+Api --> PG : Prisma (SQL)
+Api --> Redis : jti denylist + tokenVersion
+Workers --> Redis : files wim-alerts / wim-maintenance
+Workers --> PG : lecture/écriture (rappels, purge, digest)
+
+Api --> Stripe : Checkout / Portal / sync
+Stripe --> Api : Webhook (raw body, signature HMAC)
+Workers --> Resend : rappels + digest (best-effort)
+Workers --> Push : notifications push
+
+note bottom
+Frontière de sécurité : le cookie wim_token est httpOnly + SameSite=none
+en prod (sous-domaines Render différents) ; les mutations exigent un
+Origin/Referer autorisé (csrfGuard). Le webhook Stripe est monté AVANT
+express.json() et s'authentifie par signature, hors du chemin cookie/CSRF.
+Les workers tournent dans le même processus que l'API.
+end note
+@enduml
