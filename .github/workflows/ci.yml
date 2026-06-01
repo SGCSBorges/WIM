@@ -154,3 +154,26 @@ jobs:
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
+
+  # The docs/uml/*.svg are rendered artifacts of the *.puml sources, committed
+  # so GitHub shows them inline. Re-render and fail if any committed SVG is
+  # stale — same drift-check ethos as the Prisma `migrate diff` above. The
+  # render is deterministic (pinned PlantUML image + -nometadata), so a clean
+  # tree means the SVGs match their sources. Advisory on PRs (a transient
+  # registry/Docker hiccup shouldn't block a review); gating on push.
+  uml:
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Render UML diagrams
+        run: npm run docs:uml
+
+      - name: Check SVGs are in sync with sources
+        run: |
+          if ! git diff --exit-code -- docs/uml; then
+            echo "::error::docs/uml SVGs are stale — run 'npm run docs:uml' and commit the result."
+            exit 1
+          fi
