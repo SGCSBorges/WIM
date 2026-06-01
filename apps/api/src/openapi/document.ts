@@ -445,6 +445,15 @@ export function buildOpenApiDocument() {
           },
         },
       },
+      "/api/attachments/bulk-delete": {
+        post: {
+          tags: ["attachments"],
+          summary:
+            "Delete many attachments in one call (best-effort unlinks files).",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ count: number }" } },
+        },
+      },
       "/api/attachments/{id}": {
         parameters: [
           {
@@ -557,11 +566,30 @@ export function buildOpenApiDocument() {
             schema: { type: "integer", minimum: 1 },
           },
         ],
+        put: {
+          tags: ["tags"],
+          summary: "Rename a tag (409 on owner-scoped name collision).",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "Renamed" },
+            "404": { description: "Not found", ...json(ErrorResponse) },
+            "409": { description: "Name already exists" },
+          },
+        },
         delete: {
           tags: ["tags"],
           summary: "Delete a tag.",
           security: [cookieAuth],
           responses: { "204": { description: "Deleted" } },
+        },
+      },
+      "/api/tags/merge": {
+        post: {
+          tags: ["tags"],
+          summary:
+            "Fold one tag into another. Transactional: dedupes articles already on the target, then deletes the source.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ articlesAffected: number }" } },
         },
       },
 
@@ -756,6 +784,101 @@ export function buildOpenApiDocument() {
           responses: { "200": { description: "PDF" } },
         },
       },
+      "/api/articles/export/inventory.csv": {
+        get: {
+          tags: ["articles"],
+          summary:
+            "Stream a CSV export honouring the same filters as GET /api/articles.",
+          security: [cookieAuth],
+          responses: { "200": { description: "CSV (text/csv)" } },
+        },
+      },
+      "/api/articles/{id}/duplicate": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["articles"],
+          summary:
+            "Duplicate identity + locations + tags into a new article (no warranty/attachments).",
+          security: [cookieAuth],
+          responses: {
+            "201": { description: "Created (the new article)" },
+            "404": { description: "Not found", ...json(ErrorResponse) },
+          },
+        },
+      },
+      "/api/articles/trash": {
+        get: {
+          tags: ["articles"],
+          summary: "List soft-deleted articles (Trash view).",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "{ items: FetchedArticle[] }" },
+          },
+        },
+      },
+      "/api/articles/{id}/restore": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["articles"],
+          summary:
+            "Restore a soft-deleted article. Re-arms warranty reminders.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "Restored" },
+            "404": { description: "Not found", ...json(ErrorResponse) },
+          },
+        },
+      },
+      "/api/articles/{id}/purge": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["articles"],
+          summary:
+            "Permanently delete a (already soft-deleted) article; skips the retention window.",
+          security: [cookieAuth],
+          responses: {
+            "204": { description: "Purged" },
+            "404": { description: "Not found", ...json(ErrorResponse) },
+          },
+        },
+      },
+      "/api/articles/trash/bulk-restore": {
+        post: {
+          tags: ["articles"],
+          summary: "Restore many soft-deleted articles in one call.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ count: number }" } },
+        },
+      },
+      "/api/articles/trash/bulk-purge": {
+        post: {
+          tags: ["articles"],
+          summary: "Permanently delete many trashed articles in one call.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ count: number }" } },
+        },
+      },
       "/api/articles/export/labels.pdf": {
         get: {
           tags: ["articles"],
@@ -936,6 +1059,15 @@ export function buildOpenApiDocument() {
           responses: { "200": { description: "Updated" } },
         },
       },
+      "/api/profile/me/weekly-digest": {
+        put: {
+          tags: ["profile"],
+          summary:
+            "Toggle the caller's weekly warranty-digest email opt-in (Mondays 09:00 UTC).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+      },
 
       "/api/statistics/dashboard": {
         get: {
@@ -1070,6 +1202,24 @@ export function buildOpenApiDocument() {
             "Replace every table from a JSON dump (ADMIN only — destructive).",
           security: [cookieAuth],
           responses: { "200": { description: "Imported" } },
+        },
+      },
+      "/api/admin/jobs": {
+        get: {
+          tags: ["admin"],
+          summary:
+            "BullMQ queue snapshot (counts + next audit-prune run) — ADMIN.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/admin/failed-jobs": {
+        get: {
+          tags: ["admin"],
+          summary:
+            "Last failed jobs across both queues (cap 50) — ADMIN. Powers the Jobs tab's 'Recent failures' expander.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ items: FailedJob[] }" } },
         },
       },
 
