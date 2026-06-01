@@ -10,7 +10,9 @@
  *      bump; updating `User.role` propagates immediately without re-login.
  *
  * `requireRole(...)` is a thin wrapper used after authGuard for routes that
- * need POWER_USER or ADMIN. It assumes `req.user.role` is already populated.
+ * need POWER_USER or ADMIN. It gates on the role **hierarchy** (see
+ * common/roles.ts), so ADMIN clears a POWER_USER guard while a POWER_USER
+ * never clears an ADMIN guard. It assumes `req.user.role` is already populated.
  *
  * JWT_SECRET is guaranteed present by validateEnv() at startup, so its use
  * here doesn't need a runtime check.
@@ -19,6 +21,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { isTokenDenied } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
+import { roleAtLeast, type RankedRole } from "../common/roles";
 
 export interface AuthRequest extends Request {
   user?: { sub: number; role: string; jti?: string; exp?: number };
@@ -73,10 +76,12 @@ export async function authGuard(
   }
 }
 
-/** Optionnel : restreindre à un rôle spécifique */
-export function requireRole(role: string) {
+/** Restrict to a minimum role on the USER < POWER_USER < ADMIN hierarchy.
+ *  ADMIN therefore clears `requireRole("POWER_USER")` (it inherits sharing),
+ *  while a POWER_USER still can't clear `requireRole("ADMIN")`. */
+export function requireRole(role: RankedRole) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user || req.user.role !== role)
+    if (!req.user || !roleAtLeast(req.user.role, role))
       return res.status(403).json({ error: "Access denied" });
     next();
   };

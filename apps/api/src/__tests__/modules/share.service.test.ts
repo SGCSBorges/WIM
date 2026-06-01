@@ -196,6 +196,28 @@ describe("ShareService.createInvite", () => {
     });
   });
 
+  it("accepts an ADMIN invitee (ADMIN inherits POWER_USER sharing)", async () => {
+    mockOwnerThenInvitee({
+      ownerEmail: "owner@x.com",
+      inviteeRole: "ADMIN",
+    });
+    mockPrisma.shareInvite.findFirst.mockResolvedValue(null);
+    mockPrisma.shareInvite.create.mockResolvedValue({
+      shareInviteId: 9,
+      token: "def",
+    });
+
+    await expect(
+      ShareService.createInvite({
+        ownerUserId: 1,
+        email: "admin@x.com",
+        permission: "READ",
+        expiresAt: new Date(Date.now() + 86_400_000),
+      })
+    ).resolves.toMatchObject({ shareInviteId: 9 });
+    expect(mockPrisma.shareInvite.create).toHaveBeenCalled();
+  });
+
   it("rejects with 409 when a pending invite already exists for the email", async () => {
     mockOwnerThenInvitee({
       ownerEmail: "owner@x.com",

@@ -4,9 +4,9 @@
  * transition.
  *
  * Invariants this module enforces:
- *   • Invites are POWER_USER-only on both ends (`createInvite` rejects
- *     non-POWER_USER recipients; the accept route re-checks via
- *     requireRole at acceptance).
+ *   • Invites require POWER_USER capability on both ends — the recipient
+ *     must be POWER_USER **or ADMIN** (ADMIN inherits sharing); the accept
+ *     route re-checks via requireRole("POWER_USER") at acceptance.
  *   • An invite is consumed exactly once (atomic `updateMany` with
  *     `status: PENDING` in the WHERE clause).
  *   • `cleanupSharingForUser` is called inside the SAME transaction as the
@@ -18,6 +18,7 @@ import crypto from "crypto";
 import { Prisma, SharePermission, InviteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
+import { roleAtLeast } from "../common/roles";
 import {
   InventoryShareCreateInput,
   ShareInviteCreateInput,
@@ -38,19 +39,18 @@ export const ShareService = {
     if (owner?.email === data.email)
       throw createHttpError(400, "You cannot invite yourself");
 
-    // Inventory invites are POWER_USER-only on both ends. Reject early if
-    // the invitee isn't a registered power user — accepting later would
-    // also fail (the accept route requires POWER_USER), so failing fast
-    // here keeps the owner from sending dead invites.
+    // Inventory invites need POWER_USER capability on both ends. Reject early
+    // if the invitee can't share (USER, or no such account) — accepting later
+    // would also fail, so failing fast here keeps the owner from sending dead
+    // invites. ADMIN qualifies (it inherits POWER_USER).
     //
-    // We deliberately use the same error for "no such user" and "user
-    // exists but isn't a power user" to avoid leaking which emails are
-    // registered.
+    // We deliberately use the same error for "no such user" and "user exists
+    // but can't share" to avoid leaking which emails are registered.
     const invitee = await prisma.user.findUnique({
       where: { email: data.email },
       select: { role: true },
     });
-    if (!invitee || invitee.role !== "POWER_USER") {
+    if (!invitee || !roleAtLeast(invitee.role, "POWER_USER")) {
       throw createHttpError(
         400,
         "That email isn't a Power User. Inventory invites can only go to existing Power Users."

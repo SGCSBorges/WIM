@@ -15,6 +15,7 @@ import { prisma } from "../../libs/prisma";
 import { asyncHandler } from "../common/http";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
+import { roleAtLeast } from "../common/roles";
 import { security } from "../../config/security";
 import { createHttpError } from "../../utils/http-error";
 import { idParam } from "../common/schemas";
@@ -299,10 +300,14 @@ router.patch(
           },
         });
 
+        // Clean up sharing whenever a share-capable role (POWER_USER or
+        // ADMIN — ADMIN inherits sharing) is demoted to one that can't share
+        // (USER). Covers POWER_USER→USER and ADMIN→USER; a POWER_USER↔ADMIN
+        // move keeps shares since both can share.
         if (
-          target.role === "POWER_USER" &&
+          roleAtLeast(target.role, "POWER_USER") &&
           data.role !== undefined &&
-          data.role !== "POWER_USER"
+          !roleAtLeast(data.role, "POWER_USER")
         ) {
           downgradeCleanupCounts = await ShareService.cleanupSharingForUser(
             userId,
