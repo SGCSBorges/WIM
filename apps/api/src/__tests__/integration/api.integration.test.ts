@@ -115,6 +115,29 @@ suite("API integration (real Postgres)", () => {
     expect(me.body.role).toBe("USER");
   });
 
+  // Regression: GET /api/articles/shared-public must resolve to the share
+  // router, not be swallowed by articleRoutes' `GET /:id` (which would coerce
+  // "shared-public" to a number → NaN → 400). Also exercises ADMIN inheriting
+  // the POWER_USER sharing gate.
+  it("GET /api/articles/shared-public is not shadowed by /:id (POWER_USER + ADMIN)", async () => {
+    const agent = await register("sharer@example.com");
+    await prisma.user.update({
+      where: { email: "sharer@example.com" },
+      data: { role: "POWER_USER" },
+    });
+    const asPower = await agent.get("/api/articles/shared-public");
+    expect(asPower.status).toBe(200);
+    expect(Array.isArray(asPower.body)).toBe(true);
+
+    await prisma.user.update({
+      where: { email: "sharer@example.com" },
+      data: { role: "ADMIN" },
+    });
+    const asAdmin = await agent.get("/api/articles/shared-public");
+    expect(asAdmin.status).toBe(200);
+    expect(Array.isArray(asAdmin.body)).toBe(true);
+  });
+
   it("creates an article and finds it via search", async () => {
     const agent = await register("bob@example.com");
 

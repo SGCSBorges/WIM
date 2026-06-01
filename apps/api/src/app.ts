@@ -209,9 +209,14 @@ export function createApp() {
   );
 
   // Routes
-  app.use("/api/articles", articleRoutes);
-  app.use("/api/articles", articleNoteRoutes);
+  // Order matters: the share/note routers carry literal single-segment paths
+  // (`/shared-public`, `/unshare-all`) that would otherwise be swallowed by
+  // articleRoutes' `GET /:id` (which coerces the segment to a number — e.g.
+  // "shared-public" → NaN → a 400). Mount the specific routers before the
+  // `/:id` catch-all.
   app.use("/api/articles", articleShareRoutes);
+  app.use("/api/articles", articleNoteRoutes);
+  app.use("/api/articles", articleRoutes);
   app.use("/api/warranties", warrantyRoutes);
   app.use("/api/auth", security.authRateLimiter, authRoutes);
   app.use("/api/audit", auditRoutes);
