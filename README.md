@@ -3,6 +3,8 @@
 WIM is a full-stack SaaS application for tracking physical assets, their warranties, attachments, and alerts. Built with a React frontend and a Node.js/Express API backed by PostgreSQL and Redis.
 
 > **New chat?** Read [`CLAUDE.md`](./CLAUDE.md) at the repo root — it has the internal context (deploy quirks, conventions, open items) the README intentionally doesn't repeat.
+>
+> **How it fits together?** [`docs/architecture.md`](./docs/architecture.md) maps the request lifecycle, the article→warranty→reminder data flow, the two sharing models, and the jobs pipeline.
 
 ---
 
@@ -251,6 +253,9 @@ User ─── Article ─── Garantie (warranty)
 ```
 
 Key flags on User: `role`, `tokenVersion`, `stripeCustomerId`, `stripeSubscriptionId`.
+
+See [`docs/architecture.md`](./docs/architecture.md) for how data moves through
+the system, and [`docs/uml/`](./docs/uml/) for the full class diagram.
 
 ---
 
