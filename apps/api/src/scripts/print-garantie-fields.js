@@ -1,3 +1,6 @@
+// Diagnostic: dump the field metadata of the generated Garantie model so
+// a contributor can see exactly what Prisma exposes without running tsc.
+// CommonJS so it works against the compiled client without ts-node.
 const { PrismaClient } = require("@prisma/client");
 
 async function main() {

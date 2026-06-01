@@ -1,3 +1,10 @@
+/**
+ * End-to-end smoke test for the alert pipeline: seeds a warranty with
+ * `garantieFin` shaped so a J-1 reminder fires inside the test window,
+ * waits for BullMQ to pick it up, then asserts the Alerte row flipped
+ * to SENT. Requires Redis + a JOBS_ENABLED=true API. Manual: run with
+ * `npm run smoke:alerts`.
+ */
 import "dotenv/config";
 import { subDays, addDays } from "date-fns";
 import { prisma } from "../libs/prisma";

@@ -1,3 +1,8 @@
+/**
+ * Diagnostic: scan every Alerte and verify ownerUserId matches the
+ * owning article / warranty. Used to investigate sharing-related IDOR
+ * regressions. Run ad-hoc, prints to stdout.
+ */
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();

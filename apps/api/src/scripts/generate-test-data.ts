@@ -1,3 +1,11 @@
+/**
+ * Seeds the local DB with a small set of test accounts + articles +
+ * warranties + alerts so a developer can play with the UI without
+ * clicking through registration. Idempotent — re-running upserts the
+ * same fixtures. Counterpart cleanup: `cleanup-test-data.ts`.
+ *
+ * `npm run seed:dev` from apps/api.
+ */
 import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 

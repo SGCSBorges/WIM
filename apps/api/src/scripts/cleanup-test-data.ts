@@ -1,3 +1,8 @@
+/**
+ * Drop the dev-seed fixtures created by `generate-test-data.ts`. Looks for
+ * accounts emailed `*.dev@example.com` and removes them + every dependent
+ * row. Never run in production.
+ */
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();

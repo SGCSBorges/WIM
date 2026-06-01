@@ -1,3 +1,7 @@
+/**
+ * Quick "what's in the DB?" snapshot — row counts per table, the latest
+ * audit entries, queue health. Read-only; safe to run anywhere.
+ */
 import { prisma } from "../libs/prisma";
 
 async function inspectDatabase() {

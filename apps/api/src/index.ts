@@ -1,3 +1,10 @@
+/**
+ * API entry point. Loads .env, validates the required + numeric envs at
+ * boot (fail-closed if JWT_SECRET / DATABASE_URL are missing), constructs
+ * the Express app (which also boots the BullMQ workers), starts listening,
+ * and installs SIGTERM/SIGINT handlers so Render's rolling restarts drain
+ * in-flight HTTP requests + BullMQ jobs before the process exits.
+ */
 import "dotenv/config";
 import { validateEnv } from "./utils/validate-env";
 import { createApp } from "./app";

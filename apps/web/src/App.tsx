@@ -1,3 +1,19 @@
+/**
+ * Top-level app shell + router. Three responsibilities:
+ *
+ *   • Auth gating — reads `/auth/me` on boot, redirects to login if it
+ *     401s. Role (`USER` / `POWER_USER` / `ADMIN`) gates the visible nav
+ *     items and route guards.
+ *   • Lazy routes — every page-level component is `React.lazy`-loaded so
+ *     the initial JS bundle stays small. `Suspense fallback` renders a
+ *     skeleton during chunk fetch.
+ *   • Error boundary — catches render-time crashes anywhere in the tree
+ *     and shows a friendly retry. Network/async errors are surfaced via
+ *     useToast inside individual views, not here.
+ *
+ * The provider chain (Theme / I18n / Toast / Router) is set up in
+ * main.tsx so App can assume they're all mounted.
+ */
 import React, {
   Component,
   ErrorInfo,

@@ -1,3 +1,9 @@
+/**
+ * Manual smoke for the locations module — creates a user + location +
+ * articles, walks the add/remove-from-location join, and asserts the
+ * paginated articles-in-location response shape. Used after schema or
+ * service changes to verify nothing regressed end-to-end.
+ */
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 

@@ -1,3 +1,9 @@
+/**
+ * IDOR check for the alerts surface: creates two users, lets user A
+ * create an alert, then attempts every alert mutation as user B and
+ * asserts each one fails. Run after touching alert ownership scoping
+ * to make sure another user's alerts can't be snoozed/cancelled.
+ */
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();

@@ -1,297 +1,141 @@
 # WIM API documentation
 
-Base URL (Render): `https://wimapi.onrender.com/api`
+The **canonical, machine-readable** reference is Swagger UI — it's generated
+from the same Zod schemas the API validates against, so it never drifts:
 
-The full machine-readable spec lives at:
+- **Swagger UI**: [`/api/docs`](https://wimapi.onrender.com/api/docs)
+- **OpenAPI 3.1 JSON**: [`/api/openapi.json`](https://wimapi.onrender.com/api/openapi.json)
 
-- **Swagger UI**: [`/api/docs`](https://wimapi.onrender.com/api/docs) — interactive,
-  generated from the same Zod schemas the API uses for request validation.
-- **Raw OpenAPI 3.1 JSON**: [`/api/openapi.json`](https://wimapi.onrender.com/api/openapi.json)
-
-The auth, articles, locations, and meta routes are documented today. The
-remaining modules can be added incrementally by extending
-`apps/api/src/openapi/document.ts`.
-
-This file is meant to be copy/paste friendly for quick testing and for onboarding.
+This file covers the bits Swagger can't easily explain — auth model,
+deployment quirks, and a triage section for the common confusions.
 
 ## Authentication
 
-Most endpoints are protected by JWT.
+The API uses **JWT in an `httpOnly` cookie**, not `Authorization: Bearer`.
+That's important to understand because it dictates how a client must call
+the API:
 
-Send the token using the `Authorization` header:
+- **Browsers (the web app)**: just `fetch(..., { credentials: "include" })`
+  — the cookie rides every request automatically. No client-side token
+  handling. The web app's `services/api.ts` does this for you.
+- **External tools (curl, Postman)**: log in, capture the `Set-Cookie`,
+  replay it on subsequent requests. There is **no** Bearer-token mode.
 
-- `Authorization: Bearer <JWT>`
+The cookie carries a JWT with `sub` (userId), `role`, `jti` (unique id for
+the Redis denylist), and `v` (per-user `tokenVersion`). On every protected
+request the API:
 
-If the header is missing/invalid, the API returns `401`.
+1. Verifies the JWT signature.
+2. Checks the Redis denylist (`jti` revoked? → 401).
+3. Re-reads `tokenVersion` + `role` from the DB. Bumping `tokenVersion`
+   invalidates every token issued before the bump (used by logout,
+   password reset, admin force-logout). Updating `role` propagates
+   immediately without re-login.
 
-### Quick test (PowerShell)
+### CSRF
 
-```powershell
-# Login and capture token
-$base = "https://wimapi.onrender.com/api"
-$login = Invoke-RestMethod -Method Post -Uri "$base/auth/login" -ContentType "application/json" -Body (
-  @{ email = "user@example.com"; password = "your-password" } | ConvertTo-Json
-)
-$token = $login.token
+Mutating requests (POST/PUT/PATCH/DELETE) also require an `Origin` or
+`Referer` header matching an allowed origin (`CORS_ORIGIN` env). Browsers
+attach both automatically; cross-origin scripts can't forge them.
 
-# Use token in requests
-$headers = @{ Authorization = "Bearer $token" }
-Invoke-RestMethod -Uri "$base/profile/me" -Headers $headers
+### Quick smoke (curl)
+
+```bash
+# Log in — captures the wim_token cookie into a jar.
+curl -i -c jar.txt -b jar.txt -X POST https://wimapi.onrender.com/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://wim-web.onrender.com' \
+  -d '{"email":"you@example.com","password":"yourpass"}'
+
+# Use the cookie jar on subsequent calls.
+curl -b jar.txt https://wimapi.onrender.com/api/auth/me
 ```
 
 ## Conventions
 
-- All IDs are integers.
-- Unless explicitly stated, endpoints return JSON.
-- Date fields are ISO strings.
+- All IDs are positive integers.
+- Endpoints return JSON unless noted (PDFs and the CSV export return their
+  native content-type with `Content-Disposition: attachment`).
+- Date / datetime fields are ISO strings.
+- **Paginated list endpoints** return `{ items, total, page, limit }` —
+  e.g. `GET /api/articles`, `GET /api/locations/:id/articles`. Notable
+  exception: `GET /api/admin/users` returns a raw array (no pagination —
+  it's behind ADMIN and the user list is small).
+- Errors come back as `{ "error": "human message" }` with a numeric status
+  code. 5xx responses also include `requestId` so support can quote it.
 
-## Profile
+## Attachments and `/uploads/*`
 
-### GET `/profile/me`
+This is the most-asked-about gotcha:
 
-Returns the current user profile.
+- `/api/attachments/*` → JSON metadata. **Cookie required.**
+- `/uploads/<filename>` → the raw file, served as static content.
+  **Public** — anyone with the URL can download it.
 
-**Auth:** required
+The UI uses `attachment.fileUrl` (which points at `/uploads/…`) to render
+images or trigger downloads — never `/api/attachments/:id`, because
+navigating that in a tab doesn't send the cookie and you'll see a 401.
 
-**Response `200`**
+## Background jobs
 
-```json
-{ "userId": 123, "email": "user@example.com", "role": "USER" }
-```
+The API runs BullMQ workers in the same process. Three repeatable schedules
+run automatically (see `apps/api/src/jobs/workers.ts`):
 
-### PUT `/profile/me/email`
+| Job                  | Cron (UTC)    | What it does                                  |
+| -------------------- | ------------- | --------------------------------------------- |
+| `audit-prune-daily`  | `0 3 * * *`   | Trim AuditLog rows older than the retention   |
+| `article-trash-purge`| `30 3 * * *`  | Hard-delete trashed articles past retention   |
+| `warranty-digest`    | `0 9 * * 1`   | Email opt-in users their upcoming expirations |
 
-Updates the current user email.
+Each is opt-out via its env var (`AUDIT_RETENTION_DAYS=0`,
+`ARTICLE_TRASH_RETENTION_DAYS=0`, `WARRANTY_DIGEST_ENABLED=false`).
+Admin Jobs tab (`/admin/jobs`) surfaces live queue depth + recent failures.
 
-**Auth:** required
+## Deployment
 
-**Body**
+- **API**: `wimapi.onrender.com` — `apps/api`. Node 22 service; redeploys on
+  push to `dev`. Render free-tier Postgres cold-starts in ~30 s — the web
+  client's fetch timeout is 45 s for that reason. Render free Postgres
+  also expires after ~30 days; after a wipe, re-promote admin via
+  `/api/auth/bootstrap-admin` (temporary endpoint).
+- **Web**: `wim-web.onrender.com` — `apps/web`. Static site built from
+  `apps/web/dist`. SPA-rewrite lives in the repo's `render.yaml`.
 
-```json
-{ "email": "new@example.com", "currentPassword": "..." }
-```
+The full env catalog lives in `apps/api/.env.example`; CLAUDE.md at the
+repo root has the canonical setup notes.
 
-**Responses**
+## Triage
 
-- `200` updated profile JSON
-- `401` password invalid
-- `409` email already exists
+### "Unauthorized" when calling from curl/Postman
 
-### PUT `/profile/me/password`
+You're probably sending `Authorization: Bearer …`. This API doesn't read
+that header. Log in to get the `Set-Cookie`, then send the cookie on
+subsequent requests — see the smoke example above.
 
-Updates the current user password.
+### "Token manquant" / 401 opening an attachment URL
 
-**Auth:** required
+You navigated to `/api/attachments/<id>` in a browser tab. Use the
+`fileUrl` field (`/uploads/<filename>`) — that one is public static
+content. The UI does this automatically.
 
-**Body**
+### Mixed-content errors on attachment download
 
-```json
-{ "currentPassword": "...", "newPassword": "..." }
-```
+A legacy row has an HTTP `fileUrl` (e.g. `http://wimapi.onrender.com/uploads/…`).
+The web client already normalises `/uploads/…` paths to the API's HTTPS
+host at render time — but if the stored value is a different host, fix the
+DB row.
 
-**Responses**
+### Delete-account returned 500 but the user is gone
 
-- `200` updated profile JSON
-- `401` password invalid
+Historical issue. The current implementation runs the cascading deletes
+inside a transaction; if anything throws the row stays. The web client
+also treats a follow-up 404 from `/profile/me` as "account already gone"
+and disconnects cleanly (round-11 status-based redirect, B3).
 
-### DELETE `/profile/me`
+### Webhook duplicate deliveries
 
-Deletes the current account.
-
-**Auth:** required
-
-**Body**
-
-```json
-{ "currentPassword": "..." }
-```
-
-**Response `204`**
-
-No content.
-
-**Notes**
-
-- The server deletes dependent records owned by the user (alerts, shares, invites, audit logs, attachments, warranties, articles) in a transaction.
-- After success, the frontend should clear local auth and redirect.
-
-#### Example (PowerShell)
-
-```powershell
-$base = "https://wimapi.onrender.com/api"
-$headers = @{ Authorization = "Bearer $token" }
-
-Invoke-RestMethod -Method Delete -Uri "$base/profile/me" -Headers $headers -ContentType "application/json" -Body (
-  @{ currentPassword = "your-password" } | ConvertTo-Json
-)
-```
-
-## Attachments
-
-Attachments are metadata records that can point to an uploaded file via `fileUrl`.
-
-### Important: `/api/*` vs `/uploads/*`
-
-- `/api/attachments/*` returns JSON metadata and **requires JWT**.
-- `/uploads/<filename>` is the raw file hosting (static) and is **public**.
-
-That’s why the UI must open/download using `attachment.fileUrl` (not by navigating to `/api/attachments/:id`).
-
-### GET `/attachments`
-
-Lists the current user attachments.
-
-**Auth:** required
-
-**Query parameters**
-
-- `articleId` (optional number)
-- `garantieId` (optional number)
-
-**Response `200`**
-
-Array of attachments.
-
-#### Example (PowerShell)
-
-```powershell
-$base = "https://wimapi.onrender.com/api"
-$headers = @{ Authorization = "Bearer $token" }
-
-# All attachments
-Invoke-RestMethod -Uri "$base/attachments" -Headers $headers
-
-# Filter by articleId
-Invoke-RestMethod -Uri "$base/attachments?articleId=1" -Headers $headers
-```
-
-### GET `/attachments/:id`
-
-Returns a single attachment if owned by the current user.
-
-**Auth:** required
-
-**Response**
-
-- `200` attachment JSON
-- `404` not found
-
-### POST `/attachments`
-
-Creates an attachment metadata record (no file upload).
-
-**Auth:** required
-
-**Body (example)**
-
-```json
-{
-  "type": "OTHER",
-  "fileName": "manual.pdf",
-  "fileUrl": "https://wimapi.onrender.com/uploads/manual-123.pdf",
-  "articleId": 1,
-  "garantieId": 2
-}
-```
-
-### POST `/attachments/upload`
-
-Uploads a file and creates an attachment.
-
-**Auth:** required
-
-**Content-Type:** `multipart/form-data`
-
-**Form fields**
-
-- `file` (required)
-- `type` (optional): `INVOICE` | `WARRANTY` | `OTHER` (defaults to `OTHER`)
-
-**Response `201`**
-
-Attachment JSON including `fileUrl`.
-
-**Important**
-
-- `fileUrl` is a public URL to `/uploads/<filename>` and **does not require JWT**.
-- Don’t open `/api/attachments/:id` in a browser tab without headers; use `fileUrl` to view/download.
-
-#### Example upload (PowerShell)
-
-PowerShell’s `Invoke-RestMethod` can send multipart form-data, but it’s a bit verbose.
-If you have curl installed, this is the easiest:
-
-```powershell
-$base = "https://wimapi.onrender.com/api"
-curl -X POST "$base/attachments/upload" ^
-  -H "Authorization: Bearer $token" ^
-  -F "type=OTHER" ^
-  -F "file=@C:\path\to\document.pdf"
-
-# Then open the returned `fileUrl` in a browser
-```
-
-### PUT `/attachments/:id`
-
-Updates attachment fields.
-
-**Auth:** required
-
-### DELETE `/attachments/:id`
-
-Deletes attachment metadata.
-
-**Auth:** required
-
-**Query**
-
-- `removeFile=true` (optional): best-effort deletion from disk for local dev.
-
-## Health
-
-### GET `/health`
-
-Returns API health.
-
-```json
-{ "status": "ok" }
-```
-
-## Troubleshooting
-
-### "Token manquant" when opening an attachment
-
-**Cause:** your browser is navigating to a protected JSON endpoint like:
-
-- `https://wimapi.onrender.com/api/attachments/123`
-
-Navigating in a browser tab does **not** automatically send your JWT header, so the API returns `401`.
-
-**Fix:** open/download the file using the attachment’s `fileUrl` instead, e.g.:
-
-- `https://wimapi.onrender.com/uploads/<filename>`
-
-### Attachment download doesn’t work / mixed-content errors
-
-If an attachment record contains a historic/bad `fileUrl` such as:
-
-- `http://localhost:3000/uploads/...`
-- `http://wimapi.onrender.com/uploads/...` (HTTP)
-
-then the browser may block it (mixed content) or the host is invalid.
-
-**Fix options:**
-
-1. Update the DB records to correct `fileUrl` to HTTPS on the Render host.
-2. Client-side normalization for `/uploads/...` paths (already implemented in the web app).
-
-### Delete account returns "Internal error" but the user is deleted
-
-This usually means the backend deleted some data (including the user) but then hit an error later in the transaction/flow, returning `500` even though the account is effectively gone.
-
-**Expected UX:** the frontend should clear local auth and redirect if the session becomes invalid.
-
-**Fix options:**
-
-- Backend: make delete-account fully atomic (transaction) and ensure it always returns `204` only when everything succeeds.
-- Frontend: if delete fails but subsequent `/profile/me` returns `401/404`, auto-logout and redirect.
+Stripe re-delivers if your endpoint doesn't ACK within ~10 s — Render
+free-tier cold starts often exceed that. The webhook handler is idempotent
+(a unique constraint on `ProcessedStripeEvent.eventId`), so safe to retry,
+and the `POST /api/billing/sync` fallback the web app calls on return from
+Checkout means a temporarily-undelivered webhook doesn't strand the user.

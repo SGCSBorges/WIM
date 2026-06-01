@@ -1,3 +1,14 @@
+/**
+ * Web entry point. Boots the React tree with the provider stack the rest
+ * of the app assumes is in place:
+ *
+ *   ErrorBoundary > BrowserRouter > Theme > I18n > Toast > <App />
+ *
+ * Also registers the PWA service worker (production builds only) so
+ * Chrome treats the site as installable, and pipes any unhandled promise
+ * rejection through console.error so otherwise-silent failures surface in
+ * devtools. Both are best-effort and never block render.
+ */
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
