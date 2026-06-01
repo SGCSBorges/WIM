@@ -1,0 +1,44 @@
+@startuml
+title WIM – Diagramme de séquence (facturation Stripe & rôle)
+
+actor "Utilisateur" as User
+participant "PWA (Web)" as Web
+participant "API (Node)" as API
+participant "Stripe" as Stripe
+database "PostgreSQL" as DB
+
+== Souscription (Checkout) ==
+User -> Web : Choisir l'offre Power User (mensuel / annuel)
+Web -> API : POST /api/billing/upgrade/power-user/checkout
+API -> Stripe : Créer une session Checkout (success_url via getAppUrl)
+Stripe --> API : url de la session
+API --> Web : { url }
+Web -> Stripe : Redirection vers Checkout
+User -> Stripe : Paiement
+
+== Webhook (canal canonique) ==
+Stripe -> API : POST /api/billing (webhook, corps brut)
+note right of API
+Gardes en ordre :
+1. Vérifier la signature (constructEvent)
+2. Fenêtre de fraîcheur (STRIPE_WEBHOOK_MAX_AGE_SEC)
+3. Whitelist du type d'événement
+4. Marqueur d'idempotence (ProcessedStripeEvent.eventId)
+   dans la MÊME transaction que l'effet métier
+5. metadata.targetRole validé par Zod (pas d'auto-promo ADMIN)
+end note
+alt checkout.session.completed (promotion)
+  API -> DB : tx { INSERT ProcessedStripeEvent ; UPDATE User role = POWER_USER }
+else subscription deleted / unpaid / expired (rétrogradation)
+  API -> DB : tx { marquer event ; UPDATE User role = USER ; cleanupSharingForUser }
+  note right of API : partages désactivés + invitations révoquées\ndans la même transaction que le rôle
+end
+API --> Stripe : 200 (ack ; P2002 sur doublon = succès)
+
+== Repli de synchronisation (retour de Checkout) ==
+Web -> API : POST /api/billing/sync
+note right of API : le cold start de Render dépasse souvent\nles ~10 s de retry de Stripe : on interroge\nStripe en direct pour ne pas attendre le webhook
+API -> Stripe : Lire l'abonnement courant
+API -> DB : Réconcilier role + stripeSubscriptionId
+API --> Web : 200 (role à jour)
+@enduml

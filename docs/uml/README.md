@@ -104,6 +104,33 @@ utilisateur ; `FAILED` n'arrive qu'après épuisement des tentatives BullMQ. La
 note insiste sur l'invariant `markSent` **après** push réussi (corrigé au
 round 10) et la replanification des alertes custom récurrentes.
 
+### `09-sequence-auth.puml` — Authentification & session
+
+Le cycle complet de la session, qui est aussi le **modèle de sécurité** du
+produit. À la connexion, l'API signe un JWT portant `sub`, `role`, `jti`
+(identifiant aléatoire pour la denylist) et `v` (= `tokenVersion`), posé dans
+un cookie `httpOnly` — le JavaScript ne manipule jamais le token. À chaque
+requête protégée, `authGuard` enchaîne : vérification de signature → contrôle
+du `jti` dans Redis → relecture de `tokenVersion` et `role` en base. Le
+diagramme rend visibles deux mécanismes de révocation complémentaires : la
+**denylist par jti** (déconnexion ponctuelle) et le **bump de tokenVersion**
+(force-logout / reset, qui invalide *tous* les tokens antérieurs sans toucher
+à Redis). La comparaison bcrypt systématique (même utilisateur absent) coupe
+l'énumération par timing.
+
+### `10-sequence-billing.puml` — Facturation Stripe & rôle
+
+Le passage Power User et son inverse. L'utilisateur part en Checkout Stripe ;
+le **webhook est le canal canonique** du changement de rôle, protégé par cinq
+gardes empilées (signature → fraîcheur → whitelist de type → marqueur
+d'idempotence dans la même transaction que l'effet → `targetRole` validé pour
+empêcher une auto-promotion ADMIN). À la rétrogradation, la transaction lance
+`cleanupSharingForUser` pour désactiver partages et invitations **de façon
+atomique** avec le rôle. Le diagramme montre aussi le **repli `POST
+/api/billing/sync`** appelé au retour de Checkout : le cold start de Render
+dépassant souvent la fenêtre de retry de Stripe, on interroge Stripe en direct
+pour ne pas laisser l'utilisateur bloqué en attendant le webhook.
+
 ## Correspondance fichiers
 
 | Fichier | Type | Sujet |
@@ -116,3 +143,5 @@ round 10) et la replanification des alertes custom récurrentes.
 | `06-sequence-partage.puml` | Séquence | Invitation + acceptation + lecture partagée |
 | `07-component-deploiement.puml` | Composants | Topologie de déploiement |
 | `08-state-alerte.puml` | États | Cycle de vie d'une alerte |
+| `09-sequence-auth.puml` | Séquence | Connexion, requête protégée, révocation |
+| `10-sequence-billing.puml` | Séquence | Checkout Stripe, webhook, sync, rôle |

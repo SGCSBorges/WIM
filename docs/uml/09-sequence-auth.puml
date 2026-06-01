@@ -1,0 +1,48 @@
+@startuml
+title WIM – Diagramme de séquence (authentification & session)
+
+actor Utilisateur as User
+participant "PWA (Web)" as Web
+participant "API (Node)" as API
+database "PostgreSQL" as DB
+participant "Redis\n(denylist jti)" as Redis
+
+== Connexion ==
+User -> Web : Saisir e-mail + mot de passe
+Web -> API : POST /api/auth/login {email, password}
+API -> DB : SELECT User (bcrypt.compare, dummy si absent)
+note right of API : compare toujours exécuté\n(anti-énumération par timing)
+API -> API : signToken(sub, role, v=tokenVersion, jti aléatoire)
+API --> Web : 200 + Set-Cookie wim_token (httpOnly)
+note right of Web : aucun token manipulé côté JS ;\nle cookie part ensuite tout seul
+
+== Requête protégée ==
+User -> Web : Action authentifiée
+Web -> API : GET /api/... (cookie wim_token, credentials: include)
+API -> API : authGuard : vérifier la signature JWT
+API -> Redis : jti dans la denylist ?
+alt jti révoqué
+  API --> Web : 401 Token revoked
+else jti valide
+  API -> DB : SELECT tokenVersion, role (1 colonne)
+  alt v(token) < tokenVersion(DB)
+    API --> Web : 401 Session revoked
+  else version OK
+    API -> API : req.user = {sub, role frais}
+    API --> Web : 200 (réponse de la route)
+  end
+end
+
+== Déconnexion / Force-logout ==
+Web -> API : POST /api/auth/logout
+API -> Redis : ajouter jti à la denylist (TTL = exp du token)
+API --> Web : 200 + cookie vidé
+
+note over API, DB
+Force-logout admin / reset de mot de passe : on incrémente
+User.tokenVersion. Tout JWT émis avant le bump échoue à
+l'étape « v(token) < tokenVersion » ci-dessus, sans toucher
+à Redis. Un changement de rôle se propage de la même façon,
+sans reconnexion (role relu à chaque requête).
+end note
+@enduml

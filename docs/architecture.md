@@ -60,6 +60,8 @@ The Stripe webhook is the one exception: it's mounted **before**
 outside the cookie/CSRF path — it authenticates with an HMAC signature
 instead.
 
+The login → session → revocation cycle is drawn in UML `09`.
+
 ## Core data flow: article → warranty → reminder
 
 This is the spine of the product (see UML `02` activity and `04` sequence):
@@ -100,7 +102,9 @@ See UML `06` for the per-user sequence.
 On every POWER_USER → USER downgrade (Stripe cancel webhook, manual
 `/api/billing/sync`, admin demote), `ShareService.cleanupSharingForUser`
 flips public articles back, deactivates outgoing shares, and revokes pending
-invites — **inside the same transaction as the role change**.
+invites — **inside the same transaction as the role change**. The Stripe
+upgrade/downgrade path (webhook guards + the `sync` fallback) is drawn in
+UML `10`.
 
 ## Background jobs
 
@@ -133,7 +137,9 @@ Live queue depth and recent failures surface in the Admin → Jobs tab
 
 The PlantUML sources under [`docs/uml/`](./uml/) cover the use cases, the
 class model (entities + relations), the core add/reminder flows, the sharing
-sequence, the warranty-claim and trash state machines, and a component/
-deployment view. They're written in French; each one has a written analysis
-in [`docs/uml/README.md`](./uml/README.md), and that README explains how to
+sequence, the warranty-claim and trash state machines, a component/deployment
+view, the alert lifecycle, and the two security-critical sequences —
+authentication/session (`09`) and Stripe billing (`10`). They're written in
+French; each one has a written analysis in
+[`docs/uml/README.md`](./uml/README.md), and that README explains how to
 render them locally.
