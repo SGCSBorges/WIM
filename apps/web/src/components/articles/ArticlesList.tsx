@@ -42,12 +42,13 @@ import CsvImportModal from "./CsvImportModal";
 import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
 import { consumeSharedDraft } from "../../utils/shareTarget";
+import { isPowerUserOrAdmin } from "../../utils/roles";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
   const toast = useToast();
   const role = authAPI.getRole();
-  const isPowerUser = role === "POWER_USER" || role === "ADMIN";
+  const isPowerUser = isPowerUserOrAdmin(role);
   const [currency, setCurrency] = useState("USD");
 
   const getDaysUntilExpiry = (

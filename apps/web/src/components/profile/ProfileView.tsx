@@ -27,6 +27,7 @@ import {
 import type { FetchedArticle } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { isPowerUserOrAdmin } from "../../utils/roles";
 import {
   pushSupported,
   isPushSubscribed,
@@ -355,7 +356,7 @@ export default function ProfileView() {
   }, []);
 
   useEffect(() => {
-    if (me?.role === "POWER_USER") loadSharing();
+    if (isPowerUserOrAdmin(me?.role)) loadSharing();
   }, [me?.role, loadSharing]);
 
   const unshareOne = async (articleId: number) => {
@@ -707,10 +708,11 @@ export default function ProfileView() {
         </div>
       )}
 
-      {/* "Articles you've shared publicly" — POWER_USER only. Lists every
-          article the user flipped sharedWithPowerUsers=true on, with a
-          per-row Unshare and a single Unshare-all kill switch. */}
-      {me?.role === "POWER_USER" && (
+      {/* "Articles you've shared publicly" — share-capable roles (POWER_USER
+          or ADMIN). Lists every article the user flipped
+          sharedWithPowerUsers=true on, with a per-row Unshare and a single
+          Unshare-all kill switch. */}
+      {isPowerUserOrAdmin(me?.role) && (
         <div className="ui-card rounded-xl p-6 space-y-3">
           <div>
             <h2 className="font-semibold ui-title">
@@ -792,12 +794,12 @@ export default function ProfileView() {
         </div>
       )}
 
-      {/* "People you've invited" — POWER_USER only. Merges the active
-          per-user shares (InventoryShare with active=true) and the still-
-          pending invites (ShareInvite with status=PENDING) so the user
-          can see exactly who can reach their inventory and revoke from
-          one place. */}
-      {me?.role === "POWER_USER" && (
+      {/* "People you've invited" — share-capable roles (POWER_USER or ADMIN).
+          Merges the active per-user shares (InventoryShare with active=true)
+          and the still-pending invites (ShareInvite with status=PENDING) so
+          the user can see exactly who can reach their inventory and revoke
+          from one place. */}
+      {isPowerUserOrAdmin(me?.role) && (
         <div className="ui-card rounded-xl p-6 space-y-4">
           <div>
             <h2 className="font-semibold ui-title">

@@ -23,6 +23,7 @@ import React, {
   useState,
 } from "react";
 import { getErrorMessage } from "./utils/error";
+import { isPowerUserOrAdmin } from "./utils/roles";
 import {
   Routes,
   Route,
@@ -325,7 +326,7 @@ export default function App() {
       {navLink("/locations", t("nav.locations"))}
       {navLink("/alerts", t("nav.alerts"))}
       {navLink("/profile", t("nav.profile"))}
-      {role === "POWER_USER" && navLink("/sharing", t("nav.sharing"))}
+      {isPowerUserOrAdmin(role) && navLink("/sharing", t("nav.sharing"))}
       {role === "ADMIN" && navLink("/admin", t("nav.admin"))}
     </>
   );
@@ -345,7 +346,7 @@ export default function App() {
     {
       path: "/sharing",
       label: t("nav.sharing"),
-      show: role === "POWER_USER",
+      show: isPowerUserOrAdmin(role),
     },
     { path: "/admin", label: t("nav.admin"), show: role === "ADMIN" },
   ].filter((l) => l.show);
@@ -595,7 +596,7 @@ export default function App() {
                       subtitle={t("home.card.attachments.subtitle")}
                       cta={t("home.card.attachments.cta")}
                     />
-                    {role === "POWER_USER" && (
+                    {isPowerUserOrAdmin(role) && (
                       <HomeCard
                         onClick={() => navigate("/sharing")}
                         title={`🤝 ${t("home.card.sharing.title")}`}
@@ -620,7 +621,7 @@ export default function App() {
             <Route
               path="/sharing"
               element={
-                role === "POWER_USER" ? (
+                isPowerUserOrAdmin(role) ? (
                   <div className="space-y-6">
                     <MySharedArticlesView />
                     <AcceptInviteForm />
@@ -635,7 +636,7 @@ export default function App() {
             <Route
               path="/sharing/accept"
               element={
-                role === "POWER_USER" ? (
+                isPowerUserOrAdmin(role) ? (
                   <div className="space-y-6">
                     <MySharedArticlesView />
                     <AcceptInviteForm />
