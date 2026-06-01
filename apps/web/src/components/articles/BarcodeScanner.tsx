@@ -1,3 +1,11 @@
+/**
+ * Camera barcode/QR scanner via the browser's BarcodeDetector API
+ * (Chromium has it natively; Safari/Firefox return null from
+ * `barcodeSupported()` so the consumer should hide its trigger). The
+ * scanner opens as a modal, streams the rear camera into a `<video>`,
+ * and fires onDetected once. Detected value flows into ArticleForm
+ * which optionally enriches name + image via `lookupProduct()`.
+ */
 import { useEffect, useRef, useState } from "react";
 import Modal from "../common/Modal";
 import { useI18n } from "../../i18n/i18n";

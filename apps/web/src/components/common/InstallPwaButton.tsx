@@ -1,3 +1,8 @@
+/**
+ * "Install app" button rendered on the home view. Hidden when the PWA is
+ * already installed; on iOS (where there's no `beforeinstallprompt`) it
+ * pops a short "Add to Home Screen" hint instead. Driven by usePwaInstall.
+ */
 import { useState } from "react";
 import { usePwaInstall } from "../../hooks/usePwaInstall";
 import { useI18n } from "../../i18n/i18n";

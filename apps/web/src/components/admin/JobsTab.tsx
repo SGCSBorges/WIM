@@ -1,3 +1,10 @@
+/**
+ * Admin Jobs tab — live snapshot of the BullMQ queues + a collapsible
+ * "Recent failures" panel. Polls /admin/jobs every 10 s while active;
+ * Pause toggles the interval. Failed-cell styling is alert-red when
+ * `failed > 0`. Click "Recent failures" to lazy-load the last N failed
+ * jobs from `/admin/failed-jobs` (capped 50) with expandable stack traces.
+ */
 import { useCallback, useEffect, useState } from "react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

@@ -1,3 +1,8 @@
+/**
+ * Two-dropdown widget shown in the nav: language (en/fr/pt) and theme
+ * (light/dark/ocean/cyber). Both choices persist to localStorage via their
+ * respective providers; no API round-trip.
+ */
 import { useI18n } from "../../i18n/i18n";
 import { Language } from "../../i18n/translations";
 import { useTheme, Theme } from "../../theme/theme";

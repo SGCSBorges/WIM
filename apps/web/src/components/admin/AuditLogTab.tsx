@@ -1,3 +1,10 @@
+/**
+ * Audit log viewer — admin-only. Cursor-paginated, with optional filters:
+ * user, action (sourced from `AUDIT_ACTIONS` in @wim/types), entity
+ * (`AUDIT_ENTITIES`), and inclusive `createdAt` date range. The end date
+ * stretches to 23:59:59.999Z so a single-day filter actually includes
+ * that day's events.
+ */
 import { useCallback, useEffect, useState } from "react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

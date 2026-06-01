@@ -1,3 +1,9 @@
+/**
+ * Warranties list — owner-scoped, with status filter (active/expiring
+ * soon/expired) + claim status filter. Inline expand-to-edit per row;
+ * full editor lives in `<WarrantyForm>`. Status badges use color +
+ * label so the signal isn't color-only.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";

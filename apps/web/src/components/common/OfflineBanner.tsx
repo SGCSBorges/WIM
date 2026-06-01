@@ -1,3 +1,8 @@
+/**
+ * Sticky banner shown when `navigator.onLine` flips false. The service
+ * worker still serves cached assets in this state, but API calls will fail
+ * — the banner is the user-visible warning that things won't save.
+ */
 import { useEffect, useState } from "react";
 import { useI18n } from "../../i18n/i18n";
 

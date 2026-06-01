@@ -1,3 +1,10 @@
+/**
+ * Warranty create/edit form. Owns the inline edit on `<WarrantiesView>`
+ * rows + the standalone create page. Manual validateForm() — not Zod —
+ * because the rules are simple (required name, duration 1–120 months) and
+ * the existing tests assert the inline error spans. Provider contact
+ * fields are optional; they print on the claim PDF.
+ */
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { useI18n } from "../../i18n/i18n";

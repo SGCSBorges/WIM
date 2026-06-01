@@ -1,3 +1,18 @@
+/**
+ * Profile page — the user's own account settings, billing, and sharing
+ * summary. The big file holds several distinct panels that could each be
+ * their own component (refactor candidate, ~1k lines):
+ *
+ *   • Credentials — email change, password change, currency.
+ *   • Notifications — push toggle, email reminders, weekly digest.
+ *   • Billing — POWER_USER subscription view, portal link, cancel-at-period
+ *     -end indicator (lazy-loaded from billingAPI.getBillingMe).
+ *   • Sharing — public shares + per-user invites I sent (lazy-loaded via
+ *     `loadSharing` when the section comes into view).
+ *   • Data — DataExportPanel sub-component handles CSV/JSON downloads.
+ *   • Danger — account deletion with a password tripwire + status-based
+ *     redirect (404 = already gone; everything else stays an error).
+ */
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   profileAPI,

@@ -1,3 +1,8 @@
+/**
+ * Square article thumbnail with a fallback placeholder if `src` is null
+ * or the image fails to load. Lazy-loaded (`loading="lazy"`) so a long
+ * list doesn't fetch off-screen images on mount.
+ */
 import { useState } from "react";
 
 type Props = {

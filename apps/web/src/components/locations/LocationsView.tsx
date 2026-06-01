@@ -1,3 +1,9 @@
+/**
+ * Locations list + per-row inline edit/delete. Each row shows the article
+ * count for that location, refreshed in parallel via
+ * `locationsAPI.listArticles({ page: 1, limit: 1 })` — we only need the
+ * `total` so the limit=1 keeps payloads tiny.
+ */
 import { useCallback, useEffect, useState } from "react";
 import { locationsAPI, profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

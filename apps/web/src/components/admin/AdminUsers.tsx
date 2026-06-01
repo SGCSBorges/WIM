@@ -1,3 +1,10 @@
+/**
+ * Admin panel — four tabs (Dashboard / Users / Audit log / Jobs) wired up
+ * as a WAI-ARIA tablist. The Users tab fetches once per activation and
+ * supports inline role edit (with last-admin protection), reset password,
+ * force-logout, delete user, and inventory inspection. ADMIN-only via the
+ * route layer (`requireRole("ADMIN")`).
+ */
 import { useCallback, useEffect, useState } from "react";
 import {
   adminAPI,

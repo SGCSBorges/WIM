@@ -1,3 +1,9 @@
+/**
+ * Loading-placeholder primitives. `<Skeleton />` is the generic block;
+ * `<StatCardSkeleton />`, `<RouteFallbackSkeleton />` etc. compose it into
+ * matched shapes for specific surfaces (so the layout doesn't jump when
+ * real content lands). Theme-aware via the `.ui-skeleton` utility.
+ */
 import React from "react";
 
 interface SkeletonProps {

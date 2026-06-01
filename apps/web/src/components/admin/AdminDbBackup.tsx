@@ -1,3 +1,10 @@
+/**
+ * Admin-only "Database backup & restore" panel. Export downloads a full
+ * JSON dump (`adminAPI.exportDatabase`); import REPLACES every row in
+ * every table (`adminAPI.importDatabase`) behind a password tripwire +
+ * optional Stripe-id stripping. Post-import the session is invalidated,
+ * so we hard-logout + reload the page.
+ */
 import { useRef, useState } from "react";
 import { adminAPI, authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

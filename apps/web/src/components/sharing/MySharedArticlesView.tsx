@@ -1,3 +1,8 @@
+/**
+ * "Articles I've shared publicly" view — owner-side. Reads
+ * `articlesAPI.getMySharedPublic`, lets the owner flip the public-share
+ * flag off per row (the per-user invites surface lives in `<SharesList>`).
+ */
 import { useCallback, useEffect, useState } from "react";
 import { articlesAPI } from "../../services/api";
 import type { FetchedArticle } from "../../types";

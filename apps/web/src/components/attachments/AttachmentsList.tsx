@@ -1,3 +1,10 @@
+/**
+ * Attachments grid view. Used both as a standalone /attachments page and
+ * embedded inside an article detail (articleId / garantieId props scope the
+ * list). Supports per-row delete with confirm, bulk select + bulk-delete
+ * (round 10), client-side filter + sort + search, and a download button
+ * that normalizes API-hosted /uploads paths to absolute URLs.
+ */
 import React, { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";

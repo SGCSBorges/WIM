@@ -1,3 +1,9 @@
+/**
+ * Login / Register form (mode toggled by parent). Uses react-hook-form +
+ * Zod for client-side validation matching the API's password rules.
+ * Includes the "Forgot password" + temporary "TestAdmin" entry points
+ * (the latter calls the bootstrap endpoint — see CLAUDE.md "Open items").
+ */
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";

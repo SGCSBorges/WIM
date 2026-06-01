@@ -1,3 +1,10 @@
+/**
+ * Toast notification system. `useToast()` returns `{ show, dismiss, clear }`.
+ * Toasts auto-dismiss after `ttl` ms (default 5 s; 8 s when an `action` is
+ * attached so the user has time to click Undo). Hovering or focusing a
+ * toast pauses its timer; leaving resumes it. Errors get role="alert"
+ * (assertive); everything else role="status" (polite).
+ */
 import React, {
   createContext,
   useCallback,

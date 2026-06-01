@@ -1,3 +1,9 @@
+/**
+ * Recipient-side "Shared with me" view — articles other users have shared
+ * with the current account. Read-only for the public-flag flavor;
+ * editable when the per-user share grants WRITE (`<EditDraft>` POSTs back
+ * via `sharedAPI.updateArticle`).
+ */
 import { useCallback, useEffect, useState } from "react";
 import { sharedAPI, SharedArticleRow } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

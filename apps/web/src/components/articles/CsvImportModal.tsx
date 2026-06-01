@@ -1,3 +1,10 @@
+/**
+ * CSV bulk article import. Two-step: parse the file client-side, show a
+ * row-by-row preview with valid/invalid markers, then either Validate
+ * (`articlesAPI.importRows({ dryRun: true })` returns per-row errors) or
+ * Import (without dryRun, persists). Multi-value columns (locations/tags)
+ * accept `;`-separated names so Excel keeps them in a single cell.
+ */
 import { useMemo, useState } from "react";
 import Modal from "../common/Modal";
 import { useI18n } from "../../i18n/i18n";

@@ -1,3 +1,9 @@
+/**
+ * Accessible modal shell — use this for every dialog instead of hand-rolling
+ * focus management. Handles role="dialog", aria-modal, aria-labelledby
+ * wiring, focus trap, Esc to close, and an optional backdrop-click close.
+ * Consumer supplies the title element with id={titleId}.
+ */
 import {
   KeyboardEvent,
   ReactNode,

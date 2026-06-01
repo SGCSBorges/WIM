@@ -1,3 +1,10 @@
+/**
+ * Reset-password landing form, mounted at /reset-password?token=…. Reads
+ * the token from the URL, validates it against the user's password rules
+ * (mirroring the API's `passwordSchema`), and POSTs to the reset endpoint.
+ * On success the API bumps tokenVersion so every other session of that
+ * user is invalidated; the UI redirects to login.
+ */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { authAPI } from "../../services/api";

@@ -1,3 +1,9 @@
+/**
+ * Per-row "share publicly" toggle on articles. POWER_USER only; clicking
+ * flips `Article.sharedWithPowerUsers` — visible to every POWER_USER (the
+ * simpler of the two sharing flavors; the per-user `InventoryShare` path
+ * is handled by `<ShareForm>` / `<AcceptInviteForm>`).
+ */
 import { useState } from "react";
 import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

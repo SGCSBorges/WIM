@@ -1,3 +1,10 @@
+/**
+ * Owner-side /sharing page — issues new invites via `<ShareForm>`, lists
+ * pending + active per-user shares, and revokes any of them. Pending
+ * invites can be re-sent; active shares can be deactivated (the
+ * `ShareService.cleanupSharingForUser` helper flips `active: false`
+ * atomically on role downgrade — see acl.ts).
+ */
 import React, { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n } from "../../i18n/i18n";

@@ -1,3 +1,8 @@
+/**
+ * Admin "Create user" modal — picks email + initial role + temporary
+ * password. The created user gets a real account; admins typically pair
+ * this with the reset-password modal so the user lands a working credential.
+ */
 import { useState } from "react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

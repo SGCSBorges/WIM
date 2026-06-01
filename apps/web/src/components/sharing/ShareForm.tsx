@@ -1,3 +1,9 @@
+/**
+ * Owner-side "Invite someone to view/edit my inventory" form. POWER_USER
+ * only. Issues a per-user invite via `sharesAPI.createInvite`; the API
+ * returns the same opaque error for "not found" vs "not POWER_USER" to
+ * prevent email enumeration. Permission is READ or WRITE.
+ */
 import React, { useState } from "react";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { isValidEmail } from "../../utils/validation";

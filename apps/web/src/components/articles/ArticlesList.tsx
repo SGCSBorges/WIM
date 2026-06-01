@@ -1,6 +1,19 @@
 /**
- * Articles List Component
- * Display and manage articles
+ * Articles list — the main inventory surface. Three concerns layered in
+ * one component:
+ *
+ *   • Filter + pagination + sort state lives in the URL search params
+ *     (`useSearchParams`) so any view is bookmarkable and survives reload.
+ *     `searchInput` is a local debounced mirror for the search box.
+ *   • Bulk selection is a `Set<number>` of articleIds with a sticky
+ *     `BulkActionBar` footer. Selection is dropped per-fetch so it can't
+ *     point at rows that left the page.
+ *   • The single-row delete is optimistically hidden, then DELETE'd after
+ *     a 5s window so an Undo toast can roll back without an API round-trip.
+ *
+ * Refactor candidate (large file, ~1.3k lines): the filter panel + table
+ * and mobile card list could be extracted into sub-components. The state
+ * is already URL-driven so a split would be mechanical.
  */
 
 import React, { useState, useEffect, useCallback } from "react";

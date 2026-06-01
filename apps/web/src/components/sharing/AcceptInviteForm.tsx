@@ -1,3 +1,12 @@
+/**
+ * Recipient-side invite acceptance. Two entry points:
+ *   • Manual paste — type/paste the token, click Accept.
+ *   • Deep link — /sharing/accept?token=… auto-fills + auto-submits.
+ * The token is stripped from the URL afterwards (regardless of outcome)
+ * so a refresh doesn't replay an already-used token. The API enforces
+ * POWER_USER on the accept route, so a downgrade between issue + accept
+ * surfaces as a clear error here.
+ */
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { sharesAPI } from "../../services/api";

@@ -1,3 +1,11 @@
+/**
+ * Trash view — lists soft-deleted articles and lets the owner restore or
+ * permanently delete. Per-row Restore + two-step Delete-forever confirm,
+ * plus bulk action bar for selecting many at once. Backed by
+ * `articlesAPI.listTrash` / `.restore` / `.purge` / `.bulkRestoreTrash` /
+ * `.bulkPurgeTrash`. Articles older than ARTICLE_TRASH_RETENTION_DAYS are
+ * auto-purged by the daily maintenance job.
+ */
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { articlesAPI } from "../../services/api";

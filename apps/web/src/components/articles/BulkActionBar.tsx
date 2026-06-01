@@ -1,3 +1,9 @@
+/**
+ * Sticky footer on the Articles list shown whenever ≥1 row is selected.
+ * Delegates every action to the parent via the on* props — the bar itself
+ * is presentational. canShare flips Share/Unshare in/out of the UI based
+ * on the caller's role.
+ */
 import { useI18n } from "../../i18n/i18n";
 import type { Location, Tag } from "../../types";
 

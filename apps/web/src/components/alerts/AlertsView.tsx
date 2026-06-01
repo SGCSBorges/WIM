@@ -1,3 +1,9 @@
+/**
+ * Alerts view — lists the user's warranty + custom alerts with filtering
+ * (kind + status), snooze, and cancel. Status mirrors the API's `Alerte`
+ * lifecycle (SCHEDULED → SENT/CANCELLED/FAILED). Creating a custom alert
+ * launches its own form within the page.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";

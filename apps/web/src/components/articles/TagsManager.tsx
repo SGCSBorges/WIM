@@ -1,3 +1,9 @@
+/**
+ * Tag manager modal — list all tags, inline rename, merge-into-another,
+ * delete with confirm. Merge folds one tag into another in a single
+ * server transaction (see tags/tag.service.ts merge()); deduplicates
+ * articles already carrying both.
+ */
 import { useCallback, useEffect, useState } from "react";
 import Modal from "../common/Modal";
 import { tagsAPI } from "../../services/api";

@@ -1,6 +1,19 @@
 /**
- * Article Form Component
- * Form for creating and editing articles
+ * Article create/edit form. Used for both flows — `article` prop is null in
+ * create mode, populated in edit mode. The form bundles four sub-concerns:
+ *
+ *   • Identity + price fields (the simple part).
+ *   • Multi-select locations + tags with inline "create new" controls
+ *     (`selectedLocationIds` / `selectedTagIds` are number arrays so
+ *     deduplication is trivial).
+ *   • Optional inline warranty (the warranty block is rendered conditionally
+ *     and submitted as part of the same body).
+ *   • Optional warranty-proof attachment uploaded ahead of save so the
+ *     server only needs an attachmentId reference.
+ *
+ * `useUnsavedChangesGuard(dirty)` warns on tab-close while edits are
+ * pending; the Cancel button confirms the discard separately because
+ * BrowserRouter doesn't give us a SPA-nav blocker.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";

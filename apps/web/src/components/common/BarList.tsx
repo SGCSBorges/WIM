@@ -1,3 +1,9 @@
+/**
+ * Dependency-free horizontal bar list. Each row is a label, a proportional
+ * bar (relative to the largest value), and the formatted value. Kept tiny
+ * on purpose so the dashboard's forecast/inventory-value views don't pull
+ * in a charting library.
+ */
 interface BarListItem {
   label: string;
   value: number;

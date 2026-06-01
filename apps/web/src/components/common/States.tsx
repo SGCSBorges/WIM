@@ -1,3 +1,14 @@
+/**
+ * Shared error/empty state widgets used across views.
+ *
+ *   • `<ErrorBanner message onRetry?>` — the canonical error surface for
+ *     "fetch failed" cases. The onRetry callback opts in a retry button.
+ *   • `<EmptyState title body cta?>` — the canonical "no rows" surface;
+ *     keeps the look consistent across Articles, Trash, Attachments, etc.
+ *
+ * Prefer these over per-component ad-hoc copy so a contributor adding a
+ * new list view doesn't reinvent the state UI.
+ */
 import React from "react";
 
 interface ErrorBannerProps {

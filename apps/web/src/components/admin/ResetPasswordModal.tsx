@@ -1,3 +1,10 @@
+/**
+ * Admin-only "Reset a user's password" modal. Sets the target user's
+ * password to whatever the admin types and bumps their `tokenVersion`
+ * server-side so every active session is invalidated (the user has to
+ * log in again with the new password). Distinct from the self-serve
+ * `forgot-password` flow which uses an emailed token.
+ */
 import { useState } from "react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

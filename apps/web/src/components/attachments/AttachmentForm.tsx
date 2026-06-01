@@ -1,3 +1,9 @@
+/**
+ * File-picker form used by `<AttachmentsList>`. Validates size client-side
+ * (the API caps at 10 MB; we soft-fail before the round-trip), then POSTs
+ * via `attachmentsAPI.uploadFile`. The server runs a magic-byte check on
+ * the upload — a JPEG renamed `.pdf` is rejected there, not here.
+ */
 import React, { useState, useRef } from "react";
 import { useI18n } from "../../i18n/i18n";
 

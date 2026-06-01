@@ -1,3 +1,10 @@
+/**
+ * "Export your data" panel inside Profile. Per-target buttons (articles,
+ * warranties, attachments) × per-format (CSV, JSON). Server returns rows
+ * via the regular list endpoints; the CSV path uses `toCSV` from utils/csv
+ * with i18n'd column headers. Sub-component of ProfileView, hoisted to
+ * keep that file scannable.
+ */
 import { useState } from "react";
 import { articlesAPI, warrantiesAPI, attachmentsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

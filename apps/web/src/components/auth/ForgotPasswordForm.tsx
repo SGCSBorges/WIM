@@ -1,3 +1,9 @@
+/**
+ * "Forgot password" form — collects the user's email and POSTs to the
+ * API's password-reset endpoint. Response is intentionally uniform (no
+ * email enumeration) so we always show a generic "check your email"
+ * confirmation, even when the email isn't registered.
+ */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { authAPI } from "../../services/api";

@@ -1,3 +1,10 @@
+/**
+ * Dashboard — the user's home metrics page. Fetches one big aggregate
+ * from `statisticsAPI.getDashboard` (totals, by-location/by-tag value,
+ * 12-month forecasting series). Renders `<BarList>` for each breakdown
+ * to stay dependency-free. ADMIN sees an extra panel from
+ * `statisticsAPI.getAdmin`.
+ */
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { statisticsAPI, profileAPI } from "../../services/api";

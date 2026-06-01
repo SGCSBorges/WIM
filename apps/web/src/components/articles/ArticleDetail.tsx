@@ -1,3 +1,11 @@
+/**
+ * Article detail — read-mostly view with claim workflow, notes, attached
+ * photos, activity timeline, and PDF claim sheet download. Article identity
+ * + warranty come from one `articlesAPI.getById` fetch; notes + alerts +
+ * attachments load in parallel. The claim status edit is inline and posts
+ * immediately on save. "Duplicate" copies identity + locations + tags
+ * (not warranty / attachments) — see article.service.ts duplicate().
+ */
 import { useCallback, useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
