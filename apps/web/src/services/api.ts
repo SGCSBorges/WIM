@@ -447,7 +447,10 @@ export const articlesAPI = {
     return null;
   },
 
-  /** List soft-deleted articles for the current user. */
+  /** Server-side clone: deep-copies the article (name suffixed " (copy)",
+   *  same locations and tags) but intentionally skips the warranty so a
+   *  duplicate doesn't trigger a second set of reminders for the same
+   *  purchase. */
   async duplicate(id: number): Promise<FetchedArticle> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/articles/${id}/duplicate`,
@@ -460,6 +463,7 @@ export const articlesAPI = {
     return response.json();
   },
 
+  /** List soft-deleted articles for the current user (Trash view). */
   async listTrash(): Promise<{ items: FetchedArticle[] }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/articles/trash`, {
       headers: getHeaders(),
@@ -608,6 +612,9 @@ export const articlesAPI = {
 
 // Locations API
 export const locationsAPI = {
+  /** Paginated list of the caller's locations.
+   *  Returns `{ items, total, page, limit }` when pagination params are
+   *  supplied; a bare list otherwise (legacy callers that don't paginate). */
   async getAll(page?: number, limit?: number) {
     const url = new URL(`${API_BASE_URL}/locations`);
     if (page != null) url.searchParams.set("page", String(page));
@@ -793,6 +800,10 @@ export const attachmentsAPI = {
     return response.json();
   },
 
+  /** Delete an attachment row. `removeFile: true` also unlinks the
+   *  underlying file from disk; default is to keep the file (the row
+   *  goes away but the bytes survive — useful when a sibling row
+   *  references the same file). */
   async deleteAttachment(id: number, options?: { removeFile?: boolean }) {
     const removeFile = options?.removeFile === true;
     const url = new URL(`${API_BASE_URL}/attachments/${id}`);
@@ -866,6 +877,9 @@ export const tagsAPI = {
     return response.json();
   },
 
+  /** Move every article from `fromId` to `intoId` (deduping on the
+   *  join table), then delete `fromId`. Returns the count of articles
+   *  re-tagged so the UI can show "merged N articles". */
   async merge(
     fromId: number,
     intoId: number
@@ -1414,9 +1428,10 @@ export const adminAPI = {
     }>;
   },
 
-  // Full-database export: returns the raw JSON blob so the caller can save
-  // it to disk. No type because the shape is opaque to the client — the
-  // import endpoint round-trips it as-is.
+  /** Per-queue job state for the Admin → Jobs panel. `alerts` and
+   *  `maintenance` are BullMQ job-state histograms (active/waiting/
+   *  delayed/etc.); `auditPruneNextRun` is the next repeatable-job
+   *  millisecond timestamp. */
   async getJobs(): Promise<{
     alerts: Record<string, number> | null;
     maintenance: Record<string, number> | null;
@@ -1454,6 +1469,8 @@ export const adminAPI = {
     return response.json();
   },
 
+  /** Full-database export: returns the raw JSON blob so the caller can
+   *  save it to disk. Round-trips through `importDatabase` as-is. */
   async exportDatabase(): Promise<{ blob: Blob; filename: string }> {
     // 5 minutes: large dumps + cold-start API + slow connection can stack up.
     const response = await fetchWithTimeout(
@@ -1720,6 +1737,10 @@ export const billingAPI = {
     return response.json().catch(() => null);
   },
 
+  /** Re-read the user's role from the API, updating the in-memory
+   *  `_cachedRole`. Used by the router to detect a server-side role
+   *  change (Stripe webhook upgraded the user) without forcing a
+   *  full /me refetch. Errors are swallowed — keeps the cached value. */
   async refreshRoleFromServer(): Promise<string | null> {
     try {
       const response = await fetchWithTimeout(`${API_BASE_URL}/billing/me`, {
