@@ -85,6 +85,39 @@ INTEGRATION_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/wim_test 
   npm --workspace apps/api run test:integration
 ```
 
+## Testing
+
+Three tiers, each with a different cost/coverage trade-off. `npm test` (in the
+gate above) runs only the unit tier in both workspaces; integration and e2e
+are opt-in.
+
+- **Unit (Vitest)** — the default `npm test`. The API
+  (`apps/api/src/__tests__/`) runs against a **mocked Prisma**, so it needs no
+  database; the web suite (`apps/web/src/__tests__/`) uses **React Testing
+  Library + jsdom**. Both are fast and have no external dependencies. Coverage
+  thresholds live in each workspace's `vitest.config.ts` as a *ratchet* — set
+  just below current coverage to catch regressions. If you must lower one,
+  say why in the PR body.
+- **Integration (real Postgres)** — `apps/api/src/__tests__/integration/`.
+  Exercises the live Express app against a throwaway Postgres. **Self-skips
+  unless `INTEGRATION_DATABASE_URL` is set**, so it's safe in the default run.
+  The suite wipes tables between runs, disables background workers
+  (`JOBS_ENABLED=false`, so no Redis needed), and raises the rate limit so the
+  fast back-to-back requests don't trip it. Command is the
+  `test:integration` example just above.
+- **E2E (Playwright)** — `apps/web/e2e/` (currently a smoke spec). **Not part
+  of the CI gate.** Install browsers once (`npx playwright install chromium`);
+  the Playwright config builds and previews the production bundle itself, so
+  you don't start a dev server. The smoke spec is API-free (UI only).
+
+  ```bash
+  npm --workspace apps/web run test:e2e
+  ```
+
+A behavior change ships with a test in the matching tier — unit for pure
+logic, integration for a route/DB contract, e2e for a user-visible flow.
+UI-only tweaks describe the manual test plan in the PR instead.
+
 ## Schema changes (Prisma migrations)
 
 Migrations are **hand-written SQL** under
