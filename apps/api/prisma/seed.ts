@@ -1,3 +1,21 @@
+/**
+ * Local/dev database seed. Idempotent — safe to re-run.
+ *
+ * Seeds:
+ *   - an ADMIN  `admin@admin.com` / `adminadmin` (password is re-hashed and
+ *     reset on every run so you always know it),
+ *   - a USER    `test@example.com` / `test`,
+ *   - one sample article ("Lave-linge") with a 1:1 warranty and its three
+ *     J-30 / J-7 / J-1 reminder alerts, owned by the test user.
+ *
+ * **Dev only.** The credentials above are well-known — never run this against
+ * a production database. In prod the first admin is created through the
+ * temporary `/api/auth/bootstrap-admin` flow (see CLAUDE.md "Open items"),
+ * not this seed.
+ *
+ * Run: `npm --workspace apps/api run prisma:seed` (wired via the `prisma.seed`
+ * key in apps/api/package.json).
+ */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
