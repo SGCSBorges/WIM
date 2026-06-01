@@ -1,3 +1,12 @@
+/**
+ * Backing-service health probe consumed by `GET /health`.
+ *
+ * Checks Postgres (`SELECT 1`), Redis (`PING`), and the BullMQ alert
+ * queue can be inspected, each behind a short timeout so a dead
+ * dependency can't hold up the health endpoint past what an external
+ * monitor (Render's, UptimeRobot's) expects. Returns `{status: "ok"
+ * | "error", checks: ...}` — the caller maps "error" to 503.
+ */
 import { prisma } from "./libs/prisma";
 import { getRedis } from "./libs/redis";
 import { alertQueue } from "./jobs/queues";

@@ -1,3 +1,11 @@
+/**
+ * Alerts routes — list / create custom / snooze / cancel. Warranty-derived
+ * alerts (`kind=WARRANTY`) are scheduled by `AlertService` when a
+ * warranty is created or updated, so this module is mainly about user
+ * custom alerts and the snooze/cancel actions. Ownership scoping is
+ * enforced inside the service — see `test-alert-authorization.ts` for
+ * the IDOR check that gates regressions on this surface.
+ */
 import { Router } from "express";
 import { AlerteKind, AlerteStatus } from "@prisma/client";
 import { asyncHandler } from "../common/http";

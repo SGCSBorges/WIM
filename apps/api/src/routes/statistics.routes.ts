@@ -1,3 +1,16 @@
+/**
+ * Statistics endpoints used by the dashboard and Admin → Dashboard tab.
+ *
+ *   • GET /api/statistics/dashboard — owner-scoped aggregates +
+ *     forecasting buckets (warranties expiring by month, articles
+ *     added by month). Drives the user-facing dashboard.
+ *   • GET /api/statistics/basic — lightweight counters used in the
+ *     navbar / Profile summary.
+ *   • GET /api/statistics/admin — platform-wide counters; ADMIN only.
+ *
+ * No caching; each request recomputes via a handful of grouped Prisma
+ * queries. The shapes are pinned by `DashboardStatistics` in @wim/types.
+ */
 import { Router } from "express";
 import {
   authGuard,

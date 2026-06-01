@@ -1,3 +1,12 @@
+/**
+ * `GET /api/billing/me` — current user + live Stripe subscription summary.
+ *
+ * The user's `role` is reconciled against Stripe each call (downgrade on
+ * cancellation, upgrade on active subscription) so the UI always reflects
+ * the canonical state without waiting for a webhook. When the role
+ * changes we also flip dependent state via `ShareService.cleanupSharing
+ * ForUser` so a downgraded POWER_USER can't keep sharing inventory.
+ */
 import { Router } from "express";
 import Stripe from "stripe";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";

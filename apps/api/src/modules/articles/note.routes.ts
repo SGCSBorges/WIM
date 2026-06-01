@@ -1,3 +1,9 @@
+/**
+ * Article service/maintenance notes. List/create/update/delete, scoped
+ * to the article's owner. `kind` is informational (SERVICE /
+ * WARRANTY_CLAIM / MAINTENANCE / OTHER) and drives only the badge in
+ * the timeline UI — see the `ArticleNoteKind` union in @wim/types.
+ */
 import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";

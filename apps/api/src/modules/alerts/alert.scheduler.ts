@@ -1,3 +1,8 @@
+/**
+ * Pure scheduler helpers for warranty reminders. No Prisma, no BullMQ —
+ * just date math. Kept side-effect-free so the J-30/J-7/J-1 rule can be
+ * unit-tested without hitting Redis (see `alert.scheduler.test.ts`).
+ */
 import { subDays, isBefore } from "date-fns";
 import { WarrantyReminderKind } from "./alert.types";
 

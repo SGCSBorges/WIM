@@ -1,3 +1,15 @@
+/**
+ * Public sharing toggle on an Article (`sharedWithPowerUsers` bool).
+ *
+ * This is the "flat" sharing model — flip the boolean and every
+ * POWER_USER on the platform can read the article. Per-user
+ * `InventoryShare` flows live in `modules/shares/` instead. Owner-side
+ * mutations live here so the route tree stays close to the article
+ * resource; the recipient-side read goes through
+ * `modules/shared/shared.routes.ts`.
+ *
+ * `POST /unshare-all` is the kill switch — flips every flag back at once.
+ */
 import { Router } from "express";
 import { prisma } from "../../libs/prisma";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";

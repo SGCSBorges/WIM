@@ -1,3 +1,19 @@
+/**
+ * PDF generation for articles — three flavours, all streamed straight to
+ * the Express `Response` so we never buffer the document in memory:
+ *
+ *   • Claim PDF (`streamArticleClaimPdf`) — one-page warranty claim
+ *     letter with the article+warranty details and provider contact.
+ *   • Inventory PDF (`streamInventoryPdf`) — paginated list with totals
+ *     including the depreciation-adjusted current value (mirrors the
+ *     dashboard's `inventoryValue` aggregate).
+ *   • Labels PDF (`streamLabelsPdf`) — print-ready Avery-style sheet
+ *     with QR codes pointing at the article detail URL.
+ *
+ * `currentValue` from `common/depreciation` is the single source of
+ * truth — same helper the web uses, same MS_PER_YEAR, so totals here
+ * match what the user sees on screen.
+ */
 import path from "path";
 import fs from "fs";
 import PDFDocument from "pdfkit";

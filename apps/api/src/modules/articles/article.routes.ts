@@ -1,3 +1,20 @@
+/**
+ * Articles routes — CRUD + bulk + trash + share toggles + exports.
+ *
+ * Every mutating route audits via `auditAction`. Bulk endpoints cap at
+ * 500 ids/request (`BulkIdsSchema`) so a runaway client can't ask us to
+ * load 50k rows; the UI's "Select all" is page-scoped (50 by default).
+ *
+ * Soft-delete model: `DELETE /:id` flips `deletedAt`, `bulk-delete`
+ * does the same; restored via `/:id/restore` or `bulk-restore`;
+ * permanent purge is `/:id/purge` and `bulk-purge`. The trash worker
+ * (`jobs/workers.ts`) hard-deletes anything older than
+ * `ARTICLE_TRASH_RETENTION_DAYS`.
+ *
+ * `POST /:id/duplicate` deep-copies fields + locations + tags but
+ * intentionally drops the warranty so a clone doesn't schedule a
+ * second set of reminders for the same purchase.
+ */
 import { Router, Response } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";

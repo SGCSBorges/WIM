@@ -1,3 +1,22 @@
+/**
+ * Express app factory. Wires the middleware stack and mounts every route
+ * module. Boot order matters:
+ *
+ *   1. `trust proxy` so rate-limit + req.ip see the real client behind
+ *      Render's load balancer.
+ *   2. `startWorkersOnce()` brings up BullMQ workers in-process — running
+ *      web + workers in the same dyno keeps the free tier within budget.
+ *   3. Stripe webhook is mounted BEFORE `express.json()` because signature
+ *      verification needs the raw body.
+ *   4. Security middleware (helmet/CORS/rate-limit) → cookieParser → CSRF
+ *      → JSON body parser → pino logging (with X-Request-Id correlation).
+ *   5. `/health` and `/uploads/:name` (authenticated file serving) are
+ *      mounted before the modular routers so they can't be shadowed.
+ *
+ * The `/uploads/*` handler implements share-aware file access — it can't
+ * be `express.static` because we need the DB-row ownership check on the
+ * bytes themselves (not just the JSON metadata under `/api/attachments`).
+ */
 import express, { Response } from "express";
 import cookieParser from "cookie-parser";
 import { randomUUID } from "crypto";

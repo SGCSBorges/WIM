@@ -1,3 +1,11 @@
+/**
+ * CSV/bulk article import. Validates rows individually (so one bad row
+ * doesn't poison the batch), resolves named locations and tags to ids
+ * by case-insensitive match (creating them on the fly when missing),
+ * then either commits or, in dry-run mode, returns the per-row report
+ * without writing. The dry-run path is what the CsvImportModal preview
+ * uses so the user sees errors before they hit "Import".
+ */
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { ArticleService } from "./article.service";

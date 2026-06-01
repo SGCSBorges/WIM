@@ -1,3 +1,21 @@
+/**
+ * Stripe Checkout + portal + manual sync routes (POWER_USER upgrade).
+ *
+ * The Stripe webhook (`billing.webhook.routes.ts`) is the canonical source
+ * of truth for the user's role; this module covers everything else:
+ *
+ *   • POST /upgrade/power-user/checkout — start a Checkout session.
+ *   • POST /portal — open the customer portal for self-service.
+ *   • POST /cancel/power-user — schedule cancel-at-period-end.
+ *   • POST /sync — pull subscription status straight from Stripe so the
+ *     UI can reconcile after Checkout without waiting for the webhook
+ *     (free-tier cold starts often exceed Stripe's 10s retry window).
+ *
+ * `success_url`/`cancel_url` are built from `getAppUrl()` in this file's
+ * sibling utilities — it validates `APP_URL` as a single origin to keep
+ * a misconfigured comma-list (copied from `CORS_ORIGIN`) from breaking
+ * Checkout silently.
+ */
 import { Router } from "express";
 import { z } from "zod";
 import Stripe from "stripe";

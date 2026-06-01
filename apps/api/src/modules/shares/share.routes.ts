@@ -1,3 +1,12 @@
+/**
+ * Per-user inventory sharing — invite create/accept/revoke flows + the
+ * owner's view of their outgoing shares. Every route here requires
+ * POWER_USER on both ends; the `requireRole("POWER_USER")` guard pairs
+ * with `ShareService.createInvite` which double-checks the invitee
+ * actually exists as a POWER_USER (so a downgrade-then-re-upgrade race
+ * can't accept a stale invite). Invite mutations are rate-limited per
+ * IP so a compromised account can't weaponize the email pipe.
+ */
 import { Router } from "express";
 import { z } from "zod";
 import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
