@@ -14,24 +14,24 @@ actor "Power User (option payante)" as PowerUser
 actor "Administrateur" as Admin
 
 rectangle "WIM (PWA)" {
-  (S'authentifier / Se déconnecter) as UC_Auth
-  (Gérer l'inventaire (articles)) as UC_Items
-  (Organiser : tags & emplacements) as UC_Organize
-  (Joindre des pièces (facture PDF/JPEG)) as UC_Attach
-  (Gérer la garantie) as UC_Warranty
-  (Suivre une réclamation de garantie) as UC_Claim
-  (Configurer des alertes J-30 / J-7 / J-1) as UC_Alerts
-  (Recevoir notifications push / e-mail) as UC_Notify
-  (Recevoir le digest hebdomadaire) as UC_Digest
-  (S'abonner au flux iCal) as UC_Ical
-  (Importer / Exporter (CSV)) as UC_ImportExport
-  (Exporter en PDF (réclamation, inventaire, étiquettes)) as UC_Pdf
-  (Consulter le tableau de bord & la valeur) as UC_Stats
-  (Enregistrer des vues filtrées) as UC_Views
-  (Corbeille : supprimer / restaurer / purger) as UC_Trash
-  (Partager l'inventaire) as UC_Sharing
-  (Souscrire l'offre Power User (Stripe)) as UC_Billing
-  (Administrer : utilisateurs, audit, jobs, sauvegarde) as UC_Admin
+  usecase "S'authentifier / Se déconnecter" as UC_Auth
+  usecase "Gérer l'inventaire (articles)" as UC_Items
+  usecase "Organiser : tags & emplacements" as UC_Organize
+  usecase "Joindre des pièces (facture PDF/JPEG)" as UC_Attach
+  usecase "Gérer la garantie" as UC_Warranty
+  usecase "Suivre une réclamation de garantie" as UC_Claim
+  usecase "Configurer des alertes J-30 / J-7 / J-1" as UC_Alerts
+  usecase "Recevoir notifications push / e-mail" as UC_Notify
+  usecase "Recevoir le digest hebdomadaire" as UC_Digest
+  usecase "S'abonner au flux iCal" as UC_Ical
+  usecase "Importer / Exporter (CSV)" as UC_ImportExport
+  usecase "Exporter en PDF (réclamation, inventaire, étiquettes)" as UC_Pdf
+  usecase "Consulter le tableau de bord & la valeur" as UC_Stats
+  usecase "Enregistrer des vues filtrées" as UC_Views
+  usecase "Corbeille : supprimer / restaurer / purger" as UC_Trash
+  usecase "Partager l'inventaire" as UC_Sharing
+  usecase "Souscrire l'offre Power User (Stripe)" as UC_Billing
+  usecase "Administrer : utilisateurs, audit, jobs, sauvegarde" as UC_Admin
 }
 
 User --> UC_Auth

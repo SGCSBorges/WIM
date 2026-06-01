@@ -152,6 +152,19 @@ translations.en → key`**. New keys go into
 70-KB main dictionary stays low-churn. Extras can also override an existing
 key for a copy fix without touching the big file.
 
+## UML diagrams
+
+The architecture diagrams live in `docs/uml/` as PlantUML (`.puml`) sources
+with a co-located rendered `.svg` each (committed so GitHub shows them inline,
+see `docs/uml/README.md`). **Edited a `.puml`? Re-render and commit the SVG:**
+
+```bash
+npm run docs:uml        # renders via the pinned PlantUML Docker image
+```
+
+CI's `uml` job re-renders and fails if any committed `.svg` is stale (a
+deterministic drift check, like the Prisma one above). Requires Docker locally.
+
 ## Code style
 
 - TypeScript strict mode in both apps.

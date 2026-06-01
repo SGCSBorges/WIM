@@ -17,7 +17,8 @@
     "render-build:api": "npm install --include=optional --workspaces && npm --workspace apps/api run render-build",
     "lint": "npm run lint --workspaces --if-present",
     "fmt": "npm run format --workspaces --if-present",
-    "test": "npm test --workspaces --if-present"
+    "test": "npm test --workspaces --if-present",
+    "docs:uml": "bash scripts/render-uml.sh"
   },
   "overrides": {
     "react": "^19.2.5",
