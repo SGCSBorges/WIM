@@ -1,6 +1,7 @@
-# Code de conduite – WIM
+# Code of Conduct — WIM
 
-Les contributeurs doivent faire preuve de respect, de collaboration et de professionnalisme.  
-Toute forme de harcèlement ou de discrimination est interdite.
+Contributors are expected to act with respect, collaboration, and
+professionalism. Harassment and discrimination of any kind are not tolerated.
 
-Tout comportement inapproprié peut être signalé via une _issue_ ou une _pull request_ avec le contexte.
+Report inappropriate behavior by opening an _issue_ or a _pull request_ with
+the relevant context.
