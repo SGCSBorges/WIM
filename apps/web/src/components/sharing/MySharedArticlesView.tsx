@@ -4,23 +4,17 @@
  * flag off per row (the per-user invites surface lives in `<SharesList>`).
  */
 import { useCallback, useEffect, useState } from "react";
+import { Globe, RotateCw, EyeOff } from "lucide-react";
 import { articlesAPI } from "../../services/api";
 import type { FetchedArticle } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
-import { ErrorBanner } from "../common/States";
+import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
 import ArticleThumb from "../articles/ArticleThumb";
+import { Section, Button, Badge } from "../ui";
 
-/**
- * Single source of truth for "articles I'm currently sharing publicly."
- *
- * Reuses the same backend endpoint that powers the Profile page's
- * "Articles you've shared publicly" panel; the Sharing page is the
- * more discoverable home for outgoing shares so this component lives
- * here too.
- */
 export default function MySharedArticlesView() {
   const { t } = useI18n();
   const toast = useToast();
@@ -62,78 +56,80 @@ export default function MySharedArticlesView() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{t("mySharedArticles.title")}</h1>
-          <p className="text-sm ui-text-muted">
-            {t("mySharedArticles.subtitle")}
-          </p>
-        </div>
-        <button
-          type="button"
+    <Section
+      icon={<Globe className="h-5 w-5" />}
+      title={t("mySharedArticles.title")}
+      description={t("mySharedArticles.subtitle")}
+      actions={
+        <Button
+          variant="outline"
+          size="sm"
           onClick={fetchAll}
           disabled={loading}
-          className="ui-btn-ghost px-3 py-2 rounded border ui-divider"
+          leftIcon={<RotateCw className="h-4 w-4" />}
         >
           {t("common.refresh")}
-        </button>
-      </div>
-
+        </Button>
+      }
+    >
       {error && (
         <ErrorBanner
           message={error}
           onRetry={fetchAll}
           retryLabel={t("common.retry")}
+          className="mb-4"
         />
       )}
 
       {loading ? (
-        <div className="ui-card rounded-lg p-4 space-y-2">
+        <div className="space-y-2">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} height={56} />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="ui-card rounded-lg p-6 text-center">
-          <p className="text-sm ui-text-muted">{t("mySharedArticles.empty")}</p>
-        </div>
+        <EmptyState
+          icon={<Globe className="h-6 w-6" />}
+          title={t("mySharedArticles.empty")}
+        />
       ) : (
-        <div className="ui-card rounded-lg">
-          <ul className="divide-y ui-divider">
-            {items.map((a) => (
-              <li key={a.articleId} className="flex items-center gap-3 p-4">
-                <ArticleThumb
-                  src={a.productImageUrl}
-                  alt={a.articleNom}
-                  size={48}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium truncate">{a.articleNom}</span>
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded ui-badge-info">
-                      🌐 {t("articles.share.state.publicLabel")}
-                    </span>
-                  </div>
-                  <div className="text-xs ui-text-muted truncate">
-                    {a.articleModele}
-                  </div>
+        <ul className="divide-y ui-divider">
+          {items.map((a) => (
+            <li
+              key={a.articleId}
+              className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+            >
+              <ArticleThumb
+                src={a.productImageUrl}
+                alt={a.articleNom}
+                size={48}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="truncate font-medium ui-title">
+                    {a.articleNom}
+                  </span>
+                  <Badge tone="info" icon={<Globe className="h-3 w-3" />}>
+                    {t("articles.share.state.publicLabel")}
+                  </Badge>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => unshare(a.articleId)}
-                  disabled={busy === a.articleId}
-                  className="ui-btn-ghost px-3 py-1.5 text-sm rounded border ui-divider shrink-0"
-                >
-                  {busy === a.articleId
-                    ? t("common.loading")
-                    : t("articles.share.unshare")}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+                <div className="truncate text-xs ui-text-muted">
+                  {a.articleModele}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => unshare(a.articleId)}
+                loading={busy === a.articleId}
+                leftIcon={<EyeOff className="h-4 w-4" />}
+              >
+                {t("articles.share.unshare")}
+              </Button>
+            </li>
+          ))}
+        </ul>
       )}
-    </div>
+    </Section>
   );
 }

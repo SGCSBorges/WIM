@@ -1,5 +1,5 @@
 /**
- * Owner-side /sharing page — issues new invites via `<ShareForm>`, lists
+ * Owner-side /sharing page — issues new invites via an inline form, lists
  * pending + active per-user shares, and revokes any of them. Pending
  * invites can be re-sent; active shares can be deactivated (the
  * `ShareService.cleanupSharingForUser` helper flips `active: false`
@@ -7,14 +7,53 @@
  */
 import React, { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
+import {
+  Users,
+  Plus,
+  Search,
+  Send,
+  Mail,
+  Trash2,
+  ShieldCheck,
+} from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { sharesAPI, ShareItem, ShareInviteItem } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { isValidEmail } from "../../utils/validation";
+import { EmptyState } from "../common/States";
+import { Skeleton } from "../common/Skeleton";
+import {
+  PageHeader,
+  Section,
+  Tabs,
+  Button,
+  Input,
+  Select,
+  Badge,
+  type BadgeTone,
+} from "../ui";
 
 interface SharesListProps {
   onEdit?: (share: ShareItem) => void;
   onRevoke?: (shareId: number) => void;
+}
+
+function permissionTone(p: string): BadgeTone {
+  return p === "WRITE" ? "warning" : "success";
+}
+
+function statusTone(status: string): BadgeTone {
+  switch (status) {
+    case "PENDING":
+      return "warning";
+    case "ACCEPTED":
+      return "success";
+    case "REVOKED":
+    case "EXPIRED":
+      return "danger";
+    default:
+      return "neutral";
+  }
 }
 
 const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
@@ -118,22 +157,6 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
     }
   };
 
-  const getPermissionColor = (permission: string) =>
-    permission === "WRITE" ? "ui-badge-danger" : "ui-badge-success";
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "ui-badge-warning";
-      case "ACCEPTED":
-        return "ui-badge-success";
-      case "REVOKED":
-        return "ui-badge-danger";
-      default:
-        return "ui-badge";
-    }
-  };
-
   const isInviteExpired = (expiresAt: string) =>
     new Date(expiresAt) < new Date();
 
@@ -162,286 +185,274 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="h-8 ui-card rounded animate-pulse w-48" />
-        <div className="h-32 ui-card rounded animate-pulse" />
-        <div className="h-24 ui-card rounded animate-pulse" />
+        <Skeleton height={48} width="45%" />
+        <Skeleton height={120} />
+        <Skeleton height={96} />
       </div>
     );
   }
 
+  const activeCount = shares.filter((s) => s.active).length;
+  const pendingCount = invites.filter((i) => i.status === "PENDING").length;
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold ui-title">{t("shares.title")}</h2>
-        <button
-          onClick={() => setShowInviteForm((v) => !v)}
-          className="ui-btn-primary px-4 py-2 rounded-md"
-        >
-          {showInviteForm ? t("common.cancel") : t("shares.add")}
-        </button>
-      </div>
+    <div>
+      <PageHeader
+        icon={<Users className="h-5 w-5" />}
+        title={t("shares.title")}
+        actions={
+          <Button
+            onClick={() => setShowInviteForm((v) => !v)}
+            leftIcon={showInviteForm ? undefined : <Plus className="h-4 w-4" />}
+            variant={showInviteForm ? "ghost" : "primary"}
+          >
+            {showInviteForm ? t("common.cancel") : t("shares.add")}
+          </Button>
+        }
+      />
 
-      {showInviteForm && (
-        <form
-          onSubmit={handleSendInvite}
-          className="ui-card rounded-lg p-4 space-y-3"
-        >
-          <h3 className="font-semibold ui-title">{t("shareForm.title")}</h3>
-          <p className="text-xs ui-text-muted">{t("shareForm.email.note")}</p>
-          {inviteError && (
-            <p className="text-sm ui-text-error">{inviteError}</p>
-          )}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email"
-              required
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder={t("shareForm.email.placeholder")}
-              className="ui-input flex-1 px-3 py-2 rounded"
-              disabled={inviteBusy}
-            />
-            <select
-              value={invitePermission}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "READ" || val === "WRITE") setInvitePermission(val);
-              }}
-              className="ui-select px-3 py-2 rounded"
-              disabled={inviteBusy}
-            >
-              <option value="READ">{t("shareForm.permission.read")}</option>
-              <option value="WRITE">{t("shareForm.permission.write")}</option>
-            </select>
-            <button
-              type="submit"
-              disabled={inviteBusy}
-              className="ui-btn-primary px-4 py-2 rounded"
-            >
-              {inviteBusy ? t("common.loading") : t("shareForm.send")}
-            </button>
+      <div className="space-y-6">
+        {showInviteForm && (
+          <Section
+            icon={<Send className="h-5 w-5" />}
+            title={t("shareForm.title")}
+            description={t("shareForm.email.note")}
+          >
+            <form onSubmit={handleSendInvite} className="space-y-3">
+              {inviteError && (
+                <p role="alert" className="text-sm ui-text-error">
+                  {inviteError}
+                </p>
+              )}
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Input
+                  type="email"
+                  required
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder={t("shareForm.email.placeholder")}
+                  aria-label={t("shareForm.email.placeholder")}
+                  disabled={inviteBusy}
+                  autoComplete="email"
+                  className="flex-1"
+                />
+                <Select
+                  value={invitePermission}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "READ" || val === "WRITE")
+                      setInvitePermission(val);
+                  }}
+                  aria-label={t("shareForm.permission")}
+                  disabled={inviteBusy}
+                  className="w-auto"
+                >
+                  <option value="READ">{t("shareForm.permission.read")}</option>
+                  <option value="WRITE">
+                    {t("shareForm.permission.write")}
+                  </option>
+                </Select>
+                <Button
+                  type="submit"
+                  loading={inviteBusy}
+                  leftIcon={<Send className="h-4 w-4" />}
+                >
+                  {t("shareForm.send")}
+                </Button>
+              </div>
+            </form>
+          </Section>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="rounded-xl border ui-alert-error p-3 text-sm ui-text-error"
+          >
+            {error}
           </div>
-        </form>
-      )}
+        )}
 
-      {error && (
-        <div role="alert" className="border ui-alert-error rounded-lg p-3">
-          <p className="text-sm ui-text-error">{error}</p>
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="border-b ui-divider">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab("shares")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "shares"
-                ? "ui-tab-active"
-                : "border-transparent ui-text-muted hover:border-[var(--border)]"
-            }`}
-          >
-            {t("shares.tab.active")} ({shares.filter((s) => s.active).length})
-          </button>
-          <button
-            onClick={() => setActiveTab("invites")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "invites"
-                ? "ui-tab-active"
-                : "border-transparent ui-text-muted hover:border-[var(--border)]"
-            }`}
-          >
-            {t("shares.tab.pending")} (
-            {invites.filter((i) => i.status === "PENDING").length})
-          </button>
-        </nav>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <input
-          type="text"
-          placeholder={`${t("shares.search.placeholder")}…`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="ui-input flex-1 px-3 py-2 rounded-md"
+        {/* Tabs */}
+        <Tabs
+          aria-label={t("shares.title")}
+          idPrefix="shares-tab"
+          value={activeTab}
+          onChange={(id) => setActiveTab(id as "shares" | "invites")}
+          tabs={[
+            {
+              id: "shares",
+              label: `${t("shares.tab.active")} (${activeCount})`,
+              icon: <ShieldCheck className="h-4 w-4" />,
+            },
+            {
+              id: "invites",
+              label: `${t("shares.tab.pending")} (${pendingCount})`,
+              icon: <Mail className="h-4 w-4" />,
+            },
+          ]}
         />
-        <select
-          value={filterStatus}
-          onChange={(e) =>
-            setFilterStatus(e.target.value as typeof filterStatus)
-          }
-          className="ui-select px-3 py-2 rounded-md"
-        >
-          <option value="all">{t("shares.filter.all")}</option>
-          <option value="active">{t("shares.filter.active")}</option>
-          <option value="inactive">{t("shares.filter.inactive")}</option>
-        </select>
-      </div>
 
-      {/* Content */}
-      {activeTab === "shares" ? (
-        <div className="space-y-4">
-          {filteredShares.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="ui-text-muted mb-4">
-                <svg
-                  className="mx-auto h-12 w-12"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium mb-2">
-                {t("shares.none.activeTitle")}
-              </h3>
-              <p className="ui-text-muted">
-                {searchTerm || filterStatus !== "all"
-                  ? t("shares.none.filtered")
-                  : t("shares.none.activeEmpty")}
-              </p>
-            </div>
-          ) : (
-            filteredShares.map((share) => (
-              <div
-                key={share.inventoryShareId}
-                className="ui-card rounded-lg p-6"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold">
-                        {share.target.email}
-                      </h3>
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getPermissionColor(share.permission)}`}
-                      >
-                        {share.permission}
-                      </span>
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${share.active ? "ui-badge-success" : "ui-badge-danger"}`}
-                      >
-                        {share.active
-                          ? t("shares.status.active")
-                          : t("shares.status.inactive")}
-                      </span>
-                    </div>
-                    <p className="text-sm ui-text-muted">
-                      {t("shares.label.sharedOn")}{" "}
-                      {format(parseISO(share.createdAt), "dd MMM yyyy")}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2 items-center">
-                    {onEdit && share.active && (
-                      <button
-                        onClick={() => onEdit(share)}
-                        className="px-3 py-1 text-sm ui-action-primary rounded"
-                      >
-                        {t("shares.action.edit")}
-                      </button>
-                    )}
-                    {share.active &&
-                      (confirmRevokeId === share.inventoryShareId ? (
-                        <>
-                          <span className="text-xs ui-text-error">
-                            {t("shares.confirmRevoke")}
-                          </span>
-                          <button
-                            onClick={() =>
-                              handleRevokeShare(share.inventoryShareId)
-                            }
-                            className="px-2 py-1 text-xs ui-btn-danger rounded"
-                          >
-                            {t("common.yes")}
-                          </button>
-                          <button
-                            onClick={() => setConfirmRevokeId(null)}
-                            className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded"
-                          >
-                            {t("common.no")}
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={() =>
-                            setConfirmRevokeId(share.inventoryShareId)
-                          }
-                          className="px-3 py-1 text-sm ui-action-danger rounded"
-                        >
-                          {t("shares.action.revoke")}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+        {/* Search and Filter */}
+        <div className="flex flex-col gap-3 md:flex-row">
+          <div className="relative flex-1">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+              aria-hidden="true"
+            />
+            <Input
+              type="text"
+              placeholder={`${t("shares.search.placeholder")}…`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label={t("shares.search.placeholder")}
+              className="pl-9"
+            />
+          </div>
+          <Select
+            value={filterStatus}
+            onChange={(e) =>
+              setFilterStatus(e.target.value as typeof filterStatus)
+            }
+            aria-label={t("shares.filter.all")}
+            className="w-auto"
+          >
+            <option value="all">{t("shares.filter.all")}</option>
+            <option value="active">{t("shares.filter.active")}</option>
+            <option value="inactive">{t("shares.filter.inactive")}</option>
+          </Select>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredInvites.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="ui-text-muted mb-4">
-                <svg
-                  className="mx-auto h-12 w-12"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium mb-2">
-                {t("shares.none.pendingTitle")}
-              </h3>
-              <p className="ui-text-muted">
-                {searchTerm || filterStatus !== "all"
+
+        {/* Content */}
+        <div
+          role="tabpanel"
+          id={`shares-tab-panel-${activeTab}`}
+          aria-labelledby={`shares-tab-${activeTab}`}
+        >
+          {activeTab === "shares" ? (
+            filteredShares.length === 0 ? (
+              <EmptyState
+                icon={<Users className="h-6 w-6" />}
+                title={t("shares.none.activeTitle")}
+                description={
+                  searchTerm || filterStatus !== "all"
+                    ? t("shares.none.filtered")
+                    : t("shares.none.activeEmpty")
+                }
+              />
+            ) : (
+              <ul className="space-y-3">
+                {filteredShares.map((share) => (
+                  <li
+                    key={share.inventoryShareId}
+                    className="ui-card flex flex-wrap items-start justify-between gap-3 p-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-base font-semibold ui-title">
+                          {share.target.email}
+                        </h3>
+                        <Badge tone={permissionTone(share.permission)}>
+                          {share.permission}
+                        </Badge>
+                        <Badge tone={share.active ? "success" : "danger"}>
+                          {share.active
+                            ? t("shares.status.active")
+                            : t("shares.status.inactive")}
+                        </Badge>
+                      </div>
+                      <p className="text-xs ui-text-muted">
+                        {t("shares.label.sharedOn")}{" "}
+                        {format(parseISO(share.createdAt), "dd MMM yyyy")}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {onEdit && share.active && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEdit(share)}
+                        >
+                          {t("shares.action.edit")}
+                        </Button>
+                      )}
+                      {share.active &&
+                        (confirmRevokeId === share.inventoryShareId ? (
+                          <>
+                            <span className="text-xs ui-text-error">
+                              {t("shares.confirmRevoke")}
+                            </span>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() =>
+                                handleRevokeShare(share.inventoryShareId)
+                              }
+                            >
+                              {t("common.yes")}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setConfirmRevokeId(null)}
+                            >
+                              {t("common.no")}
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setConfirmRevokeId(share.inventoryShareId)
+                            }
+                            className="text-danger"
+                            leftIcon={<Trash2 className="h-4 w-4" />}
+                          >
+                            {t("shares.action.revoke")}
+                          </Button>
+                        ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : filteredInvites.length === 0 ? (
+            <EmptyState
+              icon={<Mail className="h-6 w-6" />}
+              title={t("shares.none.pendingTitle")}
+              description={
+                searchTerm || filterStatus !== "all"
                   ? t("shares.none.filtered")
-                  : t("shares.none.pendingEmpty")}
-              </p>
-            </div>
+                  : t("shares.none.pendingEmpty")
+              }
+            />
           ) : (
-            filteredInvites.map((invite) => {
-              const isExpired = isInviteExpired(invite.expiresAt);
-              const finalStatus =
-                isExpired && invite.status === "PENDING"
-                  ? "EXPIRED"
-                  : invite.status;
-              return (
-                <div
-                  key={invite.shareInviteId}
-                  className="ui-card rounded-lg p-6"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold">
+            <ul className="space-y-3">
+              {filteredInvites.map((invite) => {
+                const isExpired = isInviteExpired(invite.expiresAt);
+                const finalStatus =
+                  isExpired && invite.status === "PENDING"
+                    ? "EXPIRED"
+                    : invite.status;
+                return (
+                  <li
+                    key={invite.shareInviteId}
+                    className="ui-card flex flex-wrap items-start justify-between gap-3 p-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-base font-semibold ui-title">
                           {invite.email}
                         </h3>
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${getPermissionColor(invite.permission)}`}
-                        >
+                        <Badge tone={permissionTone(invite.permission)}>
                           {invite.permission}
-                        </span>
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(finalStatus)}`}
-                        >
+                        </Badge>
+                        <Badge tone={statusTone(finalStatus)}>
                           {finalStatus}
-                        </span>
+                        </Badge>
                       </div>
-                      <div className="text-sm ui-text-muted space-y-1">
+                      <div className="space-y-0.5 text-xs ui-text-muted">
                         <p>
                           {t("shares.label.sentOn")}{" "}
                           {format(parseISO(invite.createdAt), "dd MMM yyyy")}
@@ -459,46 +470,51 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       </div>
                     </div>
                     {invite.status === "PENDING" && !isExpired && (
-                      <div className="flex items-center space-x-2">
+                      <div className="flex shrink-0 items-center gap-2">
                         {confirmRevokeInviteId === invite.shareInviteId ? (
                           <>
                             <span className="text-xs ui-text-error">
                               {t("shares.confirmRevoke")}
                             </span>
-                            <button
+                            <Button
+                              variant="danger"
+                              size="sm"
                               onClick={() =>
                                 handleRevokeInvite(invite.shareInviteId)
                               }
-                              className="px-2 py-1 text-xs ui-btn-danger rounded"
                             >
                               {t("common.yes")}
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => setConfirmRevokeInviteId(null)}
-                              className="px-2 py-1 text-xs ui-btn-ghost border ui-divider rounded"
                             >
                               {t("common.no")}
-                            </button>
+                            </Button>
                           </>
                         ) : (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() =>
                               setConfirmRevokeInviteId(invite.shareInviteId)
                             }
-                            className="px-3 py-1 text-sm ui-action-danger rounded"
+                            className="text-danger"
+                            leftIcon={<Trash2 className="h-4 w-4" />}
                           >
                             {t("shares.action.revoke")}
-                          </button>
+                          </Button>
                         )}
                       </div>
                     )}
-                  </div>
-                </div>
-              );
-            })
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

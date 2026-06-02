@@ -5,8 +5,10 @@
  * prevent email enumeration. Permission is READ or WRITE.
  */
 import React, { useState } from "react";
+import { Send, Info } from "lucide-react";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { isValidEmail } from "../../utils/validation";
+import { Button, Field, Input } from "../ui";
 
 interface ShareFormProps {
   onSubmit: (shareData: {
@@ -51,87 +53,95 @@ const ShareForm: React.FC<ShareFormProps> = ({
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 ui-card rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold ui-title mb-6">
+    <div className="ui-card mx-auto max-w-md p-6 animate-scale-in">
+      <h2 className="mb-6 text-xl font-bold ui-title">
         {t("shareForm.title")}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2">
-            {t("shareForm.email")} *
-          </label>
-          <input
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Field label={t("shareForm.email")} required error={errors.email}>
+          <Input
             type="email"
-            id="email"
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
-            className="w-full ui-input px-3 py-2 rounded-md"
             placeholder={t("shareForm.email.placeholder")}
             disabled={isLoading}
+            autoComplete="email"
           />
-          {errors.email && (
-            <p className="mt-1 text-sm ui-text-error">{errors.email}</p>
-          )}
-        </div>
+        </Field>
 
-        <div>
-          <label className="block text-sm font-medium mb-3">
-            {t("shareForm.permission")} *
-          </label>
-          <div className="space-y-3">
-            {(["READ", "WRITE"] as const).map((perm) => (
-              <div key={perm} className="flex items-start">
-                <input
-                  type="radio"
-                  id={perm.toLowerCase()}
-                  name="permission"
-                  value={perm}
-                  checked={formData.permission === perm}
-                  onChange={(e) =>
-                    handleInputChange("permission", e.target.value)
-                  }
-                  className="mt-1 h-4 w-4"
-                  disabled={isLoading}
-                />
-                <label htmlFor={perm.toLowerCase()} className="ml-3 flex-1">
-                  <span className="block text-sm font-medium">
-                    {t(
-                      `shareForm.permission.${perm.toLowerCase()}` as TranslationKey
-                    )}
-                  </span>
-                  <span className="block text-sm ui-text-muted">
-                    {t(
-                      `shareForm.permission.${perm.toLowerCase()}.help` as TranslationKey
-                    )}
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium ui-title">
+            {t("shareForm.permission")}
+            <span className="text-danger" aria-hidden="true">
+              {" "}
+              *
+            </span>
+          </legend>
+          <div className="space-y-2">
+            {(["READ", "WRITE"] as const).map((perm) => {
+              const selected = formData.permission === perm;
+              return (
+                <label
+                  key={perm}
+                  htmlFor={perm.toLowerCase()}
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
+                    selected
+                      ? "border-primary bg-primary/5"
+                      : "border-line hover:bg-surface-muted"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    id={perm.toLowerCase()}
+                    name="permission"
+                    value={perm}
+                    checked={selected}
+                    onChange={(e) =>
+                      handleInputChange("permission", e.target.value)
+                    }
+                    className="mt-1 h-4 w-4 accent-[var(--primary)]"
+                    disabled={isLoading}
+                  />
+                  <span className="flex-1">
+                    <span className="block text-sm font-medium ui-title">
+                      {t(
+                        `shareForm.permission.${perm.toLowerCase()}` as TranslationKey
+                      )}
+                    </span>
+                    <span className="mt-0.5 block text-sm ui-text-muted">
+                      {t(
+                        `shareForm.permission.${perm.toLowerCase()}.help` as TranslationKey
+                      )}
+                    </span>
                   </span>
                 </label>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        </fieldset>
+
+        <div className="flex items-start gap-2 rounded-lg border ui-alert-info p-3 text-sm">
+          <Info
+            className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+            aria-hidden="true"
+          />
+          <span>{t("shareForm.info")}</span>
         </div>
 
-        <div className="p-3 ui-panel rounded-md">
-          <p className="text-sm">{t("shareForm.info")}</p>
-        </div>
-
-        <div className="flex justify-end space-x-4 pt-4 border-t ui-divider">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-6 py-2 ui-btn-primary rounded-md"
-          >
-            {isLoading ? t("shareForm.sending") : t("shareForm.send")}
-          </button>
+        <div className="flex justify-end gap-2 border-t ui-divider pt-4">
           {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-4 py-2 ui-btn-ghost border ui-divider rounded-md"
-            >
+            <Button variant="ghost" onClick={onCancel} disabled={isLoading}>
               {t("common.cancel")}
-            </button>
+            </Button>
           )}
+          <Button
+            type="submit"
+            loading={isLoading}
+            leftIcon={<Send className="h-4 w-4" />}
+          >
+            {t("shareForm.send")}
+          </Button>
         </div>
       </form>
     </div>
