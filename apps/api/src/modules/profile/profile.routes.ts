@@ -12,6 +12,7 @@ import {
   UpdateEmailRemindersSchema,
   UpdateEmailSchema,
   UpdatePasswordSchema,
+  UpdatePreferencesSchema,
   UpdateWeeklyDigestSchema,
 } from "./profile.schemas";
 import { ProfileService } from "./profile.service";
@@ -70,6 +71,25 @@ router.put(
       entity: "User",
       entityId: req.user!.sub,
       metadata: { field: "currency" },
+    });
+    res.json(updated);
+  })
+);
+
+router.put(
+  "/me/preferences",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const prefs = UpdatePreferencesSchema.parse(req.body);
+    const updated = await ProfileService.updatePreferences(
+      req.user!.sub,
+      prefs
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { field: "preferences", keys: Object.keys(prefs) },
     });
     res.json(updated);
   })

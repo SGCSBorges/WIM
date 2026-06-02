@@ -355,6 +355,32 @@ export interface AlertItem {
   } | null;
 }
 
+/** Notification-bell feed: scheduled alerts that are overdue or due within
+ *  the next 30 days (soonest first, capped), plus the count created since
+ *  the user last cleared the badge (`POST /api/alerts/mark-seen`). */
+export interface AlertNotifications {
+  items: AlertItem[];
+  unseen: number;
+}
+
+/** Cross-device UI preferences persisted on the user. `null`/absent means
+ *  "no server preference" — the client keeps its localStorage / system
+ *  default. Enums mirror the client theme list, supported languages, and
+ *  date-format options. */
+export type ThemePref = "light" | "dark" | "ocean" | "cyber";
+export type LanguagePref = "en" | "fr" | "pt";
+export type DateFormatPref =
+  | "system"
+  | "dd/MM/yyyy"
+  | "MM/dd/yyyy"
+  | "yyyy-MM-dd";
+
+export interface UserPreferences {
+  theme?: ThemePref | null;
+  language?: LanguagePref | null;
+  dateFormat?: DateFormatPref | null;
+}
+
 export const ATTACHMENT_TYPES = ["INVOICE", "WARRANTY", "OTHER"] as const;
 export type AttachmentType = (typeof ATTACHMENT_TYPES)[number];
 

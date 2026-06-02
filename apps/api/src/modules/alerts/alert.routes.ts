@@ -55,6 +55,25 @@ router.get(
   })
 );
 
+// Notification bell feed: overdue / due-soon scheduled alerts + unseen count.
+router.get(
+  "/notifications",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    res.json(await AlertService.notifications(req.user!.sub));
+  })
+);
+
+// Clear the unseen badge by stamping the user's high-water mark to now.
+router.post(
+  "/mark-seen",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    await AlertService.markSeen(req.user!.sub);
+    res.status(204).end();
+  })
+);
+
 // Create a custom (optionally recurring) alert.
 router.post(
   "/",

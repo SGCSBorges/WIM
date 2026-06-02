@@ -371,6 +371,50 @@ export const AlertService = {
     });
   },
 
+  // Feed for the notification bell: scheduled alerts that are overdue or
+  // due within the next 30 days, soonest first, capped. `unseen` counts
+  // those created after the user's last "mark seen" (or all, if never).
+  notifications: async (ownerUserId: number) => {
+    const horizon = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const [user, items] = await Promise.all([
+      prisma.user.findUnique({
+        where: { userId: ownerUserId },
+        select: { alertsSeenAt: true },
+      }),
+      prisma.alerte.findMany({
+        where: {
+          ownerUserId,
+          status: AlerteStatus.SCHEDULED,
+          alerteDate: { lte: horizon },
+        },
+        orderBy: { alerteDate: "asc" },
+        take: 20,
+        include: {
+          garantie: { select: { garantieId: true, garantieNom: true } },
+          article: {
+            select: {
+              articleId: true,
+              articleNom: true,
+              articleModele: true,
+            },
+          },
+        },
+      }),
+    ]);
+    const seenAt = user?.alertsSeenAt ?? null;
+    const unseen = seenAt
+      ? items.filter((a) => a.createdAt > seenAt).length
+      : items.length;
+    return { items, unseen };
+  },
+
+  markSeen: (ownerUserId: number) =>
+    prisma.user.update({
+      where: { userId: ownerUserId },
+      data: { alertsSeenAt: new Date() },
+      select: { alertsSeenAt: true },
+    }),
+
   markSent: (alerteId: number) =>
     prisma.alerte.update({
       where: { alerteId },

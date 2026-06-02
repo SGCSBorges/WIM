@@ -52,18 +52,26 @@ async function chunkedDelete(
   }
 }
 
+// The full self-profile shape returned by every read/update here, so the
+// client always gets a complete, consistent picture (incl. cross-device
+// UI preferences) without a follow-up fetch.
+const PROFILE_SELECT = {
+  userId: true,
+  email: true,
+  role: true,
+  currency: true,
+  emailReminders: true,
+  weeklyDigest: true,
+  theme: true,
+  language: true,
+  dateFormat: true,
+} as const;
+
 export const ProfileService = {
   async get(userId: number) {
     return prisma.user.findUnique({
       where: { userId },
-      select: {
-        userId: true,
-        email: true,
-        role: true,
-        currency: true,
-        emailReminders: true,
-        weeklyDigest: true,
-      },
+      select: PROFILE_SELECT,
     });
   },
 
@@ -71,7 +79,22 @@ export const ProfileService = {
     return prisma.user.update({
       where: { userId },
       data: { currency },
-      select: { userId: true, email: true, role: true, currency: true },
+      select: PROFILE_SELECT,
+    });
+  },
+
+  async updatePreferences(
+    userId: number,
+    prefs: {
+      theme?: string | null;
+      language?: string | null;
+      dateFormat?: string | null;
+    }
+  ) {
+    return prisma.user.update({
+      where: { userId },
+      data: prefs,
+      select: PROFILE_SELECT,
     });
   },
 
@@ -79,14 +102,7 @@ export const ProfileService = {
     return prisma.user.update({
       where: { userId },
       data: { emailReminders: enabled },
-      select: {
-        userId: true,
-        email: true,
-        role: true,
-        currency: true,
-        emailReminders: true,
-        weeklyDigest: true,
-      },
+      select: PROFILE_SELECT,
     });
   },
 
@@ -94,14 +110,7 @@ export const ProfileService = {
     return prisma.user.update({
       where: { userId },
       data: { weeklyDigest: enabled },
-      select: {
-        userId: true,
-        email: true,
-        role: true,
-        currency: true,
-        emailReminders: true,
-        weeklyDigest: true,
-      },
+      select: PROFILE_SELECT,
     });
   },
 

@@ -62,7 +62,14 @@ export const AuthService = {
   async profile(userId: number) {
     return prisma.user.findUnique({
       where: { userId },
-      select: { userId: true, email: true, role: true },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        theme: true,
+        language: true,
+        dateFormat: true,
+      },
     });
   },
 };

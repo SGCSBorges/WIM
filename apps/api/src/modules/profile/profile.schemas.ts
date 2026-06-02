@@ -40,3 +40,20 @@ export const UpdateWeeklyDigestSchema = z.object({
   enabled: z.boolean(),
 });
 export type UpdateWeeklyDigestInput = z.infer<typeof UpdateWeeklyDigestSchema>;
+
+// Cross-device UI preferences. Every field is optional so the client can
+// PATCH just the one that changed; `null` explicitly clears a preference
+// back to "follow the device default". The enums mirror the client's theme
+// list, supported languages, and the date-format options.
+export const UpdatePreferencesSchema = z
+  .object({
+    theme: z.enum(["light", "dark", "ocean", "cyber"]).nullish(),
+    language: z.enum(["en", "fr", "pt"]).nullish(),
+    dateFormat: z
+      .enum(["system", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd"])
+      .nullish(),
+  })
+  .refine((v) => Object.keys(v).length > 0, {
+    message: "at least one preference is required",
+  });
+export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>;
