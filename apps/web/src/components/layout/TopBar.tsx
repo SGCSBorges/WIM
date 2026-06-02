@@ -6,7 +6,7 @@
  */
 import { forwardRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut, Search } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { isActivePath } from "../../lib/navItems";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
@@ -17,10 +17,15 @@ export interface TopBarProps {
   mobileNavOpen: boolean;
   onToggleMobileNav: () => void;
   onLogout: () => void;
+  onOpenSearch: () => void;
+}
+
+function modKey(): string {
+  return /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
 }
 
 const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
-  { mobileNavOpen, onToggleMobileNav, onLogout },
+  { mobileNavOpen, onToggleMobileNav, onLogout, onOpenSearch },
   toggleRef
 ) {
   const { t } = useI18n();
@@ -55,6 +60,22 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
         </button>
 
         <div className="flex-1" />
+
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          aria-label={t("cmdk.open")}
+          className="hidden h-10 items-center gap-2 rounded-lg border border-line bg-surface-muted px-3 text-sm ui-text-muted hover:ui-title sm:inline-flex"
+        >
+          <Search className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden md:inline">{t("cmdk.open")}</span>
+          <span
+            aria-hidden="true"
+            className="ml-2 hidden rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[10px] ui-title md:inline"
+          >
+            {modKey()}K
+          </span>
+        </button>
 
         <div className="hidden sm:block">
           <InstallPwaButton />

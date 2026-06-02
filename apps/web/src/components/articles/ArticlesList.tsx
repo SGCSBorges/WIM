@@ -563,6 +563,16 @@ const ArticlesList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // ⌘K / `c` shortcut + command-palette action navigate to /articles?new=1
+  // to open the create form. Strip the param so a reload doesn't loop.
+  useEffect(() => {
+    if (searchParams.get("new") !== "1") return;
+    setEditingArticle(null);
+    setShowForm(true);
+    updateParams({ new: undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   const saveCurrentView = async () => {
     const name = window.prompt(t("savedViews.namePrompt"))?.trim();
     if (!name) return;
