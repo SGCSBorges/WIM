@@ -81,11 +81,11 @@ const ShareForm: React.FC<ShareFormProps> = ({
           <div className="space-y-2">
             {(["READ", "WRITE"] as const).map((perm) => {
               const selected = formData.permission === perm;
+              const id = `permission-${perm.toLowerCase()}`;
               return (
-                <label
+                <div
                   key={perm}
-                  htmlFor={perm.toLowerCase()}
-                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
+                  className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
                     selected
                       ? "border-primary bg-primary/5"
                       : "border-line hover:bg-surface-muted"
@@ -93,7 +93,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
                 >
                   <input
                     type="radio"
-                    id={perm.toLowerCase()}
+                    id={id}
                     name="permission"
                     value={perm}
                     checked={selected}
@@ -103,7 +103,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
                     className="mt-1 h-4 w-4 accent-[var(--primary)]"
                     disabled={isLoading}
                   />
-                  <span className="flex-1">
+                  <label htmlFor={id} className="flex-1 cursor-pointer">
                     <span className="block text-sm font-medium ui-title">
                       {t(
                         `shareForm.permission.${perm.toLowerCase()}` as TranslationKey
@@ -114,8 +114,8 @@ const ShareForm: React.FC<ShareFormProps> = ({
                         `shareForm.permission.${perm.toLowerCase()}.help` as TranslationKey
                       )}
                     </span>
-                  </span>
-                </label>
+                  </label>
+                </div>
               );
             })}
           </div>
