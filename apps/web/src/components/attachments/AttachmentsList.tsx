@@ -7,11 +7,24 @@
  */
 import React, { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
+import {
+  Paperclip,
+  Plus,
+  Search,
+  Download,
+  Eye,
+  Pencil,
+  Trash2,
+  FileText,
+  Image as ImageIcon,
+  File as FileIcon,
+} from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
-import { ErrorBanner } from "../common/States";
+import { ErrorBanner, EmptyState } from "../common/States";
+import { Button, Input, Select, Badge, type BadgeTone } from "../ui";
 import type { AttachmentItem as Attachment } from "@wim/types";
 
 interface AttachmentsListProps {
@@ -22,6 +35,20 @@ interface AttachmentsListProps {
   onAdd?: () => void;
   onView?: (attachment: Attachment) => void;
   isLoading?: boolean;
+}
+
+function fileIcon(mimeType: string) {
+  if (mimeType.startsWith("image/"))
+    return <ImageIcon className="h-8 w-8 text-success" aria-hidden="true" />;
+  if (mimeType === "application/pdf")
+    return <FileText className="h-8 w-8 text-danger" aria-hidden="true" />;
+  return <FileIcon className="h-8 w-8 text-muted" aria-hidden="true" />;
+}
+
+function typeTone(type: string): BadgeTone {
+  if (type === "INVOICE") return "info";
+  if (type === "WARRANTY") return "success";
+  return "neutral";
 }
 
 const AttachmentsList: React.FC<AttachmentsListProps> = ({
@@ -49,8 +76,6 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  // Bulk-select state mirrors ArticlesList: a Set of attachmentIds + a busy
-  // flag that disables the action bar while a bulk operation runs.
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -139,30 +164,18 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
   const handleDownload = async (attachment: Attachment) => {
     try {
-      // For public URLs (S3/Cloud/etc.), a direct navigation is enough.
-      // For API-hosted uploads, historical data may contain localhost or http URLs.
-      // We normalize those to the active API origin (and https) so downloads work on Render.
       let href = attachment.fileUrl;
-
       try {
         const u = new URL(attachment.fileUrl);
         if (u.pathname.startsWith("/uploads/")) {
-          // Keep the /uploads/<file> path but force it to the current API origin.
-          const apiOrigin = new URL(
-            // API_BASE_URL is an absolute URL in dev or can be relative in prod; URL() needs absolute.
-            // Using window.location.origin covers deployed web; for Render API we want its host.
-            // Since attachment URLs are API-hosted, we can safely reuse pathname and force https.
-            `https://${u.host}`
-          );
+          const apiOrigin = new URL(`https://${u.host}`);
           apiOrigin.pathname = u.pathname;
           href = apiOrigin.toString();
         }
       } catch {
-        // ignore URL parse errors; keep original href
+        // keep original href
       }
-
       if (!/^https?:\/\//i.test(href)) return;
-
       const a = document.createElement("a");
       a.href = href;
       a.download = attachment.fileName;
@@ -171,7 +184,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       a.click();
       document.body.removeChild(a);
     } catch {
-      // Download errors are browser-level; nothing meaningful to surface
+      // browser-level download errors; nothing to surface
     }
   };
 
@@ -183,80 +196,13 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.startsWith("image/")) {
-      return (
-        <svg
-          className="h-8 w-8 ui-text-success"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      );
-    } else if (mimeType === "application/pdf") {
-      return (
-        <svg
-          className="h-8 w-8 ui-text-error"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-          />
-        </svg>
-      );
-    } else {
-      return (
-        <svg
-          className="h-8 w-8 ui-text-muted"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      );
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "INVOICE":
-        return "ui-badge-info";
-      case "WARRANTY":
-        return "ui-badge-success";
-      case "OTHER":
-        return "ui-badge";
-      default:
-        return "ui-badge";
-    }
-  };
-
   const filteredAndSortedAttachments = attachments
     .filter((attachment) => {
       const matchesSearch =
         attachment.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         attachment.type.toLowerCase().includes(searchTerm.toLowerCase());
-
       const matchesFilter =
         filterType === "ALL" || attachment.type === filterType;
-
       return matchesSearch && matchesFilter;
     })
     .sort((a, b) => {
@@ -278,8 +224,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="ui-spinner animate-spin rounded-full h-32 w-32 border-b-2"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="ui-spinner h-12 w-12 animate-spin rounded-full border-b-2" />
       </div>
     );
   }
@@ -287,27 +233,33 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">
-          {t("attachments.title")}
-          {(articleId || garantieId) && (
-            <span className="text-lg font-normal ui-text-muted ml-2">
-              {t("attachments.for")}{" "}
-              {articleId
-                ? t("attachments.for.article")
-                : t("attachments.for.warranty")}
-            </span>
-          )}
-        </h2>
-        <button
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-brand text-primary-contrast shadow-md">
+            <Paperclip className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <h2 className="truncate text-2xl font-bold tracking-tight ui-title">
+            {t("attachments.title")}
+            {(articleId || garantieId) && (
+              <span className="ml-2 text-lg font-normal ui-text-muted">
+                {t("attachments.for")}{" "}
+                {articleId
+                  ? t("attachments.for.article")
+                  : t("attachments.for.warranty")}
+              </span>
+            )}
+          </h2>
+        </div>
+        <Button
           onClick={() => {
             if (onAdd) onAdd();
             setShowAddForm((v) => !v);
           }}
-          className="ui-btn-primary px-4 py-2 rounded-md"
+          leftIcon={showAddForm ? undefined : <Plus className="h-4 w-4" />}
+          variant={showAddForm ? "ghost" : "primary"}
         >
           {showAddForm ? t("common.cancel") : t("attachments.add")}
-        </button>
+        </Button>
       </div>
 
       {showAddForm && (
@@ -331,33 +283,38 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       {deleteError && <ErrorBanner message={deleteError} />}
 
       {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <input
+      <div className="flex flex-col gap-3 md:flex-row">
+        <div className="relative flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            aria-hidden="true"
+          />
+          <Input
             type="text"
             placeholder={t("attachments.search.placeholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="ui-input w-full px-3 py-2 rounded-md"
+            aria-label={t("attachments.search.placeholder")}
+            className="pl-9"
           />
         </div>
-
         <div className="flex flex-wrap gap-2">
-          <select
+          <Select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="ui-select px-3 py-2 rounded-md"
+            aria-label={t("attachments.sort.date")}
+            className="w-auto"
           >
             <option value="date">{t("attachments.sort.date")}</option>
             <option value="name">{t("attachments.sort.name")}</option>
             <option value="type">{t("attachments.sort.type")}</option>
             <option value="size">{t("attachments.sort.size")}</option>
-          </select>
-
-          <select
+          </Select>
+          <Select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as typeof filterType)}
-            className="ui-select px-3 py-2 rounded-md"
+            aria-label={t("attachments.filter.all")}
+            className="w-auto"
           >
             <option value="ALL">{t("attachments.filter.all")}</option>
             <option value="INVOICE">{t("attachments.filter.invoices")}</option>
@@ -365,7 +322,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
               {t("attachments.filter.warranties")}
             </option>
             <option value="OTHER">{t("attachments.filter.other")}</option>
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -373,225 +330,200 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
         <div
           role="region"
           aria-label={t("attachments.bulk.selectionLabel")}
-          className="ui-card rounded-lg shadow p-3 flex flex-wrap items-center gap-3 sticky top-2 z-10"
+          className="ui-card sticky top-20 z-10 flex flex-wrap items-center gap-3 p-3 animate-slide-up"
         >
-          <span className="font-medium text-sm">
+          <span className="text-sm font-medium">
             {t("attachments.bulk.selected").replace(
               "{count}",
               String(selectedIds.size)
             )}
           </span>
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="ml-auto flex items-center gap-2">
             {showBulkDeleteConfirm ? (
               <>
                 <span className="text-xs ui-text-error">
                   {t("attachments.bulk.confirm")}
                 </span>
-                <button
-                  type="button"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={handleBulkDelete}
-                  disabled={bulkBusy}
-                  className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                  loading={bulkBusy}
                 >
                   {t("attachments.bulk.confirmDelete")}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowBulkDeleteConfirm(false)}
                   disabled={bulkBusy}
-                  className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
                 >
                   {t("common.cancel")}
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button
-                  type="button"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={() => setShowBulkDeleteConfirm(true)}
                   disabled={bulkBusy}
-                  className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                  leftIcon={<Trash2 className="h-4 w-4" />}
                 >
                   {t("attachments.bulk.delete")}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setSelectedIds(new Set())}
                   disabled={bulkBusy}
-                  className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
                 >
                   {t("attachments.bulk.clear")}
-                </button>
+                </Button>
               </>
             )}
           </div>
         </div>
       )}
 
-      {/* Attachments Grid */}
+      {/* Grid */}
       {filteredAndSortedAttachments.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="ui-text-muted mb-4">
-            <svg
-              className="mx-auto h-12 w-12"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium mb-2">
-            {t("attachments.none.title")}
-          </h3>
-          <p className="ui-text-muted">
-            {searchTerm || filterType !== "ALL"
+        <EmptyState
+          icon={<Paperclip className="h-6 w-6" />}
+          title={t("attachments.none.title")}
+          description={
+            searchTerm || filterType !== "ALL"
               ? t("attachments.none.filtered")
-              : t("attachments.none.empty")}
-          </p>
-        </div>
+              : t("attachments.none.empty")
+          }
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredAndSortedAttachments.map((attachment) => (
-            <div
-              key={attachment.attachmentId}
-              className="ui-card rounded-lg transition-shadow hover:shadow-md"
-            >
-              <div className="p-4">
-                <div className="flex items-start space-x-3">
-                  <input
-                    type="checkbox"
-                    aria-label={t("attachments.bulk.selectRow").replace(
-                      "{name}",
-                      attachment.fileName
-                    )}
-                    checked={selectedIds.has(attachment.attachmentId)}
-                    onChange={() => toggleSelected(attachment.attachmentId)}
-                    className="mt-2"
-                  />
-                  {attachment.thumbUrl ? (
-                    <img
-                      src={attachment.thumbUrl}
-                      alt={attachment.fileName}
-                      loading="lazy"
-                      className="h-12 w-12 rounded object-cover ui-divider border"
-                    />
-                  ) : (
-                    getFileIcon(attachment.mimeType)
+            <div key={attachment.attachmentId} className="ui-card ui-lift p-4">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  aria-label={t("attachments.bulk.selectRow").replace(
+                    "{name}",
+                    attachment.fileName
                   )}
+                  checked={selectedIds.has(attachment.attachmentId)}
+                  onChange={() => toggleSelected(attachment.attachmentId)}
+                  className="mt-2 h-4 w-4 accent-[var(--primary)]"
+                />
+                {attachment.thumbUrl ? (
+                  <img
+                    src={attachment.thumbUrl}
+                    alt={attachment.fileName}
+                    loading="lazy"
+                    className="h-12 w-12 rounded-lg border ui-divider object-cover"
+                  />
+                ) : (
+                  fileIcon(attachment.mimeType)
+                )}
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-medium truncate">
-                        {attachment.fileName}
-                      </h3>
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(attachment.type)}`}
-                      >
-                        {attachment.type}
-                      </span>
-                    </div>
-
-                    <p className="text-xs ui-text-muted mb-2">
-                      {formatFileSize(attachment.fileSize)}
-                    </p>
-
-                    <p className="text-xs ui-text-muted">
-                      {format(parseISO(attachment.createdAt), "dd MMM yyyy")}
-                    </p>
-
-                    {/* Linked entities */}
-                    {(attachment.article || attachment.garantie) && (
-                      <div className="mt-2 text-xs ui-text-muted">
-                        {attachment.article && (
-                          <p>
-                            {t("attachments.linked.article")}:{" "}
-                            {attachment.article.articleNom}
-                          </p>
-                        )}
-                        {attachment.garantie && (
-                          <p>
-                            {t("attachments.linked.warranty")}:{" "}
-                            {attachment.garantie.garantieNom}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <h3 className="truncate text-sm font-medium ui-title">
+                      {attachment.fileName}
+                    </h3>
+                    <Badge tone={typeTone(attachment.type)}>
+                      {attachment.type}
+                    </Badge>
                   </div>
+                  <p className="text-xs ui-text-muted">
+                    {formatFileSize(attachment.fileSize)} ·{" "}
+                    {format(parseISO(attachment.createdAt), "dd MMM yyyy")}
+                  </p>
+
+                  {(attachment.article || attachment.garantie) && (
+                    <div className="mt-2 text-xs ui-text-muted">
+                      {attachment.article && (
+                        <p className="truncate">
+                          {t("attachments.linked.article")}:{" "}
+                          {attachment.article.articleNom}
+                        </p>
+                      )}
+                      {attachment.garantie && (
+                        <p className="truncate">
+                          {t("attachments.linked.warranty")}:{" "}
+                          {attachment.garantie.garantieNom}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between border-t ui-divider pt-3">
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDownload(attachment)}
+                    aria-label={t("attachments.action.download")}
+                    title={t("attachments.action.download")}
+                    leftIcon={<Download className="h-4 w-4" />}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (onView) return onView(attachment);
+                      if (/^https?:\/\//i.test(attachment.fileUrl)) {
+                        window.open(
+                          attachment.fileUrl,
+                          "_blank",
+                          "noopener,noreferrer"
+                        );
+                      }
+                    }}
+                    aria-label={t("attachments.action.view")}
+                    title={t("attachments.action.view")}
+                    leftIcon={<Eye className="h-4 w-4" />}
+                  />
                 </div>
 
-                <div className="flex justify-between items-center mt-4 pt-3 border-t ui-divider">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleDownload(attachment)}
-                      className="text-xs ui-btn-ghost px-2 py-1 rounded"
-                      title={t("attachments.action.download")}
-                    >
-                      {t("attachments.action.download")}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (onView) return onView(attachment);
-                        // Default behavior: open the attachment URL.
-                        // Navigating directly to /api/attachments/:id would fail because the browser
-                        // won't send the Authorization header (Token manquant).
-                        if (/^https?:\/\//i.test(attachment.fileUrl)) {
-                          window.open(
-                            attachment.fileUrl,
-                            "_blank",
-                            "noopener,noreferrer"
-                          );
-                        }
-                      }}
-                      className="text-xs ui-btn-ghost px-2 py-1 rounded"
-                      title={t("attachments.action.view")}
-                    >
-                      {t("attachments.action.view")}
-                    </button>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    {onEdit && (
-                      <button
-                        onClick={() => onEdit(attachment)}
-                        className="text-xs ui-btn-ghost px-2 py-1 rounded"
+                <div className="flex items-center gap-1">
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onEdit(attachment)}
+                      aria-label={t("attachments.action.edit")}
+                      leftIcon={<Pencil className="h-4 w-4" />}
+                    />
+                  )}
+                  {confirmDeleteId === attachment.attachmentId ? (
+                    <>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(attachment.attachmentId)}
                       >
-                        {t("attachments.action.edit")}
-                      </button>
-                    )}
-
-                    {confirmDeleteId === attachment.attachmentId ? (
-                      <>
-                        <button
-                          onClick={() => handleDelete(attachment.attachmentId)}
-                          className="text-xs px-2 py-1 ui-btn-danger rounded"
-                        >
-                          {t("common.yes")}
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
-                        >
-                          {t("common.no")}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() =>
-                          setConfirmDeleteId(attachment.attachmentId)
-                        }
-                        className="text-xs ui-action-danger px-2 py-1 rounded"
+                        {t("common.yes")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmDeleteId(null)}
                       >
-                        {t("attachments.action.delete")}
-                      </button>
-                    )}
-                  </div>
+                        {t("common.no")}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setConfirmDeleteId(attachment.attachmentId)
+                      }
+                      aria-label={t("attachments.action.delete")}
+                      className="text-danger"
+                      leftIcon={<Trash2 className="h-4 w-4" />}
+                    />
+                  )}
                 </div>
               </div>
             </div>
