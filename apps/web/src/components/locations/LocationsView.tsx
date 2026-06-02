@@ -5,13 +5,15 @@
  * `total` so the limit=1 keeps payloads tiny.
  */
 import { useCallback, useEffect, useState } from "react";
+import { MapPin, Plus, Pencil, Trash2, RotateCw, Check } from "lucide-react";
 import { locationsAPI, profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
-import { ErrorBanner } from "../common/States";
+import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
 import { formatMoney } from "../../utils/money";
+import { PageHeader, Section, Button, Input, Badge } from "../ui";
 
 type LocationRow = {
   locationId: number;
@@ -41,9 +43,6 @@ export default function LocationsView() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const refreshCounts = useCallback(async (rows: LocationRow[]) => {
-    // Fire all listArticles requests in parallel. Each request returns the
-    // first page plus a `total`; we only need the total here, so request
-    // page=1 limit=1 to keep the payload small.
     const entries = await Promise.all(
       rows.map(async (r) => {
         try {
@@ -76,7 +75,6 @@ export default function LocationsView() {
 
   useEffect(() => {
     fetchAll();
-    // Pull the user's display currency so totals render in the right unit.
     profileAPI
       .getMe()
       .then((me) => me.currency && setCurrency(me.currency))
@@ -155,189 +153,204 @@ export default function LocationsView() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t("locations.title")}</h1>
-        <p className="ui-text-muted">{t("locations.subtitle")}</p>
-      </div>
+    <div>
+      <PageHeader
+        icon={<MapPin className="h-5 w-5" />}
+        title={t("locations.title")}
+        subtitle={t("locations.subtitle")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchAll}
+            disabled={loading}
+            leftIcon={<RotateCw className="h-4 w-4" />}
+          >
+            {t("common.refresh")}
+          </Button>
+        }
+      />
 
       {error && (
         <ErrorBanner
           message={error}
           onRetry={fetchAll}
           retryLabel={t("common.retry")}
+          className="mb-6"
         />
       )}
 
-      <div className="ui-card rounded-lg p-4 space-y-3">
-        <h2 className="font-semibold">{t("locations.createTitle")}</h2>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <input
-            type="text"
-            className="ui-input px-3 py-2 rounded"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder={t("locations.placeholder.name")}
-            maxLength={120}
-          />
-          <input
-            type="text"
-            className="ui-input px-3 py-2 rounded"
-            value={newDescription}
-            onChange={(e) => setNewDescription(e.target.value)}
-            placeholder={t("locations.placeholder.description")}
-            maxLength={255}
-          />
-        </div>
-        <button
-          onClick={create}
-          disabled={creating || !newName.trim()}
-          className="ui-btn-primary px-4 py-2 rounded-md"
-        >
-          {creating ? t("common.loading") : t("locations.create")}
-        </button>
-      </div>
+      <div className="space-y-6">
+        <Section title={t("locations.createTitle")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={t("locations.placeholder.name")}
+              maxLength={120}
+              aria-label={t("locations.placeholder.name")}
+            />
+            <Input
+              type="text"
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              placeholder={t("locations.placeholder.description")}
+              maxLength={255}
+              aria-label={t("locations.placeholder.description")}
+            />
+          </div>
+          <div className="mt-3">
+            <Button
+              onClick={create}
+              loading={creating}
+              disabled={!newName.trim()}
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              {t("locations.create")}
+            </Button>
+          </div>
+        </Section>
 
-      <div className="ui-card rounded-lg">
-        <div className="p-4 border-b ui-divider flex items-center justify-between">
-          <h2 className="font-semibold">{t("locations.allTitle")}</h2>
-          <button
-            onClick={fetchAll}
-            disabled={loading}
-            className="text-sm ui-btn-ghost rounded px-2 py-1"
-          >
-            {loading ? t("common.loading") : t("common.refresh")}
-          </button>
-        </div>
-
-        <div className="divide-y ui-divider">
-          {loading && (
-            <div className="p-4 space-y-2">
+        <Section title={t("locations.allTitle")}>
+          {loading ? (
+            <div className="space-y-2">
               {[0, 1, 2].map((i) => (
-                <Skeleton key={i} height={48} />
+                <Skeleton key={i} height={56} />
               ))}
             </div>
-          )}
-
-          {!loading && items.length === 0 && (
-            <div className="p-4 text-sm ui-text-muted">
-              {t("locations.none")}
-            </div>
-          )}
-
-          {!loading &&
-            items.map((l) => {
-              const isEditing = editingId === l.locationId;
-              const articleCount = counts[l.locationId];
-              return (
-                <div key={l.locationId} className="p-4 space-y-2">
-                  {!isEditing ? (
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium truncate">{l.name}</span>
-                          {l.totalValue !== undefined && l.totalValue > 0 && (
-                            <span className="text-xs ui-badge px-2 py-0.5 rounded">
-                              {formatMoney(l.totalValue, currency, language)}
+          ) : items.length === 0 ? (
+            <EmptyState
+              icon={<MapPin className="h-6 w-6" />}
+              title={t("locations.none")}
+            />
+          ) : (
+            <ul className="divide-y ui-divider">
+              {items.map((l) => {
+                const isEditing = editingId === l.locationId;
+                const articleCount = counts[l.locationId];
+                return (
+                  <li key={l.locationId} className="py-3 first:pt-0 last:pb-0">
+                    {!isEditing ? (
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="truncate font-medium ui-title">
+                              {l.name}
                             </span>
-                          )}
-                          {articleCount !== undefined && articleCount >= 0 && (
-                            <span className="text-xs ui-badge px-2 py-0.5 rounded">
-                              {t("locations.articleCount").replace(
-                                "{count}",
-                                String(articleCount)
+                            {l.totalValue !== undefined && l.totalValue > 0 && (
+                              <Badge tone="info">
+                                {formatMoney(l.totalValue, currency, language)}
+                              </Badge>
+                            )}
+                            {articleCount !== undefined &&
+                              articleCount >= 0 && (
+                                <Badge tone="neutral">
+                                  {t("locations.articleCount").replace(
+                                    "{count}",
+                                    String(articleCount)
+                                  )}
+                                </Badge>
                               )}
-                            </span>
+                          </div>
+                          {l.description && (
+                            <p className="mt-1 text-sm ui-text-muted">
+                              {l.description}
+                            </p>
                           )}
                         </div>
-                        {l.description && (
-                          <p className="text-sm ui-text-muted mt-1">
-                            {l.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          onClick={() => startEdit(l)}
-                          disabled={busy === l.locationId}
-                          className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
-                        >
-                          {t("common.edit")}
-                        </button>
-                        {confirmDeleteId === l.locationId ? (
-                          <span className="inline-flex items-center gap-2">
-                            <span className="text-xs ui-text-error">
-                              {t("locations.deleteConfirm")}
+                        <div className="flex shrink-0 items-center gap-2">
+                          {confirmDeleteId === l.locationId ? (
+                            <span className="inline-flex items-center gap-2">
+                              <span className="text-xs ui-text-error">
+                                {t("locations.deleteConfirm")}
+                              </span>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => remove(l.locationId)}
+                                loading={busy === l.locationId}
+                              >
+                                {t("common.yes")}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setConfirmDeleteId(null)}
+                              >
+                                {t("common.no")}
+                              </Button>
                             </span>
-                            <button
-                              onClick={() => remove(l.locationId)}
-                              disabled={busy === l.locationId}
-                              className="text-xs px-2 py-1 ui-btn-danger rounded"
-                            >
-                              {t("common.yes")}
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteId(null)}
-                              className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
-                            >
-                              {t("common.no")}
-                            </button>
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => setConfirmDeleteId(l.locationId)}
-                            disabled={busy === l.locationId}
-                            className="text-sm px-3 py-1.5 ui-action-danger"
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startEdit(l)}
+                                disabled={busy === l.locationId}
+                                aria-label={t("common.edit")}
+                                leftIcon={<Pencil className="h-4 w-4" />}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setConfirmDeleteId(l.locationId)}
+                                disabled={busy === l.locationId}
+                                aria-label={t("common.delete")}
+                                className="text-danger"
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                              />
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            placeholder={t("locations.placeholder.name")}
+                            maxLength={120}
+                            aria-label={t("locations.placeholder.name")}
+                          />
+                          <Input
+                            type="text"
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            placeholder={t("locations.placeholder.description")}
+                            maxLength={255}
+                            aria-label={t("locations.placeholder.description")}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => saveEdit(l.locationId)}
+                            loading={busy === l.locationId}
+                            disabled={!editName.trim()}
+                            leftIcon={<Check className="h-4 w-4" />}
                           >
-                            {t("common.delete")}
-                          </button>
-                        )}
+                            {t("common.save")}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={cancelEdit}
+                            disabled={busy === l.locationId}
+                          >
+                            {t("common.cancel")}
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          className="ui-input px-3 py-2 rounded"
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          placeholder={t("locations.placeholder.name")}
-                          maxLength={120}
-                        />
-                        <input
-                          type="text"
-                          className="ui-input px-3 py-2 rounded"
-                          value={editDescription}
-                          onChange={(e) => setEditDescription(e.target.value)}
-                          placeholder={t("locations.placeholder.description")}
-                          maxLength={255}
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => saveEdit(l.locationId)}
-                          disabled={busy === l.locationId || !editName.trim()}
-                          className="ui-btn-primary px-3 py-1.5 text-sm rounded"
-                        >
-                          {busy === l.locationId
-                            ? t("common.loading")
-                            : t("common.save")}
-                        </button>
-                        <button
-                          onClick={cancelEdit}
-                          disabled={busy === l.locationId}
-                          className="ui-btn-ghost px-3 py-1.5 text-sm rounded border ui-divider"
-                        >
-                          {t("common.cancel")}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Section>
       </div>
     </div>
   );
