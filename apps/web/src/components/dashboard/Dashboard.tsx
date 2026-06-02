@@ -1,73 +1,112 @@
 /**
  * Dashboard — the user's home metrics page. Fetches one big aggregate
  * from `statisticsAPI.getDashboard` (totals, by-location/by-tag value,
- * 12-month forecasting series). Renders `<BarList>` for each breakdown
- * to stay dependency-free. ADMIN sees an extra panel from
- * `statisticsAPI.getAdmin`.
+ * 12-month forecasting series) and renders KPI cards + recharts
+ * visualizations. Chart colors come from the theme CSS vars so they
+ * adapt across light/dark/ocean/cyber.
  */
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import {
+  Wallet,
+  TrendingDown,
+  Package,
+  ShieldCheck,
+  Share2,
+  Inbox,
+  Activity,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 import { statisticsAPI, profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import { ErrorBanner } from "../common/States";
-import BarList from "../common/BarList";
+import { PageHeader, Stat, Section, type StatTone } from "../ui";
 import type { DashboardStatistics } from "@wim/types";
 
-interface StatCardProps {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  color: string;
-  // ReactNode so callers can embed a Link to a filtered view.
-  subtitle?: React.ReactNode;
-}
+// Recharts reads colors as plain strings; CSS vars resolve per active theme.
+const AXIS = { stroke: "var(--muted)", fontSize: 12 };
+const GRID = "var(--border)";
+const TOOLTIP_STYLE = {
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: "0.75rem",
+  color: "var(--text)",
+  fontSize: "0.8rem",
+};
+const PIE_COLORS = [
+  "var(--text-success)",
+  "var(--accent)",
+  "var(--text-error)",
+];
 
-const StatCard: React.FC<StatCardProps> = ({
+function ChartCard({
   title,
-  value,
-  icon,
-  color,
-  subtitle,
-}) => (
-  <div className="ui-card rounded-lg shadow p-6">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium ui-text-muted">{title}</p>
-        <p className="text-3xl font-semibold">{value}</p>
-        {subtitle && <p className="text-sm ui-text-muted mt-1">{subtitle}</p>}
-      </div>
-      <div
-        className={`p-3 rounded-full ${color} text-white text-2xl flex items-center justify-center w-12 h-12`}
-      >
-        {icon}
-      </div>
-    </div>
-  </div>
-);
-
-interface DetailCardProps {
+  empty,
+  emptyLabel,
+  children,
+}: {
   title: string;
-  data: { label: string; value: number | string; color?: string }[];
+  empty: boolean;
+  emptyLabel: string;
+  children: React.ReactElement;
+}) {
+  return (
+    <Section title={title}>
+      {empty ? (
+        <div className="grid h-56 place-items-center text-sm ui-text-muted">
+          {emptyLabel}
+        </div>
+      ) : (
+        <div className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            {children}
+          </ResponsiveContainer>
+        </div>
+      )}
+    </Section>
+  );
 }
 
-const DetailCard: React.FC<DetailCardProps> = ({ title, data }) => (
-  <div className="ui-card rounded-lg shadow p-6">
-    <h3 className="text-lg font-semibold mb-4">{title}</h3>
-    <div className="space-y-3">
-      {data.map((item, index) => (
-        <div key={index} className="flex items-center justify-between">
-          <span className="text-sm ui-text-muted">{item.label}</span>
-          <span className={`text-sm font-medium ${item.color || ""}`}>
-            {item.value}
-          </span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+interface DetailRow {
+  label: string;
+  value: number | string;
+  tone?: string;
+}
+function DetailCard({ title, data }: { title: string; data: DetailRow[] }) {
+  return (
+    <Section title={title}>
+      <ul className="space-y-2.5">
+        {data.map((item, i) => (
+          <li key={i} className="flex items-center justify-between gap-3">
+            <span className="text-sm ui-text-muted">{item.label}</span>
+            <span
+              className={`text-sm font-semibold tabular-nums ${item.tone ?? "ui-title"}`}
+            >
+              {item.value}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
 
 const Dashboard: React.FC = () => {
   const { t, language } = useI18n();
@@ -114,9 +153,9 @@ const Dashboard: React.FC = () => {
           <Skeleton height={16} width="55%" />
         </div>
         <DashboardStatsSkeleton cards={4} />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="ui-card rounded-lg shadow p-6 space-y-3">
+            <div key={i} className="ui-card space-y-3 p-6">
               <Skeleton height={20} width="40%" />
               <Skeleton height={160} />
             </div>
@@ -138,188 +177,276 @@ const Dashboard: React.FC = () => {
 
   if (!statistics) {
     return (
-      <div className="border ui-alert-warning rounded-lg p-4">
-        <div className="flex items-center">
-          <span className="ui-text-warn mr-2">⚠️</span>
-          <p className="text-sm ui-text-warn">{t("dashboard.noStats")}</p>
-        </div>
+      <div className="flex items-center gap-2 rounded-xl border ui-alert-warning p-4">
+        <AlertTriangle className="h-4 w-4 ui-text-warn" aria-hidden="true" />
+        <p className="text-sm ui-text-warn">{t("dashboard.noStats")}</p>
       </div>
     );
   }
 
+  const money = (n: number) => formatMoney(n, currency, language);
+
+  const kpis: {
+    title: string;
+    value: number | string;
+    icon: React.ReactNode;
+    tone: StatTone;
+    footer?: React.ReactNode;
+  }[] = [
+    {
+      title: t("dashboard.inventoryValue"),
+      value: money(statistics.inventoryValue.total),
+      icon: <Wallet className="h-5 w-5" />,
+      tone: "success",
+      footer: (
+        <Link
+          to="/articles?warranty=expired"
+          className="ui-action-primary hover:underline"
+          title={t("dashboard.showExpired")}
+        >
+          {money(statistics.inventoryValue.atRisk)} {t("dashboard.valueAtRisk")}
+        </Link>
+      ),
+    },
+    {
+      title: t("dashboard.currentValue"),
+      value: money(statistics.inventoryValue.currentTotal),
+      icon: <TrendingDown className="h-5 w-5" />,
+      tone: "primary",
+      footer: (
+        <span className="ui-text-muted">
+          {money(statistics.inventoryValue.total)} {t("dashboard.atPurchase")}
+        </span>
+      ),
+    },
+    {
+      title: t("dashboard.totalArticles"),
+      value: statistics.articles.total,
+      icon: <Package className="h-5 w-5" />,
+      tone: "primary",
+      footer: (
+        <span className="ui-text-muted">
+          {statistics.articles.withWarranty} {t("dashboard.withWarranty")}
+        </span>
+      ),
+    },
+    {
+      title: t("dashboard.activeWarranties"),
+      value: statistics.warranties.active,
+      icon: <ShieldCheck className="h-5 w-5" />,
+      tone: "success",
+      footer: (
+        <Link
+          to="/articles?warranty=expiringSoon"
+          className="ui-action-primary hover:underline"
+          title={t("dashboard.showExpiringSoon")}
+        >
+          {statistics.warranties.expiringSoon} {t("dashboard.expiringSoon")}
+        </Link>
+      ),
+    },
+    {
+      title: t("dashboard.sharedByMe"),
+      value: statistics.sharing.ownedSharedArticles,
+      icon: <Share2 className="h-5 w-5" />,
+      tone: "accent",
+      footer: (
+        <span className="ui-text-muted">
+          {t("dashboard.ownedArticlesShared")}
+        </span>
+      ),
+    },
+    {
+      title: t("dashboard.sharedWithMe"),
+      value: statistics.sharing.totalSharedArticles,
+      icon: <Inbox className="h-5 w-5" />,
+      tone: "warning",
+      footer: (
+        <span className="ui-text-muted">
+          {t("dashboard.availableInSharedView")}
+        </span>
+      ),
+    },
+  ];
+
+  const warrantyPie = [
+    { name: t("dashboard.active"), value: statistics.warranties.active },
+    {
+      name: t("dashboard.expiringSoon"),
+      value: statistics.warranties.expiringSoon,
+    },
+    { name: t("dashboard.expired"), value: statistics.warranties.expired },
+  ];
+  const warrantyPieEmpty = warrantyPie.every((s) => s.value === 0);
+
+  const expirations = statistics.warrantyExpirationsByMonth ?? [];
+  const additions = statistics.articlesAddedByMonth ?? [];
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
-        <p className="ui-text-muted">{t("dashboard.subtitle")}</p>
-      </div>
+    <div>
+      <PageHeader
+        icon={<Activity className="h-5 w-5" />}
+        title={t("dashboard.title")}
+        subtitle={t("dashboard.subtitle")}
+      />
 
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title={t("dashboard.inventoryValue")}
-          value={formatMoney(
-            statistics.inventoryValue.total,
-            currency,
-            language
-          )}
-          icon="💰"
-          color="ui-icon-success"
-          subtitle={
-            <Link
-              to="/articles?warranty=expired"
-              className="hover:underline"
-              title={t("dashboard.showExpired")}
-            >
-              {formatMoney(
-                statistics.inventoryValue.atRisk,
-                currency,
-                language
-              )}{" "}
-              {t("dashboard.valueAtRisk")}
-            </Link>
-          }
-        />
-
-        <StatCard
-          title={t("dashboard.currentValue")}
-          value={formatMoney(
-            statistics.inventoryValue.currentTotal,
-            currency,
-            language
-          )}
-          icon="📉"
-          color="ui-icon-info"
-          subtitle={`${formatMoney(
-            statistics.inventoryValue.total,
-            currency,
-            language
-          )} ${t("dashboard.atPurchase")}`}
-        />
-
-        <StatCard
-          title={t("dashboard.totalArticles")}
-          value={statistics.articles.total}
-          icon="📦"
-          color="ui-icon-primary"
-          subtitle={`${statistics.articles.withWarranty} ${t("dashboard.withWarranty")}`}
-        />
-
-        <StatCard
-          title={t("dashboard.activeWarranties")}
-          value={statistics.warranties.active}
-          icon="🛡️"
-          color="ui-icon-success"
-          subtitle={
-            <Link
-              to="/articles?warranty=expiringSoon"
-              className="hover:underline"
-              title={t("dashboard.showExpiringSoon")}
-            >
-              {statistics.warranties.expiringSoon} {t("dashboard.expiringSoon")}
-            </Link>
-          }
-        />
-
-        <StatCard
-          title={t("dashboard.sharedByMe")}
-          value={statistics.sharing.ownedSharedArticles}
-          icon="📤"
-          color="ui-icon-purple"
-          subtitle={t("dashboard.ownedArticlesShared")}
-        />
-
-        <StatCard
-          title={t("dashboard.sharedWithMe")}
-          value={statistics.sharing.totalSharedArticles}
-          icon="📥"
-          color="ui-icon-warning"
-          subtitle={t("dashboard.availableInSharedView")}
-        />
+      {/* KPIs */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {kpis.map((k) => (
+          <Stat
+            key={k.title}
+            label={k.title}
+            value={k.value}
+            icon={k.icon}
+            tone={k.tone}
+            footer={k.footer}
+          />
+        ))}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="ui-card rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            {t("dashboard.charts.valueByLocation")}
-          </h3>
-          <BarList
-            items={statistics.inventoryValue.byLocation.map((l) => ({
-              label: l.name,
-              value: l.value,
-            }))}
-            formatValue={(n) => formatMoney(n, currency, language)}
-            emptyLabel={t("dashboard.charts.noData")}
-          />
-        </div>
-        <div className="ui-card rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            {t("dashboard.charts.valueByTag")}
-          </h3>
-          <BarList
-            items={statistics.inventoryValue.byTag.map((tg) => ({
-              label: tg.name,
-              value: tg.value,
-            }))}
-            formatValue={(n) => formatMoney(n, currency, language)}
-            emptyLabel={t("dashboard.charts.noData")}
-          />
-        </div>
-        <div className="ui-card rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            {t("dashboard.charts.warrantyStatus")}
-          </h3>
-          <BarList
-            items={[
-              {
-                label: t("dashboard.active"),
-                value: statistics.warranties.active,
-              },
-              {
-                label: t("dashboard.expiringSoon"),
-                value: statistics.warranties.expiringSoon,
-              },
-              {
-                label: t("dashboard.expired"),
-                value: statistics.warranties.expired,
-              },
-            ]}
-            emptyLabel={t("dashboard.charts.noData")}
-          />
-        </div>
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <ChartCard
+          title={t("dashboard.charts.valueByLocation")}
+          empty={statistics.inventoryValue.byLocation.length === 0}
+          emptyLabel={t("dashboard.charts.noData")}
+        >
+          <BarChart data={statistics.inventoryValue.byLocation}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={GRID}
+              vertical={false}
+            />
+            <XAxis dataKey="name" {...AXIS} />
+            <YAxis {...AXIS} width={48} />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              cursor={{ fill: "var(--surface-muted)" }}
+              formatter={(value) => money(Number(value))}
+            />
+            <Bar dataKey="value" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard
+          title={t("dashboard.charts.valueByTag")}
+          empty={statistics.inventoryValue.byTag.length === 0}
+          emptyLabel={t("dashboard.charts.noData")}
+        >
+          <BarChart data={statistics.inventoryValue.byTag}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={GRID}
+              vertical={false}
+            />
+            <XAxis dataKey="name" {...AXIS} />
+            <YAxis {...AXIS} width={48} />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              cursor={{ fill: "var(--surface-muted)" }}
+              formatter={(value) => money(Number(value))}
+            />
+            <Bar dataKey="value" fill="var(--accent)" radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard
+          title={t("dashboard.charts.warrantyStatus")}
+          empty={warrantyPieEmpty}
+          emptyLabel={t("dashboard.charts.noData")}
+        >
+          <PieChart>
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <Pie
+              data={warrantyPie}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={48}
+              outerRadius={80}
+              paddingAngle={2}
+              stroke="var(--surface)"
+            >
+              {warrantyPie.map((_, i) => (
+                <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ChartCard>
       </div>
 
       {/* Forecasting: rolling 12-month series */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="ui-card rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            {t("dashboard.charts.warrantyExpirations12m")}
-          </h3>
-          <BarList
-            items={(statistics.warrantyExpirationsByMonth ?? []).map((b) => ({
-              label: b.month,
-              value: b.count,
-            }))}
-            emptyLabel={t("dashboard.charts.noData")}
-          />
-        </div>
-        <div className="ui-card rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            {t("dashboard.charts.articlesAdded12m")}
-          </h3>
-          <BarList
-            items={(statistics.articlesAddedByMonth ?? []).map((b) => ({
-              label: b.month,
-              value: b.count,
-            }))}
-            emptyLabel={t("dashboard.charts.noData")}
-          />
-        </div>
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <ChartCard
+          title={t("dashboard.charts.warrantyExpirations12m")}
+          empty={expirations.length === 0}
+          emptyLabel={t("dashboard.charts.noData")}
+        >
+          <AreaChart data={expirations}>
+            <defs>
+              <linearGradient id="expGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor="var(--primary)"
+                  stopOpacity={0.4}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--primary)"
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={GRID}
+              vertical={false}
+            />
+            <XAxis dataKey="month" {...AXIS} />
+            <YAxis {...AXIS} width={36} allowDecimals={false} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <Area
+              type="monotone"
+              dataKey="count"
+              stroke="var(--primary)"
+              strokeWidth={2}
+              fill="url(#expGrad)"
+            />
+          </AreaChart>
+        </ChartCard>
+
+        <ChartCard
+          title={t("dashboard.charts.articlesAdded12m")}
+          empty={additions.length === 0}
+          emptyLabel={t("dashboard.charts.noData")}
+        >
+          <AreaChart data={additions}>
+            <defs>
+              <linearGradient id="addGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={GRID}
+              vertical={false}
+            />
+            <XAxis dataKey="month" {...AXIS} />
+            <YAxis {...AXIS} width={36} allowDecimals={false} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <Area
+              type="monotone"
+              dataKey="count"
+              stroke="var(--accent)"
+              strokeWidth={2}
+              fill="url(#addGrad)"
+            />
+          </AreaChart>
+        </ChartCard>
       </div>
 
-      {/* Detailed Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Detailed breakdowns */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <DetailCard
           title={t("dashboard.articlesOverview")}
           data={[
@@ -330,12 +457,12 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.withWarranty"),
               value: statistics.articles.withWarranty,
-              color: "ui-text-success",
+              tone: "ui-text-success",
             },
             {
               label: t("dashboard.withoutWarranty"),
               value: statistics.articles.withoutWarranty,
-              color: "text-orange-600",
+              tone: "ui-text-warn",
             },
           ]}
         />
@@ -346,12 +473,10 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.ownedSharedArticles"),
               value: statistics.sharing.ownedSharedArticles,
-              color: "text-purple-600",
             },
             {
               label: t("dashboard.totalSharedArticles"),
               value: statistics.sharing.totalSharedArticles,
-              color: "text-blue-600",
             },
           ]}
         />
@@ -366,27 +491,8 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.unassigned"),
               value: statistics.locations.unassigned,
-              color: "ui-text-muted",
+              tone: "ui-text-muted",
             },
-          ]}
-        />
-
-        <DetailCard
-          title={t("dashboard.valueByLocation")}
-          data={[
-            {
-              label: t("dashboard.inventoryValue"),
-              value: formatMoney(
-                statistics.inventoryValue.total,
-                currency,
-                language
-              ),
-              color: "ui-text-success",
-            },
-            ...statistics.inventoryValue.byLocation.map((l) => ({
-              label: l.name,
-              value: formatMoney(l.value, currency, language),
-            })),
           ]}
         />
 
@@ -400,35 +506,35 @@ const Dashboard: React.FC = () => {
             {
               label: t("dashboard.active"),
               value: statistics.warranties.active,
-              color: "ui-text-success",
+              tone: "ui-text-success",
             },
             {
               label: t("dashboard.expired"),
               value: statistics.warranties.expired,
-              color: "ui-text-error",
+              tone: "ui-text-error",
             },
             {
               label: t("dashboard.expiringSoon"),
               value: statistics.warranties.expiringSoon,
-              color: "text-orange-600",
+              tone: "ui-text-warn",
             },
             {
               label: t("dashboard.withAttachment"),
               value: statistics.warranties.withAttachment,
-              color: "ui-text-success",
+              tone: "ui-text-success",
             },
           ]}
         />
       </div>
 
-      {/* Quick Actions or Additional Info */}
-      <div className="ui-card rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">
-          {t("dashboard.systemHealth")}
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center">
-            <span className="ui-text-success mr-2">✅</span>
+      {/* System health */}
+      <Section title={t("dashboard.systemHealth")} className="mt-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck
+              className="h-4 w-4 ui-text-success"
+              aria-hidden="true"
+            />
             <span className="text-sm ui-text-muted">
               {(statistics.warranties.total
                 ? (statistics.warranties.active / statistics.warranties.total) *
@@ -438,9 +544,8 @@ const Dashboard: React.FC = () => {
               {t("dashboard.warrantiesActivePct")}
             </span>
           </div>
-
-          <div className="flex items-center">
-            <span className="text-blue-500 mr-2">📈</span>
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-primary" aria-hidden="true" />
             <span className="text-sm ui-text-muted">
               {(statistics.articles.total
                 ? (statistics.articles.withWarranty /
@@ -451,16 +556,15 @@ const Dashboard: React.FC = () => {
               {t("dashboard.articlesCoveredPct")}
             </span>
           </div>
-
-          <div className="flex items-center">
-            <span className="text-orange-500 mr-2">⏰</span>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-accent" aria-hidden="true" />
             <span className="text-sm ui-text-muted">
               {statistics.warranties.expiringSoon}{" "}
               {t("dashboard.warrantiesNeedAttention")}
             </span>
           </div>
         </div>
-      </div>
+      </Section>
     </div>
   );
 };
