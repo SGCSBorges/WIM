@@ -17,6 +17,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { ScanLine, Plus, Trash2, ExternalLink } from "lucide-react";
 import {
   attachmentsAPI,
   locationsAPI,
@@ -33,6 +34,7 @@ import {
   barcodeLookupEnabled,
   lookupProduct,
 } from "../../services/barcodeLookup";
+import { Button, Field, Input, Textarea } from "../ui";
 
 interface ArticleFormProps {
   article?: Article;
@@ -48,8 +50,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const { t } = useI18n();
   const toast = useToast();
   const formErrorRef = useRef<HTMLDivElement | null>(null);
-  // Cancellation flag for setState inside slow async chains (barcode
-  // lookup can take up to ~6s — the form may unmount in between).
   const mountedRef = useRef(true);
   useEffect(
     () => () => {
@@ -57,8 +57,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     },
     []
   );
-  // Dirty tracking for the unsaved-changes guard. A form-level onChange flips
-  // this on any field edit; it resets on prop-sync and after a successful save.
   const [dirty, setDirty] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationsLoading, setLocationsLoading] = useState(true);
@@ -74,21 +72,18 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           .locationIds!.map((x) => Number(x))
           .filter((n) => Number.isFinite(n) && n > 0)
       : [];
-
     return fromJoin.length > 0 ? fromJoin : fromLegacy;
   };
 
   const [selectedLocationIds, setSelectedLocationIds] = useState<number[]>(() =>
     deriveInitialLocationIds(article)
   );
-
   const [newLocationName, setNewLocationName] = useState("");
   const [creatingLocation, setCreatingLocation] = useState(false);
   const [locCreateError, setLocCreateError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Tags (owner-scoped). Mirrors the location chip/create pattern.
   const deriveInitialTagIds = (a?: Article): number[] =>
     Array.isArray(a?.tags)
       ? a!
@@ -197,7 +192,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
   useUnsavedChangesGuard(dirty);
 
-  // Confirm before discarding unsaved edits via the explicit Cancel action.
   const handleCancel = () => {
     if (dirty && !window.confirm(t("common.unsaved.discardConfirm"))) return;
     onCancel?.();
@@ -224,21 +218,16 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const clearWarrantyProof = async () => {
     try {
       setWarrantyProofError(null);
-
-      // Optional cleanup, OFF by default.
       if (deleteProofFromServer && warrantyProofAttachment?.attachmentId) {
         await attachmentsAPI.deleteAttachment(
           warrantyProofAttachment.attachmentId,
-          {
-            removeFile: true,
-          }
+          { removeFile: true }
         );
       }
     } catch (e) {
       setWarrantyProofError(getErrorMessage(e, t("common.errorOccurred")));
       return;
     }
-
     setWarrantyProofAttachment(null);
     setDeleteProofFromServer(false);
   };
@@ -306,7 +295,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       try {
         setLocationsLoading(true);
         const data = await locationsAPI.getAll();
-        // backend returns locations with extra fields; we only need id+name
         const mapped: Location[] = (data || []).map(
           (l: { locationId: number; name: string }) => ({
             locationId: l.locationId,
@@ -341,12 +329,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       setFormError(t("articleForm.model.required"));
       return;
     }
-
     if (selectedLocationIds.length === 0) {
       setFormError(t("articleForm.locations.required"));
       return;
     }
-
     if (warrantyEnabled) {
       if (!warrantyNom.trim()) {
         setFormError(t("articleForm.warranty.requiredName"));
@@ -362,7 +348,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       }
     }
 
-    // Convert empty strings to null for optional fields
     const submitData: Omit<Article, "articleId"> = {
       ...formData,
       articleDescription: formData.articleDescription?.trim() || null,
@@ -380,7 +365,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               garantieNom: warrantyNom.trim(),
               garantieDateAchat: warrantyDateAchat,
               garantieDuration: warrantyDuration,
-              // Pass through the proof attachment id (or null to clear)
               garantieImageAttachmentId: warrantyProofAttachment
                 ? warrantyProofAttachment.attachmentId
                 : null,
@@ -394,7 +378,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setSubmitting(true);
     try {
       await onSubmit(submitData);
-      // Saved — clear the dirty flag so navigation/cancel won't re-prompt.
       setDirty(false);
     } catch (err) {
       const msg = getErrorMessage(err, t("common.errorOccurred"));
@@ -405,8 +388,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     }
   };
 
-  // Scroll the inline error block into view whenever a new error appears
-  // (the toast already announces it; this gives long forms a focal point).
   useEffect(() => {
     if (formError && formErrorRef.current) {
       formErrorRef.current.scrollIntoView({
@@ -453,87 +434,68 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
-    <div className="ui-card rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold mb-4">
+    <div className="ui-card p-6 sm:p-8 animate-fade-in">
+      <h2 className="mb-6 text-xl font-bold tracking-tight ui-title">
         {article ? t("articleForm.editTitle") : t("articleForm.createTitle")}
       </h2>
 
       <form
         onSubmit={handleSubmit}
         onChange={() => setDirty(true)}
-        className="space-y-4"
+        className="space-y-5"
       >
-        <div>
-          <label
-            htmlFor="articleNom"
-            className="block text-sm font-medium ui-text-muted mb-1"
-          >
-            {t("articleForm.name")} *
-          </label>
-          <input
+        <Field label={t("articleForm.name")} htmlFor="articleNom" required>
+          <Input
             type="text"
             id="articleNom"
             name="articleNom"
             required
             value={formData.articleNom}
             onChange={handleChange}
-            className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.name")}
             maxLength={100}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label
-            htmlFor="articleModele"
-            className="block text-sm font-medium ui-text-muted mb-1"
-          >
-            {t("articleForm.model")} *
-          </label>
+        <Field label={t("articleForm.model")} htmlFor="articleModele" required>
           <div className="flex gap-2">
-            <input
+            <Input
               type="text"
               id="articleModele"
               name="articleModele"
               required
               value={formData.articleModele}
               onChange={handleChange}
-              className="flex-1 px-3 py-2 ui-input rounded-md"
               placeholder={t("articleForm.placeholder.model")}
               maxLength={100}
+              className="flex-1"
             />
             {barcodeSupported() && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setShowScanner(true)}
-                className="ui-btn-ghost border ui-divider rounded-md px-3 py-2 text-sm shrink-0"
+                leftIcon={<ScanLine className="h-4 w-4" />}
               >
                 {t("scan.button")}
-              </button>
+              </Button>
             )}
           </div>
-        </div>
+        </Field>
 
         {showScanner && (
           <BarcodeScanner
             open={showScanner}
             onClose={() => setShowScanner(false)}
             onDetected={(value) => {
-              // Always fill the model with the scanned code; if product lookup
-              // is enabled, enrich name/image when the code is recognized.
               setFormData((prev) => ({ ...prev, articleModele: value }));
               setShowScanner(false);
               if (barcodeLookupEnabled()) {
                 void lookupProduct(value).then((info) => {
-                  // Bail if the form unmounted before the (slow) network
-                  // lookup resolved — setState would warn + leak.
                   if (!mountedRef.current || !info) return;
                   setFormData((prev) => ({
                     ...prev,
@@ -553,176 +515,132 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           />
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label
-              htmlFor="brand"
-              className="block text-sm font-medium ui-text-muted mb-1"
-            >
-              {t("articleForm.brand")}
-            </label>
-            <input
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label={t("articleForm.brand")} htmlFor="brand">
+            <Input
               type="text"
               id="brand"
               name="brand"
               value={formData.brand?.toString() ?? ""}
               onChange={handleChange}
-              className="w-full px-3 py-2 ui-input rounded-md"
               maxLength={120}
               placeholder={t("articleForm.placeholder.brand")}
             />
-          </div>
-          <div>
-            <label
-              htmlFor="serialNumber"
-              className="block text-sm font-medium ui-text-muted mb-1"
-            >
-              {t("articleForm.serialNumber")}
-            </label>
-            <input
+          </Field>
+          <Field label={t("articleForm.serialNumber")} htmlFor="serialNumber">
+            <Input
               type="text"
               id="serialNumber"
               name="serialNumber"
               value={formData.serialNumber?.toString() ?? ""}
               onChange={handleChange}
-              className="w-full px-3 py-2 ui-input rounded-md font-mono"
               maxLength={120}
               placeholder={t("articleForm.placeholder.serialNumber")}
+              className="font-mono"
             />
-          </div>
+          </Field>
         </div>
 
-        <div>
-          <label
-            htmlFor="purchasePrice"
-            className="block text-sm font-medium ui-text-muted mb-1"
-          >
-            {t("articleForm.purchasePrice")}
-          </label>
-          <input
-            type="number"
-            id="purchasePrice"
-            name="purchasePrice"
-            min="0"
-            step="0.01"
-            inputMode="decimal"
-            value={purchasePrice}
-            onChange={(e) => setPurchasePrice(e.target.value)}
-            className="w-full px-3 py-2 ui-input rounded-md"
-            placeholder={t("articleForm.placeholder.purchasePrice")}
-          />
-        </div>
-
-        <div>
-          <label
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label={t("articleForm.purchasePrice")} htmlFor="purchasePrice">
+            <Input
+              type="number"
+              id="purchasePrice"
+              name="purchasePrice"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              value={purchasePrice}
+              onChange={(e) => setPurchasePrice(e.target.value)}
+              placeholder={t("articleForm.placeholder.purchasePrice")}
+            />
+          </Field>
+          <Field
+            label={t("articleForm.depreciationRate")}
             htmlFor="depreciationRate"
-            className="block text-sm font-medium ui-text-muted mb-1"
+            hint={t("articleForm.depreciationRateHint")}
           >
-            {t("articleForm.depreciationRate")}
-          </label>
-          <input
-            type="number"
-            id="depreciationRate"
-            name="depreciationRate"
-            min="0"
-            max="100"
-            step="0.01"
-            inputMode="decimal"
-            value={depreciationRate}
-            onChange={(e) => setDepreciationRate(e.target.value)}
-            className="w-full px-3 py-2 ui-input rounded-md"
-            placeholder={t("articleForm.placeholder.depreciationRate")}
-          />
-          <p className="mt-1 text-xs ui-text-muted">
-            {t("articleForm.depreciationRateHint")}
-          </p>
+            <Input
+              type="number"
+              id="depreciationRate"
+              name="depreciationRate"
+              min="0"
+              max="100"
+              step="0.01"
+              inputMode="decimal"
+              value={depreciationRate}
+              onChange={(e) => setDepreciationRate(e.target.value)}
+              placeholder={t("articleForm.placeholder.depreciationRate")}
+            />
+          </Field>
         </div>
 
-        <div>
-          <label
-            htmlFor="articleDescription"
-            className="block text-sm font-medium ui-text-muted mb-1"
-          >
-            {t("articleForm.description")}
-          </label>
-          <textarea
+        <Field
+          label={t("articleForm.description")}
+          htmlFor="articleDescription"
+        >
+          <Textarea
             id="articleDescription"
             name="articleDescription"
             value={formData.articleDescription || ""}
             onChange={handleChange}
             rows={3}
-            className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.description")}
             maxLength={255}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label
-            htmlFor="productImageUrl"
-            className="block text-sm font-medium ui-text-muted mb-1"
-          >
-            {t("articleForm.productImageUrl")}
-          </label>
-          <input
+        <Field
+          label={t("articleForm.productImageUrl")}
+          htmlFor="productImageUrl"
+        >
+          <Input
             type="url"
             id="productImageUrl"
             name="productImageUrl"
             value={formData.productImageUrl || ""}
             onChange={handleChange}
-            className="w-full px-3 py-2 ui-input rounded-md"
             placeholder={t("articleForm.placeholder.imageUrl")}
             maxLength={255}
           />
-        </div>
+        </Field>
 
-        <div className="border-t ui-divider pt-4">
-          <div className="flex items-center gap-2">
+        {/* Warranty toggle + block */}
+        <div className="rounded-xl border ui-divider p-4">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               id="warrantyEnabled"
               type="checkbox"
               checked={warrantyEnabled}
               onChange={(e) => setWarrantyEnabled(e.target.checked)}
+              className="h-4 w-4 accent-[var(--primary)]"
             />
-            <label htmlFor="warrantyEnabled" className="text-sm font-medium">
+            <span className="text-sm font-medium ui-title">
               {t("articleForm.warranty.toggle")}
-            </label>
-          </div>
+            </span>
+          </label>
 
           {warrantyEnabled && (
-            <div className="mt-3 space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-sm font-medium ui-text-muted mb-1">
-                    {t("articleForm.warranty.name")}
-                  </label>
-                  <input
+            <div className="mt-4 space-y-4 animate-fade-in">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <Field label={t("articleForm.warranty.name")}>
+                  <Input
                     type="text"
                     value={warrantyNom}
                     onChange={(e) => setWarrantyNom(e.target.value)}
-                    className="w-full px-3 py-2 ui-input rounded-md"
                     placeholder={t("articleForm.warranty.placeholder.name")}
                     maxLength={100}
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium ui-text-muted mb-1">
-                    {t("articleForm.warranty.purchaseDate")}
-                  </label>
-                  <input
+                </Field>
+                <Field label={t("articleForm.warranty.purchaseDate")}>
+                  <Input
                     type="date"
                     value={warrantyDateAchat}
                     onChange={(e) => setWarrantyDateAchat(e.target.value)}
-                    className="w-full px-3 py-2 ui-input rounded-md"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium ui-text-muted mb-1">
-                    {t("articleForm.warranty.durationMonths")}
-                  </label>
-                  <input
+                </Field>
+                <Field label={t("articleForm.warranty.durationMonths")}>
+                  <Input
                     type="number"
                     min={1}
                     max={120}
@@ -730,15 +648,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                     onChange={(e) =>
                       setWarrantyDuration(Number(e.target.value))
                     }
-                    className="w-full px-3 py-2 ui-input rounded-md"
                   />
-                </div>
+                </Field>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium ui-text-muted mb-1">
-                  {t("attachments.form.fileUpload")}
-                </label>
+              <Field label={t("attachments.form.fileUpload")}>
                 <div className="flex flex-col gap-2">
                   <input
                     type="file"
@@ -747,10 +661,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       if (f) void handleWarrantyProofSelected(f);
-                      // allow selecting same file again
                       e.currentTarget.value = "";
                     }}
-                    className="w-full"
+                    className="block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-contrast file:hover:brightness-105"
                   />
 
                   {warrantyProofUploading && (
@@ -766,14 +679,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   )}
 
                   {warrantyProofAttachment && (
-                    <div className="text-sm flex items-center justify-between gap-3 border ui-divider rounded-md px-3 py-2">
+                    <div className="flex items-center justify-between gap-3 rounded-lg border ui-divider px-3 py-2 text-sm">
                       <div className="min-w-0">
-                        <p className="truncate font-medium">
+                        <p className="truncate font-medium ui-title">
                           {warrantyProofAttachment.fileName ||
                             `#${warrantyProofAttachment.attachmentId}`}
                         </p>
                         <a
-                          className="ui-action-primary hover:underline"
+                          className="inline-flex items-center gap-1 text-xs ui-action-primary hover:underline"
                           href={
                             /^https?:\/\//i.test(
                               warrantyProofAttachment.fileUrl || ""
@@ -784,16 +697,22 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                           target="_blank"
                           rel="noreferrer"
                         >
+                          <ExternalLink
+                            className="h-3 w-3"
+                            aria-hidden="true"
+                          />
                           {t("articleForm.warranty.proof.open")}
                         </a>
                       </div>
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={clearWarrantyProof}
-                        className="ui-action-danger whitespace-nowrap"
+                        className="text-danger"
+                        leftIcon={<Trash2 className="h-4 w-4" />}
                       >
                         {t("common.delete")}
-                      </button>
+                      </Button>
                     </div>
                   )}
 
@@ -805,21 +724,29 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                         onChange={(e) =>
                           setDeleteProofFromServer(e.target.checked)
                         }
+                        className="h-3.5 w-3.5 accent-[var(--primary)]"
                       />
                       {t("articleForm.warranty.proof.deleteFromServer")}
                     </label>
                   )}
                 </div>
-              </div>
+              </Field>
             </div>
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium ui-text-muted mb-1">
-            {t("articleForm.locations")} *
-          </label>
-
+        {/* Locations */}
+        <Field
+          label={
+            <>
+              {t("articleForm.locations")}
+              <span className="text-danger" aria-hidden="true">
+                {" "}
+                *
+              </span>
+            </>
+          }
+        >
           {locationsLoading ? (
             <p className="text-sm ui-text-muted">
               {t("articleForm.locations.loading")}
@@ -831,16 +758,17 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               {t("articleForm.locations.none")}
             </p>
           ) : (
-            <div className="ui-panel rounded-md p-3 space-y-2 max-h-40 overflow-auto">
+            <div className="ui-panel max-h-44 space-y-2 overflow-auto rounded-lg p-3">
               {locations.map((loc) => (
                 <label
                   key={loc.locationId}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-2"
                 >
                   <input
                     type="checkbox"
                     checked={selectedSet.has(loc.locationId)}
                     onChange={() => toggleLocation(loc.locationId)}
+                    className="h-4 w-4 accent-[var(--primary)]"
                   />
                   <span className="text-sm ui-title">{loc.name}</span>
                 </label>
@@ -849,36 +777,33 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           )}
 
           <div className="mt-3 flex gap-2">
-            <input
+            <Input
               type="text"
               value={newLocationName}
               onChange={(e) => setNewLocationName(e.target.value)}
               placeholder={t("articleForm.location.new.placeholder")}
-              className="flex-1 px-3 py-2 ui-input rounded-md"
               maxLength={120}
+              className="flex-1"
             />
-            <button
+            <Button
               type="button"
               onClick={handleCreateLocation}
-              disabled={creatingLocation || !newLocationName.trim()}
-              className="px-3 py-2 ui-btn-primary rounded-md"
+              loading={creatingLocation}
+              disabled={!newLocationName.trim()}
+              leftIcon={<Plus className="h-4 w-4" />}
             >
-              {creatingLocation
-                ? t("articleForm.location.create.loading")
-                : t("articleForm.location.create")}
-            </button>
+              {t("articleForm.location.create")}
+            </Button>
           </div>
           {locCreateError && (
             <p className="mt-1 text-sm ui-text-error">{locCreateError}</p>
           )}
-        </div>
+        </Field>
 
-        <div>
-          <label className="block text-sm font-medium ui-text-muted mb-1">
-            {t("articleForm.tags")}
-          </label>
+        {/* Tags */}
+        <Field label={t("articleForm.tags")}>
           {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
+            <div className="mb-2 flex flex-wrap gap-2">
               {tags.map((tg) => {
                 const active = selectedTagSet.has(tg.tagId);
                 return (
@@ -887,8 +812,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                     key={tg.tagId}
                     onClick={() => toggleTag(tg.tagId)}
                     aria-pressed={active}
-                    className={`px-2 py-1 text-xs rounded-full border ui-divider ${
-                      active ? "ui-badge-info" : "ui-btn-ghost"
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      active
+                        ? "ui-badge-info"
+                        : "border border-line ui-text-muted hover:bg-surface-muted"
                     }`}
                   >
                     {tg.name}
@@ -898,7 +825,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             </div>
           )}
           <div className="flex gap-2">
-            <input
+            <Input
               type="text"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
@@ -909,53 +836,48 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                 }
               }}
               placeholder={t("articleForm.tags.placeholder")}
-              className="flex-1 px-3 py-2 ui-input rounded-md"
               maxLength={40}
+              className="flex-1"
             />
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={handleCreateTag}
-              disabled={creatingTag || !newTagName.trim()}
-              className="px-3 py-2 ui-btn-ghost border ui-divider rounded-md"
+              loading={creatingTag}
+              disabled={!newTagName.trim()}
+              leftIcon={<Plus className="h-4 w-4" />}
             >
               {t("articleForm.tags.add")}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Field>
 
         {formError && (
-          <p
+          <div
             ref={formErrorRef}
             role="alert"
             aria-live="polite"
-            className="text-sm ui-text-error"
+            className="rounded-lg border ui-alert-error p-3 text-sm ui-text-error"
           >
             {formError}
-          </p>
+          </div>
         )}
 
-        <div className="flex gap-3 pt-4">
-          <button
-            type="submit"
-            disabled={submitting || warrantyProofUploading}
-            className="px-4 py-2 ui-btn-primary rounded-md"
-          >
-            {submitting
-              ? t("common.loading")
-              : article
-                ? t("articleForm.submit.update")
-                : t("articleForm.submit.create")}
-          </button>
-
+        <div className="flex flex-wrap justify-end gap-2 border-t ui-divider pt-4">
           {onCancel && (
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="px-4 py-2 ui-btn-ghost border ui-divider rounded-md"
-            >
+            <Button variant="ghost" onClick={handleCancel}>
               {t("common.cancel")}
-            </button>
+            </Button>
           )}
+          <Button
+            type="submit"
+            loading={submitting}
+            disabled={warrantyProofUploading}
+          >
+            {article
+              ? t("articleForm.submit.update")
+              : t("articleForm.submit.create")}
+          </Button>
         </div>
       </form>
     </div>
