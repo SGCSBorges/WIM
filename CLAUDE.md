@@ -92,7 +92,45 @@ npm --workspace apps/web run test:e2e
   `<html>`. Brand palette comes from the WIM shield logo (navy primary +
   orange accent). Don't hardcode Tailwind colors on shared components —
   use `.ui-*` utility classes (`ui-card`, `ui-btn-primary`,
-  `ui-badge-power`, etc.).
+  `ui-badge-power`, etc.). A Tailwind bridge in `tailwind.config.js` maps
+  semantic tokens (`bg-surface`, `text-muted`, `border-line`,
+  `bg-primary text-primary-contrast`, etc.) onto those CSS vars so
+  utility classes also resolve per-theme — same rule applies, never
+  reach for `bg-blue-500`/etc. on a shared widget.
+- **Design system**: primitives live in `apps/web/src/components/ui/`
+  (`Button`, `Field/Input/Textarea/Select`, `PageHeader`, `Tabs`,
+  `ConfirmDialog`, `Badge`, `Card/Section`, `Stat`, `Pagination`,
+  `Breadcrumbs`, `Segmented`, `Popover`, `Dropzone`, `CommandPalette`).
+  Import from the barrel `components/ui`. Icons come from `lucide-react`
+  (never emoji); the central nav-icon map is `src/lib/navItems.ts`.
+  Self-hosted Inter Variable via `@fontsource-variable/inter`. Charts
+  use `recharts`, lazy-loaded inside the Dashboard chunk only.
+- **App shell**: `components/layout/{AppShell,Sidebar,TopBar,MobileDrawer}`.
+  Sidebar collapse state persists in `localStorage["wim.sidebar.collapsed"]`.
+- **⌘K + shortcuts**: `AppShell` mounts a `CommandPalette` and registers
+  global keys via `hooks/useHotkeys` — `mod+k` opens the palette
+  (Navigate / Actions / Articles), `c` creates an article
+  (`/articles?new=1`), `?` opens the `ShortcutsHelp` overlay, `g <key>`
+  jumps to a nav section (`g a` → Articles, `g d` → Dashboard, etc.).
+  `useHotkeys` ignores plain keys while typing in fields; `mod+k` still
+  fires. `c`/`?`/`g _` are added per-nav-item via `visibleNavItems(role)`
+  so admin-only routes only register for admins.
+- **Notification bell**: `components/layout/NotificationBell` lives in
+  the TopBar. Fetches `GET /api/alerts/notifications` on mount + every
+  route change (no tight polling), shows an unseen count, and calls
+  `POST /api/alerts/mark-seen` when opened to clear the badge. Each row
+  offers 1d/7d/30d quick snooze and a "view article" link. Hidden if
+  the endpoint errors so a client/server skew doesn't render broken.
+- **Preferences**: cross-device prefs (`theme`/`language`/`dateFormat`)
+  live on the `User` row. The auth `/me` payload carries them; client
+  providers (`theme/theme.tsx`, `i18n/i18n.tsx`,
+  `preferences/preferences.tsx`) expose `hydrate*` to apply them on
+  login without echoing back, and write user-initiated changes through
+  to `PUT /api/profile/me/preferences` (debounced, best-effort).
+  `localStorage` is the pre-auth cache + logged-out fallback. UI
+  `density` (`comfortable | compact`) is per-device — purely cosmetic,
+  no backend — toggled in Profile → Appearance, driving `data-density`
+  on `<html>`.
 - **Auth**: every request reads `tokenVersion` + `role` from DB in
   `authGuard` (one small select). Bumping `tokenVersion` invalidates
   every JWT for a user. Role changes propagate immediately without
@@ -224,6 +262,16 @@ the ADMIN → USER case is the admin-demote path.)
 - Billing: `apps/api/src/modules/billing/{billing,billing.me,billing.webhook}.routes.ts`
 - Admin: `apps/api/src/modules/admin/admin.routes.ts`
 - Web entry: `apps/web/src/main.tsx`, routes in `apps/web/src/App.tsx`
+- App shell: `apps/web/src/components/layout/{AppShell,Sidebar,TopBar,
+  MobileDrawer,NotificationBell}.tsx`, nav model in `src/lib/navItems.ts`
+- UI primitives: `apps/web/src/components/ui/` (barrel `index.ts`)
+- Hooks: `apps/web/src/hooks/{useHotkeys,useFileDrop,useApiForm,
+  useUnsavedChangesGuard}.ts`
 - API client: `apps/web/src/services/api.ts`
 - i18n: `apps/web/src/i18n/{i18n.tsx,translations.ts,translations.extras.ts}`
-- Theme: `apps/web/src/theme/theme.tsx`, CSS in `apps/web/src/index.css`
+- Theme + prefs: `apps/web/src/theme/theme.tsx`,
+  `apps/web/src/preferences/preferences.tsx`, CSS in
+  `apps/web/src/index.css` (incl. `data-density="compact"` rules)
+- Onboarding / actionable home: `apps/web/src/components/onboarding/
+  OnboardingChecklist.tsx`, `apps/web/src/components/dashboard/
+  NeedsAttention.tsx`

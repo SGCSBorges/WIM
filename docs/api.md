@@ -76,6 +76,43 @@ The UI uses `attachment.fileUrl` (which points at `/uploads/…`) to render
 images or trigger downloads — never `/api/attachments/:id`, because
 navigating that in a tab doesn't send the cookie and you'll see a 401.
 
+## User preferences
+
+The `User` row carries display preferences so they follow the user across
+devices:
+
+| Field        | Type / values                                              | Endpoint                                                          |
+| ------------ | ---------------------------------------------------------- | ----------------------------------------------------------------- |
+| `currency`   | ISO 4217 alpha-3 (default `USD`)                           | `PUT /api/profile/me/currency` — `{ "currency": "EUR" }`          |
+| `theme`      | `light \| dark \| ocean \| cyber` (nullable)               | `PUT /api/profile/me/preferences` — `{ "theme": "ocean" }`        |
+| `language`   | `en \| fr \| pt` (nullable)                                | `PUT /api/profile/me/preferences` — `{ "language": "fr" }`        |
+| `dateFormat` | `system \| dd/MM/yyyy \| MM/dd/yyyy \| yyyy-MM-dd` (nullable) | `PUT /api/profile/me/preferences` — `{ "dateFormat": "yyyy-MM-dd" }` |
+
+`/api/profile/me/preferences` accepts a partial body — any combination of
+the three fields, plus `null` to clear one back to "follow the device
+default". Empty bodies are rejected. Both `/api/auth/me` and
+`/api/profile/me` return these fields on read, so the SPA can hydrate the
+right theme/language/date format before the first render.
+
+UI density (`comfortable \| compact`) is intentionally **not** persisted
+server-side — it's a cosmetic per-device choice and lives in
+`localStorage["wim.density"]` only.
+
+## Notifications
+
+Two endpoints back the TopBar bell:
+
+- `GET /api/alerts/notifications` →
+  `{ items: AlertItem[], unseen: number }`. `items` is the caller's
+  scheduled alerts (warranty + custom) that are overdue or due within the
+  next 30 days, soonest first, capped at 20. `unseen` counts those created
+  after `User.alertsSeenAt`; null means everything is unseen.
+- `POST /api/alerts/mark-seen` → 204. Stamps `User.alertsSeenAt = now()`
+  to clear the unseen badge. Not audit-logged (it's per-device noise).
+
+Snooze and cancel are unchanged: `POST /api/alerts/:id/snooze` with
+`{ days }` and `POST /api/alerts/:id/cancel`.
+
 ## Background jobs
 
 The API runs BullMQ workers in the same process. Three repeatable schedules

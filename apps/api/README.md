@@ -38,13 +38,13 @@ Each module is a small slice of the API and follows the same shape:
 | `attachments`   | File upload (Multer + signature check), thumbs, bulk delete.|
 | `locations`     | Location CRUD + paginated articles-in-location.             |
 | `tags`          | Tag CRUD + rename/merge.                                    |
-| `alerts`        | Warranty reminder + custom alert scheduling (BullMQ).       |
+| `alerts`        | Warranty reminder + custom alert scheduling (BullMQ); plus the notification-bell feed (`GET /alerts/notifications`, `POST /alerts/mark-seen`). |
 | `shares`        | POWER_USER → POWER_USER inventory invites (per-user shares).|
 | `shared`        | Recipient-side reads + WRITE edits of shared articles.      |
 | `billing`       | Stripe Checkout, customer portal, webhook (idempotent).     |
 | `admin`         | Admin-only routes (users, audit log, jobs, DB backup).      |
 | `calendar`      | iCal feed (warranty ends + custom alerts + claims).         |
-| `profile`       | Email/password/currency/email-reminders/digest toggle; delete account. |
+| `profile`       | Email/password/currency/email-reminders/digest toggle; cross-device UI preferences (`theme`/`language`/`dateFormat` via `PUT /profile/me/preferences`); delete account. |
 | `push`          | Web Push subscription endpoints.                            |
 | `saved-views`   | Per-user saved filter views for the Articles list.          |
 | `audit`         | Audit log read endpoint + retention prune.                  |

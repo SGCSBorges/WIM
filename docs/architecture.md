@@ -124,6 +124,48 @@ Two BullMQ queues:
 Live queue depth and recent failures surface in the Admin → Jobs tab
 (`/admin/jobs`).
 
+## Web app shell & design system
+
+The web client is built on a tokenized design system with theme-aware CSS
+variables (light / dark / ocean / cyber) bridged into Tailwind utility
+classes via `apps/web/tailwind.config.js` — so primitives don't hardcode
+colors and every route works across all four themes.
+
+- **Primitives** (`apps/web/src/components/ui/`): `Button`, `Field` (+
+  `Input`/`Textarea`/`Select`), `PageHeader`, `Tabs`, `ConfirmDialog`,
+  `Badge`, `Card`/`Section`, `Stat`, `Pagination`, `Breadcrumbs`,
+  `Segmented`, `Popover`, `Dropzone`, `CommandPalette`. All accessible
+  (focus management, ARIA, `prefers-reduced-motion`), tokenized, and
+  imported via the barrel `components/ui`.
+- **App shell** (`apps/web/src/components/layout/`): persistent
+  `Sidebar` (icon-rail collapse persisted in localStorage), sticky
+  `TopBar` (search affordance for the command palette, `NotificationBell`,
+  PWA install, language/theme, profile, logout), and `MobileDrawer` on
+  small viewports. Routes/auth stay in `App.tsx`.
+- **Command palette + shortcuts**: `AppShell` mounts a `CommandPalette`
+  and registers global hotkeys via `hooks/useHotkeys`. `mod+k` opens the
+  palette anywhere (including from inside fields); `c` opens the
+  create-article form; `?` opens the `ShortcutsHelp` overlay; `g <key>`
+  jumps to a nav section (`g a` → Articles, etc.). Two-key sequences
+  and modifier combos are scoped to non-editable focus; modifier combos
+  fire even while typing, plain keys do not.
+- **Notification bell**: `NotificationBell` polls
+  `GET /api/alerts/notifications` on mount + every route change (no
+  tight interval). Opening the popover calls `POST /api/alerts/mark-seen`
+  to clear the unseen badge; rows expose 1d/7d/30d snooze via the
+  existing `/alerts/:id/snooze` endpoint. The bell hides silently if the
+  endpoint errors (client/server skew safety).
+- **Preferences**: cross-device prefs (`theme`/`language`/`dateFormat`)
+  live on the `User` row. The auth `/me` payload carries them, so the SPA
+  hydrates the correct theme/language/date format before the first
+  paint. Providers in `theme/theme.tsx`, `i18n/i18n.tsx`, and
+  `preferences/preferences.tsx` expose `hydrate*` (apply server value
+  without echoing back) and write user-initiated changes through to
+  `PUT /api/profile/me/preferences` (debounced, best-effort).
+  `localStorage` is the pre-auth cache + logged-out fallback. UI
+  `density` (`comfortable | compact`) is per-device only (cosmetic),
+  driving `data-density` on `<html>`.
+
 ## Auth & security recap
 
 - **Cookie** — `sameSite=none` in production (web and API are different PSL

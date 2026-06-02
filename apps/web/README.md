@@ -29,6 +29,35 @@ operational guide.
   `data-theme` on `<html>` and CSS variables in `src/index.css`. Shared
   components use the `.ui-*` utility classes (`ui-card`, `ui-btn-primary`,
   `ui-badge-power`, …) — don't hardcode Tailwind colors on shared widgets.
+  Semantic Tailwind utilities (`bg-surface`, `text-muted`, `border-line`,
+  `bg-primary`, `text-primary-contrast`, …) are bridged onto the CSS vars
+  in `tailwind.config.js`, so they resolve per-theme automatically.
+- **Design system**: primitives in `src/components/ui/` (barrel
+  `index.ts`): `Button`, `Field`/`Input`/`Textarea`/`Select`, `PageHeader`,
+  `Tabs`, `ConfirmDialog`, `Badge`, `Card`/`Section`, `Stat`, `Pagination`,
+  `Breadcrumbs`, `Segmented`, `Popover`, `Dropzone`, `CommandPalette`.
+  Icons from `lucide-react` (never emoji). Self-hosted Inter Variable via
+  `@fontsource-variable/inter`. Charts use `recharts`, lazy-loaded inside
+  the Dashboard chunk only.
+- **App shell** (`src/components/layout/`): `AppShell` mounts the
+  desktop `Sidebar` (collapse persisted), sticky `TopBar`,
+  `MobileDrawer`, and `NotificationBell`. Sidebar/Drawer nav models live
+  in `src/lib/navItems.ts` (`visibleNavItems(role)`, role-gated).
+- **Command palette + shortcuts**: `AppShell` mounts a `CommandPalette`
+  and registers global keys via `hooks/useHotkeys` — `mod+k` opens the
+  palette, `c` creates an article, `?` opens the `ShortcutsHelp`
+  overlay, `g <key>` jumps to a nav section (`g a` → Articles, `g d` →
+  Dashboard, etc.). Plain keys and sequences are suppressed while typing
+  in fields; modifier combos (`mod+k`) still fire.
+- **Preferences**: cross-device prefs (`theme`/`language`/`dateFormat`)
+  live on the `User` row. The auth `/me` payload carries them; client
+  providers (`theme/theme.tsx`, `i18n/i18n.tsx`,
+  `preferences/preferences.tsx`) expose `hydrate*` to apply on login
+  without echoing back, and write user-initiated changes through to
+  `PUT /api/profile/me/preferences` (debounced, best-effort).
+  `localStorage` is the pre-auth cache + logged-out fallback. UI
+  `density` (`comfortable | compact`) is per-device only — toggled in
+  Profile → Appearance, driving `data-density` on `<html>`.
 - **State**: local + URL search params (the Articles list keeps every
   filter in the URL so views are shareable and survive reload). No global
   store.
@@ -50,8 +79,18 @@ feature is large.
   panel, data export panel, sharing summary.
 - `sharing/` — shared-with-me view, my-shared view, invite accept form,
   invites list.
-- `alerts/`, `calendar/`, `dashboard/`, `auth/`, `common/` — smaller views
-  + reusable bits (`Modal`, `Skeleton`, `States`, `Toast`, `BarList`).
+- `dashboard/` — recharts-based KPI grid plus a `NeedsAttention` panel
+  above the charts (expired + expiring-soon articles with inline
+  snooze/view). Lazy-loaded so `recharts` stays out of the main bundle.
+- `onboarding/` — `OnboardingChecklist` on Home, derives "what's left"
+  from `statisticsAPI.getBasic` (first article / warranty / alert) and
+  links each step to the right route. Dismissible (localStorage).
+- `layout/` — `AppShell`, `Sidebar`, `TopBar`, `MobileDrawer`,
+  `NotificationBell`. The bell surfaces overdue/due-soon alerts via
+  `GET /api/alerts/notifications`.
+- `alerts/`, `calendar/`, `auth/`, `common/` — smaller views + reusable
+  bits (`Modal`, `Skeleton`, `States`, `Toast` with optimistic undo,
+  `BarList`, `ShortcutsHelp`).
 
 ## Scripts (npm)
 
