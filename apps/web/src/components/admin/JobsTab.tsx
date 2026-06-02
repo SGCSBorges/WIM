@@ -6,9 +6,11 @@
  * jobs from `/admin/failed-jobs` (capped 50) with expandable stack traces.
  */
 import { useCallback, useEffect, useState } from "react";
+import { Pause, Play, ChevronDown, ChevronRight } from "lucide-react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { Button, Section, Badge } from "../ui";
 
 type Counts = Record<string, number> | null;
 
@@ -30,7 +32,6 @@ type FailedJob = {
   finishedOn: number | undefined;
 };
 
-// Stable column order so a flickering counter doesn't reshuffle the row.
 const COUNT_FIELDS = [
   "waiting",
   "active",
@@ -69,8 +70,6 @@ export default function JobsTab() {
     }
   }, [t]);
 
-  // Refetch on mount + every 10s unless paused. The polling is plain because
-  // queue depth changes slowly; SSE/WebSocket would be overkill.
   useEffect(() => {
     void refresh();
     if (paused) return;
@@ -79,20 +78,15 @@ export default function JobsTab() {
   }, [paused, refresh]);
 
   const renderQueue = (label: string, counts: Counts) => (
-    <div className="ui-card rounded-lg p-4 space-y-2">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="font-medium">{label}</h3>
-        {counts === null && (
-          <span className="text-xs ui-badge-warning px-1.5 py-0.5 rounded">
-            {t("admin.jobs.unavailable")}
-          </span>
-        )}
-      </div>
+    <Section title={label}>
+      {counts === null && (
+        <Badge tone="warning" className="mb-2">
+          {t("admin.jobs.unavailable")}
+        </Badge>
+      )}
       <dl className="grid grid-cols-5 gap-2 text-sm">
         {COUNT_FIELDS.map((field) => {
           const value = counts?.[field];
-          // Failed > 0 deserves attention: render the cell with the warn
-          // styling so an operator's eye lands on it during the routine scan.
           const isAlert =
             field === "failed" && typeof value === "number" && value > 0;
           return (
@@ -100,11 +94,13 @@ export default function JobsTab() {
               key={field}
               className={
                 isAlert
-                  ? "space-y-0.5 text-center ui-alert-error rounded px-1 py-1"
+                  ? "space-y-0.5 rounded-lg ui-alert-error px-1 py-2 text-center"
                   : "space-y-0.5 text-center"
               }
             >
-              <dd className="font-semibold tabular-nums">{value ?? "—"}</dd>
+              <dd className="text-lg font-semibold tabular-nums ui-title">
+                {value ?? "—"}
+              </dd>
               <dt className="text-xs ui-text-muted">
                 {t(`admin.jobs.count.${field}`)}
               </dt>
@@ -112,20 +108,27 @@ export default function JobsTab() {
           );
         })}
       </dl>
-    </div>
+    </Section>
   );
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm ui-text-muted">{t("admin.jobs.subtitle")}</p>
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setPaused((p) => !p)}
-          className="text-sm ui-btn-ghost border ui-divider rounded px-3 py-1"
+          leftIcon={
+            paused ? (
+              <Play className="h-4 w-4" />
+            ) : (
+              <Pause className="h-4 w-4" />
+            )
+          }
         >
           {paused ? t("admin.jobs.resume") : t("admin.jobs.pause")}
-        </button>
+        </Button>
       </div>
 
       {error && <p className="text-sm ui-text-error">{error}</p>}
@@ -140,7 +143,7 @@ export default function JobsTab() {
           : "—"}
       </p>
 
-      <div className="ui-card rounded-lg p-4 space-y-2">
+      <div className="ui-card space-y-2 p-4">
         <button
           type="button"
           onClick={() => {
@@ -149,11 +152,14 @@ export default function JobsTab() {
             if (next && failed === null) void loadFailed();
           }}
           aria-expanded={showFailed}
-          className="text-sm font-medium ui-btn-ghost border ui-divider rounded px-3 py-1"
+          className="inline-flex items-center gap-2 rounded-lg border ui-divider px-3 py-1.5 text-sm font-medium ui-btn-ghost"
         >
-          {showFailed
-            ? `▾ ${t("admin.jobs.recentFailures")}`
-            : `▸ ${t("admin.jobs.recentFailures")}`}
+          {showFailed ? (
+            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          )}
+          {t("admin.jobs.recentFailures")}
         </button>
 
         {showFailed && (
@@ -181,7 +187,7 @@ export default function JobsTab() {
                       key={rowKey}
                       className={
                         exhausted
-                          ? "py-2 ui-alert-error rounded px-2 my-1"
+                          ? "my-1 rounded-lg ui-alert-error px-2 py-2"
                           : "py-2"
                       }
                     >
@@ -189,7 +195,7 @@ export default function JobsTab() {
                         <span className="font-mono ui-text-muted">
                           {j.queue}
                         </span>
-                        <span className="font-medium">{j.name}</span>
+                        <span className="font-medium ui-title">{j.name}</span>
                         <span className="ui-text-muted">
                           {t("admin.jobs.attempt")
                             .replace("{n}", String(j.attemptsMade))
@@ -200,24 +206,25 @@ export default function JobsTab() {
                             {new Date(j.finishedOn).toLocaleString(language)}
                           </span>
                         )}
-                        <button
-                          type="button"
-                          className="ml-auto text-xs ui-btn-ghost border ui-divider rounded px-2"
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-auto"
+                          aria-expanded={expandedId === rowKey}
                           onClick={() =>
                             setExpandedId((p) => (p === rowKey ? null : rowKey))
                           }
-                          aria-expanded={expandedId === rowKey}
                         >
                           {expandedId === rowKey
                             ? t("admin.jobs.hideDetails")
                             : t("admin.jobs.viewDetails")}
-                        </button>
+                        </Button>
                       </div>
-                      <p className="text-xs mt-1 break-words">
+                      <p className="mt-1 break-words text-xs">
                         {j.failedReason ?? t("admin.jobs.noReason")}
                       </p>
                       {expandedId === rowKey && j.stacktrace.length > 0 && (
-                        <pre className="mt-1 text-[10px] font-mono whitespace-pre-wrap ui-panel rounded p-2 overflow-x-auto">
+                        <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-md ui-panel p-2 font-mono text-[10px]">
                           {j.stacktrace.join("\n")}
                         </pre>
                       )}

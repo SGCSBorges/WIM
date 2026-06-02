@@ -10,6 +10,7 @@ import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { AUDIT_ACTIONS, AUDIT_ENTITIES } from "@wim/types";
+import { Field, Input, Select, Button } from "../ui";
 
 type Entry = {
   id: number;
@@ -25,9 +26,6 @@ type Entry = {
   user: { email: string } | null;
 };
 
-// Sourced from @wim/types so a new audit action only needs to be added in one
-// place; the previous hardcoded list silently drifted (BILLING_UPGRADE/DOWNGRADE,
-// DB_EXPORT/IMPORT were never filterable).
 const ACTIONS = ["", ...AUDIT_ACTIONS];
 const ENTITIES = ["", ...AUDIT_ENTITIES];
 
@@ -53,7 +51,6 @@ export default function AuditLogTab() {
           action: filterAction || undefined,
           entity: filterEntity || undefined,
           createdFrom: filterFrom || undefined,
-          // Make the end date inclusive of the whole day.
           createdTo: filterTo ? `${filterTo}T23:59:59.999Z` : undefined,
           limit: 50,
           cursor: reset ? undefined : (nextCursor ?? undefined),
@@ -86,107 +83,71 @@ export default function AuditLogTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <label
-            htmlFor="al-user"
-            className="block text-xs font-medium ui-text-muted mb-1"
-          >
-            {t("admin.auditLog.filterByUserId")}
-          </label>
-          <input
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <Field label={t("admin.auditLog.filterByUserId")} htmlFor="al-user">
+          <Input
             id="al-user"
             type="number"
             value={filterUserId}
             onChange={(e) => setFilterUserId(e.target.value)}
-            className="ui-input px-3 py-2 rounded-md w-32"
             placeholder="123"
           />
-        </div>
-        <div>
-          <label
-            htmlFor="al-action"
-            className="block text-xs font-medium ui-text-muted mb-1"
-          >
-            {t("admin.auditLog.filterByAction")}
-          </label>
-          <select
+        </Field>
+        <Field label={t("admin.auditLog.filterByAction")} htmlFor="al-action">
+          <Select
             id="al-action"
             value={filterAction}
             onChange={(e) => setFilterAction(e.target.value)}
-            className="ui-input px-3 py-2 rounded-md"
           >
             {ACTIONS.map((a) => (
               <option key={a} value={a}>
                 {a || t("admin.auditLog.allActions")}
               </option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label
-            htmlFor="al-entity"
-            className="block text-xs font-medium ui-text-muted mb-1"
-          >
-            {t("admin.auditLog.filterByEntity")}
-          </label>
-          <select
+          </Select>
+        </Field>
+        <Field label={t("admin.auditLog.filterByEntity")} htmlFor="al-entity">
+          <Select
             id="al-entity"
             value={filterEntity}
             onChange={(e) => setFilterEntity(e.target.value)}
-            className="ui-input px-3 py-2 rounded-md"
           >
             {ENTITIES.map((e) => (
               <option key={e} value={e}>
                 {e || t("admin.auditLog.allEntities")}
               </option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label
-            htmlFor="al-from"
-            className="block text-xs font-medium ui-text-muted mb-1"
-          >
-            {t("admin.auditLog.filterFrom")}
-          </label>
-          <input
+          </Select>
+        </Field>
+        <Field label={t("admin.auditLog.filterFrom")} htmlFor="al-from">
+          <Input
             id="al-from"
             type="date"
             value={filterFrom}
             onChange={(e) => setFilterFrom(e.target.value)}
-            className="ui-input px-3 py-2 rounded-md"
           />
-        </div>
-        <div>
-          <label
-            htmlFor="al-to"
-            className="block text-xs font-medium ui-text-muted mb-1"
-          >
-            {t("admin.auditLog.filterTo")}
-          </label>
-          <input
+        </Field>
+        <Field label={t("admin.auditLog.filterTo")} htmlFor="al-to">
+          <Input
             id="al-to"
             type="date"
             value={filterTo}
             onChange={(e) => setFilterTo(e.target.value)}
-            className="ui-input px-3 py-2 rounded-md"
           />
-        </div>
+        </Field>
       </div>
 
       {error && (
-        <div className="border ui-alert-error rounded-md p-3">
-          <p className="text-sm ui-text-error">{error}</p>
+        <div className="rounded-xl border ui-alert-error p-3 text-sm ui-text-error">
+          {error}
         </div>
       )}
 
-      <div className="ui-card rounded-lg overflow-hidden">
-        {/* Mobile: stacked-card layout — the desktop table below is hidden
-            at the same breakpoint. */}
-        <ul className="sm:hidden divide-y ui-divider">
+      <div className="ui-card overflow-hidden">
+        {/* Mobile: stacked cards */}
+        <ul className="divide-y ui-divider sm:hidden">
           {entries.map((e) => (
-            <li key={`m-${e.id}`} className="p-3 space-y-1 text-sm">
+            <li key={`m-${e.id}`} className="space-y-1 p-3 text-sm">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-mono text-xs">{e.action}</span>
                 <span className="text-xs ui-text-muted">
@@ -202,20 +163,20 @@ export default function AuditLogTab() {
                 </span>
               </div>
               {e.metadata && Object.keys(e.metadata).length > 0 ? (
-                <pre className="text-[10px] whitespace-pre-wrap break-all">
+                <pre className="whitespace-pre-wrap break-all text-[10px]">
                   {JSON.stringify(e.metadata, null, 0)}
                 </pre>
               ) : null}
             </li>
           ))}
           {entries.length === 0 && !loading && (
-            <li className="p-4 text-center ui-text-muted text-sm">
+            <li className="p-4 text-center text-sm ui-text-muted">
               {t("admin.auditLog.empty")}
             </li>
           )}
         </ul>
 
-        <div className="hidden sm:block overflow-x-auto">
+        <div className="hidden overflow-x-auto sm:block">
           <table className="min-w-full text-sm">
             <thead className="ui-panel">
               <tr className="text-left ui-text-muted">
@@ -239,7 +200,7 @@ export default function AuditLogTab() {
             <tbody>
               {entries.map((e) => (
                 <tr key={e.id} className="border-t ui-divider align-top">
-                  <td className="px-3 py-2 whitespace-nowrap text-xs">
+                  <td className="whitespace-nowrap px-3 py-2 text-xs">
                     {new Date(e.createdAt).toLocaleString()}
                   </td>
                   <td className="px-3 py-2">
@@ -255,7 +216,7 @@ export default function AuditLogTab() {
                     {e.entityId ? `#${e.entityId}` : ""}
                   </td>
                   <td className="px-3 py-2">
-                    <pre className="text-[10px] whitespace-pre-wrap break-all max-w-xs">
+                    <pre className="max-w-xs whitespace-pre-wrap break-all text-[10px]">
                       {e.metadata && Object.keys(e.metadata).length > 0
                         ? JSON.stringify(e.metadata, null, 0)
                         : "—"}
@@ -276,21 +237,21 @@ export default function AuditLogTab() {
             </tbody>
           </table>
         </div>
-        <div className="p-3 border-t ui-divider flex justify-between items-center">
+        <div className="flex items-center justify-between border-t ui-divider p-3">
           <span className="text-xs ui-text-muted">
             {t("admin.auditLog.shown")}: {entries.length}
           </span>
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => load(false)}
             disabled={loading || nextCursor === null}
-            className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded disabled:opacity-50"
+            loading={loading}
           >
-            {loading
-              ? t("common.loading")
-              : nextCursor === null
-                ? t("admin.auditLog.allLoaded")
-                : t("admin.auditLog.loadMore")}
-          </button>
+            {nextCursor === null
+              ? t("admin.auditLog.allLoaded")
+              : t("admin.auditLog.loadMore")}
+          </Button>
         </div>
       </div>
     </div>

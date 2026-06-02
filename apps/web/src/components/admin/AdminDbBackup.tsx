@@ -6,20 +6,13 @@
  * so we hard-logout + reload the page.
  */
 import { useRef, useState } from "react";
+import { Database, Download, Upload, TriangleAlert } from "lucide-react";
 import { adminAPI, authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
+import { Button, Section, Field, Input } from "../ui";
 
-/**
- * Admin-only Database backup / restore card.
- *
- * Provides one-button export (downloads a JSON dump of every table) and
- * import (replaces every row from a previously exported JSON file). The
- * import is destructive: it wipes the running database. The caller's
- * session is invalidated by the server because its User row is rewritten
- * by the import — we trigger a hard logout + redirect on success.
- */
 export default function AdminDbBackup() {
   const { t } = useI18n();
   const toast = useToast();
@@ -30,9 +23,6 @@ export default function AdminDbBackup() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Confirm step asks for the admin's current password (tripwire against a
-  // stolen cookie) and lets them opt in to keeping Stripe ids — default is
-  // strip-on-import so a dump can't re-aim webhooks at the wrong env.
   const [confirmPassword, setConfirmPassword] = useState("");
   const [keepStripeIds, setKeepStripeIds] = useState(false);
 
@@ -89,9 +79,6 @@ export default function AdminDbBackup() {
       setConfirmPassword("");
       setCounts(result.counts);
       toast.show(t("admin.db.importSuccess"), { kind: "success" });
-      // Server rewrote the user table; our session no longer maps to a
-      // real row (or maps to a row with a different tokenVersion). Hard
-      // logout + reload so we land on the login screen with a clean cache.
       try {
         await authAPI.logout();
       } catch {
@@ -110,24 +97,26 @@ export default function AdminDbBackup() {
   };
 
   return (
-    <div className="ui-card rounded-lg shadow p-6 space-y-4">
-      <div>
-        <h3 className="font-semibold ui-title">{t("admin.db.title")}</h3>
-        <p className="text-sm ui-text-muted mt-1">{t("admin.db.subtitle")}</p>
-      </div>
-
+    <Section
+      icon={<Database className="h-5 w-5" />}
+      title={t("admin.db.title")}
+      description={t("admin.db.subtitle")}
+    >
       {error && (
-        <div className="border ui-alert-error rounded-md p-3" role="alert">
-          <p className="text-sm ui-text-error">{error}</p>
+        <div
+          role="alert"
+          className="mb-3 rounded-lg border ui-alert-error p-3 text-sm ui-text-error"
+        >
+          {error}
         </div>
       )}
 
       {counts && (
-        <div className="border ui-alert-success rounded-md p-3">
-          <p className="text-sm ui-text-success font-medium">
+        <div className="mb-3 rounded-lg border ui-alert-success p-3">
+          <p className="text-sm font-medium ui-text-success">
             {t("admin.db.importSuccess")}
           </p>
-          <ul className="mt-1 text-xs ui-text-success grid grid-cols-2 gap-x-3">
+          <ul className="mt-1 grid grid-cols-2 gap-x-3 text-xs ui-text-success">
             {Object.entries(counts).map(([table, n]) => (
               <li key={table}>
                 <code className="font-mono">{table}</code>: {n}
@@ -137,17 +126,15 @@ export default function AdminDbBackup() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
           onClick={handleExport}
-          disabled={exporting || importing}
-          className="ui-btn-primary px-4 py-2 rounded text-sm"
+          loading={exporting}
+          disabled={importing}
+          leftIcon={<Download className="h-4 w-4" />}
         >
-          {exporting
-            ? t("admin.db.exporting")
-            : `⬇ ${t("admin.db.exportButton")}`}
-        </button>
+          {t("admin.db.exportButton")}
+        </Button>
 
         <input
           ref={fileInputRef}
@@ -156,43 +143,44 @@ export default function AdminDbBackup() {
           className="hidden"
           onChange={handleFilePick}
         />
-        <button
-          type="button"
+        <Button
+          variant="outline"
           onClick={() => fileInputRef.current?.click()}
           disabled={exporting || importing}
-          className="ui-btn-ghost px-4 py-2 rounded text-sm border ui-divider"
+          leftIcon={<Upload className="h-4 w-4" />}
         >
-          ⬆ {t("admin.db.chooseFile")}
-        </button>
+          {t("admin.db.chooseFile")}
+        </Button>
       </div>
 
       {pendingFile && !importing && !counts && (
-        <div className="border ui-alert-warning rounded-md p-3 space-y-3">
-          <p className="text-sm ui-text-warn">
-            <strong>{t("admin.db.confirmTitle")}</strong>
+        <div className="mt-3 space-y-3 rounded-lg border ui-alert-warning p-3">
+          <p className="flex items-center gap-2 text-sm font-semibold ui-text-warn">
+            <TriangleAlert className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {t("admin.db.confirmTitle")}
           </p>
           <p className="text-sm ui-text-warn">
             {t("admin.db.confirmBody").replace("{file}", pendingFile.name)}
           </p>
-          <label className="block text-sm ui-text-warn">
-            <span className="font-medium">
-              {t("admin.db.passwordPromptLabel")}
-            </span>
-            <input
+          <Field
+            label={t("admin.db.passwordPromptLabel")}
+            htmlFor="db-confirm-password"
+          >
+            <Input
+              id="db-confirm-password"
               type="password"
               autoComplete="current-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1 w-full ui-input px-3 py-2 rounded text-sm"
               required
             />
-          </label>
+          </Field>
           <label className="flex items-start gap-2 text-xs ui-text-warn">
             <input
               type="checkbox"
               checked={keepStripeIds}
               onChange={(e) => setKeepStripeIds(e.target.checked)}
-              className="mt-0.5"
+              className="mt-0.5 h-3.5 w-3.5 accent-[var(--primary)]"
             />
             <span>
               <strong>{t("admin.db.keepStripeIdsLabel")}</strong>{" "}
@@ -202,37 +190,37 @@ export default function AdminDbBackup() {
             </span>
           </label>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              variant="danger"
+              size="sm"
               onClick={confirmImport}
               disabled={!confirmPassword}
-              className="ui-btn-danger px-3 py-1.5 text-sm rounded"
             >
               {t("admin.db.confirmReplace")}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setPendingFile(null);
                 setConfirmPassword("");
                 setKeepStripeIds(false);
                 if (fileInputRef.current) fileInputRef.current.value = "";
               }}
-              className="ui-btn-ghost px-3 py-1.5 text-sm rounded border ui-divider"
             >
               {t("common.cancel")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {importing && (
-        <div className="border ui-divider rounded-md p-3">
+        <div className="mt-3 rounded-lg border ui-divider p-3">
           <p className="text-sm ui-text-muted">{t("admin.db.importing")}</p>
         </div>
       )}
 
-      <p className="text-xs ui-text-muted">{t("admin.db.uploadsNote")}</p>
-    </div>
+      <p className="mt-3 text-xs ui-text-muted">{t("admin.db.uploadsNote")}</p>
+    </Section>
   );
 }

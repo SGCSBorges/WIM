@@ -7,6 +7,23 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import {
+  ShieldCheck,
+  LayoutDashboard,
+  Users as UsersIcon,
+  ScrollText,
+  Briefcase,
+  RotateCw,
+  KeyRound,
+  LogOut,
+  Trash2,
+  Pencil,
+  Search,
+  Package,
+  Activity,
+  UserPlus,
+  Check,
+} from "lucide-react";
+import {
   adminAPI,
   articlesAPI,
   authAPI,
@@ -20,6 +37,17 @@ import AuditLogTab from "./AuditLogTab";
 import JobsTab from "./JobsTab";
 import AdminDbBackup from "./AdminDbBackup";
 import { DashboardStatsSkeleton } from "../common/Skeleton";
+import {
+  PageHeader,
+  Section,
+  Tabs,
+  Button,
+  Input,
+  Select,
+  Badge,
+  Stat,
+  type BadgeTone,
+} from "../ui";
 
 type Role = "USER" | "POWER_USER" | "ADMIN";
 
@@ -254,256 +282,199 @@ export default function AdminUsers() {
 
   if (role !== "ADMIN") {
     return (
-      <div className="ui-card rounded-lg p-6">
-        <h1 className="text-xl font-semibold mb-2">{t("admin.title")}</h1>
+      <Section
+        icon={<ShieldCheck className="h-5 w-5" />}
+        title={t("admin.title")}
+      >
         <p className="text-sm ui-text-muted">{t("admin.accessDenied")}</p>
-      </div>
+      </Section>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t("admin.title")}</h1>
-          <p className="ui-text-muted">{t("admin.subtitle")}</p>
-        </div>
-        <button
-          onClick={activeTab === "users" ? fetchUsers : fetchStatistics}
-          className="ui-btn-ghost px-3 py-2 rounded border ui-divider"
-          disabled={activeTab === "users" ? loadingUsers : loadingStats}
-        >
-          {t("common.refresh")}
-        </button>
-      </div>
+  const roleTone = (r: Role): BadgeTone =>
+    r === "ADMIN" ? "admin" : r === "POWER_USER" ? "power" : "neutral";
 
-      {/* Tabs */}
-      <div className="border-b ui-divider">
-        {/* div, not nav: jsx-a11y/no-noninteractive-element-to-interactive-role
-            rejects role="tablist" on a <nav>, which is a non-interactive
-            landmark. The tablist semantics belong on a plain container. */}
-        <div role="tablist" className="-mb-px flex space-x-8">
-          <button
-            role="tab"
-            id="admin-tab-dashboard"
-            aria-selected={activeTab === "dashboard"}
-            aria-controls="admin-panel-dashboard"
-            onClick={() => setActiveTab("dashboard")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "dashboard"
-                ? "ui-tab-active"
-                : "border-transparent ui-text-muted hover:border-[var(--border)]"
-            }`}
+  return (
+    <div>
+      <PageHeader
+        icon={<ShieldCheck className="h-5 w-5" />}
+        title={t("admin.title")}
+        subtitle={t("admin.subtitle")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={activeTab === "users" ? fetchUsers : fetchStatistics}
+            disabled={activeTab === "users" ? loadingUsers : loadingStats}
+            leftIcon={<RotateCw className="h-4 w-4" />}
           >
-            {t("admin.dashboard")}
-          </button>
-          <button
-            role="tab"
-            id="admin-tab-users"
-            aria-selected={activeTab === "users"}
-            aria-controls="admin-panel-users"
-            onClick={() => setActiveTab("users")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "users"
-                ? "ui-tab-active"
-                : "border-transparent ui-text-muted hover:border-[var(--border)]"
-            }`}
-          >
-            {t("admin.users")}
-          </button>
-          <button
-            role="tab"
-            id="admin-tab-auditLog"
-            aria-selected={activeTab === "auditLog"}
-            aria-controls="admin-panel-auditLog"
-            onClick={() => setActiveTab("auditLog")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "auditLog"
-                ? "ui-tab-active"
-                : "border-transparent ui-text-muted hover:border-[var(--border)]"
-            }`}
-          >
-            {t("admin.auditLog")}
-          </button>
-          <button
-            role="tab"
-            id="admin-tab-jobs"
-            aria-selected={activeTab === "jobs"}
-            aria-controls="admin-panel-jobs"
-            onClick={() => setActiveTab("jobs")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "jobs"
-                ? "ui-tab-active"
-                : "border-transparent ui-text-muted hover:border-[var(--border)]"
-            }`}
-          >
-            {t("admin.jobs")}
-          </button>
-        </div>
-      </div>
+            {t("common.refresh")}
+          </Button>
+        }
+      />
+
+      <Tabs
+        idPrefix="admin-tab"
+        aria-label={t("admin.title")}
+        value={activeTab}
+        onChange={(id) =>
+          setActiveTab(id as "dashboard" | "users" | "auditLog" | "jobs")
+        }
+        tabs={[
+          {
+            id: "dashboard",
+            label: t("admin.dashboard"),
+            icon: <LayoutDashboard className="h-4 w-4" />,
+          },
+          {
+            id: "users",
+            label: t("admin.users"),
+            icon: <UsersIcon className="h-4 w-4" />,
+          },
+          {
+            id: "auditLog",
+            label: t("admin.auditLog"),
+            icon: <ScrollText className="h-4 w-4" />,
+          },
+          {
+            id: "jobs",
+            label: t("admin.jobs"),
+            icon: <Briefcase className="h-4 w-4" />,
+          },
+        ]}
+        className="mb-6"
+      />
 
       {error && (
-        <div className="border ui-alert-error rounded-lg p-4">
-          <p className="text-sm ui-text-error">{error}</p>
+        <div className="mb-4 rounded-xl border ui-alert-error p-3 text-sm ui-text-error">
+          {error}
         </div>
       )}
 
       {activeTab === "dashboard" && (
         <div
           role="tabpanel"
-          id="admin-panel-dashboard"
+          id="admin-tab-panel-dashboard"
           aria-labelledby="admin-tab-dashboard"
+          className="space-y-6"
         >
           {loadingStats ? (
             <DashboardStatsSkeleton cards={4} />
           ) : statistics ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="ui-card rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium ui-text-muted">
-                      {t("admin.totalUsers")}
-                    </p>
-                    <p className="text-3xl font-semibold">
-                      {statistics.users.total}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full ui-icon-primary text-2xl flex items-center justify-center w-12 h-12">
-                    👥
-                  </div>
-                </div>
-              </div>
-
-              <div className="ui-card rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium ui-text-muted">
-                      {t("admin.totalArticles")}
-                    </p>
-                    <p className="text-3xl font-semibold">
-                      {statistics.articles.total}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full ui-icon-success text-2xl flex items-center justify-center w-12 h-12">
-                    📦
-                  </div>
-                </div>
-              </div>
-
-              <div className="ui-card rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium ui-text-muted">
-                      {t("admin.activeWarranties")}
-                    </p>
-                    <p className="text-3xl font-semibold">
-                      {statistics.warranties.active}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full ui-icon-purple text-2xl flex items-center justify-center w-12 h-12">
-                    🛡️
-                  </div>
-                </div>
-              </div>
-
-              <div className="ui-card rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium ui-text-muted">
-                      {t("admin.sharedArticles")}
-                    </p>
-                    <p className="text-3xl font-semibold">
-                      {statistics.sharing.totalSharedArticles}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full ui-icon-warning text-2xl flex items-center justify-center w-12 h-12">
-                    🤝
-                  </div>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat
+                label={t("admin.totalUsers")}
+                value={statistics.users.total}
+                tone="primary"
+                icon={<UsersIcon className="h-5 w-5" />}
+              />
+              <Stat
+                label={t("admin.totalArticles")}
+                value={statistics.articles.total}
+                tone="success"
+                icon={<Package className="h-5 w-5" />}
+              />
+              <Stat
+                label={t("admin.activeWarranties")}
+                value={statistics.warranties.active}
+                tone="accent"
+                icon={<ShieldCheck className="h-5 w-5" />}
+              />
+              <Stat
+                label={t("admin.sharedArticles")}
+                value={statistics.sharing.totalSharedArticles}
+                tone="warning"
+                icon={<Activity className="h-5 w-5" />}
+              />
             </div>
           ) : (
-            <div className="border ui-alert-warning rounded-lg p-4">
-              <p className="text-sm ui-text-warn">{t("dashboard.noStats")}</p>
+            <div className="rounded-xl border ui-alert-warning p-4 text-sm ui-text-warn">
+              {t("dashboard.noStats")}
             </div>
           )}
-          <div className="mt-6">
-            <AdminDbBackup />
-          </div>
+          <AdminDbBackup />
         </div>
       )}
 
       {activeTab === "users" && (
         <div
           role="tabpanel"
-          id="admin-panel-users"
+          id="admin-tab-panel-users"
           aria-labelledby="admin-tab-users"
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="grid grid-cols-1 gap-6 lg:grid-cols-2"
         >
-          <div className="ui-card rounded-lg">
-            <div className="p-4 border-b ui-divider space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="font-semibold">{t("admin.users")}</h2>
-                <div className="flex items-center gap-2">
-                  {loadingUsers && (
-                    <span className="text-xs ui-text-muted">
-                      {t("common.loading")}
-                    </span>
-                  )}
-                  <button
-                    onClick={() => setCreateOpen(true)}
-                    className="text-sm px-3 py-1.5 ui-btn-primary rounded"
-                  >
-                    + {t("admin.createUser.button")}
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <input
+          {/* Users list */}
+          <Section
+            icon={<UsersIcon className="h-5 w-5" />}
+            title={t("admin.users")}
+            actions={
+              <Button
+                size="sm"
+                onClick={() => setCreateOpen(true)}
+                leftIcon={<UserPlus className="h-4 w-4" />}
+              >
+                {t("admin.createUser.button")}
+              </Button>
+            }
+          >
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <div className="relative min-w-[160px] flex-1">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+                  aria-hidden="true"
+                />
+                <Input
                   type="search"
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder={t("admin.users.searchPlaceholder")}
                   aria-label={t("admin.users.searchPlaceholder")}
-                  className="ui-input px-3 py-1.5 rounded-md text-sm flex-1 min-w-[160px]"
+                  className="pl-9"
                 />
-                <select
-                  value={`${userSort}:${userDir}`}
-                  onChange={(e) => {
-                    const [s, d] = e.target.value.split(":") as [
-                      typeof userSort,
-                      typeof userDir,
-                    ];
-                    setUserSort(s);
-                    setUserDir(d);
-                  }}
-                  aria-label={t("admin.users.sortLabel")}
-                  className="ui-select px-2 py-1.5 rounded-md text-sm"
-                >
-                  <option value="createdAt:desc">
-                    {t("admin.users.sort.newest")}
-                  </option>
-                  <option value="createdAt:asc">
-                    {t("admin.users.sort.oldest")}
-                  </option>
-                  <option value="email:asc">
-                    {t("admin.users.sort.emailAsc")}
-                  </option>
-                  <option value="email:desc">
-                    {t("admin.users.sort.emailDesc")}
-                  </option>
-                  <option value="role:asc">
-                    {t("admin.users.sort.roleAsc")}
-                  </option>
-                </select>
               </div>
+              <Select
+                value={`${userSort}:${userDir}`}
+                onChange={(e) => {
+                  const [s, d] = e.target.value.split(":") as [
+                    typeof userSort,
+                    typeof userDir,
+                  ];
+                  setUserSort(s);
+                  setUserDir(d);
+                }}
+                aria-label={t("admin.users.sortLabel")}
+                className="w-auto"
+              >
+                <option value="createdAt:desc">
+                  {t("admin.users.sort.newest")}
+                </option>
+                <option value="createdAt:asc">
+                  {t("admin.users.sort.oldest")}
+                </option>
+                <option value="email:asc">
+                  {t("admin.users.sort.emailAsc")}
+                </option>
+                <option value="email:desc">
+                  {t("admin.users.sort.emailDesc")}
+                </option>
+                <option value="role:asc">
+                  {t("admin.users.sort.roleAsc")}
+                </option>
+              </Select>
             </div>
-            <div className="divide-y">
+            {loadingUsers && (
+              <p className="mb-2 text-xs ui-text-muted">
+                {t("common.loading")}
+              </p>
+            )}
+            <ul className="divide-y ui-divider">
               {users.map((u) => (
-                <div
+                <li
                   key={u.userId}
-                  className={`p-4 space-y-2 ${
-                    selectedUser?.userId === u.userId ? "ui-panel" : ""
+                  className={`space-y-2 py-3 first:pt-0 last:pb-0 ${
+                    selectedUser?.userId === u.userId
+                      ? "-mx-2 rounded-lg bg-surface-muted px-2"
+                      : ""
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -512,24 +483,26 @@ export default function AdminUsers() {
                         setSelectedUser(u);
                         fetchInventory(u.userId);
                       }}
-                      className="text-left flex-1 min-w-0"
+                      className="min-w-0 flex-1 text-left"
                     >
-                      <div className="font-medium truncate">{u.email}</div>
+                      <div className="truncate font-medium ui-title">
+                        {u.email}
+                      </div>
                       <div className="text-xs ui-text-muted">
                         ID #{u.userId}
                       </div>
                     </button>
 
                     {/* Inline role editor */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex shrink-0 items-center gap-2">
                       {editingRoleUserId === u.userId ? (
                         <>
-                          <select
+                          <Select
                             value={editingRoleValue}
                             onChange={(e) =>
                               setEditingRoleValue(e.target.value as Role)
                             }
-                            className="ui-input text-xs px-2 py-1 rounded"
+                            className="w-auto text-xs"
                           >
                             <option value="USER">{t("admin.role.USER")}</option>
                             <option value="POWER_USER">
@@ -538,71 +511,82 @@ export default function AdminUsers() {
                             <option value="ADMIN">
                               {t("admin.role.ADMIN")}
                             </option>
-                          </select>
-                          <button
+                          </Select>
+                          <Button
+                            size="sm"
                             onClick={() => saveRole(u)}
-                            className="text-xs px-2 py-1 ui-btn-primary rounded"
-                            disabled={actionLoading === `role:${u.userId}`}
+                            loading={actionLoading === `role:${u.userId}`}
+                            leftIcon={<Check className="h-4 w-4" />}
                           >
                             {t("common.save")}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={cancelEditRole}
-                            className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
                           >
                             {t("common.cancel")}
-                          </button>
+                          </Button>
                         </>
                       ) : (
                         <button
+                          type="button"
                           onClick={() => startEditRole(u)}
-                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
                           title={t("admin.editRole")}
+                          className="inline-flex items-center gap-1 rounded-full"
                         >
-                          {u.role} ✎
+                          <Badge tone={roleTone(u.role)}>{u.role}</Badge>
+                          <Pencil
+                            className="h-3 w-3 ui-text-muted"
+                            aria-hidden="true"
+                          />
                         </button>
                       )}
                     </div>
                   </div>
 
-                  {/* Action row: reset pw / force logout / delete */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
+                  {/* Action row */}
+                  <div className="flex flex-wrap items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setResetPwTarget(u)}
-                      className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
+                      leftIcon={<KeyRound className="h-4 w-4" />}
                     >
-                      🔑 {t("admin.resetPassword.button")}
-                    </button>
+                      {t("admin.resetPassword.button")}
+                    </Button>
 
                     {confirmForceLogoutUserId === u.userId ? (
                       <span className="flex items-center gap-1">
                         <span className="text-xs ui-text-error">
                           {t("admin.confirmForceLogout")}
                         </span>
-                        <button
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={() => forceLogout(u.userId)}
-                          className="text-xs px-2 py-1 ui-btn-danger rounded"
-                          disabled={
-                            actionLoading === `force-logout:${u.userId}`
-                          }
+                          loading={actionLoading === `force-logout:${u.userId}`}
                         >
                           {t("common.yes")}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setConfirmForceLogoutUserId(null)}
-                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
                         >
                           {t("common.no")}
-                        </button>
+                        </Button>
                       </span>
                     ) : (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setConfirmForceLogoutUserId(u.userId)}
-                        className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
                         disabled={actionLoading === `force-logout:${u.userId}`}
+                        leftIcon={<LogOut className="h-4 w-4" />}
                       >
-                        🚪 {t("admin.forceLogout")}
-                      </button>
+                        {t("admin.forceLogout")}
+                      </Button>
                     )}
 
                     {confirmDeleteUserId === u.userId ? (
@@ -610,80 +594,83 @@ export default function AdminUsers() {
                         <span className="text-xs ui-text-error">
                           {t("admin.confirmDeleteUser")}
                         </span>
-                        <button
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={() => deleteUser(u.userId)}
-                          className="text-xs px-2 py-1 ui-btn-danger rounded"
-                          disabled={actionLoading === `user:${u.userId}`}
+                          loading={actionLoading === `user:${u.userId}`}
                         >
                           {t("common.yes")}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setConfirmDeleteUserId(null)}
-                          className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
                         >
                           {t("common.no")}
-                        </button>
+                        </Button>
                       </span>
                     ) : (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setConfirmDeleteUserId(u.userId)}
-                        className="ui-action-danger text-xs"
                         disabled={actionLoading === `user:${u.userId}`}
+                        className="text-danger"
+                        leftIcon={<Trash2 className="h-4 w-4" />}
                       >
-                        🗑 {t("admin.delete")}
-                      </button>
+                        {t("admin.delete")}
+                      </Button>
                     )}
                   </div>
-                </div>
+                </li>
               ))}
               {!loadingUsers && users.length === 0 && (
-                <div className="p-4 text-sm ui-text-muted">
+                <li className="py-4 text-sm ui-text-muted">
                   {t("admin.noUsers")}
-                </div>
+                </li>
               )}
-            </div>
-          </div>
+            </ul>
+          </Section>
 
-          <div className="ui-card rounded-lg">
-            <div className="p-4 border-b ui-divider">
-              <h2 className="font-semibold">{t("admin.inventory")}</h2>
-              {selectedUser && (
-                <p className="text-xs ui-text-muted">{selectedUser.email}</p>
-              )}
-            </div>
-
+          {/* User inventory */}
+          <Section
+            icon={<Package className="h-5 w-5" />}
+            title={t("admin.inventory")}
+            description={selectedUser?.email}
+          >
             {!selectedUser && (
-              <div className="p-4 text-sm ui-text-muted">
-                {t("admin.selectUser")}
-              </div>
+              <p className="text-sm ui-text-muted">{t("admin.selectUser")}</p>
             )}
 
             {selectedUser && loadingInventory && (
-              <div className="p-4 text-sm ui-text-muted">
+              <p className="text-sm ui-text-muted">
                 {t("admin.loadingInventory")}
-              </div>
+              </p>
             )}
 
             {selectedUser && inventory && !loadingInventory && (
-              <div className="p-4 space-y-6">
+              <div className="space-y-6">
                 <div>
-                  <h3 className="font-medium mb-2">{t("admin.articles")}</h3>
+                  <h3 className="mb-2 text-sm font-medium ui-text-muted">
+                    {t("admin.articles")}
+                  </h3>
                   <div className="space-y-2">
                     {inventory.articlesOwned?.map((a) => (
                       <div
                         key={a.articleId}
-                        className="ui-panel rounded p-3 space-y-2"
+                        className="space-y-2 rounded-lg border ui-divider p-3"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <div className="font-medium">
+                            <div className="font-medium ui-title">
                               {a.articleNom} — {a.articleModele}
                             </div>
                             <div className="text-xs ui-text-muted">
                               {a.articleDescription || t("admin.noDescription")}
                             </div>
                             {a.garantie && (
-                              <div className="text-xs ui-text-muted mt-1">
+                              <div className="mt-1 text-xs ui-text-muted">
                                 {t("admin.warrantyLabel")}:{" "}
                                 {a.garantie.garantieNom} (
                                 {a.garantie.garantieIsValide
@@ -695,37 +682,42 @@ export default function AdminUsers() {
                           </div>
 
                           {confirmDeleteArticleId === a.articleId ? (
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button
+                            <div className="flex shrink-0 items-center gap-2">
+                              <Button
+                                variant="danger"
+                                size="sm"
                                 onClick={() => deleteArticle(a.articleId)}
-                                className="text-xs px-2 py-1 ui-btn-danger rounded"
-                                disabled={
+                                loading={
                                   actionLoading === `article:${a.articleId}`
                                 }
                               >
                                 {t("common.yes")}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setConfirmDeleteArticleId(null)}
-                                className="text-xs px-2 py-1 ui-btn-ghost border ui-divider rounded"
                               >
                                 {t("common.no")}
-                              </button>
+                              </Button>
                             </div>
                           ) : (
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() =>
                                 setConfirmDeleteArticleId(a.articleId)
                               }
-                              className="ui-action-danger text-sm shrink-0"
                               disabled={
                                 actionLoading === `article:${a.articleId}`
                               }
+                              className="shrink-0 text-danger"
+                              leftIcon={<Trash2 className="h-4 w-4" />}
                             >
                               {actionLoading === `article:${a.articleId}`
                                 ? t("admin.deleting")
                                 : t("admin.delete")}
-                            </button>
+                            </Button>
                           )}
                         </div>
 
@@ -737,19 +729,26 @@ export default function AdminUsers() {
                       </div>
                     ))}
                     {inventory.articlesOwned?.length === 0 && (
-                      <div className="text-sm ui-text-muted">
+                      <p className="text-sm ui-text-muted">
                         {t("admin.noArticles")}
-                      </div>
+                      </p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-medium mb-2">{t("admin.warranties")}</h3>
+                  <h3 className="mb-2 text-sm font-medium ui-text-muted">
+                    {t("admin.warranties")}
+                  </h3>
                   <div className="space-y-2">
                     {inventory.warrantiesOwned?.map((w) => (
-                      <div key={w.garantieId} className="ui-panel rounded p-3">
-                        <div className="font-medium">{w.garantieNom}</div>
+                      <div
+                        key={w.garantieId}
+                        className="rounded-lg border ui-divider p-3"
+                      >
+                        <div className="font-medium ui-title">
+                          {w.garantieNom}
+                        </div>
                         <div className="text-xs ui-text-muted">
                           {t("admin.statusLabel")}:{" "}
                           {w.garantieIsValide
@@ -757,7 +756,7 @@ export default function AdminUsers() {
                             : t("admin.status.expired")}
                         </div>
                         {w.article && (
-                          <div className="text-xs ui-text-muted mt-1">
+                          <div className="mt-1 text-xs ui-text-muted">
                             {t("articles.title")}: {w.article.articleNom} —{" "}
                             {w.article.articleModele}
                           </div>
@@ -765,22 +764,22 @@ export default function AdminUsers() {
                       </div>
                     ))}
                     {inventory.warrantiesOwned?.length === 0 && (
-                      <div className="text-sm ui-text-muted">
+                      <p className="text-sm ui-text-muted">
                         {t("admin.noWarranties")}
-                      </div>
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
             )}
-          </div>
+          </Section>
         </div>
       )}
 
       {activeTab === "auditLog" && (
         <div
           role="tabpanel"
-          id="admin-panel-auditLog"
+          id="admin-tab-panel-auditLog"
           aria-labelledby="admin-tab-auditLog"
         >
           <AuditLogTab />
@@ -789,7 +788,7 @@ export default function AdminUsers() {
       {activeTab === "jobs" && (
         <div
           role="tabpanel"
-          id="admin-panel-jobs"
+          id="admin-tab-panel-jobs"
           aria-labelledby="admin-tab-jobs"
         >
           <JobsTab />
