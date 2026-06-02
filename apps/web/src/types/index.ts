@@ -3,6 +3,7 @@
 export type {
   AlertItem,
   AlertKind,
+  AlertNotifications,
   AlertStatus,
   Article,
   ArticleListParams,
@@ -23,5 +24,9 @@ export type {
   ShareItem,
   SharedArticleRow,
   Tag,
+  ThemePref,
+  LanguagePref,
+  DateFormatPref,
+  UserPreferences,
   WarrantyItem,
 } from "@wim/types";

@@ -27,6 +27,7 @@
  *   (different shape — see method JSDoc).
  */
 import type {
+  AlertNotifications,
   Article,
   ArticleListParams,
   ArticleListResult,
@@ -34,11 +35,15 @@ import type {
   ArticleNoteKind,
   BillingSubscription,
   ClaimStatus,
+  DateFormatPref,
   FetchedArticle,
+  LanguagePref,
   SavedView,
   ShareInviteItem,
   ShareItem,
   SharedArticleRow,
+  ThemePref,
+  UserPreferences,
   WarrantyItem,
 } from "../types";
 
@@ -177,7 +182,14 @@ export const authAPI = {
     _cachedRole = null;
   },
 
-  async getMe(): Promise<{ userId: number; email: string; role: string }> {
+  async getMe(): Promise<{
+    userId: number;
+    email: string;
+    role: string;
+    theme?: ThemePref | null;
+    language?: LanguagePref | null;
+    dateFormat?: DateFormatPref | null;
+  }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/auth/me`);
     if (!response.ok) throw new Error("Not authenticated");
     const user = await response.json();
@@ -1132,6 +1144,25 @@ export const alertsAPI = {
       throw new Error(await extractError(response, "Failed to cancel alert"));
     return response.json();
   },
+
+  async notifications(): Promise<AlertNotifications> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/alerts/notifications`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch notifications")
+      );
+    return response.json();
+  },
+
+  async markSeen(): Promise<void> {
+    await fetchWithTimeout(`${API_BASE_URL}/alerts/mark-seen`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+  },
 };
 
 // Statistics API
@@ -1181,12 +1212,32 @@ export const profileAPI = {
     role: string;
     currency?: string;
     emailReminders?: boolean;
+    weeklyDigest?: boolean;
+    theme?: ThemePref | null;
+    language?: LanguagePref | null;
+    dateFormat?: DateFormatPref | null;
   }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
       headers: getHeaders(),
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to load profile"));
+    return response.json();
+  },
+
+  async updatePreferences(prefs: UserPreferences) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/preferences`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify(prefs),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update preferences")
+      );
     return response.json();
   },
 

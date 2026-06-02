@@ -43,6 +43,8 @@ import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
 import ResetPasswordForm from "./components/auth/ResetPasswordForm";
 import { authAPI, billingAPI, profileAPI } from "./services/api";
 import { useI18n } from "./i18n/i18n";
+import { useTheme } from "./theme/theme";
+import { usePreferences } from "./preferences/preferences";
 import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
@@ -292,7 +294,9 @@ function Home({
 }
 
 export default function App() {
-  const { t, language } = useI18n();
+  const { t, language, hydrateLanguage } = useI18n();
+  const { hydrateTheme } = useTheme();
+  const { hydrateDateFormat } = usePreferences();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -304,6 +308,18 @@ export default function App() {
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
 
+  // Adopt the account's cross-device UI preferences on sign-in. Hydrate
+  // (vs. set) so we don't echo the value straight back to the server.
+  const applyServerPrefs = (user: {
+    theme?: string | null;
+    language?: string | null;
+    dateFormat?: string | null;
+  }) => {
+    if (user.theme) hydrateTheme(user.theme);
+    if (user.language) hydrateLanguage(user.language);
+    if (user.dateFormat) hydrateDateFormat(user.dateFormat);
+  };
+
   useEffect(() => {
     const url = new URL(window.location.href);
     const stripeResult = url.searchParams.get("stripe");
@@ -313,6 +329,7 @@ export default function App() {
       .then((user) => {
         setRole(user.role);
         setAuthStatus("authed");
+        applyServerPrefs(user);
 
         if (stripeResult === "success") {
           const previousRole = user.role;
@@ -352,7 +369,10 @@ export default function App() {
   const handleLogin = () => {
     profileAPI
       .getMe()
-      .then((user) => setRole(user.role))
+      .then((user) => {
+        setRole(user.role);
+        applyServerPrefs(user);
+      })
       .catch(() => {});
     setAuthStatus("authed");
     navigate("/");

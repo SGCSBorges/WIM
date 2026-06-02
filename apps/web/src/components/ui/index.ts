@@ -24,3 +24,7 @@ export { Segmented } from "./Segmented";
 export type { SegmentedOption, SegmentedProps } from "./Segmented";
 export { Breadcrumbs } from "./Breadcrumbs";
 export type { Crumb } from "./Breadcrumbs";
+export { Popover } from "./Popover";
+export { Dropzone } from "./Dropzone";
+export { CommandPalette } from "./CommandPalette";
+export type { CommandItem } from "./CommandPalette";

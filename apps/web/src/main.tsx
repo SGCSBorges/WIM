@@ -2,7 +2,7 @@
  * Web entry point. Boots the React tree with the provider stack the rest
  * of the app assumes is in place:
  *
- *   ErrorBoundary > BrowserRouter > Theme > I18n > Toast > <App />
+ *   ErrorBoundary > BrowserRouter > Theme > I18n > Preferences > Toast > <App />
  *
  * Also registers the PWA service worker (production builds only) so
  * Chrome treats the site as installable, and pipes any unhandled promise
@@ -19,6 +19,7 @@ import "@fontsource-variable/inter";
 import "./index.css";
 import { I18nProvider } from "./i18n/i18n";
 import { ThemeProvider } from "./theme/theme";
+import { PreferencesProvider } from "./preferences/preferences";
 import { ToastProvider } from "./components/common/Toast";
 
 // Surface promise rejections that escape try/catch (most network errors that
@@ -47,9 +48,11 @@ createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <ThemeProvider>
           <I18nProvider>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
+            <PreferencesProvider>
+              <ToastProvider>
+                <App />
+              </ToastProvider>
+            </PreferencesProvider>
           </I18nProvider>
         </ThemeProvider>
       </BrowserRouter>

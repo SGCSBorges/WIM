@@ -20,6 +20,7 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { Language, translations } from "./translations";
 import { extras, ExtrasKey } from "./translations.extras";
+import { authAPI, profileAPI } from "../services/api";
 
 // Derived from the English dict so it stays a single source of truth.
 // Re-exported for components that build keys via template strings — they
@@ -41,10 +42,19 @@ type PluralForms = Partial<Record<PluralCategory, string>>;
 
 type I18nContextValue = {
   language: Language;
+  /** User-initiated change: persists locally and (when signed in) to the
+   *  account so the choice follows across devices. */
   setLanguage: (lang: Language) => void;
+  /** Apply a server-provided preference on login without echoing it back.
+   *  Accepts a raw string and ignores anything not in the language set. */
+  hydrateLanguage: (lang: string) => void;
   t: (key: AnyKey) => string;
   plural: (count: number, forms: PluralForms) => string;
 };
+
+function isLanguage(v: unknown): v is Language {
+  return v === "en" || v === "fr" || v === "pt";
+}
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
@@ -68,6 +78,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const setLanguage = (lang: Language) => {
     _setLanguage(lang);
     localStorage.setItem(STORAGE_KEY, lang);
+    if (authAPI.getRole()) {
+      void profileAPI.updatePreferences({ language: lang }).catch(() => {});
+    }
+  };
+
+  const hydrateLanguage = (lang: string) => {
+    if (!isLanguage(lang)) return;
+    _setLanguage(lang);
+    localStorage.setItem(STORAGE_KEY, lang);
   };
 
   const value = useMemo<I18nContextValue>(() => {
@@ -83,6 +102,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return {
       language,
       setLanguage,
+      hydrateLanguage,
       t: (key: AnyKey) => {
         const eDict = extras[language] as Record<string, string>;
         const mDict = translations[language] as Record<string, string>;
