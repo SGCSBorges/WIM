@@ -13,6 +13,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App, { ErrorBoundary } from "./App";
+// Self-hosted Inter Variable (no network/CDN — PWA/offline-safe). Weights are
+// covered by the single variable axis; we reference it via --font-sans.
+import "@fontsource-variable/inter";
 import "./index.css";
 import { I18nProvider } from "./i18n/i18n";
 import { ThemeProvider } from "./theme/theme";

@@ -50,6 +50,44 @@
   --text-error: #b91c1c;
   --text-success: #15803d;
   --text-warn: #a16207;
+
+  /* ── Design-system scalars (shared across themes; bridged into Tailwind) ── */
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --shadow-sm: 0 1px 2px rgba(15, 29, 51, 0.06);
+  --shadow-md:
+    0 4px 12px -2px rgba(15, 29, 51, 0.12),
+    0 2px 6px -2px rgba(15, 29, 51, 0.08);
+  --shadow-lg:
+    0 14px 34px -10px rgba(15, 29, 51, 0.2),
+    0 6px 14px -6px rgba(15, 29, 51, 0.12);
+  --shadow-xl: 0 28px 64px -16px rgba(15, 29, 51, 0.3);
+  /* Expressive brand gradient: primary → accent. Resolves per theme. */
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--primary),
+    color-mix(in srgb, var(--accent) 65%, var(--primary))
+  );
+  --gradient-surface: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 92%, var(--primary)),
+    var(--surface)
+  );
+}
+
+/* Dark-substrate themes get black-based shadows so depth reads on dark bg. */
+:root[data-theme="dark"],
+:root[data-theme="ocean"],
+:root[data-theme="cyber"] {
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md:
+    0 4px 14px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 38px -10px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 30px 70px -16px rgba(0, 0, 0, 0.72);
 }
 
 /* Light — navy primary, white/blue surfaces, orange accent */
@@ -220,16 +258,52 @@
 body {
   background: var(--bg);
   color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* One consistent keyboard-focus ring for every interactive element that
+   doesn't define its own. Only shows for keyboard users (:focus-visible). */
+:where(a, button, [role="button"], summary):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+  border-radius: var(--radius-lg);
+}
+
+/* Entrance motion utilities (paired with Tailwind's animation tokens). All
+   disabled under prefers-reduced-motion so we never fight the user's setting. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in {
+    animation: none !important;
+  }
+}
+
+/* Hover-lift affordance for cards/buttons in the bold theme direction. */
+.ui-lift {
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s ease;
+}
+.ui-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-lift,
+  .ui-lift:hover {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* In Cyber, the body gets a subtle radial grid + scanline feel via gradient layers. */
 :root[data-theme="cyber"] body {
   background:
-    radial-gradient(
-      circle at 20% 0%,
-      rgba(76, 29, 149, 0.55),
-      transparent 60%
-    ),
+    radial-gradient(circle at 20% 0%, rgba(76, 29, 149, 0.55), transparent 60%),
     radial-gradient(
       circle at 80% 100%,
       rgba(34, 197, 94, 0.18),
@@ -248,7 +322,8 @@ body {
 .ui-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-xl);
 }
 
 .ui-panel {
@@ -301,23 +376,35 @@ body {
 }
 
 .ui-btn-primary {
-  background: var(--primary);
+  background-color: var(--primary);
+  background-image: var(--gradient-brand);
   color: var(--primary-contrast);
+  box-shadow: var(--shadow-sm);
   transition:
-    background-color 0.15s ease,
+    filter 0.15s ease,
     opacity 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 .ui-btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
+  filter: brightness(1.06) saturate(1.05);
+  box-shadow: var(--shadow-md);
 }
-.ui-btn-primary:focus {
+.ui-btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.ui-btn-primary:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 .ui-btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn-primary {
+    transition: none;
+  }
 }
 
 /*
