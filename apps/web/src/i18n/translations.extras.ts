@@ -9,6 +9,10 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "auth.hero.tagline": "Everything you own, under warranty, in one place.",
+    "auth.hero.f1": "Track every device, receipt and warranty",
+    "auth.hero.f2": "Get reminded before a warranty expires",
+    "auth.hero.f3": "Search, tag and value your whole inventory",
     "nav.menu": "Menu",
     "nav.close": "Close",
     "nav.collapse": "Collapse",
@@ -465,6 +469,11 @@ export const extras = {
     "timeline.kind.alert": "Alert",
   },
   fr: {
+    "auth.hero.tagline":
+      "Tout ce que vous possédez, sous garantie, au même endroit.",
+    "auth.hero.f1": "Suivez chaque appareil, facture et garantie",
+    "auth.hero.f2": "Soyez prévenu avant l'expiration d'une garantie",
+    "auth.hero.f3": "Recherchez, étiquetez et valorisez votre inventaire",
     "nav.menu": "Menu",
     "nav.close": "Fermer",
     "nav.collapse": "Réduire",
@@ -937,6 +946,10 @@ export const extras = {
     "timeline.kind.alert": "Alerte",
   },
   pt: {
+    "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
+    "auth.hero.f1": "Acompanhe cada aparelho, recibo e garantia",
+    "auth.hero.f2": "Seja avisado antes de uma garantia expirar",
+    "auth.hero.f3": "Pesquise, etiquete e avalie todo o seu inventário",
     "nav.menu": "Menu",
     "nav.close": "Fechar",
     "nav.collapse": "Recolher",

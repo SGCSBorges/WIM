@@ -1,25 +1,26 @@
 /**
- * Login / Register form (mode toggled by parent). Uses react-hook-form +
- * Zod for client-side validation matching the API's password rules.
- * Includes the "Forgot password" + temporary "TestAdmin" entry points
- * (the latter calls the bootstrap endpoint — see CLAUDE.md "Open items").
+ * Login / Register — the unauthenticated first impression. Split-screen: a
+ * brand panel (gradient, value props) on large screens + the credential form.
+ * Uses react-hook-form + Zod for validation matching the API's password rules.
+ * Includes "Forgot password" + the temporary "TestAdmin" bootstrap entry
+ * point (see CLAUDE.md "Open items").
  */
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Package, BellRing, Search, ShieldCheck } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import InstallPwaButton from "../common/InstallPwaButton";
 import { useApiForm } from "../../hooks/useApiForm";
+import { Button, Field, Input } from "../ui";
 
 interface LoginFormProps {
   onLogin: () => void;
 }
 
-// Validation lives in a Zod schema so the rules are visible at a glance and
-// can be reused by future API DTOs through @wim/types.
 const credentialsSchema = z.object({
   email: z.string().email({ message: "auth.error.emailInvalid" }),
   password: z.string().min(8, { message: "auth.error.passwordTooShort" }),
@@ -61,10 +62,6 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     clearSubmissionError();
   };
 
-  // Temporary one-shot helper to promote admin@admin.com to ADMIN.
-  // Remove this button (and the matching API endpoint) once the seed admin
-  // account exists. The endpoint refuses to run after the first admin is
-  // created, so leaving this in is bounded — but please clean it up.
   const [testAdminMsg, setTestAdminMsg] = useState<string | null>(null);
   const [testAdminBusy, setTestAdminBusy] = useState(false);
   const runTestAdmin = async () => {
@@ -84,29 +81,83 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     }
   };
 
-  // Zod resolver returns the message string we put in the schema; for i18n we
-  // store the translation key there and translate at render time.
+  // Zod resolver returns the translation key we stored in the schema.
   const fieldError = (key?: string) => (key ? t(key as never) : undefined);
 
+  const features = [
+    { icon: Package, label: t("auth.hero.f1") },
+    { icon: BellRing, label: t("auth.hero.f2") },
+    { icon: Search, label: t("auth.hero.f3") },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full ui-card rounded-lg shadow p-8">
-        <div className="text-center mb-6">
-          <img
-            src="/logo.png"
-            alt="WIM — Warranty & Inventory Manager"
-            className="mx-auto h-16 w-auto mb-3"
-          />
-          <p className="ui-text-muted">{t("auth.subtitle")}</p>
+    <div className="flex min-h-screen bg-bg">
+      {/* Brand panel (lg+) */}
+      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-brand p-12 text-primary-contrast lg:flex">
+        <div className="flex items-center gap-3">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 backdrop-blur">
+            <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+          </span>
+          <span className="text-2xl font-bold tracking-tight">WIM</span>
         </div>
 
-        <div className="mb-4">
-          <div className="flex rounded-lg ui-divider p-1">
+        <div className="relative z-10 max-w-md">
+          <h1 className="text-4xl font-bold leading-tight tracking-tight">
+            {t("auth.hero.tagline")}
+          </h1>
+          <ul className="mt-8 space-y-4">
+            {features.map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-3">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/15">
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span className="text-primary-contrast/90">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="relative z-10 text-sm text-primary-contrast/70">
+          {t("auth.subtitle")}
+        </p>
+
+        {/* Decorative glows */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-white/10 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-20 top-10 h-56 w-56 rounded-full bg-white/10 blur-3xl"
+        />
+      </aside>
+
+      {/* Form panel */}
+      <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
+        <div className="w-full max-w-md animate-fade-in">
+          <div className="mb-6 text-center lg:hidden">
+            <img
+              src="/logo.png"
+              alt="WIM — Warranty & Inventory Manager"
+              className="mx-auto mb-3 h-14 w-auto"
+            />
+          </div>
+
+          <h2 className="text-2xl font-bold tracking-tight ui-title">
+            {isLogin ? t("auth.login") : t("auth.register")}
+          </h2>
+          <p className="mt-1 mb-6 text-sm ui-text-muted">
+            {t("auth.subtitle")}
+          </p>
+
+          {/* Mode toggle (tabs) */}
+          <div className="mb-5 flex rounded-xl bg-surface-muted p-1">
             <button
               type="button"
               onClick={() => switchTab(true)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                isLogin ? "ui-btn-primary" : "ui-btn-ghost"
+              aria-pressed={isLogin}
+              className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                isLogin ? "bg-surface text-fg shadow-sm" : "ui-text-muted"
               }`}
             >
               {t("auth.login")}
@@ -114,121 +165,91 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             <button
               type="button"
               onClick={() => switchTab(false)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                !isLogin ? "ui-btn-primary" : "ui-btn-ghost"
+              aria-pressed={!isLogin}
+              className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                !isLogin ? "bg-surface text-fg shadow-sm" : "ui-text-muted"
               }`}
             >
               {t("auth.register")}
             </button>
           </div>
-        </div>
 
-        <form
-          onSubmit={handleApiSubmit(onSubmit)}
-          className="space-y-4"
-          noValidate
-        >
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
-              {t("auth.email")}
-            </label>
-            <input
-              id="email"
-              type="email"
-              {...register("email")}
-              className={`w-full ui-input px-3 py-2 rounded-md shadow-sm ${
-                errors.email ? "border-red-400" : ""
-              }`}
-              placeholder="your@email.com"
-              aria-describedby={errors.email ? "email-error" : undefined}
-              aria-invalid={errors.email ? "true" : undefined}
-            />
-            {errors.email && (
-              <p id="email-error" className="mt-1 text-xs ui-text-error">
-                {fieldError(errors.email.message)}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium mb-1"
-            >
-              {t("auth.password")}
-            </label>
-            <input
-              id="password"
-              type="password"
-              {...register("password")}
-              className={`w-full ui-input px-3 py-2 rounded-md shadow-sm ${
-                errors.password ? "border-red-400" : ""
-              }`}
-              placeholder="••••••••"
-              aria-describedby={errors.password ? "password-error" : undefined}
-              aria-invalid={errors.password ? "true" : undefined}
-            />
-            {errors.password && (
-              <p id="password-error" className="mt-1 text-xs ui-text-error">
-                {fieldError(errors.password.message)}
-              </p>
-            )}
-          </div>
-
-          {submissionError && (
-            <div
-              role="alert"
-              className="px-4 py-3 rounded-md text-sm border ui-alert-error ui-text-error"
-            >
-              {submissionError}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full py-2 px-4 rounded-md font-medium transition-colors ${
-              isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-            } ui-btn-primary`}
+          <form
+            onSubmit={handleApiSubmit(onSubmit)}
+            className="space-y-4"
+            noValidate
           >
-            {isSubmitting
-              ? t("auth.loading")
-              : isLogin
-                ? t("auth.login")
-                : t("auth.register")}
-          </button>
-
-          {isLogin && (
-            <div className="text-center text-sm">
-              <Link
-                to="/auth/forgot"
-                className="ui-action-primary hover:underline"
-              >
-                {t("auth.forgot.link")}
-              </Link>
-            </div>
-          )}
-        </form>
-
-        <div className="mt-6 pt-4 border-t ui-divider flex flex-col items-center gap-3">
-          <InstallPwaButton />
-          <LanguageThemeSelector />
-
-          {/* TEMPORARY: bootstrap admin@admin.com to ADMIN. Remove once done. */}
-          <div className="w-full text-center">
-            <button
-              type="button"
-              onClick={runTestAdmin}
-              disabled={testAdminBusy}
-              className={`px-3 py-2 text-sm rounded-md ui-btn-ghost border ${
-                testAdminBusy ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+            <Field
+              label={t("auth.email")}
+              error={fieldError(errors.email?.message)}
             >
-              {testAdminBusy ? "Working…" : "TestAdmin"}
-            </button>
-            {testAdminMsg && (
-              <p className="mt-2 text-xs ui-text-muted">{testAdminMsg}</p>
+              <Input
+                type="email"
+                autoComplete="email"
+                placeholder="your@email.com"
+                {...register("email")}
+              />
+            </Field>
+
+            <Field
+              label={t("auth.password")}
+              error={fieldError(errors.password?.message)}
+            >
+              <Input
+                type="password"
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                placeholder="••••••••"
+                {...register("password")}
+              />
+            </Field>
+
+            {submissionError && (
+              <div
+                role="alert"
+                className="rounded-lg border ui-alert-error px-4 py-3 text-sm ui-text-error"
+              >
+                {submissionError}
+              </div>
             )}
+
+            <Button type="submit" fullWidth loading={isSubmitting}>
+              {isSubmitting
+                ? t("auth.loading")
+                : isLogin
+                  ? t("auth.login")
+                  : t("auth.register")}
+            </Button>
+
+            {isLogin && (
+              <div className="text-center text-sm">
+                <Link
+                  to="/auth/forgot"
+                  className="ui-action-primary hover:underline"
+                >
+                  {t("auth.forgot.link")}
+                </Link>
+              </div>
+            )}
+          </form>
+
+          <div className="mt-8 flex flex-col items-center gap-3 border-t ui-divider pt-6">
+            <InstallPwaButton />
+            <LanguageThemeSelector />
+            {/* TEMPORARY: bootstrap admin@admin.com to ADMIN. Remove once done. */}
+            <div className="w-full text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={runTestAdmin}
+                loading={testAdminBusy}
+                className="border ui-divider"
+              >
+                TestAdmin
+              </Button>
+              {testAdminMsg && (
+                <p className="mt-2 text-xs ui-text-muted">{testAdminMsg}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
