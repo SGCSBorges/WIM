@@ -7,8 +7,25 @@
  * (not warranty / attachments) — see article.service.ts duplicate().
  */
 import { useCallback, useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
+import {
+  Copy,
+  Download,
+  Phone,
+  ExternalLink,
+  ImagePlus,
+  Star,
+  Trash2,
+  Pencil,
+  Check,
+  Clock,
+  Paperclip,
+  StickyNote,
+  ShieldCheck,
+  Send,
+  Bell,
+} from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import {
   alertsAPI,
@@ -21,6 +38,23 @@ import {
 } from "../../services/api";
 import type { ArticleNoteKind, ClaimStatus, FetchedArticle } from "../../types";
 import { ARTICLE_NOTE_KINDS } from "@wim/types";
+import { getErrorMessage } from "../../utils/error";
+import { formatMoney } from "../../utils/money";
+import { currentValue } from "../../utils/depreciation";
+import { downloadBlob } from "../../utils/csv";
+import { ErrorBanner, EmptyState } from "../common/States";
+import { Skeleton } from "../common/Skeleton";
+import { useToast } from "../common/Toast";
+import ArticleThumb from "./ArticleThumb";
+import {
+  PageHeader,
+  Section,
+  Button,
+  Input,
+  Select,
+  Badge,
+  type BadgeTone,
+} from "../ui";
 
 const CLAIM_STATUSES: ClaimStatus[] = [
   "NONE",
@@ -29,14 +63,6 @@ const CLAIM_STATUSES: ClaimStatus[] = [
   "REJECTED",
   "RESOLVED",
 ];
-import { getErrorMessage } from "../../utils/error";
-import { formatMoney } from "../../utils/money";
-import { currentValue } from "../../utils/depreciation";
-import { downloadBlob } from "../../utils/csv";
-import { ErrorBanner } from "../common/States";
-import { Skeleton } from "../common/Skeleton";
-import { useToast } from "../common/Toast";
-import ArticleThumb from "./ArticleThumb";
 
 type Attachment = {
   attachmentId: number;
@@ -62,6 +88,20 @@ function safeDate(iso: string | null | undefined): string {
   return Number.isNaN(d.getTime()) ? "—" : format(d, "dd MMM yyyy");
 }
 
+const TIMELINE_TONE: Record<TimelineEntry["kind"], BadgeTone> = {
+  note: "neutral",
+  attachment: "info",
+  claim: "warning",
+  alert: "success",
+};
+
+const TIMELINE_ICON: Record<TimelineEntry["kind"], React.ReactNode> = {
+  note: <StickyNote className="h-3 w-3" />,
+  attachment: <Paperclip className="h-3 w-3" />,
+  claim: <ShieldCheck className="h-3 w-3" />,
+  alert: <Bell className="h-3 w-3" />,
+};
+
 export default function ArticleDetail() {
   const { t, language } = useI18n();
   const toast = useToast();
@@ -80,12 +120,9 @@ export default function ArticleDetail() {
   const [noteKind, setNoteKind] = useState<ArticleNoteKind>("OTHER");
   const [savingNote, setSavingNote] = useState(false);
   const [noteFilter, setNoteFilter] = useState<ArticleNoteKind | "ALL">("ALL");
-  // When set, the row of that noteId is editable.
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [editingKind, setEditingKind] = useState<ArticleNoteKind>("OTHER");
-  // Article-scoped alerts power the activity timeline below. Best-effort —
-  // a fetch failure leaves the timeline lighter, not broken.
   const [articleAlerts, setArticleAlerts] = useState<
     Array<{
       alerteId: number;
@@ -227,7 +264,6 @@ export default function ArticleDetail() {
       setAttachments((prev) =>
         prev.filter((a) => a.attachmentId !== att.attachmentId)
       );
-      // If the primary image pointed at the deleted file, clear it.
       if (article?.productImageUrl === att.fileUrl) {
         const updated = await articlesAPI.setPrimaryImage(articleId, null);
         setArticle((prev) =>
@@ -247,7 +283,6 @@ export default function ArticleDetail() {
   const [claimNote, setClaimNote] = useState("");
   const [savingClaim, setSavingClaim] = useState(false);
 
-  // Mirror the warranty's claim fields into local editable state on load.
   useEffect(() => {
     setClaimStatus(article?.garantie?.claimStatus ?? "NONE");
     setClaimNote(article?.garantie?.claimNote ?? "");
@@ -305,82 +340,91 @@ export default function ArticleDetail() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <Link to="/articles" className="text-sm ui-action-primary">
-          ← {t("articleDetail.back")}
-        </Link>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={async () => {
-              if (duplicating) return;
-              setDuplicating(true);
-              try {
-                const created = await articlesAPI.duplicate(articleId);
-                toast.show(t("articleDetail.duplicated"), { kind: "success" });
-                navigate(`/articles/${created.articleId}`);
-              } catch (e) {
-                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-                  kind: "error",
-                });
-              } finally {
-                setDuplicating(false);
-              }
-            }}
-            disabled={duplicating}
-            className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm"
-          >
-            {t("articleDetail.duplicate")}
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                downloadBlob(
-                  `article-${articleId}-claim.pdf`,
-                  await articlesAPI.claimPdf(articleId)
-                );
-              } catch (e) {
-                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-                  kind: "error",
-                });
-              }
-            }}
-            className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm"
-          >
-            {t("articleDetail.downloadPdf")}
-          </button>
-        </div>
-      </div>
+    <div>
+      <PageHeader
+        title={article.articleNom}
+        subtitle={[article.brand, article.articleModele]
+          .filter(Boolean)
+          .join(" · ")}
+        breadcrumbs={[{ label: t("nav.articles"), to: "/articles" }]}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (duplicating) return;
+                setDuplicating(true);
+                try {
+                  const created = await articlesAPI.duplicate(articleId);
+                  toast.show(t("articleDetail.duplicated"), {
+                    kind: "success",
+                  });
+                  navigate(`/articles/${created.articleId}`);
+                } catch (e) {
+                  toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+                    kind: "error",
+                  });
+                } finally {
+                  setDuplicating(false);
+                }
+              }}
+              loading={duplicating}
+              leftIcon={<Copy className="h-4 w-4" />}
+            >
+              {t("articleDetail.duplicate")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  downloadBlob(
+                    `article-${articleId}-claim.pdf`,
+                    await articlesAPI.claimPdf(articleId)
+                  );
+                } catch (e) {
+                  toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+                    kind: "error",
+                  });
+                }
+              }}
+              leftIcon={<Download className="h-4 w-4" />}
+            >
+              {t("articleDetail.downloadPdf")}
+            </Button>
+          </>
+        }
+      />
 
-      <div className="ui-card rounded-lg p-6 flex flex-col sm:flex-row gap-6">
+      {/* Hero */}
+      <div className="ui-card mb-6 flex flex-col gap-6 p-6 sm:flex-row">
         <ArticleThumb
           src={article.productImageUrl}
           alt={article.articleNom}
-          size={96}
+          size={120}
         />
-        <div className="flex-1 space-y-2">
-          <h1 className="text-2xl font-bold ui-title">{article.articleNom}</h1>
-          <p className="ui-text-muted">
-            {article.brand ? `${article.brand} · ` : ""}
-            {article.articleModele}
-          </p>
+        <div className="min-w-0 flex-1 space-y-3">
           {article.serialNumber && (
-            <p className="text-xs ui-text-muted font-mono select-all">
+            <p className="select-all font-mono text-xs ui-text-muted">
               {t("articleDetail.serialNumber")}: {article.serialNumber}
             </p>
           )}
           {article.articleDescription && (
             <p className="text-sm">{article.articleDescription}</p>
           )}
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm pt-2">
-            <span>
-              <span className="ui-text-muted">
-                {t("articleDetail.value")}:{" "}
-              </span>
-              {article.purchasePrice != null
-                ? formatMoney(article.purchasePrice, currency, language)
-                : "—"}
-            </span>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div>
+              <p className="text-xs ui-text-muted">
+                {t("articleDetail.value")}
+              </p>
+              <p className="text-sm font-semibold ui-title tabular-nums">
+                {article.purchasePrice != null
+                  ? formatMoney(article.purchasePrice, currency, language)
+                  : "—"}
+              </p>
+            </div>
             {(() => {
               const current = currentValue(
                 article.purchasePrice,
@@ -389,46 +433,151 @@ export default function ArticleDetail() {
               );
               if (current == null) return null;
               return (
-                <span>
-                  <span className="ui-text-muted">
-                    {t("articleDetail.currentValue")}:{" "}
-                  </span>
-                  {formatMoney(current, currency, language)}
-                  <span className="ui-text-muted">
-                    {" "}
-                    ({Number(article.depreciationRate)}%/
-                    {t("articleDetail.perYear")})
-                  </span>
-                </span>
+                <div>
+                  <p className="text-xs ui-text-muted">
+                    {t("articleDetail.currentValue")}
+                  </p>
+                  <p className="text-sm font-semibold ui-title tabular-nums">
+                    {formatMoney(current, currency, language)}
+                  </p>
+                  <p className="text-[10px] ui-text-muted">
+                    {Number(article.depreciationRate)}%/
+                    {t("articleDetail.perYear")}
+                  </p>
+                </div>
               );
             })()}
-            <span>
-              <span className="ui-text-muted">
-                {t("articleDetail.locations")}:{" "}
-              </span>
-              {article.locations && article.locations.length > 0
-                ? article.locations
-                    .map((l) => l.location?.name)
-                    .filter(Boolean)
-                    .join(", ")
-                : "—"}
-            </span>
+            <div>
+              <p className="text-xs ui-text-muted">
+                {t("articleDetail.locations")}
+              </p>
+              <p className="text-sm ui-title">
+                {article.locations && article.locations.length > 0
+                  ? article.locations
+                      .map((l) => l.location?.name)
+                      .filter(Boolean)
+                      .join(", ")
+                  : "—"}
+              </p>
+            </div>
           </div>
+
           {article.tags && article.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
               {article.tags.map((tg) => (
-                <span
-                  key={tg.tagId}
-                  className="px-1.5 py-0.5 text-[10px] rounded-full ui-badge-info"
-                >
+                <Badge key={tg.tagId} tone="info">
                   {tg.tag?.name ?? `#${tg.tagId}`}
-                </span>
+                </Badge>
               ))}
             </div>
           )}
         </div>
       </div>
 
+      {/* Warranty + claim */}
+      {article.garantie && (
+        <Section
+          icon={<ShieldCheck className="h-5 w-5" />}
+          title={t("articleDetail.warranty")}
+          className="mb-6"
+        >
+          <div className="space-y-1">
+            <p className="font-medium ui-title">
+              {article.garantie.garantieNom}
+            </p>
+            <p className="text-sm ui-text-muted">
+              {t("articleDetail.warrantyPurchased")}:{" "}
+              {safeDate(article.garantie.garantieDateAchat)} —{" "}
+              {t("articleDetail.warrantyEnds")}:{" "}
+              {safeDate(article.garantie.garantieFin)}
+            </p>
+          </div>
+
+          {(article.garantie.providerName ||
+            article.garantie.providerPhone ||
+            article.garantie.providerUrl) && (
+            <div className="mt-3 space-y-1 rounded-lg border ui-divider p-3 text-sm">
+              <p className="font-medium ui-text-muted">
+                {t("articleDetail.contactProvider")}
+              </p>
+              {article.garantie.providerName && (
+                <p>{article.garantie.providerName}</p>
+              )}
+              {article.garantie.providerPhone && (
+                <p>
+                  <a
+                    href={`tel:${article.garantie.providerPhone}`}
+                    className="inline-flex items-center gap-1 ui-action-primary hover:underline"
+                  >
+                    <Phone className="h-3 w-3" aria-hidden="true" />
+                    {article.garantie.providerPhone}
+                  </a>
+                </p>
+              )}
+              {article.garantie.providerUrl && (
+                <p>
+                  <a
+                    href={article.garantie.providerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 break-all ui-action-primary hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                    {article.garantie.providerUrl}
+                  </a>
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-4 space-y-2 border-t ui-divider pt-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor="claim-status" className="text-sm font-medium">
+                {t("claim.title")}
+              </label>
+              <Select
+                id="claim-status"
+                value={claimStatus}
+                onChange={(e) => setClaimStatus(e.target.value as ClaimStatus)}
+                className="w-auto"
+              >
+                {CLAIM_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`claim.status.${s}`)}
+                  </option>
+                ))}
+              </Select>
+              {article.garantie.claimUpdatedAt && (
+                <span className="inline-flex items-center gap-1 text-xs ui-text-muted">
+                  <Clock className="h-3 w-3" aria-hidden="true" />
+                  {safeDate(article.garantie.claimUpdatedAt)}
+                </span>
+              )}
+            </div>
+            {claimStatus !== "NONE" && (
+              <Input
+                type="text"
+                value={claimNote}
+                onChange={(e) => setClaimNote(e.target.value)}
+                placeholder={t("claim.notePlaceholder")}
+                aria-label={t("claim.notePlaceholder")}
+                maxLength={2000}
+              />
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={saveClaim}
+              loading={savingClaim}
+              leftIcon={<Check className="h-4 w-4" />}
+            >
+              {t("claim.save")}
+            </Button>
+          </div>
+        </Section>
+      )}
+
+      {/* Activity timeline */}
       {(() => {
         const entries: TimelineEntry[] = [
           ...notes.map((n) => ({
@@ -470,140 +619,50 @@ export default function ArticleDetail() {
         ].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
         if (entries.length === 0) return null;
-        const KIND_BADGE = {
-          note: "ui-badge",
-          attachment: "ui-badge-info",
-          claim: "ui-badge-warning",
-          alert: "ui-badge-success",
-        } as const;
         return (
-          <div className="ui-card rounded-lg p-6 space-y-3">
-            <h2 className="font-semibold ui-title">{t("timeline.title")}</h2>
+          <Section
+            icon={<Clock className="h-5 w-5" />}
+            title={t("timeline.title")}
+            className="mb-6"
+          >
             <ul className="divide-y ui-divider">
               {entries.map((e) => (
-                <li key={e.key} className="py-2 space-y-0.5">
+                <li key={e.key} className="space-y-0.5 py-2">
                   <div className="flex items-center justify-between gap-2 text-sm">
-                    <span className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded ${KIND_BADGE[e.kind]}`}
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Badge
+                        tone={TIMELINE_TONE[e.kind]}
+                        icon={TIMELINE_ICON[e.kind]}
                       >
                         {t(`timeline.kind.${e.kind}`)}
+                      </Badge>
+                      <span className="truncate font-medium ui-title">
+                        {e.title}
                       </span>
-                      <span className="font-medium truncate">{e.title}</span>
                     </span>
-                    <span className="text-xs ui-text-muted shrink-0">
+                    <span className="shrink-0 text-xs ui-text-muted">
                       {safeDate(e.date)}
                     </span>
                   </div>
                   {e.body && (
-                    <p className="text-xs ui-text-muted break-words">
+                    <p className="break-words text-xs ui-text-muted">
                       {e.body}
                     </p>
                   )}
                 </li>
               ))}
             </ul>
-          </div>
+          </Section>
         );
       })()}
 
-      {article.garantie && (
-        <div className="ui-card rounded-lg p-6 space-y-1">
-          <h2 className="font-semibold ui-title">
-            {t("articleDetail.warranty")}
-          </h2>
-          <p className="text-sm">{article.garantie.garantieNom}</p>
-          <p className="text-sm ui-text-muted">
-            {t("articleDetail.warrantyPurchased")}:{" "}
-            {safeDate(article.garantie.garantieDateAchat)} —{" "}
-            {t("articleDetail.warrantyEnds")}:{" "}
-            {safeDate(article.garantie.garantieFin)}
-          </p>
-
-          {(article.garantie.providerName ||
-            article.garantie.providerPhone ||
-            article.garantie.providerUrl) && (
-            <div className="pt-2 text-sm space-y-1">
-              <p className="font-medium ui-text-muted">
-                {t("articleDetail.contactProvider")}
-              </p>
-              {article.garantie.providerName && (
-                <p>{article.garantie.providerName}</p>
-              )}
-              {article.garantie.providerPhone && (
-                <p>
-                  <a
-                    href={`tel:${article.garantie.providerPhone}`}
-                    className="ui-link"
-                  >
-                    {article.garantie.providerPhone}
-                  </a>
-                </p>
-              )}
-              {article.garantie.providerUrl && (
-                <p>
-                  <a
-                    href={article.garantie.providerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ui-link break-all"
-                  >
-                    {article.garantie.providerUrl}
-                  </a>
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="pt-3 mt-2 border-t ui-divider space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <label htmlFor="claim-status" className="text-sm font-medium">
-                {t("claim.title")}
-              </label>
-              <select
-                id="claim-status"
-                value={claimStatus}
-                onChange={(e) => setClaimStatus(e.target.value as ClaimStatus)}
-                className="ui-select px-2 py-1 rounded-md text-sm"
-              >
-                {CLAIM_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {t(`claim.status.${s}`)}
-                  </option>
-                ))}
-              </select>
-              {article.garantie.claimUpdatedAt && (
-                <span className="text-xs ui-text-muted">
-                  {safeDate(article.garantie.claimUpdatedAt)}
-                </span>
-              )}
-            </div>
-            {claimStatus !== "NONE" && (
-              <input
-                type="text"
-                value={claimNote}
-                onChange={(e) => setClaimNote(e.target.value)}
-                placeholder={t("claim.notePlaceholder")}
-                maxLength={2000}
-                className="ui-input w-full px-3 py-2 rounded-md text-sm"
-              />
-            )}
-            <button
-              type="button"
-              onClick={saveClaim}
-              disabled={savingClaim}
-              className="ui-btn-ghost border ui-divider px-3 py-1.5 rounded-md text-sm"
-            >
-              {savingClaim ? t("common.loading") : t("claim.save")}
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="ui-card rounded-lg p-6 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-semibold ui-title">{t("gallery.title")}</h2>
-          <label className="ui-btn-ghost px-3 py-1.5 rounded-md border ui-divider text-sm cursor-pointer">
+      {/* Gallery */}
+      <Section
+        icon={<ImagePlus className="h-5 w-5" />}
+        title={t("gallery.title")}
+        actions={
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border ui-divider px-3 py-1.5 text-sm ui-btn-ghost">
+            <ImagePlus className="h-4 w-4" aria-hidden="true" />
             {uploadingPhoto ? t("common.loading") : t("gallery.add")}
             <input
               type="file"
@@ -617,31 +676,36 @@ export default function ArticleDetail() {
               className="sr-only"
             />
           </label>
-        </div>
+        }
+        className="mb-6"
+      >
         {photos.length === 0 ? (
-          <p className="text-sm ui-text-muted">{t("gallery.empty")}</p>
+          <EmptyState
+            icon={<ImagePlus className="h-6 w-6" />}
+            title={t("gallery.empty")}
+          />
         ) : (
-          <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {photos.map((att) => {
               const isPrimary = article.productImageUrl === att.fileUrl;
               return (
                 <li
                   key={att.attachmentId}
-                  className="space-y-1 border ui-divider rounded-md p-2"
+                  className="space-y-1 rounded-lg border ui-divider p-2"
                 >
                   <a href={att.fileUrl} target="_blank" rel="noreferrer">
                     <img
                       src={att.thumbUrl || att.fileUrl}
                       alt={att.fileName}
                       loading="lazy"
-                      className="w-full h-24 object-cover rounded"
+                      className="h-24 w-full rounded-md object-cover"
                     />
                   </a>
                   <div className="flex items-center justify-between gap-1 text-xs">
                     {isPrimary ? (
-                      <span className="ui-badge-info px-1.5 py-0.5 rounded">
+                      <Badge tone="info" icon={<Star className="h-3 w-3" />}>
                         {t("gallery.primary")}
-                      </span>
+                      </Badge>
                     ) : (
                       <button
                         type="button"
@@ -651,34 +715,40 @@ export default function ArticleDetail() {
                         {t("gallery.setPrimary")}
                       </button>
                     )}
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => deletePhoto(att)}
-                      className="ui-action-danger"
+                      className="text-danger"
                       aria-label={`${t("common.delete")} ${att.fileName}`}
-                    >
-                      {t("common.delete")}
-                    </button>
+                      leftIcon={<Trash2 className="h-4 w-4" />}
+                    />
                   </div>
                 </li>
               );
             })}
           </ul>
         )}
-      </div>
+      </Section>
 
-      <div className="ui-card rounded-lg p-6 space-y-3">
-        <h2 className="font-semibold ui-title">
-          {t("articleDetail.attachments")}
-        </h2>
+      {/* Attachments (non-image) */}
+      <Section
+        icon={<Paperclip className="h-5 w-5" />}
+        title={t("articleDetail.attachments")}
+        className="mb-6"
+      >
         {attachments.length === 0 ? (
           <p className="text-sm ui-text-muted">
             {t("articleDetail.noAttachments")}
           </p>
         ) : (
-          <ul className="text-sm space-y-1">
+          <ul className="space-y-1 text-sm">
             {attachments.map((att) => (
-              <li key={att.attachmentId}>
+              <li key={att.attachmentId} className="flex items-center gap-2">
+                <Paperclip
+                  className="h-3.5 w-3.5 ui-text-muted"
+                  aria-hidden="true"
+                />
                 <a
                   className="ui-action-primary hover:underline"
                   href={att.fileUrl}
@@ -686,30 +756,33 @@ export default function ArticleDetail() {
                   rel="noreferrer"
                 >
                   {att.fileName}
-                </a>{" "}
-                <span className="ui-text-muted">({att.type})</span>
+                </a>
+                <Badge tone="neutral">{att.type}</Badge>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Section>
 
-      <div className="ui-card rounded-lg p-6 space-y-3">
-        <h2 className="font-semibold ui-title">{t("notes.title")}</h2>
+      {/* Notes */}
+      <Section
+        icon={<StickyNote className="h-5 w-5" />}
+        title={t("notes.title")}
+      >
         <div className="flex flex-wrap gap-2">
-          <select
+          <Select
             value={noteKind}
             onChange={(e) => setNoteKind(e.target.value as ArticleNoteKind)}
             aria-label={t("notes.kindLabel")}
-            className="ui-select px-2 py-2 rounded-md text-sm"
+            className="w-auto"
           >
             {ARTICLE_NOTE_KINDS.map((k) => (
               <option key={k} value={k}>
                 {t(`notes.kind.${k}`)}
               </option>
             ))}
-          </select>
-          <input
+          </Select>
+          <Input
             type="text"
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
@@ -720,29 +793,32 @@ export default function ArticleDetail() {
               }
             }}
             placeholder={t("notes.placeholder")}
-            className="ui-input flex-1 min-w-0 px-3 py-2 rounded-md"
             maxLength={2000}
+            className="min-w-0 flex-1"
           />
-          <button
+          <Button
             onClick={addNote}
-            disabled={savingNote || !noteInput.trim()}
-            className="ui-btn-primary px-4 py-2 rounded-md text-sm"
+            loading={savingNote}
+            disabled={!noteInput.trim()}
+            leftIcon={<Send className="h-4 w-4" />}
           >
             {t("notes.add")}
-          </button>
+          </Button>
         </div>
 
         {notes.length > 0 && (
           <div
             role="group"
             aria-label={t("notes.filterLabel")}
-            className="flex flex-wrap items-center gap-1 text-xs"
+            className="mt-3 flex flex-wrap items-center gap-1 text-xs"
           >
             <button
               type="button"
               onClick={() => setNoteFilter("ALL")}
-              className={`px-2 py-0.5 rounded-full border ui-divider ${
-                noteFilter === "ALL" ? "ui-badge-info" : "ui-btn-ghost"
+              className={`rounded-full px-2.5 py-0.5 transition-colors ${
+                noteFilter === "ALL"
+                  ? "ui-badge-info"
+                  : "border border-line ui-text-muted hover:bg-surface-muted"
               }`}
             >
               {t("notes.filter.all")}
@@ -752,8 +828,10 @@ export default function ArticleDetail() {
                 key={k}
                 type="button"
                 onClick={() => setNoteFilter(k)}
-                className={`px-2 py-0.5 rounded-full border ui-divider ${
-                  noteFilter === k ? "ui-badge-info" : "ui-btn-ghost"
+                className={`rounded-full px-2.5 py-0.5 transition-colors ${
+                  noteFilter === k
+                    ? "ui-badge-info"
+                    : "border border-line ui-text-muted hover:bg-surface-muted"
                 }`}
               >
                 {t(`notes.kind.${k}`)}
@@ -767,81 +845,85 @@ export default function ArticleDetail() {
             (n) => noteFilter === "ALL" || (n.kind ?? "OTHER") === noteFilter
           );
           if (visible.length === 0) {
-            return <p className="text-sm ui-text-muted">{t("notes.empty")}</p>;
+            return (
+              <p className="mt-4 text-sm ui-text-muted">{t("notes.empty")}</p>
+            );
           }
           return (
-            <ul className="divide-y ui-divider">
+            <ul className="mt-3 divide-y ui-divider">
               {visible.map((n) => {
                 const kind = n.kind ?? "OTHER";
                 const isEditing = editingNoteId === n.noteId;
                 return (
-                  <li key={n.noteId} className="py-2 space-y-1">
+                  <li key={n.noteId} className="space-y-1 py-2">
                     {isEditing ? (
                       <div className="flex flex-wrap items-start gap-2">
-                        <select
+                        <Select
                           value={editingKind}
                           onChange={(e) =>
                             setEditingKind(e.target.value as ArticleNoteKind)
                           }
                           aria-label={t("notes.kindLabel")}
-                          className="ui-select px-2 py-1 rounded-md text-sm"
+                          className="w-auto"
                         >
                           {ARTICLE_NOTE_KINDS.map((k) => (
                             <option key={k} value={k}>
                               {t(`notes.kind.${k}`)}
                             </option>
                           ))}
-                        </select>
-                        <input
+                        </Select>
+                        <Input
                           type="text"
                           value={editingContent}
                           onChange={(e) => setEditingContent(e.target.value)}
                           maxLength={2000}
-                          className="ui-input flex-1 min-w-0 px-3 py-1 rounded-md text-sm"
+                          className="min-w-0 flex-1"
                         />
-                        <button
-                          type="button"
+                        <Button
+                          size="sm"
                           onClick={saveEditNote}
                           disabled={!editingContent.trim()}
-                          className="text-xs ui-btn-primary px-2 py-1 rounded"
+                          leftIcon={<Check className="h-4 w-4" />}
                         >
                           {t("common.save")}
-                        </button>
-                        <button
-                          type="button"
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setEditingNoteId(null)}
-                          className="text-xs ui-btn-ghost border ui-divider px-2 py-1 rounded"
                         >
                           {t("common.cancel")}
-                        </button>
+                        </Button>
                       </div>
                     ) : (
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[10px] ui-badge px-1.5 py-0.5 rounded uppercase tracking-wide">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge tone="neutral">
                               {t(`notes.kind.${kind}`)}
-                            </span>
-                            <p className="text-sm break-words">{n.content}</p>
+                            </Badge>
+                            <p className="break-words text-sm">{n.content}</p>
                           </div>
                           <p className="text-xs ui-text-muted">
                             {safeDate(n.createdAt)}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => startEditNote(n)}
-                            className="text-xs ui-action-primary"
-                          >
-                            {t("common.edit")}
-                          </button>
-                          <button
+                            aria-label={t("common.edit")}
+                            leftIcon={<Pencil className="h-4 w-4" />}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => removeNote(n.noteId)}
-                            className="text-xs ui-action-danger"
-                          >
-                            {t("common.delete")}
-                          </button>
+                            aria-label={t("common.delete")}
+                            className="text-danger"
+                            leftIcon={<Trash2 className="h-4 w-4" />}
+                          />
                         </div>
                       </div>
                     )}
@@ -851,7 +933,7 @@ export default function ArticleDetail() {
             </ul>
           );
         })()}
-      </div>
+      </Section>
     </div>
   );
 }
