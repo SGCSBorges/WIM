@@ -7,9 +7,11 @@
  */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Lock, CheckCircle2, ArrowLeft } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { Button, Field, Input } from "../ui";
 
 export default function ResetPasswordForm() {
   const { t } = useI18n();
@@ -38,7 +40,6 @@ export default function ResetPasswordForm() {
     try {
       await authAPI.resetPassword(token, newPassword);
       setDone(true);
-      // Give the success message a beat, then send them to login.
       setTimeout(() => navigate("/", { replace: true }), 1500);
     } catch (err) {
       setError(getErrorMessage(err, t("common.errorOccurred")));
@@ -48,65 +49,76 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="ui-card max-w-md w-full p-8 rounded-xl space-y-4">
-        <h1 className="text-2xl font-bold ui-title">{t("auth.reset.title")}</h1>
-        <p className="text-sm ui-text-muted">{t("auth.reset.subtitle")}</p>
+    <div className="flex min-h-screen items-center justify-center bg-bg p-4">
+      <div className="ui-card w-full max-w-md space-y-5 p-8 animate-scale-in">
+        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-brand text-primary-contrast shadow-md">
+          <Lock className="h-6 w-6" aria-hidden="true" />
+        </span>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight ui-title">
+            {t("auth.reset.title")}
+          </h1>
+          <p className="mt-1 text-sm ui-text-muted">
+            {t("auth.reset.subtitle")}
+          </p>
+        </div>
 
         {done ? (
-          <p
+          <div
             role="status"
-            className="ui-alert-success ui-text-success rounded-md p-3 text-sm"
+            className="flex items-start gap-2 rounded-lg border ui-alert-success p-3 text-sm ui-text-success"
           >
+            <CheckCircle2
+              className="mt-0.5 h-4 w-4 shrink-0"
+              aria-hidden="true"
+            />
             {t("auth.reset.success")}
-          </p>
+          </div>
         ) : (
-          <form onSubmit={submit} className="space-y-3">
-            <label htmlFor="reset-new" className="block text-sm font-medium">
-              {t("auth.reset.newPassword")}
-            </label>
-            <input
-              id="reset-new"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="ui-input w-full px-3 py-2 rounded-md"
-            />
-            <label
-              htmlFor="reset-confirm"
-              className="block text-sm font-medium"
-            >
-              {t("auth.reset.confirm")}
-            </label>
-            <input
-              id="reset-confirm"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="ui-input w-full px-3 py-2 rounded-md"
-            />
+          <form onSubmit={submit} className="space-y-4">
+            <Field label={t("auth.reset.newPassword")}>
+              <Input
+                id="reset-new"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </Field>
+            <Field label={t("auth.reset.confirm")}>
+              <Input
+                id="reset-confirm"
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+              />
+            </Field>
             {error && (
-              <p className="ui-alert-error ui-text-error rounded-md p-3 text-sm">
+              <p
+                role="alert"
+                className="rounded-lg border ui-alert-error p-3 text-sm ui-text-error"
+              >
                 {error}
               </p>
             )}
-            <button
+            <Button
               type="submit"
-              disabled={submitting || !token || !newPassword || !confirm}
-              className="ui-btn-primary w-full py-2 rounded-md"
+              fullWidth
+              loading={submitting}
+              disabled={!token || !newPassword || !confirm}
             >
-              {submitting ? t("common.loading") : t("auth.reset.submit")}
-            </button>
+              {t("auth.reset.submit")}
+            </Button>
             <Link
               to="/"
-              className="block text-center text-sm ui-action-primary hover:underline"
+              className="inline-flex w-full items-center justify-center gap-1 text-sm ui-action-primary hover:underline"
             >
+              <ArrowLeft className="h-4 w-4" />
               {t("auth.forgot.backToLogin")}
             </Link>
           </form>
