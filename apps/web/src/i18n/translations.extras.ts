@@ -497,6 +497,26 @@ export const extras = {
     "articleForm.warranty.endsOn": "Warranty expires on",
     "articleForm.warranty.proof.dropHint": "Drag a file here or browse below.",
     "articleDetail.gallery.dropHint": "Drag photos here or use Add photos.",
+    "onboarding.title": "Get started in three steps",
+    "onboarding.subtitle":
+      "Set up the essentials so nothing slips through the cracks.",
+    "onboarding.step.article": "Add your first article",
+    "onboarding.step.warranty": "Track a warranty",
+    "onboarding.step.alert": "Set up an alert",
+    "onboarding.go": "Go",
+    "needsAttention.title": "Needs attention",
+    "needsAttention.subtitle":
+      "Warranties that have expired or expire soon — handle them before they bite.",
+    "needsAttention.seeAll": "See all expiring",
+    "needsAttention.expiredOn": "Expired on",
+    "needsAttention.expiresOn": "Expires on",
+    "needsAttention.snoozed": "Snoozed for 7 days.",
+    "needsAttention.noPendingAlert":
+      "No scheduled alert for this warranty to snooze.",
+    "appearance.title": "Appearance",
+    "appearance.density.label": "Compact density",
+    "appearance.density.hint":
+      "Tighter spacing to fit more rows on screen. Saved on this device.",
   },
   fr: {
     "auth.hero.tagline":
@@ -1006,6 +1026,26 @@ export const extras = {
       "Glissez un fichier ici ou parcourez ci-dessous.",
     "articleDetail.gallery.dropHint":
       "Glissez des photos ici ou utilisez Ajouter des photos.",
+    "onboarding.title": "Démarrez en trois étapes",
+    "onboarding.subtitle":
+      "Mettez en place l'essentiel pour ne rien laisser passer.",
+    "onboarding.step.article": "Ajoutez votre premier article",
+    "onboarding.step.warranty": "Suivez une garantie",
+    "onboarding.step.alert": "Créez une alerte",
+    "onboarding.go": "Y aller",
+    "needsAttention.title": "À traiter",
+    "needsAttention.subtitle":
+      "Garanties expirées ou bientôt expirées — traitez-les avant qu'elles ne mordent.",
+    "needsAttention.seeAll": "Voir toutes celles qui expirent",
+    "needsAttention.expiredOn": "Expirée le",
+    "needsAttention.expiresOn": "Expire le",
+    "needsAttention.snoozed": "Mise en veille pour 7 jours.",
+    "needsAttention.noPendingAlert":
+      "Aucune alerte planifiée à mettre en veille pour cette garantie.",
+    "appearance.title": "Apparence",
+    "appearance.density.label": "Densité compacte",
+    "appearance.density.hint":
+      "Espacements resserrés pour afficher plus de lignes. Enregistré sur cet appareil.",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1510,6 +1550,25 @@ export const extras = {
       "Arraste um ficheiro aqui ou procure abaixo.",
     "articleDetail.gallery.dropHint":
       "Arraste fotos aqui ou use Adicionar fotos.",
+    "onboarding.title": "Comece em três passos",
+    "onboarding.subtitle": "Configure o essencial para nada lhe escapar.",
+    "onboarding.step.article": "Adicione o seu primeiro artigo",
+    "onboarding.step.warranty": "Acompanhe uma garantia",
+    "onboarding.step.alert": "Crie um alerta",
+    "onboarding.go": "Ir",
+    "needsAttention.title": "Requer atenção",
+    "needsAttention.subtitle":
+      "Garantias expiradas ou prestes a expirar — trate-as antes que mordam.",
+    "needsAttention.seeAll": "Ver todas a expirar",
+    "needsAttention.expiredOn": "Expirou em",
+    "needsAttention.expiresOn": "Expira em",
+    "needsAttention.snoozed": "Adiado por 7 dias.",
+    "needsAttention.noPendingAlert":
+      "Sem alertas agendados para esta garantia.",
+    "appearance.title": "Aparência",
+    "appearance.density.label": "Densidade compacta",
+    "appearance.density.hint":
+      "Espaçamento reduzido para mostrar mais linhas. Guardado neste dispositivo.",
   },
 } as const;
 

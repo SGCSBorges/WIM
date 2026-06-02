@@ -136,20 +136,39 @@ export default function LocationsView() {
     }
   };
 
-  const remove = async (id: number) => {
+  // Optimistic delete with a 5s undo window: hide the row immediately,
+  // schedule the API call, and let the user cancel from the toast. Same
+  // pattern as ArticlesList — no restore endpoint needed because the
+  // delete simply never fires if undo wins.
+  const remove = (id: number) => {
     setConfirmDeleteId(null);
-    setBusy(id);
-    try {
-      await locationsAPI.delete(id);
-      toast.show(t("locations.deleted"), { kind: "success" });
-      await fetchAll();
-    } catch (e) {
-      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-        kind: "error",
+    const snapshot = items.find((l) => l.locationId === id);
+    if (!snapshot) return;
+    setItems((prev) => prev.filter((l) => l.locationId !== id));
+
+    const timer = window.setTimeout(() => {
+      void locationsAPI.delete(id).catch((e) => {
+        setItems((prev) =>
+          prev.some((l) => l.locationId === id) ? prev : [...prev, snapshot]
+        );
+        toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+          kind: "error",
+        });
       });
-    } finally {
-      setBusy(null);
-    }
+    }, 5000);
+
+    toast.show(t("locations.deleted"), {
+      kind: "success",
+      action: {
+        label: t("common.undo"),
+        onClick: () => {
+          window.clearTimeout(timer);
+          setItems((prev) =>
+            prev.some((l) => l.locationId === id) ? prev : [...prev, snapshot]
+          );
+        },
+      },
+    });
   };
 
   return (

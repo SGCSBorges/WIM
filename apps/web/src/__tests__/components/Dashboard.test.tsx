@@ -14,6 +14,17 @@ vi.mock("../../services/api", () => ({
       currency: "USD",
     }),
   },
+  // NeedsAttention pulls expired + expiringSoon articles. Empty results
+  // keep it hidden (component returns null), so it doesn't interfere with
+  // these tests.
+  articlesAPI: {
+    getAll: vi.fn().mockResolvedValue({ items: [], total: 0 }),
+  },
+  alertsAPI: {
+    getAll: vi.fn().mockResolvedValue([]),
+    snooze: vi.fn(),
+  },
+  authAPI: { getRole: () => null },
 }));
 
 import { MemoryRouter } from "react-router-dom";
@@ -21,6 +32,7 @@ import Dashboard from "../../components/dashboard/Dashboard";
 import { statisticsAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";
 import { ThemeProvider } from "../../theme/theme";
+import { ToastProvider } from "../../components/common/Toast";
 
 const mockedGet = statisticsAPI.getDashboard as unknown as ReturnType<
   typeof vi.fn
@@ -52,7 +64,9 @@ function renderDashboard() {
     <MemoryRouter>
       <I18nProvider>
         <ThemeProvider>
-          <Dashboard />
+          <ToastProvider>
+            <Dashboard />
+          </ToastProvider>
         </ThemeProvider>
       </I18nProvider>
     </MemoryRouter>

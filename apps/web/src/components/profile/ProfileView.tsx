@@ -30,6 +30,7 @@ import {
   Users,
   XCircle,
   LogOut,
+  Rows3,
 } from "lucide-react";
 import {
   profileAPI,
@@ -43,6 +44,7 @@ import {
 } from "../../services/api";
 import type { FetchedArticle } from "../../types";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { isPowerUserOrAdmin } from "../../utils/roles";
 import {
@@ -98,6 +100,7 @@ function disconnectAndRedirect() {
 
 export default function ProfileView() {
   const { t, language } = useI18n();
+  const { density, setDensity } = usePreferences();
   const toast = useToast();
   const [me, setMe] = useState<Me | null>(null);
   const [subscription, setSubscription] = useState<BillingSubscription | null>(
@@ -531,6 +534,34 @@ export default function ProfileView() {
               ))}
             </Select>
           </Field>
+        </Section>
+
+        {/* Appearance: density toggle. Persisted locally (per-device) because
+            it's a cosmetic preference; theme / language already sync to the
+            account via the global selectors. */}
+        <Section
+          icon={<Rows3 className="h-5 w-5" />}
+          title={t("appearance.title")}
+        >
+          <div className="flex items-start gap-2 text-sm">
+            <input
+              id="profile-density"
+              type="checkbox"
+              checked={density === "compact"}
+              onChange={(e) =>
+                setDensity(e.target.checked ? "compact" : "comfortable")
+              }
+              className="mt-0.5 h-4 w-4 accent-[var(--primary)]"
+            />
+            <label htmlFor="profile-density">
+              <span className="block font-medium ui-title">
+                {t("appearance.density.label")}
+              </span>
+              <span className="block text-xs ui-text-muted">
+                {t("appearance.density.hint")}
+              </span>
+            </label>
+          </div>
         </Section>
 
         {/* Calendar feed */}

@@ -48,6 +48,7 @@ import { usePreferences } from "./preferences/preferences";
 import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
+import OnboardingChecklist from "./components/onboarding/OnboardingChecklist";
 import { Button, Card } from "./components/ui";
 import { NAV_ITEMS } from "./lib/navItems";
 
@@ -212,6 +213,8 @@ function Home({
           className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl"
         />
       </section>
+
+      <OnboardingChecklist />
 
       {/* Upgrade (USER only) */}
       {role === "USER" && (
