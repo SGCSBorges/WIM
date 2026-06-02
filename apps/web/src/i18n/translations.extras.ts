@@ -9,6 +9,12 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "nav.menu": "Menu",
+    "nav.close": "Close",
+    "nav.collapse": "Collapse",
+    "nav.expand": "Expand",
+    "nav.skipToContent": "Skip to content",
+    "common.dismiss": "Dismiss",
     "common.unsaved.discardConfirm":
       "You have unsaved changes. Discard them and leave?",
     "tags.manage.button": "Manage tags",
@@ -459,6 +465,12 @@ export const extras = {
     "timeline.kind.alert": "Alert",
   },
   fr: {
+    "nav.menu": "Menu",
+    "nav.close": "Fermer",
+    "nav.collapse": "Réduire",
+    "nav.expand": "Agrandir",
+    "nav.skipToContent": "Aller au contenu",
+    "common.dismiss": "Fermer",
     "common.unsaved.discardConfirm":
       "Vous avez des modifications non enregistrées. Les abandonner et quitter ?",
     "tags.manage.button": "Gérer les étiquettes",
@@ -925,6 +937,12 @@ export const extras = {
     "timeline.kind.alert": "Alerte",
   },
   pt: {
+    "nav.menu": "Menu",
+    "nav.close": "Fechar",
+    "nav.collapse": "Recolher",
+    "nav.expand": "Expandir",
+    "nav.skipToContent": "Ir para o conteúdo",
+    "common.dismiss": "Dispensar",
     "common.unsaved.discardConfirm":
       "Tem alterações não guardadas. Descartá-las e sair?",
     "tags.manage.button": "Gerir etiquetas",
