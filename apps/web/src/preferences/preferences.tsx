@@ -113,9 +113,19 @@ export function PreferencesProvider({
   );
 }
 
+// Defaults used outside a PreferencesProvider (e.g. focused unit tests of
+// components that consume only `formatDate`). Mirrors the real provider's
+// initial state with no-op writers so callers don't need to wrap.
+const FALLBACK: PreferencesContextValue = {
+  dateFormat: "system",
+  setDateFormat: () => {},
+  hydrateDateFormat: () => {},
+  density: "comfortable",
+  setDensity: () => {},
+  formatDate: (v) => fmtDate(v, "system"),
+  formatDateTime: (v) => fmtDateTime(v, "system"),
+};
+
 export function usePreferences() {
-  const ctx = useContext(PreferencesContext);
-  if (!ctx)
-    throw new Error("usePreferences must be used within a PreferencesProvider");
-  return ctx;
+  return useContext(PreferencesContext) ?? FALLBACK;
 }

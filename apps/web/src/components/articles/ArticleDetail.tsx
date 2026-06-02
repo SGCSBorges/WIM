@@ -27,6 +27,7 @@ import {
   Bell,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
+import { useFileDrop } from "../../hooks/useFileDrop";
 import {
   alertsAPI,
   articlesAPI,
@@ -224,11 +225,11 @@ export default function ArticleDetail() {
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  const uploadPhotos = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
+  const uploadPhotos = async (files: File[]) => {
+    if (files.length === 0) return;
     setUploadingPhoto(true);
     try {
-      for (const file of Array.from(files)) {
+      for (const file of files) {
         await attachmentsAPI.uploadFile(file, "OTHER", { articleId });
       }
       const atts = await attachmentsAPI.getAll({ articleId }).catch(() => []);
@@ -241,6 +242,14 @@ export default function ArticleDetail() {
       setUploadingPhoto(false);
     }
   };
+
+  // Drag-drop wrapper for the whole gallery section. The "Add photos" label
+  // (with its sr-only <input>) keeps the keyboard / a11y path intact.
+  const { isOver: galleryDragOver, dropProps: galleryDropProps } = useFileDrop({
+    onFiles: (files) => void uploadPhotos(files),
+    accept: ["image/"],
+    disabled: uploadingPhoto,
+  });
 
   const setPrimaryPhoto = async (url: string) => {
     try {
@@ -670,7 +679,7 @@ export default function ArticleDetail() {
               multiple
               disabled={uploadingPhoto}
               onChange={(e) => {
-                void uploadPhotos(e.target.files);
+                void uploadPhotos(Array.from(e.target.files ?? []));
                 e.target.value = "";
               }}
               className="sr-only"
@@ -679,56 +688,64 @@ export default function ArticleDetail() {
         }
         className="mb-6"
       >
-        {photos.length === 0 ? (
-          <EmptyState
-            icon={<ImagePlus className="h-6 w-6" />}
-            title={t("gallery.empty")}
-          />
-        ) : (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {photos.map((att) => {
-              const isPrimary = article.productImageUrl === att.fileUrl;
-              return (
-                <li
-                  key={att.attachmentId}
-                  className="space-y-1 rounded-lg border ui-divider p-2"
-                >
-                  <a href={att.fileUrl} target="_blank" rel="noreferrer">
-                    <img
-                      src={att.thumbUrl || att.fileUrl}
-                      alt={att.fileName}
-                      loading="lazy"
-                      className="h-24 w-full rounded-md object-cover"
-                    />
-                  </a>
-                  <div className="flex items-center justify-between gap-1 text-xs">
-                    {isPrimary ? (
-                      <Badge tone="info" icon={<Star className="h-3 w-3" />}>
-                        {t("gallery.primary")}
-                      </Badge>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPrimaryPhoto(att.fileUrl)}
-                        className="ui-action-primary hover:underline"
-                      >
-                        {t("gallery.setPrimary")}
-                      </button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deletePhoto(att)}
-                      className="text-danger"
-                      aria-label={`${t("common.delete")} ${att.fileName}`}
-                      leftIcon={<Trash2 className="h-4 w-4" />}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <div
+          {...galleryDropProps}
+          className={`rounded-lg p-1 transition-colors ${
+            galleryDragOver ? "bg-surface-muted ring-2 ring-primary" : ""
+          }`}
+        >
+          {photos.length === 0 ? (
+            <EmptyState
+              icon={<ImagePlus className="h-6 w-6" />}
+              title={t("gallery.empty")}
+              description={t("articleDetail.gallery.dropHint")}
+            />
+          ) : (
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {photos.map((att) => {
+                const isPrimary = article.productImageUrl === att.fileUrl;
+                return (
+                  <li
+                    key={att.attachmentId}
+                    className="space-y-1 rounded-lg border ui-divider p-2"
+                  >
+                    <a href={att.fileUrl} target="_blank" rel="noreferrer">
+                      <img
+                        src={att.thumbUrl || att.fileUrl}
+                        alt={att.fileName}
+                        loading="lazy"
+                        className="h-24 w-full rounded-md object-cover"
+                      />
+                    </a>
+                    <div className="flex items-center justify-between gap-1 text-xs">
+                      {isPrimary ? (
+                        <Badge tone="info" icon={<Star className="h-3 w-3" />}>
+                          {t("gallery.primary")}
+                        </Badge>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPrimaryPhoto(att.fileUrl)}
+                          className="ui-action-primary hover:underline"
+                        >
+                          {t("gallery.setPrimary")}
+                        </button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletePhoto(att)}
+                        className="text-danger"
+                        aria-label={`${t("common.delete")} ${att.fileName}`}
+                        leftIcon={<Trash2 className="h-4 w-4" />}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </Section>
 
       {/* Attachments (non-image) */}

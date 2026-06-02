@@ -494,6 +494,9 @@ export const extras = {
     "notifications.snooze.7d": "7d",
     "notifications.snooze.30d": "30d",
     "notifications.snoozeError": "Failed to snooze alert.",
+    "articleForm.warranty.endsOn": "Warranty expires on",
+    "articleForm.warranty.proof.dropHint": "Drag a file here or browse below.",
+    "articleDetail.gallery.dropHint": "Drag photos here or use Add photos.",
   },
   fr: {
     "auth.hero.tagline":
@@ -998,6 +1001,11 @@ export const extras = {
     "notifications.snooze.7d": "7j",
     "notifications.snooze.30d": "30j",
     "notifications.snoozeError": "Échec de la mise en veille.",
+    "articleForm.warranty.endsOn": "La garantie expire le",
+    "articleForm.warranty.proof.dropHint":
+      "Glissez un fichier ici ou parcourez ci-dessous.",
+    "articleDetail.gallery.dropHint":
+      "Glissez des photos ici ou utilisez Ajouter des photos.",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1497,6 +1505,11 @@ export const extras = {
     "notifications.snooze.7d": "7d",
     "notifications.snooze.30d": "30d",
     "notifications.snoozeError": "Falha ao adiar alerta.",
+    "articleForm.warranty.endsOn": "A garantia expira em",
+    "articleForm.warranty.proof.dropHint":
+      "Arraste um ficheiro aqui ou procure abaixo.",
+    "articleDetail.gallery.dropHint":
+      "Arraste fotos aqui ou use Adicionar fotos.",
   },
 } as const;
 

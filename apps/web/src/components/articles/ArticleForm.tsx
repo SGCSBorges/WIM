@@ -17,7 +17,16 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ScanLine, Plus, Trash2, ExternalLink } from "lucide-react";
+import { addMonths, format as dfFormat } from "date-fns";
+import {
+  ScanLine,
+  Plus,
+  Trash2,
+  ExternalLink,
+  UploadCloud,
+} from "lucide-react";
+import { useFileDrop } from "../../hooks/useFileDrop";
+import { usePreferences } from "../../preferences/preferences";
 import {
   attachmentsAPI,
   locationsAPI,
@@ -196,6 +205,33 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     if (dirty && !window.confirm(t("common.unsaved.discardConfirm"))) return;
     onCancel?.();
   };
+
+  const { dateFormat } = usePreferences();
+
+  // Live "Warranty expires on …" hint under the duration field. We keep the
+  // computation local instead of plumbing date-fns through Field so the read
+  // stays a plain `<p>`.
+  const warrantyEndsAt = useMemo(() => {
+    if (!warrantyEnabled || !warrantyDateAchat || !warrantyDuration)
+      return null;
+    const start = new Date(warrantyDateAchat);
+    if (Number.isNaN(start.getTime())) return null;
+    const end = addMonths(start, warrantyDuration);
+    if (dateFormat === "system") return end.toLocaleDateString();
+    return dfFormat(end, dateFormat);
+  }, [warrantyEnabled, warrantyDateAchat, warrantyDuration, dateFormat]);
+
+  // Drag-and-drop wrapper for the proof input. The hidden <input> below stays
+  // for keyboard / screen-reader users; this just makes the surrounding area
+  // accept dropped files as well.
+  const { isOver: proofDragOver, dropProps: proofDropProps } = useFileDrop({
+    onFiles: (files) => {
+      const f = files[0];
+      if (f) void handleWarrantyProofSelected(f);
+    },
+    accept: ["image/", "application/pdf"],
+    disabled: warrantyProofUploading,
+  });
 
   const handleWarrantyProofSelected = async (file: File) => {
     try {
@@ -639,7 +675,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                     onChange={(e) => setWarrantyDateAchat(e.target.value)}
                   />
                 </Field>
-                <Field label={t("articleForm.warranty.durationMonths")}>
+                <Field
+                  label={t("articleForm.warranty.durationMonths")}
+                  hint={
+                    warrantyEndsAt
+                      ? `${t("articleForm.warranty.endsOn")} ${warrantyEndsAt}`
+                      : undefined
+                  }
+                >
                   <Input
                     type="number"
                     min={1}
@@ -653,7 +696,16 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               </div>
 
               <Field label={t("attachments.form.fileUpload")}>
-                <div className="flex flex-col gap-2">
+                <div
+                  {...proofDropProps}
+                  className={`flex flex-col gap-2 rounded-lg p-2 transition-colors ${
+                    proofDragOver ? "bg-surface-muted ring-2 ring-primary" : ""
+                  }`}
+                >
+                  <p className="flex items-center gap-1.5 text-xs ui-text-muted">
+                    <UploadCloud className="h-3.5 w-3.5" aria-hidden="true" />
+                    {t("articleForm.warranty.proof.dropHint")}
+                  </p>
                   <input
                     type="file"
                     accept="image/*,application/pdf"
