@@ -5,12 +5,14 @@
  * articles already carrying both.
  */
 import { useCallback, useEffect, useState } from "react";
+import { Pencil, GitMerge, Trash2, Check, X } from "lucide-react";
 import Modal from "../common/Modal";
 import { tagsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import { Skeleton } from "../common/Skeleton";
+import { Button, Input, Select, Badge } from "../ui";
 
 type TagRow = { tagId: number; name: string; articleCount: number };
 
@@ -34,6 +36,7 @@ export default function TagsManager({
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [mergeFor, setMergeFor] = useState<number | null>(null);
+  const [deleteFor, setDeleteFor] = useState<TagRow | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -94,10 +97,10 @@ export default function TagsManager({
   };
 
   const doDelete = async (id: number) => {
-    if (!window.confirm(t("tags.manage.deleteConfirm"))) return;
     setBusyId(id);
     try {
       await tagsAPI.remove(id);
+      setDeleteFor(null);
       await afterChange();
     } catch (e) {
       toast.show(getErrorMessage(e, t("tags.manage.deleteError")), {
@@ -113,9 +116,9 @@ export default function TagsManager({
       open={open}
       onClose={onClose}
       titleId="tags-manager-title"
-      panelClassName="ui-card w-full max-w-lg p-6 rounded-lg"
+      panelClassName="ui-card w-full max-w-lg p-6 rounded-xl animate-scale-in"
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h2 id="tags-manager-title" className="text-lg font-semibold ui-title">
           {t("tags.manage.title")}
         </h2>
@@ -123,9 +126,9 @@ export default function TagsManager({
           type="button"
           onClick={onClose}
           aria-label={t("common.close")}
-          className="ui-btn-ghost px-2 py-1 rounded"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg ui-btn-ghost"
         >
-          ✕
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -136,46 +139,68 @@ export default function TagsManager({
           ))}
         </div>
       ) : tags.length === 0 ? (
-        <p className="ui-text-muted text-sm py-6 text-center">
+        <p className="py-8 text-center text-sm ui-text-muted">
           {t("tags.manage.empty")}
         </p>
       ) : (
-        <ul className="divide-y ui-divider max-h-96 overflow-y-auto">
+        <ul className="max-h-96 divide-y ui-divider overflow-y-auto">
           {tags.map((tag) => (
-            <li key={tag.tagId} className="py-2 flex items-center gap-2">
-              {editId === tag.tagId ? (
+            <li key={tag.tagId} className="flex items-center gap-2 py-2">
+              {deleteFor?.tagId === tag.tagId ? (
                 <>
-                  <input
+                  <span className="flex-1 truncate text-sm ui-text-error">
+                    {t("tags.manage.deleteConfirm")}
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => doDelete(tag.tagId)}
+                    loading={busyId === tag.tagId}
+                    leftIcon={<Trash2 className="h-4 w-4" />}
+                  >
+                    {t("common.delete")}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteFor(null)}
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                </>
+              ) : editId === tag.tagId ? (
+                <>
+                  <Input
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     maxLength={40}
-                    className="ui-input flex-1 px-2 py-1 rounded text-sm"
+                    className="flex-1"
                     aria-label={t("tags.manage.renameLabel")}
                   />
-                  <button
-                    type="button"
+                  <Button
+                    size="sm"
                     onClick={() => saveRename(tag.tagId)}
-                    disabled={busyId === tag.tagId}
-                    className="ui-btn-primary px-2 py-1 rounded text-sm"
+                    loading={busyId === tag.tagId}
+                    leftIcon={<Check className="h-4 w-4" />}
                   >
                     {t("common.save")}
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setEditId(null)}
-                    className="ui-btn-ghost px-2 py-1 rounded text-sm border ui-divider"
                   >
                     {t("common.cancel")}
-                  </button>
+                  </Button>
                 </>
               ) : mergeFor === tag.tagId ? (
                 <>
-                  <span className="flex-1 text-sm truncate">
+                  <span className="flex-1 truncate text-sm">
                     {t("tags.manage.mergeInto").replace("{name}", tag.name)}
                   </span>
-                  <select
-                    className="ui-select px-2 py-1 rounded text-sm"
+                  <Select
+                    className="w-44"
                     aria-label={t("tags.manage.mergeTarget")}
                     defaultValue=""
                     onChange={(e) => {
@@ -191,50 +216,53 @@ export default function TagsManager({
                           {other.name}
                         </option>
                       ))}
-                  </select>
-                  <button
-                    type="button"
+                  </Select>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setMergeFor(null)}
-                    className="ui-btn-ghost px-2 py-1 rounded text-sm border ui-divider"
                   >
                     {t("common.cancel")}
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <span className="flex-1 text-sm truncate">{tag.name}</span>
-                  <span className="text-xs ui-text-muted shrink-0">
+                  <span className="flex-1 truncate text-sm font-medium ui-title">
+                    {tag.name}
+                  </span>
+                  <Badge tone="neutral">
                     {t("tags.manage.count").replace(
                       "{count}",
                       String(tag.articleCount)
                     )}
-                  </span>
-                  <button
-                    type="button"
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       setEditId(tag.tagId);
                       setEditName(tag.name);
                     }}
-                    className="ui-btn-ghost px-2 py-1 rounded text-sm border ui-divider"
-                  >
-                    {t("common.edit")}
-                  </button>
-                  <button
-                    type="button"
+                    aria-label={t("common.edit")}
+                    leftIcon={<Pencil className="h-4 w-4" />}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setMergeFor(tag.tagId)}
                     disabled={tags.length < 2}
-                    className="ui-btn-ghost px-2 py-1 rounded text-sm border ui-divider"
-                  >
-                    {t("tags.manage.merge")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => doDelete(tag.tagId)}
+                    aria-label={t("tags.manage.merge")}
+                    leftIcon={<GitMerge className="h-4 w-4" />}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteFor(tag)}
                     disabled={busyId === tag.tagId}
-                    className="ui-btn-ghost px-2 py-1 rounded text-sm border ui-divider ui-text-error"
-                  >
-                    {t("common.delete")}
-                  </button>
+                    aria-label={t("common.delete")}
+                    className="text-danger"
+                    leftIcon={<Trash2 className="h-4 w-4" />}
+                  />
                 </>
               )}
             </li>
