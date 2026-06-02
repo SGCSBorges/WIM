@@ -7,14 +7,15 @@
  * auto-purged by the daily maintenance job.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Trash2, Undo2 } from "lucide-react";
 import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import type { FetchedArticle } from "@wim/types";
-import { ErrorBanner } from "../common/States";
+import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
+import { PageHeader, Button } from "../ui";
 
 export default function ArticlesTrash() {
   const { t, language } = useI18n();
@@ -24,7 +25,6 @@ export default function ArticlesTrash() {
   const [error, setError] = useState<string | null>(null);
   const [confirmPurgeId, setConfirmPurgeId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
-  // Bulk selection state mirrors AttachmentsList / ArticlesList.
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showBulkPurgeConfirm, setShowBulkPurgeConfirm] = useState(false);
@@ -128,94 +128,99 @@ export default function ArticlesTrash() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold ui-title">{t("trash.title")}</h1>
-        <Link to="/articles" className="text-sm ui-link">
-          ← {t("trash.backToArticles")}
-        </Link>
-      </div>
-      <p className="text-sm ui-text-muted">{t("trash.subtitle")}</p>
+    <div>
+      <PageHeader
+        icon={<Trash2 className="h-5 w-5" />}
+        title={t("trash.title")}
+        subtitle={t("trash.subtitle")}
+        breadcrumbs={[
+          { label: t("nav.articles"), to: "/articles" },
+          { label: t("trash.title") },
+        ]}
+      />
 
-      {error && <ErrorBanner message={error} onRetry={load} />}
+      {error && <ErrorBanner message={error} onRetry={load} className="mb-6" />}
 
       {selectedIds.size > 0 && (
         <div
           role="region"
           aria-label={t("trash.bulk.selectionLabel")}
-          className="ui-card rounded-lg shadow p-3 flex flex-wrap items-center gap-3 sticky top-2 z-10"
+          className="ui-card sticky top-20 z-10 mb-4 flex flex-wrap items-center gap-3 p-3 animate-slide-up"
         >
-          <span className="font-medium text-sm">
+          <span className="text-sm font-medium">
             {t("trash.bulk.selected").replace(
               "{count}",
               String(selectedIds.size)
             )}
           </span>
-          <div className="flex items-center gap-2 ml-auto">
-            <button
-              type="button"
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
               onClick={bulkRestore}
               disabled={bulkBusy}
-              className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+              leftIcon={<Undo2 className="h-4 w-4" />}
             >
               {t("trash.bulk.restore")}
-            </button>
+            </Button>
             {showBulkPurgeConfirm ? (
               <>
                 <span className="text-xs ui-text-error">
                   {t("trash.confirmPurge")}
                 </span>
-                <button
-                  type="button"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={bulkPurge}
-                  disabled={bulkBusy}
-                  className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                  loading={bulkBusy}
                 >
                   {t("trash.purgeNow")}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowBulkPurgeConfirm(false)}
                   disabled={bulkBusy}
-                  className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
                 >
                   {t("common.cancel")}
-                </button>
+                </Button>
               </>
             ) : (
-              <button
-                type="button"
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={() => setShowBulkPurgeConfirm(true)}
                 disabled={bulkBusy}
-                className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                leftIcon={<Trash2 className="h-4 w-4" />}
               >
                 {t("trash.bulk.purge")}
-              </button>
+              </Button>
             )}
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setSelectedIds(new Set())}
               disabled={bulkBusy}
-              className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
             >
               {t("trash.bulk.clear")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {loading ? (
-        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-xl" />
       ) : items.length === 0 ? (
-        <p className="ui-card rounded-lg p-6 text-center ui-text-muted">
-          {t("trash.empty")}
-        </p>
+        <EmptyState
+          icon={<Trash2 className="h-6 w-6" />}
+          title={t("trash.empty")}
+        />
       ) : (
-        <ul className="ui-card rounded-lg divide-y ui-divider">
+        <ul className="ui-card divide-y ui-divider">
           {items.map((a) => (
             <li
               key={a.articleId}
-              className="p-3 flex flex-wrap items-center gap-3"
+              className="flex flex-wrap items-center gap-3 p-3"
             >
               <input
                 type="checkbox"
@@ -225,53 +230,57 @@ export default function ArticlesTrash() {
                 )}
                 checked={selectedIds.has(a.articleId)}
                 onChange={() => toggleSelected(a.articleId)}
+                className="h-4 w-4 accent-[var(--primary)]"
               />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{a.articleNom}</p>
-                <p className="text-xs ui-text-muted truncate">
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium ui-title">{a.articleNom}</p>
+                <p className="truncate text-xs ui-text-muted">
                   {a.articleModele}
                   {a.updatedAt
                     ? ` · ${new Date(a.updatedAt).toLocaleDateString(language)}`
                     : ""}
                 </p>
               </div>
-              <button
-                type="button"
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => restore(a.articleId)}
                 disabled={busyId === a.articleId}
-                className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+                leftIcon={<Undo2 className="h-4 w-4" />}
               >
                 {t("trash.restore")}
-              </button>
+              </Button>
               {confirmPurgeId === a.articleId ? (
                 <span className="flex items-center gap-2">
                   <span className="text-xs ui-text-error">
                     {t("trash.confirmPurge")}
                   </span>
-                  <button
-                    type="button"
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={() => purge(a.articleId)}
-                    disabled={busyId === a.articleId}
-                    className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+                    loading={busyId === a.articleId}
                   >
                     {t("trash.purgeNow")}
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setConfirmPurgeId(null)}
-                    className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
                   >
                     {t("common.cancel")}
-                  </button>
+                  </Button>
                 </span>
               ) : (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setConfirmPurgeId(a.articleId)}
-                  className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md ui-text-error"
+                  className="text-danger"
+                  leftIcon={<Trash2 className="h-4 w-4" />}
                 >
                   {t("trash.purge")}
-                </button>
+                </Button>
               )}
             </li>
           ))}
