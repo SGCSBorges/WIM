@@ -11,6 +11,7 @@ import { useI18n } from "../../i18n/i18n";
 import { isActivePath } from "../../lib/navItems";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import InstallPwaButton from "../common/InstallPwaButton";
+import NotificationBell from "./NotificationBell";
 import { Button } from "../ui";
 
 export interface TopBarProps {
@@ -83,6 +84,8 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
         <div className="hidden lg:block">
           <LanguageThemeSelector />
         </div>
+
+        <NotificationBell />
 
         <button
           type="button"
