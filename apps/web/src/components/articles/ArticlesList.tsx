@@ -18,6 +18,21 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import {
+  Package,
+  Plus,
+  Search,
+  FileDown,
+  FileText,
+  Upload,
+  Tag as TagIcon,
+  Trash2,
+  Pencil,
+  Globe,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
 import {
@@ -36,13 +51,21 @@ import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { downloadBlob } from "../../utils/csv";
 import ArticleThumb from "./ArticleThumb";
-import { ErrorBanner } from "../common/States";
+import { ErrorBanner, EmptyState } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
 import CsvImportModal from "./CsvImportModal";
 import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
 import { consumeSharedDraft } from "../../utils/shareTarget";
 import { isPowerUserOrAdmin } from "../../utils/roles";
+import {
+  PageHeader,
+  Button,
+  Input,
+  Select,
+  Badge,
+  type BadgeTone,
+} from "../ui";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
@@ -107,6 +130,14 @@ const ArticlesList: React.FC = () => {
         color: "green",
       };
     }
+  };
+
+  // Theme-aware Badge tone for the warranty color buckets.
+  const warrantyTone = (color: string): BadgeTone => {
+    if (color === "red") return "danger";
+    if (color === "yellow") return "warning";
+    if (color === "green") return "success";
+    return "neutral";
   };
 
   const [articles, setArticles] = useState<FetchedArticle[]>([]);
@@ -179,6 +210,13 @@ const ArticlesList: React.FC = () => {
     },
     [setSearchParams]
   );
+
+  // Strip every list-state param at once. Triggered by the "Clear filters"
+  // affordance and is a no-op when nothing is set.
+  const clearAllFilters = useCallback(() => {
+    setSearchInput("");
+    setSearchParams(new URLSearchParams(), { replace: true });
+  }, [setSearchParams]);
 
   // Debounce the search box into the URL `q` param.
   useEffect(() => {
@@ -551,30 +589,46 @@ const ArticlesList: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t("articles.title")}</h1>
-          <p className="ui-text-muted">{t("articles.subtitle")}</p>
-        </div>
+    <div>
+      <PageHeader
+        icon={<Package className="h-5 w-5" />}
+        title={t("articles.title")}
+        subtitle={t("articles.subtitle")}
+        actions={
+          <Button
+            onClick={() => setShowForm(true)}
+            leftIcon={<Plus className="h-4 w-4" />}
+          >
+            {t("articles.create")}
+          </Button>
+        }
+      />
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder={t("articles.search.placeholder")}
-            aria-label={t("articles.search.placeholder")}
-            className="ui-input px-3 py-2 rounded-md text-sm w-52"
-          />
+      {/* Toolbar */}
+      <div className="ui-card mb-4 space-y-3 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[12rem] flex-1">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+              aria-hidden="true"
+            />
+            <Input
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t("articles.search.placeholder")}
+              aria-label={t("articles.search.placeholder")}
+              className="pl-9"
+            />
+          </div>
 
-          <select
+          <Select
             value={locationFilterId ?? ""}
             onChange={(e) =>
               updateParams({ location: e.target.value || undefined })
             }
             aria-label={t("common.allLocations")}
-            className="ui-select px-3 py-2 rounded-md"
+            className="w-auto"
           >
             <option value="">{t("common.allLocations")}</option>
             {locations.map((l) => (
@@ -582,16 +636,16 @@ const ArticlesList: React.FC = () => {
                 {l.name}
               </option>
             ))}
-          </select>
+          </Select>
 
           {tags.length > 0 && (
-            <select
+            <Select
               value={tagFilterId ?? ""}
               onChange={(e) =>
                 updateParams({ tag: e.target.value || undefined })
               }
-              className="ui-select px-3 py-2 rounded-md"
               aria-label={t("articles.filter.tag")}
+              className="w-auto"
             >
               <option value="">{t("articles.filter.allTags")}</option>
               {tags.map((tg) => (
@@ -599,16 +653,16 @@ const ArticlesList: React.FC = () => {
                   {tg.name}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
 
-          <select
+          <Select
             value={warrantyStatus}
             onChange={(e) =>
               updateParams({ warranty: e.target.value || undefined })
             }
-            className="ui-select px-3 py-2 rounded-md"
             aria-label={t("articles.filter.warranty")}
+            className="w-auto"
           >
             <option value="">{t("articles.filter.allWarranties")}</option>
             <option value="valid">{t("articles.filter.warrantyValid")}</option>
@@ -619,52 +673,52 @@ const ArticlesList: React.FC = () => {
               {t("articles.filter.warrantyExpired")}
             </option>
             <option value="none">{t("articles.filter.warrantyNone")}</option>
-          </select>
+          </Select>
 
-          <input
+          <Input
             type="number"
             min="0"
             value={priceMin}
             onChange={(e) => updateParams({ priceMin: e.target.value })}
             placeholder={t("articles.filter.priceMin")}
-            className="ui-input px-3 py-2 rounded-md text-sm w-24"
             aria-label={t("articles.filter.priceMin")}
+            className="w-24"
           />
-          <input
+          <Input
             type="number"
             min="0"
             value={priceMax}
             onChange={(e) => updateParams({ priceMax: e.target.value })}
             placeholder={t("articles.filter.priceMax")}
-            className="ui-input px-3 py-2 rounded-md text-sm w-24"
             aria-label={t("articles.filter.priceMax")}
+            className="w-24"
           />
 
-          <input
+          <Input
             type="date"
             value={createdFrom}
             onChange={(e) => updateParams({ createdFrom: e.target.value })}
-            className="ui-input px-3 py-2 rounded-md text-sm"
             aria-label={t("articles.filter.createdFrom")}
             title={t("articles.filter.createdFrom")}
+            className="w-auto"
           />
-          <input
+          <Input
             type="date"
             value={createdTo}
             onChange={(e) => updateParams({ createdTo: e.target.value })}
-            className="ui-input px-3 py-2 rounded-md text-sm"
             aria-label={t("articles.filter.createdTo")}
             title={t("articles.filter.createdTo")}
+            className="w-auto"
           />
 
-          <select
+          <Select
             value={`${sortParam || "articleId"}:${dirParam || "desc"}`}
             onChange={(e) => {
               const [s, d] = e.target.value.split(":");
               updateParams({ sort: s, dir: d });
             }}
             aria-label={t("articles.filter.sort")}
-            className="ui-select px-3 py-2 rounded-md text-sm"
+            className="w-auto"
           >
             <option value="articleId:desc">
               {t("articles.sort.newestFirst")}
@@ -688,17 +742,34 @@ const ArticlesList: React.FC = () => {
             <option value="createdAt:asc">
               {t("articles.sort.createdAsc")}
             </option>
-          </select>
+          </Select>
 
-          <button
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              leftIcon={<X className="h-4 w-4" />}
+            >
+              {t("articles.filter.clearAll")}
+            </Button>
+          )}
+        </div>
+
+        {/* Secondary actions */}
+        <div className="flex flex-wrap items-center gap-2 border-t ui-divider pt-3">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={exportToCsv}
             disabled={articles.length === 0}
-            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+            leftIcon={<FileDown className="h-4 w-4" />}
           >
             {t("articles.export.csv")}
-          </button>
-
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={async () => {
               try {
                 downloadBlob(
@@ -711,12 +782,13 @@ const ArticlesList: React.FC = () => {
                 });
               }
             }}
-            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+            leftIcon={<FileText className="h-4 w-4" />}
           >
             {t("articles.export.pdf")}
-          </button>
-
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={async () => {
               try {
                 downloadBlob(
@@ -730,51 +802,48 @@ const ArticlesList: React.FC = () => {
               }
             }}
             disabled={articles.length === 0}
-            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+            leftIcon={<FileText className="h-4 w-4" />}
           >
             {t("articles.export.labels")}
-          </button>
-
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setShowImport(true)}
-            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+            leftIcon={<Upload className="h-4 w-4" />}
           >
             {t("articles.import.csv")}
-          </button>
-
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setShowTagsManager(true)}
-            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
+            leftIcon={<TagIcon className="h-4 w-4" />}
           >
             {t("tags.manage.button")}
-          </button>
-
-          <Link
-            to="/articles/trash"
-            className="ui-btn-ghost px-4 py-2 rounded-md border ui-divider text-sm"
-          >
-            {t("trash.link")}
+          </Button>
+          <Link to="/articles/trash" className="ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<Trash2 className="h-4 w-4" />}
+            >
+              {t("trash.link")}
+            </Button>
           </Link>
-
-          <button
-            onClick={() => setShowForm(true)}
-            className="ui-btn-primary px-4 py-2 rounded-md"
-          >
-            {t("articles.create")}
-          </button>
         </div>
       </div>
 
       {/* Saved filter views */}
       <div
-        className="flex flex-wrap items-center gap-2"
+        className="mb-4 flex flex-wrap items-center gap-2"
         role="group"
         aria-label={t("savedViews.title")}
       >
         {savedViews.map((v) => (
           <span
             key={v.id}
-            className="inline-flex items-center gap-1 ui-badge px-2 py-1 rounded-full text-xs"
+            className="inline-flex items-center gap-1 rounded-full ui-badge px-2.5 py-1 text-xs"
           >
             <button
               type="button"
@@ -791,18 +860,19 @@ const ArticlesList: React.FC = () => {
               type="button"
               onClick={() => deleteView(v.id)}
               aria-label={t("savedViews.delete")}
-              className="ui-action-danger leading-none"
+              className="text-danger leading-none"
             >
-              ✕
+              <X className="h-3 w-3" aria-hidden="true" />
             </button>
           </span>
         ))}
         <button
           type="button"
           onClick={saveCurrentView}
-          className="text-xs ui-btn-ghost border ui-divider rounded-full px-2 py-1"
+          className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs ui-text-muted hover:bg-surface-muted"
         >
-          + {t("savedViews.save")}
+          <Plus className="h-3 w-3" aria-hidden="true" />
+          {t("savedViews.save")}
         </button>
       </div>
 
@@ -811,6 +881,7 @@ const ArticlesList: React.FC = () => {
           message={error}
           onRetry={fetchArticles}
           retryLabel={t("common.retry")}
+          className="mb-4"
         />
       )}
 
@@ -831,51 +902,54 @@ const ArticlesList: React.FC = () => {
       />
 
       {showBulkDeleteConfirm && (
-        <div className="border ui-alert-error rounded-lg p-4 flex flex-wrap items-center gap-3">
-          <p className="text-sm ui-text-error flex-1">
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border ui-alert-error p-4">
+          <p className="flex-1 text-sm ui-text-error">
             {t("articles.bulk.deleteConfirm").replace(
               "{count}",
               String(selectedIds.size)
             )}
           </p>
-          <button
-            type="button"
+          <Button
+            variant="danger"
+            size="sm"
             onClick={bulkDelete}
-            disabled={bulkBusy}
-            className="text-sm px-3 py-1.5 ui-btn-danger rounded-md"
+            loading={bulkBusy}
+            leftIcon={<Trash2 className="h-4 w-4" />}
           >
             {t("common.yes")}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setShowBulkDeleteConfirm(false)}
             disabled={bulkBusy}
-            className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
           >
             {t("common.no")}
-          </button>
+          </Button>
         </div>
       )}
 
       {showForm && (
-        <ArticleForm
-          article={editingArticle || sharedDraft || undefined}
-          onSubmit={handleSubmit}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingArticle(null);
-            setSharedDraft(null);
-          }}
-        />
+        <div className="mb-4">
+          <ArticleForm
+            article={editingArticle || sharedDraft || undefined}
+            onSubmit={handleSubmit}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingArticle(null);
+              setSharedDraft(null);
+            }}
+          />
+        </div>
       )}
 
-      <div className="ui-card rounded-lg shadow">
+      <div className="ui-card overflow-hidden">
         {loading ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="ui-panel">
                 <tr>
-                  <th className="px-3 py-3 w-10" aria-hidden="true">
+                  <th className="w-10 px-3 py-3" aria-hidden="true">
                     <input
                       type="checkbox"
                       disabled
@@ -897,7 +971,7 @@ const ArticlesList: React.FC = () => {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ui-text-muted"
                     >
                       {h}
                     </th>
@@ -907,7 +981,7 @@ const ArticlesList: React.FC = () => {
               <tbody className="divide-y ui-divider">
                 {[1, 2, 3, 4].map((i) => (
                   <tr key={i}>
-                    <td className="px-3 py-4 w-10">
+                    <td className="w-10 px-3 py-4">
                       <div className="h-4 w-4 animate-pulse rounded ui-panel" />
                     </td>
                     {[12, 60, 40, 80, 20, 24, 20, 24, 16, 48].map((w, j) => (
@@ -923,39 +997,54 @@ const ArticlesList: React.FC = () => {
             </table>
           </div>
         ) : articles.length === 0 && hasActiveFilters ? (
-          <div className="p-8 text-center">
-            <p className="ui-text-muted">
-              {t("articles.search.noResults").replace("{query}", qParam.trim())}
-            </p>
-          </div>
+          <EmptyState
+            icon={<Search className="h-6 w-6" />}
+            title={t("articles.search.noResults").replace(
+              "{query}",
+              qParam.trim()
+            )}
+            action={
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllFilters}
+                leftIcon={<X className="h-4 w-4" />}
+              >
+                {t("articles.filter.clearAll")}
+              </Button>
+            }
+            className="m-4"
+          />
         ) : articles.length === 0 ? (
-          <div className="p-8 text-center">
-            <div className="ui-text-muted text-6xl mb-4">📦</div>
-            <h3 className="text-lg font-semibold mb-2">
-              {t("articles.none.title")}
-            </h3>
-            <p className="ui-text-muted mb-4">{t("articles.none.subtitle")}</p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="ui-btn-primary px-4 py-2 rounded-md"
-            >
-              {t("articles.create")}
-            </button>
-          </div>
+          <EmptyState
+            icon={<Package className="h-8 w-8" />}
+            title={t("articles.none.title")}
+            description={t("articles.none.subtitle")}
+            action={
+              <Button
+                onClick={() => setShowForm(true)}
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                {t("articles.create")}
+              </Button>
+            }
+            className="m-4"
+          />
         ) : (
           <>
             {/* Mobile: stacked-card layout (below sm:). The desktop table
                 below is hidden at the same breakpoint. */}
             <ul
-              className="sm:hidden divide-y ui-divider"
+              className="divide-y ui-divider sm:hidden"
               aria-label={t("articles.title")}
             >
-              <li className="p-3 flex items-center gap-2">
+              <li className="flex items-center gap-2 p-3">
                 <input
                   type="checkbox"
                   aria-label={t("articles.bulk.selectAll")}
                   checked={allPageSelected}
                   onChange={toggleSelectAll}
+                  className="h-4 w-4 accent-[var(--primary)]"
                 />
                 <span className="text-xs ui-text-muted">
                   {t("articles.bulk.selectAll")}
@@ -964,42 +1053,34 @@ const ArticlesList: React.FC = () => {
               {articles.map((article) => {
                 const ws = getWarrantyStatus(article.garantie);
                 const days = getDaysUntilExpiry(article.garantie?.garantieFin);
-                const wsClass = {
-                  gray: "ui-badge",
-                  green: "ui-badge-success",
-                  yellow: "ui-badge-warning",
-                  red: "ui-badge-danger",
-                }[ws.color as "gray" | "green" | "yellow" | "red"];
                 return (
                   <li
                     key={`m-${article.articleId}`}
-                    className="p-3 flex items-start gap-3"
+                    className="flex items-start gap-3 p-3"
                   >
                     <input
                       type="checkbox"
                       aria-label={`Select ${article.articleNom}`}
                       checked={selectedIds.has(article.articleId)}
                       onChange={() => toggleSelected(article.articleId)}
-                      className="mt-1"
+                      className="mt-1 h-4 w-4 accent-[var(--primary)]"
                     />
                     <ArticleThumb
                       src={article.productImageUrl}
                       alt={article.articleNom}
                     />
-                    <div className="flex-1 min-w-0 space-y-1">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <Link
                         to={`/articles/${article.articleId}`}
-                        className="block font-medium truncate ui-action-primary"
+                        className="block truncate font-medium ui-action-primary"
                       >
                         {article.articleNom}
                       </Link>
-                      <p className="text-xs ui-text-muted truncate">
+                      <p className="truncate text-xs ui-text-muted">
                         {article.articleModele}
                       </p>
                       <div className="flex flex-wrap items-center gap-1 text-xs">
-                        <span className={`px-1.5 py-0.5 rounded ${wsClass}`}>
-                          {ws.label}
-                        </span>
+                        <Badge tone={warrantyTone(ws.color)}>{ws.label}</Badge>
                         {article.purchasePrice != null && (
                           <span className="ui-text-muted">
                             {formatMoney(
@@ -1016,22 +1097,25 @@ const ArticlesList: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1 text-xs shrink-0">
-                      <button
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           setEditingArticle(article);
                           setShowForm(true);
                         }}
-                        className="ui-action-primary"
-                      >
-                        {t("common.edit")}
-                      </button>
-                      <button
+                        aria-label={t("common.edit")}
+                        leftIcon={<Pencil className="h-4 w-4" />}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleDelete(article)}
-                        className="ui-action-danger"
-                      >
-                        {t("common.delete")}
-                      </button>
+                        aria-label={t("common.delete")}
+                        className="text-danger"
+                        leftIcon={<Trash2 className="h-4 w-4" />}
+                      />
                     </div>
                   </li>
                 );
@@ -1039,60 +1123,57 @@ const ArticlesList: React.FC = () => {
             </ul>
 
             {/* Desktop: existing table (sm: and up). */}
-            <div className="hidden sm:block overflow-x-auto">
+            <div className="hidden overflow-x-auto sm:block">
               <table className="w-full">
                 <thead className="ui-panel">
                   <tr>
-                    <th className="px-3 py-3 w-10">
+                    <th className="w-10 px-3 py-3">
                       <input
                         type="checkbox"
                         aria-label={t("articles.bulk.selectAll")}
                         checked={allPageSelected}
                         onChange={toggleSelectAll}
+                        className="h-4 w-4 accent-[var(--primary)]"
                       />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.image")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.name")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.model")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.description")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.value")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.warranty")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.expiresIn")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.proof")}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium ui-text-muted uppercase tracking-wider">
-                      {t("articles.table.shared")}
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium ui-text-muted uppercase tracking-wider">
+                    {[
+                      t("articles.table.image"),
+                      t("articles.table.name"),
+                      t("articles.table.model"),
+                      t("articles.table.description"),
+                      t("articles.table.value"),
+                      t("articles.table.warranty"),
+                      t("articles.table.expiresIn"),
+                      t("articles.table.proof"),
+                      t("articles.table.shared"),
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ui-text-muted"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ui-text-muted">
                       {t("articles.table.actions")}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y ui-divider">
-                  {articles.map((article) => (
-                    <React.Fragment key={article.articleId}>
-                      <tr className="hover-surface">
+                  {articles.map((article) => {
+                    const ws = getWarrantyStatus(article.garantie);
+                    const days = getDaysUntilExpiry(
+                      article.garantie?.garantieFin
+                    );
+                    return (
+                      <tr key={article.articleId} className="hover-surface">
                         <td className="px-3 py-4">
                           <input
                             type="checkbox"
                             aria-label={`Select ${article.articleNom}`}
                             checked={selectedIds.has(article.articleId)}
                             onChange={() => toggleSelected(article.articleId)}
+                            className="h-4 w-4 accent-[var(--primary)]"
                           />
                         </td>
                         <td className="px-6 py-4">
@@ -1111,23 +1192,20 @@ const ArticlesList: React.FC = () => {
                           {article.tags && article.tags.length > 0 && (
                             <div className="mt-1 flex flex-wrap gap-1">
                               {article.tags.map((at) => (
-                                <span
-                                  key={at.tagId}
-                                  className="px-1.5 py-0.5 text-[10px] rounded-full ui-badge-info"
-                                >
+                                <Badge key={at.tagId} tone="info">
                                   {at.tag?.name ?? `#${at.tagId}`}
-                                </span>
+                                </Badge>
                               ))}
                             </div>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm ui-text-muted">
                           {article.articleModele}
                         </td>
                         <td className="px-6 py-4 text-sm ui-text-muted">
                           {article.articleDescription || "-"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm ui-text-muted">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm ui-text-muted tabular-nums">
                           {article.purchasePrice != null
                             ? formatMoney(
                                 article.purchasePrice,
@@ -1136,87 +1214,68 @@ const ArticlesList: React.FC = () => {
                               )
                             : "—"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {(() => {
-                            const ws = getWarrantyStatus(article.garantie);
-                            const colorClasses = {
-                              gray: "ui-badge",
-                              green: "ui-badge-success",
-                              yellow: "ui-badge-warning",
-                              red: "ui-badge-danger",
-                            };
-                            return (
-                              <span
-                                className={`px-2 py-1 rounded ${colorClasses[ws.color as keyof typeof colorClasses]}`}
-                              >
-                                {ws.label}
-                              </span>
-                            );
-                          })()}
+                        <td className="whitespace-nowrap px-6 py-4 text-sm">
+                          <Badge tone={warrantyTone(ws.color)}>
+                            {ws.label}
+                          </Badge>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {(() => {
-                            if (!article.garantie?.garantieFin)
-                              return <span className="ui-text-muted">—</span>;
-                            const days = getDaysUntilExpiry(
-                              article.garantie.garantieFin
-                            );
-                            if (days === null)
-                              return <span className="ui-text-muted">—</span>;
-                            if (days < 0)
-                              return (
-                                <span className="ui-text-error font-medium">
-                                  {t("articles.warranty.expired")}
-                                </span>
-                              );
-                            return (
-                              <span
-                                className={
-                                  days <= 30
-                                    ? "ui-text-warn font-medium"
-                                    : "ui-text-muted"
-                                }
-                              >
-                                {days} {t("articles.warranty.daysLeft")}
-                              </span>
-                            );
-                          })()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {article.garantie?.garantieImageAttachmentId ? (
-                            <span className="px-2 py-1 rounded ui-badge-success">
-                              {t("common.yes")}
+                        <td className="whitespace-nowrap px-6 py-4 text-sm">
+                          {!article.garantie?.garantieFin || days === null ? (
+                            <span className="ui-text-muted">—</span>
+                          ) : days < 0 ? (
+                            <span className="font-medium ui-text-error">
+                              {t("articles.warranty.expired")}
                             </span>
                           ) : (
-                            <span className="px-2 py-1 rounded ui-badge">
-                              {t("common.no")}
+                            <span
+                              className={
+                                days <= 30
+                                  ? "font-medium ui-text-warn"
+                                  : "ui-text-muted"
+                              }
+                            >
+                              {days} {t("articles.warranty.daysLeft")}
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm">
+                          <Badge
+                            tone={
+                              article.garantie?.garantieImageAttachmentId
+                                ? "success"
+                                : "neutral"
+                            }
+                          >
+                            {article.garantie?.garantieImageAttachmentId
+                              ? t("common.yes")
+                              : t("common.no")}
+                          </Badge>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-sm">
                           {article.sharedWithPowerUsers ? (
-                            <span
-                              className="px-2 py-1 rounded ui-badge-info"
+                            <Badge
+                              tone="info"
+                              icon={<Globe className="h-3 w-3" />}
                               title={t("articles.share.state.publicTooltip")}
                             >
-                              🌐 {t("articles.share.state.publicLabel")}
-                            </span>
+                              {t("articles.share.state.publicLabel")}
+                            </Badge>
                           ) : (
                             <span className="ui-text-muted">—</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => {
-                              setEditingArticle(article);
-                              setShowForm(true);
-                            }}
-                            className="ui-action-primary mr-3"
-                          >
-                            {t("common.edit")}
-                          </button>
-
-                          <span className="inline-block mr-3 align-middle">
+                        <td className="whitespace-nowrap px-6 py-4 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingArticle(article);
+                                setShowForm(true);
+                              }}
+                              aria-label={t("common.edit")}
+                              leftIcon={<Pencil className="h-4 w-4" />}
+                            />
                             <ShareArticleButton
                               articleId={article.articleId}
                               sharedWithPowerUsers={Boolean(
@@ -1225,18 +1284,19 @@ const ArticlesList: React.FC = () => {
                               isPowerUser={isPowerUser}
                               onChanged={fetchArticles}
                             />
-                          </span>
-
-                          <button
-                            onClick={() => handleDelete(article)}
-                            className="ui-action-danger"
-                          >
-                            {t("common.delete")}
-                          </button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(article)}
+                              aria-label={t("common.delete")}
+                              className="text-danger"
+                              leftIcon={<Trash2 className="h-4 w-4" />}
+                            />
+                          </div>
                         </td>
                       </tr>
-                    </React.Fragment>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1244,33 +1304,37 @@ const ArticlesList: React.FC = () => {
         )}
 
         {!loading && total > 0 && (
-          <div className="p-4 border-t ui-divider flex items-center justify-between gap-3 text-sm">
-            <span className="ui-text-muted">
+          <div className="flex items-center justify-between gap-3 border-t ui-divider p-4 text-sm">
+            <span className="ui-text-muted tabular-nums">
               {t("articles.results.count").replace("{total}", String(total))}
             </span>
             {total > LIMIT && (
               <div className="flex items-center gap-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() =>
                     updateParams({ page: String(page - 1) }, false)
                   }
                   disabled={page <= 1}
-                  className="ui-btn-ghost border ui-divider rounded px-3 py-1 disabled:opacity-50"
+                  leftIcon={<ChevronLeft className="h-4 w-4" />}
                 >
                   {t("common.prev")}
-                </button>
-                <span className="ui-text-muted">
+                </Button>
+                <span className="px-1 tabular-nums ui-text-muted">
                   {page} / {Math.max(1, Math.ceil(total / LIMIT))}
                 </span>
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() =>
                     updateParams({ page: String(page + 1) }, false)
                   }
                   disabled={page >= Math.ceil(total / LIMIT)}
-                  className="ui-btn-ghost border ui-divider rounded px-3 py-1 disabled:opacity-50"
+                  rightIcon={<ChevronRight className="h-4 w-4" />}
                 >
                   {t("common.next")}
-                </button>
+                </Button>
               </div>
             )}
           </div>

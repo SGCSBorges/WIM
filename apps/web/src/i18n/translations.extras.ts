@@ -19,6 +19,7 @@ export const extras = {
     "nav.expand": "Expand",
     "nav.skipToContent": "Skip to content",
     "common.dismiss": "Dismiss",
+    "articles.filter.clearAll": "Clear filters",
     "common.unsaved.discardConfirm":
       "You have unsaved changes. Discard them and leave?",
     "tags.manage.button": "Manage tags",
@@ -480,6 +481,7 @@ export const extras = {
     "nav.expand": "Agrandir",
     "nav.skipToContent": "Aller au contenu",
     "common.dismiss": "Fermer",
+    "articles.filter.clearAll": "Effacer les filtres",
     "common.unsaved.discardConfirm":
       "Vous avez des modifications non enregistrées. Les abandonner et quitter ?",
     "tags.manage.button": "Gérer les étiquettes",
@@ -956,6 +958,7 @@ export const extras = {
     "nav.expand": "Expandir",
     "nav.skipToContent": "Ir para o conteúdo",
     "common.dismiss": "Dispensar",
+    "articles.filter.clearAll": "Limpar filtros",
     "common.unsaved.discardConfirm":
       "Tem alterações não guardadas. Descartá-las e sair?",
     "tags.manage.button": "Gerir etiquetas",
