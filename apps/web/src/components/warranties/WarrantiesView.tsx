@@ -6,10 +6,19 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
+import {
+  ShieldCheck,
+  RotateCw,
+  Info,
+  CalendarClock,
+  Package,
+} from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { warrantiesAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
-import { ErrorBanner } from "../common/States";
+import { ErrorBanner, EmptyState } from "../common/States";
+import { Skeleton } from "../common/Skeleton";
+import { PageHeader, Section, Button } from "../ui";
 
 // Format an ISO date defensively — a malformed/empty value from the API must
 // not crash the whole list. Falls back to an em dash.
@@ -65,14 +74,30 @@ export default function WarrantiesView() {
   }, [items]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t("warranties.title")}</h1>
-        <p className="ui-text-muted">{t("warranties.subtitle")}</p>
-      </div>
+    <div>
+      <PageHeader
+        icon={<ShieldCheck className="h-5 w-5" />}
+        title={t("warranties.title")}
+        subtitle={t("warranties.subtitle")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchAll}
+            disabled={loading}
+            leftIcon={<RotateCw className="h-4 w-4" />}
+          >
+            {t("common.refresh")}
+          </Button>
+        }
+      />
 
-      <div className="ui-panel rounded-md p-4 text-sm">
-        {t("warranties.createDisabled.message")}
+      <div className="mb-6 flex items-start gap-2 rounded-xl border ui-alert-info p-4 text-sm">
+        <Info
+          className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+          aria-hidden="true"
+        />
+        <span>{t("warranties.createDisabled.message")}</span>
       </div>
 
       {error && (
@@ -80,57 +105,49 @@ export default function WarrantiesView() {
           message={error}
           onRetry={fetchAll}
           retryLabel={t("common.retry")}
+          className="mb-6"
         />
       )}
 
-      <div className="ui-card rounded-lg">
-        <div className="p-4 border-b ui-divider flex items-center justify-between">
-          <h2 className="font-semibold">{t("warranties.all")}</h2>
-          <button
-            onClick={fetchAll}
-            disabled={loading}
-            className="text-sm ui-btn-ghost rounded px-2 py-1"
-          >
-            {loading ? t("common.loading") : t("common.refresh")}
-          </button>
-        </div>
-
-        <div className="divide-y">
-          {loading && (
-            <>
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="p-4 space-y-2 animate-pulse">
-                  <div className="h-4 ui-card rounded w-1/3" />
-                  <div className="h-3 ui-card rounded w-1/2" />
-                </div>
-              ))}
-            </>
-          )}
-
-          {!loading && sorted.length === 0 && (
-            <div className="p-4 text-sm ui-text-muted">
-              {t("warranties.none")}
-            </div>
-          )}
-
-          {!loading &&
-            sorted.map((w) => (
-              <div key={w.garantieId} className="p-4">
-                <div className="font-medium">{w.garantieNom}</div>
-                <div className="text-xs ui-text-muted">
-                  {t("warranties.purchase")}: {safeFormat(w.garantieDateAchat)}{" "}
-                  — {t("warranties.duration")}: {w.garantieDuration}{" "}
-                  {t("warranties.months")}
-                </div>
-                <div className="text-xs ui-text-muted">
-                  {t("warranties.articleId")}: {w.garantieArticleId}
-                </div>
-              </div>
+      <Section title={t("warranties.all")}>
+        {loading ? (
+          <div className="space-y-2">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} height={64} />
             ))}
-        </div>
-      </div>
+          </div>
+        ) : sorted.length === 0 ? (
+          <EmptyState
+            icon={<ShieldCheck className="h-6 w-6" />}
+            title={t("warranties.none")}
+          />
+        ) : (
+          <ul className="divide-y ui-divider">
+            {sorted.map((w) => (
+              <li key={w.garantieId} className="py-3 first:pt-0 last:pb-0">
+                <div className="font-medium ui-title">{w.garantieNom}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs ui-text-muted">
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
+                    {t("warranties.purchase")}:{" "}
+                    {safeFormat(w.garantieDateAchat)}
+                  </span>
+                  <span>
+                    {t("warranties.duration")}: {w.garantieDuration}{" "}
+                    {t("warranties.months")}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Package className="h-3.5 w-3.5" aria-hidden="true" />
+                    {t("warranties.articleId")}: {w.garantieArticleId}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
 
-      <div className="text-xs ui-text-muted">{t("warranties.note")}</div>
+      <p className="mt-4 text-xs ui-text-muted">{t("warranties.note")}</p>
     </div>
   );
 }
