@@ -24,6 +24,7 @@ import { usePreferences } from "../../preferences/preferences";
 import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
 import { Section, Badge, Button } from "../ui";
+import TwoFactorPanel from "./TwoFactorPanel";
 
 interface LoginEvent {
   id: number;
@@ -55,6 +56,7 @@ export default function SecuritySection() {
   const [sessionsFailed, setSessionsFailed] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [revokingOthers, setRevokingOthers] = useState(false);
+  const [totpEnabled, setTotpEnabled] = useState<boolean | null>(null);
 
   const loadSessions = useCallback(async () => {
     try {
@@ -63,6 +65,17 @@ export default function SecuritySection() {
       setCurrentJti(data.currentJti);
     } catch {
       setSessionsFailed(true);
+    }
+  }, []);
+
+  // The totpEnabled flag lives on /profile/me. We re-fetch on enable/disable
+  // so the badge + button state stay honest.
+  const loadTotp = useCallback(async () => {
+    try {
+      const me = await profileAPI.getMe();
+      setTotpEnabled(Boolean(me.totpEnabled));
+    } catch {
+      setTotpEnabled(null); // hide the panel quietly if the backend is older
     }
   }, []);
 
@@ -77,10 +90,11 @@ export default function SecuritySection() {
         if (!cancelled) setHistoryFailed(true);
       });
     void loadSessions();
+    void loadTotp();
     return () => {
       cancelled = true;
     };
-  }, [loadSessions]);
+  }, [loadSessions, loadTotp]);
 
   const revoke = async (id: number) => {
     setBusyId(id);
@@ -125,6 +139,9 @@ export default function SecuritySection() {
       description={t("security.subtitle")}
     >
       <div className="space-y-6">
+        {totpEnabled !== null && (
+          <TwoFactorPanel enabled={totpEnabled} onChanged={loadTotp} />
+        )}
         {!sessionsFailed && (
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">

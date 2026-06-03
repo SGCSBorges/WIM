@@ -44,10 +44,23 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     defaultErrorMessage: t("auth.error.default"),
   });
 
+  // When the user has TOTP enabled, the first /auth/login call returns
+  // `{ totpRequired, challengeToken }` instead of a session cookie. We stash
+  // the challenge token and surface the code prompt; submitting it calls
+  // /auth/login/verify-totp to mint the real session.
+  const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  const [totpCode, setTotpCode] = useState("");
+  const [totpError, setTotpError] = useState<string | null>(null);
+  const [totpBusy, setTotpBusy] = useState(false);
+
   const onSubmit = useCallback(
     async ({ email, password }: CredentialsInput) => {
       if (isLogin) {
-        await authAPI.login(email, password);
+        const result = await authAPI.login(email, password);
+        if ("totpRequired" in result) {
+          setChallengeToken(result.challengeToken);
+          return;
+        }
       } else {
         await authAPI.register(email, password);
         await authAPI.login(email, password);
@@ -56,6 +69,22 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     },
     [isLogin, onLogin]
   );
+
+  const submitTotp = async () => {
+    if (!challengeToken) return;
+    setTotpBusy(true);
+    setTotpError(null);
+    try {
+      await authAPI.verifyTotp(challengeToken, totpCode.trim());
+      setChallengeToken(null);
+      setTotpCode("");
+      onLogin();
+    } catch (e) {
+      setTotpError(e instanceof Error ? e.message : t("auth.error.default"));
+    } finally {
+      setTotpBusy(false);
+    }
+  };
 
   const switchTab = (next: boolean) => {
     setIsLogin(next);
@@ -174,63 +203,111 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             </button>
           </div>
 
-          <form
-            onSubmit={handleApiSubmit(onSubmit)}
-            className="space-y-4"
-            noValidate
-          >
-            <Field
-              label={t("auth.email")}
-              error={fieldError(errors.email?.message)}
-            >
-              <Input
-                type="email"
-                autoComplete="email"
-                placeholder="your@email.com"
-                {...register("email")}
-              />
-            </Field>
-
-            <Field
-              label={t("auth.password")}
-              error={fieldError(errors.password?.message)}
-            >
-              <Input
-                type="password"
-                autoComplete={isLogin ? "current-password" : "new-password"}
-                placeholder="••••••••"
-                {...register("password")}
-              />
-            </Field>
-
-            {submissionError && (
-              <div
-                role="alert"
-                className="rounded-lg border ui-alert-error px-4 py-3 text-sm ui-text-error"
+          {challengeToken ? (
+            <div className="space-y-4">
+              <Field
+                label={t("auth.totp.codeLabel")}
+                htmlFor="auth-totp-code"
+                hint={t("auth.totp.hint")}
               >
-                {submissionError}
-              </div>
-            )}
-
-            <Button type="submit" fullWidth loading={isSubmitting}>
-              {isSubmitting
-                ? t("auth.loading")
-                : isLogin
-                  ? t("auth.login")
-                  : t("auth.register")}
-            </Button>
-
-            {isLogin && (
-              <div className="text-center text-sm">
-                <Link
-                  to="/auth/forgot"
-                  className="ui-action-primary hover:underline"
+                <Input
+                  id="auth-totp-code"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]*"
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value)}
+                  placeholder="123456"
+                />
+              </Field>
+              {totpError && (
+                <div
+                  role="alert"
+                  className="rounded-lg border ui-alert-error px-4 py-3 text-sm ui-text-error"
                 >
-                  {t("auth.forgot.link")}
-                </Link>
-              </div>
-            )}
-          </form>
+                  {totpError}
+                </div>
+              )}
+              <Button
+                fullWidth
+                loading={totpBusy}
+                disabled={!totpCode.trim()}
+                onClick={submitTotp}
+              >
+                {t("auth.totp.verify")}
+              </Button>
+              <button
+                type="button"
+                onClick={() => {
+                  setChallengeToken(null);
+                  setTotpCode("");
+                  setTotpError(null);
+                }}
+                className="block w-full text-center text-sm ui-text-muted hover:ui-title"
+              >
+                {t("common.cancel")}
+              </button>
+            </div>
+          ) : (
+            <form
+              onSubmit={handleApiSubmit(onSubmit)}
+              className="space-y-4"
+              noValidate
+            >
+              <Field
+                label={t("auth.email")}
+                error={fieldError(errors.email?.message)}
+              >
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="your@email.com"
+                  {...register("email")}
+                />
+              </Field>
+
+              <Field
+                label={t("auth.password")}
+                error={fieldError(errors.password?.message)}
+              >
+                <Input
+                  type="password"
+                  autoComplete={isLogin ? "current-password" : "new-password"}
+                  placeholder="••••••••"
+                  {...register("password")}
+                />
+              </Field>
+
+              {submissionError && (
+                <div
+                  role="alert"
+                  className="rounded-lg border ui-alert-error px-4 py-3 text-sm ui-text-error"
+                >
+                  {submissionError}
+                </div>
+              )}
+
+              <Button type="submit" fullWidth loading={isSubmitting}>
+                {isSubmitting
+                  ? t("auth.loading")
+                  : isLogin
+                    ? t("auth.login")
+                    : t("auth.register")}
+              </Button>
+
+              {isLogin && (
+                <div className="text-center text-sm">
+                  <Link
+                    to="/auth/forgot"
+                    className="ui-action-primary hover:underline"
+                  >
+                    {t("auth.forgot.link")}
+                  </Link>
+                </div>
+              )}
+            </form>
+          )}
 
           <div className="mt-8 flex flex-col items-center gap-3 border-t ui-divider pt-6">
             <InstallPwaButton />

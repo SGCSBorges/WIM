@@ -148,7 +148,16 @@ async function extractError(
 
 // Auth API
 export const authAPI = {
-  async login(email: string, password: string) {
+  /** Returns either a session payload (`{ user }`) or, when the account has
+   *  TOTP enabled, a 2FA challenge (`{ totpRequired: true, challengeToken }`)
+   *  the caller must complete via `verifyTotp` to receive a real session. */
+  async login(
+    email: string,
+    password: string
+  ): Promise<
+    | { user: { userId: number; email: string; role: string } }
+    | { totpRequired: true; challengeToken: string }
+  > {
     const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: getHeaders(),
@@ -158,6 +167,23 @@ export const authAPI = {
     if (!response.ok)
       throw new Error(await extractError(response, "Login failed"));
 
+    const data = await response.json();
+    if (data?.totpRequired) return data;
+    _cachedRole = data.user?.role ?? null;
+    return data;
+  },
+
+  async verifyTotp(challengeToken: string, code: string) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/login/verify-totp`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ challengeToken, code }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "TOTP verification failed"));
     const data = await response.json();
     _cachedRole = data.user?.role ?? null;
     return data;
@@ -1219,6 +1245,7 @@ export const profileAPI = {
     theme?: ThemePref | null;
     language?: LanguagePref | null;
     dateFormat?: DateFormatPref | null;
+    totpEnabled?: boolean;
   }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me`, {
       headers: getHeaders(),
@@ -1268,6 +1295,56 @@ export const profileAPI = {
         await extractError(response, "Failed to revoke other sessions")
       );
     return response.json();
+  },
+
+  /** Provision a fresh TOTP secret. Returns the QR data-URL (to render as
+   *  an <img>) and the plaintext backup codes — surfaced ONCE; the server
+   *  only stores bcrypt hashes. The caller must save them out-of-band. */
+  async setupTotp(currentPassword: string): Promise<{
+    otpauthUrl: string;
+    qrDataUrl: string;
+    backupCodes: string[];
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/totp/setup`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ currentPassword }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to set up two-factor auth")
+      );
+    return response.json();
+  },
+
+  async verifyTotpSetup(currentPassword: string, code: string): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/totp/verify`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ currentPassword, code }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to confirm two-factor code")
+      );
+  },
+
+  async disableTotp(currentPassword: string): Promise<void> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profile/me/totp`, {
+      method: "DELETE",
+      headers: getHeaders(),
+      body: JSON.stringify({ currentPassword }),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to disable two-factor auth")
+      );
   },
 
   async getLoginHistory(): Promise<

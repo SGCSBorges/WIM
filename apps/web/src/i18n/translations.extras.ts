@@ -577,6 +577,31 @@ export const extras = {
     "security.sessions.revokeOthers": "Sign out other devices",
     "security.sessions.revoked": "Session signed out.",
     "security.sessions.othersRevoked": "Signed out {count} other device(s).",
+    "twoFactor.title": "Two-factor authentication",
+    "twoFactor.statusOn": "Enabled",
+    "twoFactor.statusOff": "Off",
+    "twoFactor.enable": "Enable",
+    "twoFactor.disable": "Disable",
+    "twoFactor.continue": "Continue",
+    "twoFactor.confirm": "Verify and enable",
+    "twoFactor.passwordLabel": "Confirm your password",
+    "twoFactor.scanHint":
+      "Scan this QR code with an authenticator app (1Password, Authy, Google Authenticator).",
+    "twoFactor.qrAlt": "TOTP setup QR code",
+    "twoFactor.urlCopied": "Setup URL copied to clipboard.",
+    "twoFactor.codeLabel": "Enter the 6-digit code",
+    "twoFactor.backupTitle": "Save these backup codes",
+    "twoFactor.backupHint":
+      "Each code works once if you lose access to your authenticator. Store them somewhere safe — we can't show them again.",
+    "twoFactor.enabled": "Two-factor enabled.",
+    "twoFactor.disabled": "Two-factor disabled.",
+    "twoFactor.disableWarn":
+      "Disabling two-factor makes your account easier to take over. Re-enable it as soon as you can.",
+    "twoFactor.disableConfirm": "Yes, disable two-factor",
+    "auth.totp.codeLabel": "Two-factor code",
+    "auth.totp.hint":
+      "Enter the 6-digit code from your authenticator app, or a backup code.",
+    "auth.totp.verify": "Verify and sign in",
   },
   fr: {
     "auth.hero.tagline":
@@ -1167,6 +1192,31 @@ export const extras = {
     "security.sessions.revoked": "Session déconnectée.",
     "security.sessions.othersRevoked":
       "{count} autre(s) appareil(s) déconnecté(s).",
+    "twoFactor.title": "Authentification à deux facteurs",
+    "twoFactor.statusOn": "Activée",
+    "twoFactor.statusOff": "Désactivée",
+    "twoFactor.enable": "Activer",
+    "twoFactor.disable": "Désactiver",
+    "twoFactor.continue": "Continuer",
+    "twoFactor.confirm": "Vérifier et activer",
+    "twoFactor.passwordLabel": "Confirmez votre mot de passe",
+    "twoFactor.scanHint":
+      "Scannez ce code QR avec une application d'authentification (1Password, Authy, Google Authenticator).",
+    "twoFactor.qrAlt": "Code QR de configuration TOTP",
+    "twoFactor.urlCopied": "URL de configuration copiée.",
+    "twoFactor.codeLabel": "Entrez le code à 6 chiffres",
+    "twoFactor.backupTitle": "Sauvegardez ces codes de secours",
+    "twoFactor.backupHint":
+      "Chaque code n'est utilisable qu'une fois si vous perdez votre application. Conservez-les en lieu sûr — ils ne sont affichés qu'une fois.",
+    "twoFactor.enabled": "Authentification à deux facteurs activée.",
+    "twoFactor.disabled": "Authentification à deux facteurs désactivée.",
+    "twoFactor.disableWarn":
+      "Désactiver le 2FA rend votre compte plus vulnérable. Réactivez-le dès que possible.",
+    "twoFactor.disableConfirm": "Oui, désactiver le 2FA",
+    "auth.totp.codeLabel": "Code à deux facteurs",
+    "auth.totp.hint":
+      "Entrez le code à 6 chiffres de votre application, ou un code de secours.",
+    "auth.totp.verify": "Vérifier et se connecter",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1751,6 +1801,31 @@ export const extras = {
     "security.sessions.revoked": "Sessão terminada.",
     "security.sessions.othersRevoked":
       "Terminadas sessões em {count} outro(s) dispositivo(s).",
+    "twoFactor.title": "Autenticação em dois passos",
+    "twoFactor.statusOn": "Activada",
+    "twoFactor.statusOff": "Desactivada",
+    "twoFactor.enable": "Activar",
+    "twoFactor.disable": "Desactivar",
+    "twoFactor.continue": "Continuar",
+    "twoFactor.confirm": "Verificar e activar",
+    "twoFactor.passwordLabel": "Confirme a sua palavra-passe",
+    "twoFactor.scanHint":
+      "Leia este código QR com uma app de autenticação (1Password, Authy, Google Authenticator).",
+    "twoFactor.qrAlt": "Código QR de configuração TOTP",
+    "twoFactor.urlCopied": "URL de configuração copiado.",
+    "twoFactor.codeLabel": "Introduza o código de 6 dígitos",
+    "twoFactor.backupTitle": "Guarde estes códigos de recuperação",
+    "twoFactor.backupHint":
+      "Cada código só pode ser usado uma vez se perder o acesso à app de autenticação. Guarde-os num local seguro — não os mostramos novamente.",
+    "twoFactor.enabled": "Autenticação em dois passos activada.",
+    "twoFactor.disabled": "Autenticação em dois passos desactivada.",
+    "twoFactor.disableWarn":
+      "Desactivar 2FA torna a sua conta mais fácil de comprometer. Reactive assim que possível.",
+    "twoFactor.disableConfirm": "Sim, desactivar 2FA",
+    "auth.totp.codeLabel": "Código em dois passos",
+    "auth.totp.hint":
+      "Introduza o código de 6 dígitos da app de autenticação, ou um código de recuperação.",
+    "auth.totp.verify": "Verificar e entrar",
   },
 } as const;
 

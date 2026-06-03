@@ -129,6 +129,12 @@ model User {
   // instant count as "unseen". Null = everything is unseen.
   alertsSeenAt DateTime?
 
+  // Mirrors `TotpSecret.verified` for fast login-path gating: when true,
+  // password-only login is rejected and the client must complete a TOTP
+  // challenge to receive a session cookie. Default false so existing rows
+  // need no backfill.
+  totpEnabled Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -152,6 +158,7 @@ model User {
   pushSubscriptions PushSubscription[]
   passwordResetTokens PasswordResetToken[]
   sessions            UserSession[]
+  totp                TotpSecret?
 }
 
 model PasswordResetToken {
@@ -534,6 +541,24 @@ model AuditLog {
   // userId AND createdAt-range lookup into a single seek instead of two
   // single-column scans intersected.
   @@index([userId, createdAt(sort: Desc)])
+}
+
+// TOTP shared secret + bcrypt-hashed one-time backup codes. Setup creates
+// the row with `verified=false`; the user must enter a valid code from
+// their authenticator app before we flip `verified=true` and bump
+// `User.totpEnabled` (the fast path the login route gates on).
+model TotpSecret {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  secret          String   @db.VarChar(64)
+  // JSON array of bcrypt-hashed backup codes — never the plaintext. Each
+  // entry is consumed on use (filtered out of the array).
+  backupCodesHash String   @db.Text
+  verified        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 // One row per active sign-in. `jti` matches the JWT's jti claim and the

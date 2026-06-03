@@ -8,7 +8,7 @@
  */
 import { Router, Request, Response } from "express";
 import { asyncHandler } from "../common/http";
-import { AuthService } from "./auth.service";
+import { AuthService, signTokenWithJti } from "./auth.service";
 import {
   ForgotPasswordSchema,
   LoginSchema,
@@ -22,6 +22,8 @@ import { prisma } from "../../libs/prisma";
 import { cookieOptsFor } from "./cookies";
 import { PasswordResetService } from "./password-reset.service";
 import { SessionService } from "./session.service";
+import { TotpService } from "./totp.service";
+import { z } from "zod";
 import { security } from "../../config/security";
 
 const router = Router();
@@ -53,6 +55,21 @@ router.post(
   asyncHandler(async (req, res) => {
     const data = LoginSchema.parse(req.body);
     const result = await AuthService.login(data);
+    // 2FA gate: when the user has TOTP enabled, we don't drop a session
+    // cookie yet — instead we hand back a short-lived challenge token the
+    // client posts to /login/verify-totp with the code.
+    const flags = await prisma.user.findUnique({
+      where: { userId: result.user.userId },
+      select: { totpEnabled: true },
+    });
+    if (flags?.totpEnabled) {
+      const challengeToken = TotpService.signChallenge(
+        result.user.userId,
+        result.user.role
+      );
+      res.json({ totpRequired: true, challengeToken });
+      return;
+    }
     await SessionService.create({
       userId: result.user.userId,
       jti: result.jti,
@@ -67,6 +84,55 @@ router.post(
     });
     res.cookie("wim_token", result.token, cookieOptsFor(req));
     res.json({ user: result.user });
+  })
+);
+
+const VerifyTotpSchema = z.object({
+  challengeToken: z.string().min(1),
+  code: z.string().trim().min(1).max(40),
+});
+
+router.post(
+  "/login/verify-totp",
+  asyncHandler(async (req, res) => {
+    const { challengeToken, code } = VerifyTotpSchema.parse(req.body);
+    let claim;
+    try {
+      claim = TotpService.verifyChallenge(challengeToken);
+    } catch {
+      return res.status(401).json({ error: "Invalid or expired challenge" });
+    }
+    const ok = await TotpService.checkCode(claim.sub, code);
+    if (!ok) return res.status(401).json({ error: "Invalid code" });
+
+    const user = await prisma.user.findUnique({
+      where: { userId: claim.sub },
+      select: { userId: true, email: true, role: true, tokenVersion: true },
+    });
+    if (!user) return res.status(401).json({ error: "User not found" });
+
+    const { token, jti } = signTokenWithJti(
+      user.userId,
+      user.role,
+      user.tokenVersion
+    );
+    await SessionService.create({
+      userId: user.userId,
+      jti,
+      ip: req.ip ?? null,
+      userAgent: req.get("user-agent") ?? null,
+    });
+    await auditAction(req, {
+      userId: user.userId,
+      action: "LOGIN",
+      entity: "User",
+      entityId: user.userId,
+      metadata: { method: "totp" },
+    });
+    res.cookie("wim_token", token, cookieOptsFor(req));
+    res.json({
+      user: { userId: user.userId, email: user.email, role: user.role },
+    });
   })
 );
 

@@ -65,6 +65,7 @@ const PROFILE_SELECT = {
   theme: true,
   language: true,
   dateFormat: true,
+  totpEnabled: true,
 } as const;
 
 export const ProfileService = {

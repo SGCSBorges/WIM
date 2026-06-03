@@ -17,8 +17,13 @@ import {
 } from "./profile.schemas";
 import { ProfileService } from "./profile.service";
 import { SessionService } from "../auth/session.service";
+import { TotpService } from "../auth/totp.service";
 import { prisma } from "../../libs/prisma";
 import { idParam } from "../common/schemas";
+import bcrypt from "bcrypt";
+import QRCode from "qrcode";
+import { z } from "zod";
+import { createHttpError } from "../../utils/http-error";
 
 const router = Router();
 
@@ -108,6 +113,84 @@ router.get(
       },
     });
     res.json(rows);
+  })
+);
+
+const TotpPasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+});
+const TotpVerifySchema = z.object({
+  code: z.string().trim().min(1).max(40),
+  currentPassword: z.string().min(1),
+});
+
+// Provision a fresh TOTP secret + 10 single-use backup codes. Returns the
+// otpauth URL, a data-URL QR encoding it, and the plaintext backup codes
+// ONCE — the route's caller must store them out-of-band. Password is
+// required so a leaked session can't silently bootstrap 2FA for someone.
+router.post(
+  "/me/totp/setup",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { currentPassword } = TotpPasswordSchema.parse(req.body);
+    const user = await prisma.user.findUnique({
+      where: { userId: req.user!.sub },
+    });
+    if (!user) throw createHttpError(404, "User not found");
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) throw createHttpError(401, "Invalid password");
+
+    const { otpauthUrl, backupCodes } = await TotpService.setup(
+      user.userId,
+      user.email
+    );
+    const qrDataUrl = await QRCode.toDataURL(otpauthUrl);
+    res.json({ otpauthUrl, qrDataUrl, backupCodes });
+  })
+);
+
+// Confirm the code from the authenticator app and flip totpEnabled.
+router.post(
+  "/me/totp/verify",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { code, currentPassword } = TotpVerifySchema.parse(req.body);
+    const user = await prisma.user.findUnique({
+      where: { userId: req.user!.sub },
+    });
+    if (!user) throw createHttpError(404, "User not found");
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) throw createHttpError(401, "Invalid password");
+    await TotpService.verify(user.userId, code);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: user.userId,
+      metadata: { field: "totpEnabled", enabled: true },
+    });
+    res.status(204).send();
+  })
+);
+
+router.delete(
+  "/me/totp",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { currentPassword } = TotpPasswordSchema.parse(req.body);
+    const user = await prisma.user.findUnique({
+      where: { userId: req.user!.sub },
+    });
+    if (!user) throw createHttpError(404, "User not found");
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) throw createHttpError(401, "Invalid password");
+    await TotpService.disable(user.userId);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: user.userId,
+      metadata: { field: "totpEnabled", enabled: false },
+    });
+    res.status(204).send();
   })
 );
 
