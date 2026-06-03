@@ -53,6 +53,7 @@ import { downloadBlob } from "../../utils/csv";
 import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner, EmptyState } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
+import BulkEditDialog from "./BulkEditDialog";
 import CsvImportModal from "./CsvImportModal";
 import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
@@ -230,6 +231,7 @@ const ArticlesList: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
 
   const fetchArticles = useCallback(async () => {
     try {
@@ -909,7 +911,24 @@ const ArticlesList: React.FC = () => {
           bulkAssign({ addLocationIds: [locationId] })
         }
         onAssignTag={(tagId) => bulkAssign({ addTagIds: [tagId] })}
+        onEditFields={() => setShowBulkEdit(true)}
       />
+
+      {showBulkEdit && (
+        <BulkEditDialog
+          open
+          ids={Array.from(selectedIds)}
+          onClose={() => setShowBulkEdit(false)}
+          onApplied={(count) => {
+            toast.show(
+              t("bulkEdit.success").replace("{count}", String(count)),
+              { kind: "success" }
+            );
+            void fetchArticles();
+            clearSelection();
+          }}
+        />
+      )}
 
       {showBulkDeleteConfirm && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border ui-alert-error p-4">

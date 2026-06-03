@@ -621,6 +621,32 @@ export const articlesAPI = {
     return response.json();
   },
 
+  /** Bulk-update scalar fields. `null` clears a value, missing keys leave
+   *  it alone. Server enforces ownership + skips trashed rows. */
+  async bulkUpdate(
+    ids: number[],
+    fields: {
+      purchasePrice?: number | null;
+      depreciationRate?: number | null;
+      brand?: string | null;
+      serialNumber?: string | null;
+    }
+  ): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/bulk-update`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids, fields }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update articles")
+      );
+    return response.json();
+  },
+
   // GET /api/articles/shared-public — caller's articles where
   // sharedWithPowerUsers = true. Used by the Profile view's
   // "Articles you've shared publicly" panel.

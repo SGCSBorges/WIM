@@ -755,6 +755,47 @@ export const ArticleService = {
    * own are silently dropped from the article set. Returns the number of
    * articles touched.
    */
+  // Bulk update a scalar field set across a selection. Only the four
+  // power-user-frequented columns (price, depreciation rate, brand, serial)
+  // are exposed — name/model are identity-bearing and shouldn't be
+  // overwritten in bulk by accident. `null` clears a field; `undefined` /
+  // absent keys leave it untouched. The whole batch is one transaction so
+  // it's all-or-nothing if a row is yanked mid-update by a sibling tab.
+  bulkUpdate: async (
+    ids: number[],
+    ownerUserId: number,
+    fields: {
+      purchasePrice?: number | null;
+      depreciationRate?: number | null;
+      brand?: string | null;
+      serialNumber?: string | null;
+    }
+  ): Promise<{ count: number }> => {
+    if (ids.length === 0) return { count: 0 };
+    const data: Record<string, unknown> = {};
+    if (fields.purchasePrice !== undefined)
+      data.purchasePrice = fields.purchasePrice;
+    if (fields.depreciationRate !== undefined)
+      data.depreciationRate = fields.depreciationRate;
+    if (fields.brand !== undefined) data.brand = fields.brand;
+    if (fields.serialNumber !== undefined)
+      data.serialNumber = fields.serialNumber;
+    if (Object.keys(data).length === 0) return { count: 0 };
+
+    return prisma.$transaction(async (tx) => {
+      const owned = await tx.article.findMany({
+        where: { articleId: { in: ids }, ownerUserId, deletedAt: null },
+        select: { articleId: true },
+      });
+      if (owned.length === 0) return { count: 0 };
+      const res = await tx.article.updateMany({
+        where: { articleId: { in: owned.map((a) => a.articleId) } },
+        data,
+      });
+      return { count: res.count };
+    });
+  },
+
   bulkAssign: async (
     ids: number[],
     ownerUserId: number,

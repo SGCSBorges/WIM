@@ -602,6 +602,21 @@ export const extras = {
     "auth.totp.hint":
       "Enter the 6-digit code from your authenticator app, or a backup code.",
     "auth.totp.verify": "Verify and sign in",
+    "articles.bulk.editFields": "Edit fields",
+    "articles.field.purchasePrice": "Purchase price",
+    "articles.field.depreciationRate": "Depreciation rate (%/yr)",
+    "articles.field.brand": "Brand",
+    "articles.field.serialNumber": "Serial number",
+    "bulkEdit.title": "Edit fields for selected articles",
+    "bulkEdit.subtitle":
+      "Apply changes to {count} article(s). Leave a field unchanged to skip it.",
+    "bulkEdit.opLabel": "operation",
+    "bulkEdit.op.skip": "Leave unchanged",
+    "bulkEdit.op.set": "Set to…",
+    "bulkEdit.op.clear": "Clear",
+    "bulkEdit.apply": "Apply changes",
+    "bulkEdit.success": "Updated {count} article(s).",
+    "bulkEdit.errorNoFields": "Pick at least one field to change.",
   },
   fr: {
     "auth.hero.tagline":
@@ -1217,6 +1232,21 @@ export const extras = {
     "auth.totp.hint":
       "Entrez le code à 6 chiffres de votre application, ou un code de secours.",
     "auth.totp.verify": "Vérifier et se connecter",
+    "articles.bulk.editFields": "Modifier les champs",
+    "articles.field.purchasePrice": "Prix d'achat",
+    "articles.field.depreciationRate": "Taux de dépréciation (%/an)",
+    "articles.field.brand": "Marque",
+    "articles.field.serialNumber": "Numéro de série",
+    "bulkEdit.title": "Modifier les champs des articles sélectionnés",
+    "bulkEdit.subtitle":
+      "Appliquer aux {count} article(s). Laissez un champ inchangé pour l'ignorer.",
+    "bulkEdit.opLabel": "opération",
+    "bulkEdit.op.skip": "Inchangé",
+    "bulkEdit.op.set": "Définir à…",
+    "bulkEdit.op.clear": "Vider",
+    "bulkEdit.apply": "Appliquer",
+    "bulkEdit.success": "{count} article(s) mis à jour.",
+    "bulkEdit.errorNoFields": "Choisissez au moins un champ à modifier.",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1826,6 +1856,21 @@ export const extras = {
     "auth.totp.hint":
       "Introduza o código de 6 dígitos da app de autenticação, ou um código de recuperação.",
     "auth.totp.verify": "Verificar e entrar",
+    "articles.bulk.editFields": "Editar campos",
+    "articles.field.purchasePrice": "Preço de compra",
+    "articles.field.depreciationRate": "Taxa de depreciação (%/ano)",
+    "articles.field.brand": "Marca",
+    "articles.field.serialNumber": "Número de série",
+    "bulkEdit.title": "Editar campos dos artigos seleccionados",
+    "bulkEdit.subtitle":
+      "Aplicar a {count} artigo(s). Deixe um campo sem alterações para o ignorar.",
+    "bulkEdit.opLabel": "operação",
+    "bulkEdit.op.skip": "Sem alterações",
+    "bulkEdit.op.set": "Definir como…",
+    "bulkEdit.op.clear": "Limpar",
+    "bulkEdit.apply": "Aplicar",
+    "bulkEdit.success": "{count} artigo(s) actualizado(s).",
+    "bulkEdit.errorNoFields": "Escolha pelo menos um campo a alterar.",
   },
 } as const;
 

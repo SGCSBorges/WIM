@@ -19,6 +19,7 @@ interface BulkActionBarProps {
   onUnshare: () => void;
   onAssignLocation: (locationId: number) => void;
   onAssignTag: (tagId: number) => void;
+  onEditFields: () => void;
 }
 
 export default function BulkActionBar({
@@ -33,6 +34,7 @@ export default function BulkActionBar({
   onUnshare,
   onAssignLocation,
   onAssignTag,
+  onEditFields,
 }: BulkActionBarProps) {
   const { t } = useI18n();
 
@@ -112,6 +114,15 @@ export default function BulkActionBar({
             </button>
           </>
         )}
+
+        <button
+          type="button"
+          onClick={onEditFields}
+          disabled={busy}
+          className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+        >
+          {t("articles.bulk.editFields")}
+        </button>
 
         <button
           type="button"

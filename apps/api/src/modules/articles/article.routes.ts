@@ -397,6 +397,46 @@ router.post(
   })
 );
 
+// Bulk-update scalar fields across a selection. Mirrors `bulkAssign` but
+// for price/depreciationRate/brand/serialNumber. `null` clears a field,
+// missing keys leave it alone.
+router.post(
+  "/bulk-update",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const schema = BulkIdsSchema.extend({
+      fields: z
+        .object({
+          purchasePrice: z.number().nonnegative().nullable().optional(),
+          depreciationRate: z.number().min(0).max(100).nullable().optional(),
+          brand: z.string().trim().max(120).nullable().optional(),
+          serialNumber: z.string().trim().max(120).nullable().optional(),
+        })
+        .refine((v) => Object.keys(v).length > 0, {
+          message: "at least one field is required",
+        }),
+    });
+    const { ids, fields } = schema.parse(req.body);
+    const { count } = await ArticleService.bulkUpdate(
+      ids,
+      req.user!.sub,
+      fields
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      metadata: {
+        bulk: true,
+        update: true,
+        requested: ids.length,
+        updated: count,
+        keys: Object.keys(fields),
+      },
+    });
+    res.json({ count });
+  })
+);
+
 /**
  * POST import articles from parsed CSV rows (partial success report).
  * `?dryRun=1` validates + caps without writing, for a server-checked preview.

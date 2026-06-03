@@ -18,6 +18,7 @@ function renderBar(
     onUnshare: vi.fn(),
     onAssignLocation: vi.fn(),
     onAssignTag: vi.fn(),
+    onEditFields: vi.fn(),
     ...overrides,
   };
   return {
