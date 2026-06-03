@@ -99,6 +99,8 @@ export interface ArticleWarranty {
   providerName?: string | null;
   providerPhone?: string | null;
   providerUrl?: string | null;
+  /** Set the first time the warranty is renewed or extended; null = never. */
+  renewedAt?: string | null;
   garantieImageAttachment?: {
     fileName: string;
     mimeType: string;

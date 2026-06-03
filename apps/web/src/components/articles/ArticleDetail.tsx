@@ -22,6 +22,8 @@ import {
   Clock,
   Paperclip,
   StickyNote,
+  RotateCw,
+  History,
   ShieldCheck,
   Send,
   Bell,
@@ -37,7 +39,14 @@ import {
   warrantiesAPI,
   type ArticleNote,
 } from "../../services/api";
-import type { ArticleNoteKind, ClaimStatus, FetchedArticle } from "../../types";
+import type {
+  ArticleNoteKind,
+  ClaimStatus,
+  FetchedArticle,
+  WarrantyHistoryItem,
+} from "../../types";
+import { warrantyStatusFor } from "../../utils/warrantyStatus";
+import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import { ARTICLE_NOTE_KINDS } from "@wim/types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
@@ -292,10 +301,34 @@ export default function ArticleDetail() {
   const [claimNote, setClaimNote] = useState("");
   const [savingClaim, setSavingClaim] = useState(false);
 
+  const [renewOpen, setRenewOpen] = useState(false);
+  const [renewMode, setRenewMode] = useState<"renew" | "extend">("renew");
+  const [warrantyHistory, setWarrantyHistory] = useState<WarrantyHistoryItem[]>(
+    []
+  );
+
+  const warrantyInfo = warrantyStatusFor(article?.garantie?.garantieFin);
+
   useEffect(() => {
     setClaimStatus(article?.garantie?.claimStatus ?? "NONE");
     setClaimNote(article?.garantie?.claimNote ?? "");
   }, [article?.garantie?.claimStatus, article?.garantie?.claimNote]);
+
+  // History loads lazily once we know there's a warranty; refresh after a
+  // renew/extend so the new entry appears without a hard reload.
+  const loadHistory = useCallback(async () => {
+    if (!article?.garantie?.garantieId) return;
+    try {
+      const items = await warrantiesAPI.getHistory(article.garantie.garantieId);
+      setWarrantyHistory(items);
+    } catch {
+      // non-blocking — the panel is purely informational
+    }
+  }, [article?.garantie?.garantieId]);
+
+  useEffect(() => {
+    void loadHistory();
+  }, [loadHistory]);
 
   const saveClaim = async () => {
     const garantieId = article?.garantie?.garantieId;
@@ -489,6 +522,32 @@ export default function ArticleDetail() {
           icon={<ShieldCheck className="h-5 w-5" />}
           title={t("articleDetail.warranty")}
           className="mb-6"
+          actions={
+            <div className="flex items-center gap-2">
+              <Badge tone={warrantyInfo.tone}>{t(warrantyInfo.labelKey)}</Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<RotateCw className="h-4 w-4" />}
+                onClick={() => {
+                  setRenewMode("renew");
+                  setRenewOpen(true);
+                }}
+              >
+                {t("warranty.renew.button")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setRenewMode("extend");
+                  setRenewOpen(true);
+                }}
+              >
+                {t("warranty.extend.button")}
+              </Button>
+            </div>
+          }
         >
           <div className="space-y-1">
             <p className="font-medium ui-title">
@@ -499,6 +558,16 @@ export default function ArticleDetail() {
               {safeDate(article.garantie.garantieDateAchat)} —{" "}
               {t("articleDetail.warrantyEnds")}:{" "}
               {safeDate(article.garantie.garantieFin)}
+              {article.garantie.renewedAt && (
+                <>
+                  {" "}
+                  ·{" "}
+                  <span className="ui-text-muted">
+                    {t("warranty.lastRenewed")}{" "}
+                    {safeDate(article.garantie.renewedAt)}
+                  </span>
+                </>
+              )}
             </p>
           </div>
 
@@ -583,7 +652,48 @@ export default function ArticleDetail() {
               {t("claim.save")}
             </Button>
           </div>
+
+          {warrantyHistory.length > 0 && (
+            <div className="mt-4 border-t ui-divider pt-4">
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium ui-text-muted">
+                <History className="h-4 w-4" aria-hidden="true" />
+                {t("warranty.history.title")}
+              </p>
+              <ul className="space-y-1 text-xs">
+                {warrantyHistory.map((h) => (
+                  <li key={h.id} className="flex flex-wrap gap-2">
+                    <Badge tone="neutral">
+                      {t(`warranty.history.event.${h.event}`)}
+                    </Badge>
+                    <span className="ui-text-muted">
+                      {safeDate(h.priorDateAchat)} → {safeDate(h.priorFin)}
+                    </span>
+                    <span className="ml-auto ui-text-muted">
+                      {safeDate(h.createdAt)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </Section>
+      )}
+
+      {article.garantie && (
+        <RenewWarrantyDialog
+          open={renewOpen}
+          mode={renewMode}
+          warranty={article.garantie}
+          onClose={() => setRenewOpen(false)}
+          onUpdated={(updated) => {
+            setArticle((prev) =>
+              prev
+                ? { ...prev, garantie: { ...prev.garantie, ...updated } }
+                : prev
+            );
+            void loadHistory();
+          }}
+        />
       )}
 
       {/* Activity timeline */}
