@@ -1228,6 +1228,26 @@ export const profileAPI = {
     return response.json();
   },
 
+  async getLoginHistory(): Promise<
+    Array<{
+      id: number;
+      action: "LOGIN" | "LOGOUT";
+      ip: string | null;
+      userAgent: string | null;
+      createdAt: string;
+    }>
+  > {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/login-history`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch login history")
+      );
+    return response.json();
+  },
+
   async updatePreferences(prefs: UserPreferences) {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/profile/me/preferences`,

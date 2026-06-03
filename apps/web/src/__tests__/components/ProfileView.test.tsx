@@ -8,6 +8,10 @@ vi.mock("../../services/api", () => ({
     updateEmail: vi.fn(),
     updatePassword: vi.fn(),
     deleteAccount: vi.fn(),
+    // SecuritySection is rendered inside ProfileView and fetches its own
+    // history; mocked here so the test setup matches reality.
+    getLoginHistory: vi.fn().mockResolvedValue([]),
+    updatePreferences: vi.fn(),
   },
   billingAPI: {
     getBillingMe: vi.fn(),

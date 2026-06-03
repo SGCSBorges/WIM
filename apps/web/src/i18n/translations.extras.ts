@@ -561,6 +561,13 @@ export const extras = {
     "reports.filter.allTags": "All tags",
     "reports.filter.warrantyStatus": "Warranty status",
     "reports.filter.allWarranties": "Any status",
+    "security.title": "Security",
+    "security.subtitle":
+      "Recent sign-in activity. Anything suspicious here? Change your password and review your sessions.",
+    "security.activity.title": "Recent sign-in activity",
+    "security.activity.empty": "No recent sign-in events yet.",
+    "security.activity.action.LOGIN": "Sign-in",
+    "security.activity.action.LOGOUT": "Sign-out",
   },
   fr: {
     "auth.hero.tagline":
@@ -1134,6 +1141,13 @@ export const extras = {
     "reports.filter.allTags": "Toutes les étiquettes",
     "reports.filter.warrantyStatus": "Statut de garantie",
     "reports.filter.allWarranties": "Tous statuts",
+    "security.title": "Sécurité",
+    "security.subtitle":
+      "Activité de connexion récente. Quelque chose de suspect ? Changez votre mot de passe et passez en revue vos sessions.",
+    "security.activity.title": "Activité de connexion récente",
+    "security.activity.empty": "Pas encore d'événements récents.",
+    "security.activity.action.LOGIN": "Connexion",
+    "security.activity.action.LOGOUT": "Déconnexion",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1701,6 +1715,13 @@ export const extras = {
     "reports.filter.allTags": "Todas as etiquetas",
     "reports.filter.warrantyStatus": "Estado da garantia",
     "reports.filter.allWarranties": "Qualquer estado",
+    "security.title": "Segurança",
+    "security.subtitle":
+      "Actividade recente de sessão. Algo suspeito? Altere a sua palavra-passe e reveja as suas sessões.",
+    "security.activity.title": "Actividade recente",
+    "security.activity.empty": "Sem eventos recentes.",
+    "security.activity.action.LOGIN": "Início de sessão",
+    "security.activity.action.LOGOUT": "Fim de sessão",
   },
 } as const;
 

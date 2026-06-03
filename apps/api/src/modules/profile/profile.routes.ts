@@ -16,6 +16,7 @@ import {
   UpdateWeeklyDigestSchema,
 } from "./profile.schemas";
 import { ProfileService } from "./profile.service";
+import { prisma } from "../../libs/prisma";
 
 const router = Router();
 
@@ -32,6 +33,33 @@ router.get(
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const me = await ProfileService.get(req.user!.sub);
     res.json(me);
+  })
+);
+
+// User-facing login history. Reuses AuditLog rather than adding a dedicated
+// table — every LOGIN/LOGOUT already lands there with ip + userAgent and is
+// indexed by (userId, createdAt DESC). Capped to 50 rows so a giant audit
+// trail can't make the panel slow.
+router.get(
+  "/me/login-history",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const rows = await prisma.auditLog.findMany({
+      where: {
+        userId: req.user!.sub,
+        action: { in: ["LOGIN", "LOGOUT"] },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        action: true,
+        ip: true,
+        userAgent: true,
+        createdAt: true,
+      },
+    });
+    res.json(rows);
   })
 );
 

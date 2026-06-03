@@ -54,6 +54,7 @@ import {
   disablePush,
 } from "../../utils/push";
 import ArticleThumb from "../articles/ArticleThumb";
+import SecuritySection from "./SecuritySection";
 import { useToast } from "../common/Toast";
 import { Skeleton } from "../common/Skeleton";
 import DataExportPanel from "./DataExportPanel";
@@ -1021,6 +1022,9 @@ export default function ProfileView() {
             </Button>
           </div>
         </Section>
+
+        {/* Security: login history + future 2FA / sessions placeholders. */}
+        <SecuritySection />
 
         {/* Change password */}
         <Section
