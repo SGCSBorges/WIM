@@ -113,6 +113,76 @@ Two endpoints back the TopBar bell:
 Snooze and cancel are unchanged: `POST /api/alerts/:id/snooze` with
 `{ days }` and `POST /api/alerts/:id/cancel`.
 
+## Warranty lifecycle
+
+`Garantie` keeps a 1:1 unique with the article, so renewal rolls the live
+row forward (same `garantieId`) and snapshots the prior state into
+`WarrantyHistory`. There is **never** a second warranty per article.
+
+| Method | Path                              | Body                                                                | Effect                                                                                       |
+| ------ | --------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| POST   | `/api/warranties/:id/renew`       | `{ garantieDateAchat, garantieDuration, provider*?, note? }`        | Snapshot `RENEWED`, swap purchase date + duration, recompute `garantieFin`, reschedule alerts |
+| POST   | `/api/warranties/:id/extend`      | `{ months, note? }`                                                  | Snapshot `EXTENDED`, bump `garantieDuration`, roll `garantieFin` forward, reschedule alerts   |
+| GET    | `/api/warranties/:id/history`     | —                                                                    | Owner-scoped chronological audit (`event`, `priorDateAchat/Duration/Fin`, `note`)             |
+
+`Garantie.renewedAt` is stamped on the first renewal/extension (null =
+never renewed). Both `renew` and `extend` reuse
+`AlertService.rescheduleForWarranty` so the J-30/J-7/J-1 reminders
+re-fire against the new end date. Audit actions `WARRANTY_RENEW` /
+`WARRANTY_EXTEND` are in the `AUDIT_ACTIONS` union.
+
+## Reports
+
+- `GET /api/reports/portfolio.pdf` — insurance-ready portfolio PDF.
+  Query params honor the article-list filters (`locationId`, `tagId`,
+  `warrantyStatus`) so a user can scope the report to one room or one
+  tag. Three sections: cover totals (purchase vs depreciated current
+  value, items covered vs at-risk), per-location manifest with
+  serials + warranty end, and an at-risk list ranked by purchase
+  value desc. Auth-gated + destructive-rate-limited; audited as
+  `DB_EXPORT` with `metadata.report="portfolio"`.
+
+The inventory CSV (`/api/articles/export/inventory.csv`) gains a
+`currentValue` column at export time (computed via the same
+`currentValue` helper the dashboard + claim PDF use). The importer
+ignores unknown columns so a round-trip preserves data.
+
+## Account security
+
+Three slices in `apps/api/src/modules/{auth,profile}/`. The password-only
+login path is byte-for-byte unchanged when `User.totpEnabled` is false.
+
+| Method | Path                                          | Notes                                                                                                                  |
+| ------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/profile/me/login-history`               | Caller's last 50 `LOGIN/LOGOUT` rows from `AuditLog`. No schema; uses the existing `(userId, createdAt DESC)` index.    |
+| GET    | `/api/profile/me/sessions`                    | `{ items, currentJti }` — current device marked client-side from `currentJti`.                                         |
+| DELETE | `/api/profile/me/sessions/:id`                | Revoke a single session: `denyToken(jti, ttl)` + stamp `revokedAt`.                                                    |
+| POST   | `/api/profile/me/sessions/revoke-others`      | Revokes every active session except the caller's own jti.                                                              |
+| POST   | `/api/profile/me/totp/setup`                  | Password-gated. Returns `{ otpauthUrl, qrDataUrl, backupCodes }` — backup codes plaintext **once**, never stored.       |
+| POST   | `/api/profile/me/totp/verify`                 | Password + code; flips `TotpSecret.verified` + `User.totpEnabled` in one transaction.                                  |
+| DELETE | `/api/profile/me/totp`                        | Password-gated. Drops the secret row + clears `totpEnabled`.                                                           |
+| POST   | `/api/auth/login`                             | When `totpEnabled`, returns `{ totpRequired: true, challengeToken }` (5-minute `kind:"totp-challenge"` JWT — not a session cookie). |
+| POST   | `/api/auth/login/verify-totp`                 | `{ challengeToken, code }` → real session cookie + `UserSession` row; audit `metadata.method="totp"`.                  |
+
+TOTP uses `otplib@^12` (v13 dropped the named `authenticator` export). New
+tables: `UserSession` (jti unique, deviceLabel, ip, userAgent, lastActiveAt,
+revokedAt) and `TotpSecret` (one-per-user, base32 secret, JSON of bcrypt-
+hashed single-use backup codes, verified). `authGuard` calls
+`SessionService.touch(jti)` best-effort (throttled to 1/min per jti) so
+"active N minutes ago" stays honest without a DB hit per request.
+
+## Article power features
+
+- `POST /api/articles/bulk-update` —
+  `{ ids: number[], fields: { purchasePrice?, depreciationRate?, brand?, serialNumber? } }`.
+  `null` clears, missing keys leave alone. Per-row ownership + trashed-row
+  skip in a single transaction. Counterpart to the existing
+  `/articles/bulk-assign` but for scalar fields.
+- `GET|POST|PUT|DELETE /api/article-templates[/:id]` — reusable starting
+  points for the create form. JSONB `payload` stores locations and tags
+  by **name**, not by id, so a template survives a rename or a live row
+  delete; the form resolves names → ids at apply time.
+
 ## Background jobs
 
 The API runs BullMQ workers in the same process. Three repeatable schedules

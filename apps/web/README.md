@@ -69,27 +69,44 @@ feature is large.
 
 - `articles/` — list, detail, form, scan, trash, CSV import, bulk action
   bar, tag manager. `ArticlesList.tsx` is the biggest file in the app and
-  owns the URL-synced filter + bulk-selection state.
-- `warranties/` — list view + form (provider metadata, claim status).
+  owns the URL-synced filter + bulk-selection state. Also hosts
+  `BulkEditDialog` (tri-state per-field edit across a selection) and
+  `TemplateBar` (the "start from template / save as template" row above
+  the create form).
+- `warranties/` — list with status `Segmented` filter, per-row status
+  Badge, and a `Renew` action that opens `RenewWarrantyDialog`
+  (Modal-shelled, Renew | Extend Segmented, live "new end date"
+  preview). The same dialog is launched from Article detail and the
+  Dashboard "Needs attention" panel. Status classification lives in
+  `src/utils/warrantyStatus.ts`.
+- `reports/` — lazy `ReportsView` with three Selects (location, tag,
+  warranty status) + a download button that pulls the insurance
+  portfolio PDF.
 - `attachments/` — grid with bulk select + delete.
 - `locations/` — list with paginated articles-in-location counts.
 - `admin/` — Users / Audit log / Jobs tabs, role edit, DB backup panel,
   failed-jobs viewer.
 - `profile/` — credentials, currency, push/email/digest toggles, billing
-  panel, data export panel, sharing summary.
+  panel, data export panel, sharing summary. The new `SecuritySection`
+  hosts active sessions (with per-device revoke), recent sign-in
+  activity, and the `TwoFactorPanel` setup/disable wizard.
 - `sharing/` — shared-with-me view, my-shared view, invite accept form,
   invites list.
 - `dashboard/` — recharts-based KPI grid plus a `NeedsAttention` panel
   above the charts (expired + expiring-soon articles with inline
-  snooze/view). Lazy-loaded so `recharts` stays out of the main bundle.
+  snooze, **renew warranty**, and view links). Lazy-loaded so
+  `recharts` stays out of the main bundle.
 - `onboarding/` — `OnboardingChecklist` on Home, derives "what's left"
   from `statisticsAPI.getBasic` (first article / warranty / alert) and
   links each step to the right route. Dismissible (localStorage).
 - `layout/` — `AppShell`, `Sidebar`, `TopBar`, `MobileDrawer`,
   `NotificationBell`. The bell surfaces overdue/due-soon alerts via
   `GET /api/alerts/notifications`.
-- `alerts/`, `calendar/`, `auth/`, `common/` — smaller views + reusable
-  bits (`Modal`, `Skeleton`, `States`, `Toast` with optimistic undo,
+- `auth/` — `LoginForm` handles both the password step and the TOTP
+  challenge step when a `{ totpRequired, challengeToken }` response
+  comes back from `/auth/login`.
+- `alerts/`, `calendar/`, `common/` — smaller views + reusable bits
+  (`Modal`, `Skeleton`, `States`, `Toast` with optimistic undo,
   `BarList`, `ShortcutsHelp`).
 
 ## Scripts (npm)

@@ -149,6 +149,98 @@ npm --workspace apps/web run test:e2e
 - **Always edit existing files** rather than creating new ones unless
   the new file is genuinely needed.
 
+## Warranty lifecycle (renew / extend / history)
+
+- `Garantie` enforces 1:1 with an article (`garantieArticleId` unique).
+  Renewal **rolls the live row forward** — we never insert a second
+  warranty for the same article. `Garantie.renewedAt` is bumped on the
+  first renewal/extension; null = never renewed.
+- `WarrantyHistory` (append-only) snapshots the prior contract on each
+  change (`event`: `RENEWED | EXTENDED | REPLACED`,
+  `priorDateAchat/Duration/Fin`, optional `note`). The web UI walks it
+  newest-first to render the chain.
+- `POST /api/warranties/:id/renew` swaps a fresh `garantieDateAchat` +
+  `garantieDuration` (+ optional provider patch);
+  `POST /:id/extend` rolls `garantieFin` forward by N months in place
+  (bumps `garantieDuration` to keep the `addMonths(dateAchat,
+  duration)` invariant); `GET /:id/history` returns the chain.
+- Both renew + extend reuse the existing
+  `AlertService.rescheduleForWarranty` so J-30/J-7/J-1 reminders
+  re-fire against the new end date — no duplicate scheduling code.
+- Audit actions `WARRANTY_RENEW` / `WARRANTY_EXTEND` are in the
+  `AUDIT_ACTIONS` union in `packages/types/src/index.ts`.
+- Web: `RenewWarrantyDialog` is launched from the Article-detail
+  warranty block, the Dashboard "Needs attention" rows, and
+  `WarrantiesView`. The shared status badge + `Segmented` filter
+  classify the end date via `utils/warrantyStatus.warrantyStatusFor`
+  (`active` / `expiringSoon` / `expired` / `none`), so the badge in a
+  row and the filter pill can never disagree.
+
+## Reports & insurance portfolio
+
+- `GET /api/reports/portfolio.pdf` streams an insurance-ready PDF via
+  PDFKit (cover totals, per-location manifest, uninsured/expired list
+  sorted by value desc). Honors the same filters as the article list
+  (`locationId`, `tagId`, `warrantyStatus`). Auth-gated +
+  destructive-rate-limited; audited as `DB_EXPORT` with
+  `metadata.report="portfolio"`.
+- Totals use the **same `currentValue`** depreciation helper as the
+  dashboard + claim PDF (`apps/api/src/modules/common/depreciation.ts`),
+  so figures don't drift between surfaces.
+- Inventory CSV (`/articles/export/inventory.csv`) gains a read-only
+  `currentValue` column computed at export time; the importer ignores
+  unknown columns so the round-trip stays clean.
+- Web: lazy `/reports` route (`components/reports/ReportsView.tsx`)
+  with three Selects + `downloadBlob`. Nav item `reports` added to
+  `src/lib/navItems.ts` for every authenticated user.
+
+## Account security (login history → sessions → 2FA)
+
+Three independent slices; the password-only login path is byte-for-byte
+unchanged when `User.totpEnabled = false`.
+
+- **Login history**: `GET /api/profile/me/login-history` selects the
+  caller's last 50 LOGIN/LOGOUT rows from `AuditLog` (no schema —
+  reuses the `(userId, createdAt DESC)` compound index).
+- **Sessions**: new `UserSession` table — one row per signed-in device,
+  keyed by the JWT `jti`. `signTokenWithJti` exposes the jti the
+  session row needs while `signToken` keeps its old single-string
+  shape for the password-change refresh path. `authGuard` calls
+  `SessionService.touch(jti)` (fire-and-forget, throttled to 1/min
+  per jti) so "active N minutes ago" stays honest. Endpoints:
+  `GET /api/profile/me/sessions` (returns `{ items, currentJti }` so
+  the UI can mark "this device"); `DELETE /api/profile/me/sessions/:id`
+  (revokes via the existing `denyToken` + sets `revokedAt`);
+  `POST /api/profile/me/sessions/revoke-others`.
+- **TOTP 2FA**: `User.totpEnabled` (fast-path flag) + `TotpSecret`
+  (base32 secret + bcrypt-hashed single-use backup codes + verified
+  flag). Setup → verify → disable, all password-gated. Login: when
+  `totpEnabled` is true, `/auth/login` returns a 5-minute pre-auth
+  `challengeToken` (`kind:"totp-challenge"` so it can't be mistaken
+  for a session) instead of dropping a cookie; the client POSTs the
+  code to `/auth/login/verify-totp` to mint the real session cookie +
+  `UserSession`. `otplib` is pinned at `^12.0.1` (v13 dropped the
+  named `authenticator` export).
+- Web: `Profile → Security` mounts `SecuritySection` (sessions list +
+  login history) and the `TwoFactorPanel` wizard.
+
+## Article power features
+
+- **Bulk field edit**: `POST /api/articles/bulk-update` patches a
+  scalar field set (`purchasePrice`, `depreciationRate`, `brand`,
+  `serialNumber`) across a selection — `null` clears, missing keys
+  leave alone. Per-row ownership + trashed-row skip in a single
+  transaction. Web: an "Edit fields" button on the ArticlesList bulk
+  bar opens `BulkEditDialog` with a tri-state row per field
+  (Skip / Set to… / Clear).
+- **Article templates**: `ArticleTemplate` table (ownerUserId, name,
+  JSONB payload). Payload stores `locationNames`/`tagNames` (not ids)
+  so a template survives a rename/delete; the form resolves names →
+  live ids at apply time. Endpoints under
+  `/api/article-templates` (CRUD). Web: `TemplateBar` at the top of
+  `ArticleForm` in create mode hosts the picker + "Save as template…"
+  dialog; hides itself silently if the endpoint isn't available.
+
 ## Sharing model (two flavors; share-capable = POWER_USER or ADMIN)
 
 Sharing is the POWER_USER tier's exclusive feature. **ADMIN inherits it**
@@ -255,10 +347,16 @@ the ADMIN → USER case is the admin-demote path.)
 
 - API entry: `apps/api/src/index.ts`, app wiring in `apps/api/src/app.ts`
 - Auth: `apps/api/src/modules/auth/` (middleware, service, routes, schemas,
-  token-denylist)
+  token-denylist, `session.service.ts`, `totp.service.ts`)
 - Sharing: `apps/api/src/modules/shares/{share.service,share.routes}.ts`,
   `apps/api/src/modules/shared/shared.routes.ts`,
   `apps/api/src/modules/articles/article.share.routes.ts`
+- Warranties: `apps/api/src/modules/warranties/{warranty.service,
+  warranty.routes,warranty.schemas}.ts` (renew / extend / claim
+  workflow + history)
+- Reports: `apps/api/src/modules/reports/{report.pdf,report.routes}.ts`
+- Article templates: `apps/api/src/modules/articles/{template.service,
+  template.routes}.ts`
 - Billing: `apps/api/src/modules/billing/{billing,billing.me,billing.webhook}.routes.ts`
 - Admin: `apps/api/src/modules/admin/admin.routes.ts`
 - Web entry: `apps/web/src/main.tsx`, routes in `apps/web/src/App.tsx`
@@ -275,3 +373,10 @@ the ADMIN → USER case is the admin-demote path.)
 - Onboarding / actionable home: `apps/web/src/components/onboarding/
   OnboardingChecklist.tsx`, `apps/web/src/components/dashboard/
   NeedsAttention.tsx`
+- Warranty UI: `apps/web/src/components/warranties/RenewWarrantyDialog.tsx`,
+  status helper `apps/web/src/utils/warrantyStatus.ts`
+- Reports surface: `apps/web/src/components/reports/ReportsView.tsx`
+- Security panel: `apps/web/src/components/profile/{SecuritySection,
+  TwoFactorPanel}.tsx`
+- Article power features: `apps/web/src/components/articles/
+  {BulkEditDialog,TemplateBar}.tsx`

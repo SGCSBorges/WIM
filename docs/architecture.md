@@ -85,6 +85,23 @@ This is the spine of the product (see UML `02` activity and `04` sequence):
 Push needs VAPID keys and email needs `RESEND_API_KEY` + `MAIL_FROM`; without
 them each leg is a logged no-op, and the rest of the flow is unaffected.
 
+## Warranty lifecycle (renew / extend / history)
+
+Because `Garantie` enforces 1:1 with an article (`garantieArticleId`
+unique), renewal **rolls the live row forward** instead of inserting a
+sibling — same `garantieId`, fresh dates. The prior contract is
+snapshotted into the append-only `WarrantyHistory` table
+(`event: RENEWED | EXTENDED | REPLACED`, plus `priorDateAchat`,
+`priorDuration`, `priorFin`, optional note). Both renew + extend reuse
+`AlertService.rescheduleForWarranty`, so the J-30/J-7/J-1 reminders
+cancel + re-fire against the new end date without any duplicated
+scheduler code. The Article-detail UI walks the history list newest-
+first to render a chain like "renewed 2026 → 2028 → 2030"; the shared
+`warrantyStatusFor` helper drives the status badge + filter pills so
+the article list, Warranties view, Reports filter, and
+Dashboard "Needs attention" panel always agree on what "expired" or
+"expiring soon" means (30-day window matching the J-30 reminder).
+
 ## Two sharing models
 
 Both require **share capability** (POWER_USER, or ADMIN which inherits it
@@ -174,6 +191,19 @@ colors and every route works across all four themes.
 - **Force-logout / revocation** — `tokenVersion` (per-user, invalidates all
   tokens) and the Redis `jti` denylist (per-token, on logout). Detail in
   [`docs/api.md`](./api.md#authentication).
+- **Sessions table** — `UserSession` is one row per signed-in device,
+  keyed by the JWT `jti`. Created on register/login; `authGuard` does a
+  best-effort `lastActiveAt` bump (throttled to 1/min per jti) so the UI
+  can render "active N minutes ago" without a DB write per request.
+  Revoking a session here denylists the jti **and** stamps `revokedAt`,
+  so the live cookie bounces on the next request and the UI list drops
+  the row.
+- **TOTP 2FA** — opt-in (`User.totpEnabled`). The whole password-only
+  login path stays unchanged when the flag is false; when true,
+  `/auth/login` returns a short-lived (5 min) pre-auth `challengeToken`
+  with `kind:"totp-challenge"` instead of a session cookie, and the
+  client posts the code to `/auth/login/verify-totp` to mint the real
+  session. Backup codes are bcrypt-hashed and consumed on use.
 - **No email enumeration** — lookups by email return the same error for "not
   found" vs "found but wrong role" (e.g. `ShareService.createInvite`).
 

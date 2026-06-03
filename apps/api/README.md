@@ -32,19 +32,20 @@ Each module is a small slice of the API and follows the same shape:
 
 | Module          | Responsibility                                              |
 | --------------- | ----------------------------------------------------------- |
-| `auth`          | Register/login/logout, password reset, JWT issue + guard.   |
-| `articles`      | Inventory CRUD, search, soft-delete + Trash, bulk ops, CSV/PDF export. |
-| `warranties`    | Warranty CRUD, claim workflow, provider metadata, digest.   |
+| `auth`          | Register/login/logout, password reset, JWT issue + guard, `session.service` (per-device sessions keyed by jti), `totp.service` (TOTP 2FA + 5-minute challenge tokens). |
+| `articles`      | List + CRUD + bulk ops (delete, share, assign, **bulk-update** scalar fields) + soft-delete + Trash + CSV/PDF export + `template.routes` for the reusable Article-create payloads. |
+| `warranties`    | CRUD + claim workflow + **renew / extend / history** (rolls the live row forward into `WarrantyHistory`; reuses `AlertService.rescheduleForWarranty`). |
 | `attachments`   | File upload (Multer + signature check), thumbs, bulk delete.|
 | `locations`     | Location CRUD + paginated articles-in-location.             |
 | `tags`          | Tag CRUD + rename/merge.                                    |
 | `alerts`        | Warranty reminder + custom alert scheduling (BullMQ); plus the notification-bell feed (`GET /alerts/notifications`, `POST /alerts/mark-seen`). |
+| `reports`       | Insurance-ready portfolio PDF via PDFKit (`/api/reports/portfolio.pdf`), honors article-list filters. |
 | `shares`        | POWER_USER → POWER_USER inventory invites (per-user shares).|
 | `shared`        | Recipient-side reads + WRITE edits of shared articles.      |
 | `billing`       | Stripe Checkout, customer portal, webhook (idempotent).     |
 | `admin`         | Admin-only routes (users, audit log, jobs, DB backup).      |
 | `calendar`      | iCal feed (warranty ends + custom alerts + claims).         |
-| `profile`       | Email/password/currency/email-reminders/digest toggle; cross-device UI preferences (`theme`/`language`/`dateFormat` via `PUT /profile/me/preferences`); delete account. |
+| `profile`       | Email/password/currency/email-reminders/digest toggle; cross-device UI preferences (`theme`/`language`/`dateFormat` via `PUT /profile/me/preferences`); login history + session list/revoke; TOTP setup/verify/disable; delete account. |
 | `push`          | Web Push subscription endpoints.                            |
 | `saved-views`   | Per-user saved filter views for the Articles list.          |
 | `audit`         | Audit log read endpoint + retention prune.                  |
