@@ -8,6 +8,8 @@ import { WarrantyService } from "./warranty.service";
 import {
   ClaimUpdateSchema,
   WarrantyCreateSchema,
+  WarrantyExtendSchema,
+  WarrantyRenewSchema,
   WarrantyUpdateSchema,
 } from "./warranty.schemas";
 import { auditAction } from "../common/audit";
@@ -84,6 +86,52 @@ router.patch(
       metadata: { field: "claim", status: data.status },
     });
     res.json(updated);
+  })
+);
+
+router.post(
+  "/:id/renew",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const data = WarrantyRenewSchema.parse(req.body);
+    const updated = await WarrantyService.renew(id, req.user!.sub, data);
+    await auditAction(req, {
+      action: "WARRANTY_RENEW",
+      entity: "Garantie",
+      entityId: id,
+      metadata: {
+        newDateAchat: data.garantieDateAchat,
+        newDuration: data.garantieDuration,
+      },
+    });
+    res.json(updated);
+  })
+);
+
+router.post(
+  "/:id/extend",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const data = WarrantyExtendSchema.parse(req.body);
+    const updated = await WarrantyService.extend(id, req.user!.sub, data);
+    await auditAction(req, {
+      action: "WARRANTY_EXTEND",
+      entity: "Garantie",
+      entityId: id,
+      metadata: { months: data.months },
+    });
+    res.json(updated);
+  })
+);
+
+router.get(
+  "/:id/history",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    res.json(await WarrantyService.getHistory(id, req.user!.sub));
   })
 );
 

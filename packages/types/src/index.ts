@@ -50,6 +50,8 @@ export const AUDIT_ACTIONS = [
   "BILLING_DOWNGRADE",
   "DB_EXPORT",
   "DB_IMPORT",
+  "WARRANTY_RENEW",
+  "WARRANTY_EXTEND",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
@@ -231,6 +233,41 @@ export interface WarrantyItem {
   garantieFin: string;
   garantieIsValide: boolean;
   garantieArticleId: number | null;
+  /** Set the first time the warranty is renewed or extended; null = never. */
+  renewedAt?: string | null;
+}
+
+/** Renew = replace the live warranty's dates outright (new contract).
+ *  Extend = roll the existing end date forward by N months (in-place).
+ *  Both snapshot the prior state into WarrantyHistory. */
+export type WarrantyHistoryEvent = "RENEWED" | "EXTENDED" | "REPLACED";
+
+/** One entry in a warranty's renewal/extension audit. `prior*` fields pin
+ *  what the warranty looked like *before* the change so the UI can walk the
+ *  chain backwards through time. */
+export interface WarrantyHistoryItem {
+  id: number;
+  garantieId: number;
+  event: WarrantyHistoryEvent;
+  priorDateAchat: string;
+  priorDuration: number;
+  priorFin: string;
+  note?: string | null;
+  createdAt: string;
+}
+
+export interface WarrantyRenewRequest {
+  garantieDateAchat: string;
+  garantieDuration: number;
+  providerName?: string | null;
+  providerPhone?: string | null;
+  providerUrl?: string | null;
+  note?: string | null;
+}
+
+export interface WarrantyExtendRequest {
+  months: number;
+  note?: string | null;
 }
 
 /** A per-user inventory share as seen by the *owner*. `active=false`

@@ -44,7 +44,10 @@ import type {
   SharedArticleRow,
   ThemePref,
   UserPreferences,
+  WarrantyExtendRequest,
+  WarrantyHistoryItem,
   WarrantyItem,
+  WarrantyRenewRequest,
 } from "../types";
 
 // Re-export shared response shapes so existing `import { X } from
@@ -1603,6 +1606,48 @@ export const warrantiesAPI = {
     );
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to update claim"));
+    return response.json();
+  },
+
+  async renew(garantieId: number, input: WarrantyRenewRequest) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/warranties/${garantieId}/renew`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(input),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to renew warranty"));
+    return response.json();
+  },
+
+  async extend(garantieId: number, input: WarrantyExtendRequest) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/warranties/${garantieId}/extend`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(input),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to extend warranty")
+      );
+    return response.json();
+  },
+
+  async getHistory(garantieId: number): Promise<WarrantyHistoryItem[]> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/warranties/${garantieId}/history`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch warranty history")
+      );
     return response.json();
   },
 };

@@ -29,4 +29,8 @@ export type {
   DateFormatPref,
   UserPreferences,
   WarrantyItem,
+  WarrantyHistoryEvent,
+  WarrantyHistoryItem,
+  WarrantyRenewRequest,
+  WarrantyExtendRequest,
 } from "@wim/types";

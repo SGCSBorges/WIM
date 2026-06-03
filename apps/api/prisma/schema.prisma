@@ -335,6 +335,10 @@ model Garantie {
   providerPhone String? @db.VarChar(40)
   providerUrl   String? @db.VarChar(2048)
 
+  // Set when the owner has renewed or extended this warranty at least once.
+  // Surfaced as a small "last renewed" chip on the UI; null = never renewed.
+  renewedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -343,10 +347,39 @@ model Garantie {
   garantieImageAttachment Attachment? @relation("GarantieImageAttachment", fields: [garantieImageAttachmentId], references: [attachmentId], onDelete: SetNull)
   attachments Attachment[] @relation("AttachmentGarantie")
   alertes    Alerte[]
+  history    WarrantyHistory[]
 
   @@index([ownerUserId])
   @@index([garantieFin])
   @@index([ownerUserId, garantieFin])
+}
+
+// Append-only audit of warranty renewals / extensions. Because Garantie has a
+// unique (article, warranty) — there's only ever one live warranty per article
+// — we roll the live row forward and snapshot the *prior* state here. Each
+// entry pins what the warranty looked like before the change, so the UI can
+// show a chain like "renewed 2026 → 2028 → 2030".
+enum WarrantyHistoryEvent {
+  RENEWED
+  EXTENDED
+  REPLACED
+}
+
+model WarrantyHistory {
+  id              Int      @id @default(autoincrement())
+  garantieId      Int
+  ownerUserId     Int
+  event           WarrantyHistoryEvent
+  priorDateAchat  DateTime
+  priorDuration   Int
+  priorFin        DateTime
+  note            String?  @db.VarChar(500)
+  createdAt       DateTime @default(now())
+
+  garantie Garantie @relation(fields: [garantieId], references: [garantieId], onDelete: Cascade)
+
+  @@index([garantieId, createdAt])
+  @@index([ownerUserId, createdAt])
 }
 
 model Alerte {

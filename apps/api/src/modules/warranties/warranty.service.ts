@@ -12,6 +12,8 @@ import { addMonths } from "../common/date";
 import {
   ClaimUpdateInput,
   WarrantyCreateInput,
+  WarrantyExtendInput,
+  WarrantyRenewInput,
   WarrantyUpdateInput,
 } from "./warranty.schemas";
 import { AlertService } from "../alerts/alert.service";
@@ -191,6 +193,128 @@ export const WarrantyService = {
         claimNote: isNone ? null : (data.note ?? null),
         claimUpdatedAt: isNone ? null : new Date(),
       },
+    });
+  },
+
+  // Renew a warranty in place: snapshot the prior dates/duration into
+  // WarrantyHistory, swap in the new contract, and reschedule the J-30/J-7/J-1
+  // reminders against the new garantieFin. We keep the same garantieId (and
+  // therefore the 1:1 article link), so claims, attachments, and the article
+  // detail link don't churn.
+  renew: async (id: number, ownerUserId: number, data: WarrantyRenewInput) => {
+    const current = await prisma.garantie.findFirst({
+      where: { garantieId: id, ownerUserId },
+    });
+    if (!current) throw createHttpError(404, "Warranty not found");
+
+    const newDateAchat = new Date(data.garantieDateAchat);
+    const newFin = addMonths(newDateAchat, data.garantieDuration);
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.warrantyHistory.create({
+        data: {
+          garantieId: current.garantieId,
+          ownerUserId,
+          event: "RENEWED",
+          priorDateAchat: current.garantieDateAchat,
+          priorDuration: current.garantieDuration,
+          priorFin: current.garantieFin,
+          note: data.note ?? null,
+        },
+      });
+      return tx.garantie.update({
+        where: { garantieId: id },
+        data: {
+          garantieDateAchat: newDateAchat,
+          garantieDuration: data.garantieDuration,
+          garantieFin: newFin,
+          garantieIsValide: true,
+          renewedAt: new Date(),
+          // Patch provider fields only when the caller provided one.
+          ...(data.providerName !== undefined
+            ? { providerName: data.providerName }
+            : {}),
+          ...(data.providerPhone !== undefined
+            ? { providerPhone: data.providerPhone }
+            : {}),
+          ...(data.providerUrl !== undefined
+            ? { providerUrl: data.providerUrl }
+            : {}),
+        },
+      });
+    });
+
+    await AlertService.rescheduleForWarranty({
+      ownerUserId: updated.ownerUserId,
+      garantieId: updated.garantieId,
+      articleId: updated.garantieArticleId,
+      garantieFin: updated.garantieFin,
+    });
+
+    return updated;
+  },
+
+  // Extend = roll the end date forward by N months without disturbing the
+  // purchase date. `garantieDuration` is bumped so `garantieFin` stays
+  // consistent with the documented `addMonths(dateAchat, duration)` invariant
+  // the rest of the codebase relies on.
+  extend: async (
+    id: number,
+    ownerUserId: number,
+    data: WarrantyExtendInput
+  ) => {
+    const current = await prisma.garantie.findFirst({
+      where: { garantieId: id, ownerUserId },
+    });
+    if (!current) throw createHttpError(404, "Warranty not found");
+
+    const newDuration = current.garantieDuration + data.months;
+    const newFin = addMonths(new Date(current.garantieDateAchat), newDuration);
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.warrantyHistory.create({
+        data: {
+          garantieId: current.garantieId,
+          ownerUserId,
+          event: "EXTENDED",
+          priorDateAchat: current.garantieDateAchat,
+          priorDuration: current.garantieDuration,
+          priorFin: current.garantieFin,
+          note: data.note ?? null,
+        },
+      });
+      return tx.garantie.update({
+        where: { garantieId: id },
+        data: {
+          garantieDuration: newDuration,
+          garantieFin: newFin,
+          garantieIsValide: true,
+          renewedAt: new Date(),
+        },
+      });
+    });
+
+    await AlertService.rescheduleForWarranty({
+      ownerUserId: updated.ownerUserId,
+      garantieId: updated.garantieId,
+      articleId: updated.garantieArticleId,
+      garantieFin: updated.garantieFin,
+    });
+
+    return updated;
+  },
+
+  // Owner-scoped chronological audit of renewals/extensions. Newest first so
+  // the UI can render "renewed 2026 → 2028 → 2030" simply by walking the list.
+  getHistory: async (id: number, ownerUserId: number) => {
+    const current = await prisma.garantie.findFirst({
+      where: { garantieId: id, ownerUserId },
+      select: { garantieId: true },
+    });
+    if (!current) throw createHttpError(404, "Warranty not found");
+    return prisma.warrantyHistory.findMany({
+      where: { garantieId: id, ownerUserId },
+      orderBy: { createdAt: "desc" },
     });
   },
 
