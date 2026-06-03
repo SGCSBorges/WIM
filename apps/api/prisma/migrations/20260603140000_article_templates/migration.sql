@@ -9,7 +9,7 @@ CREATE TABLE "ArticleTemplate" (
   "payload"     JSONB NOT NULL DEFAULT '{}',
   "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt"   TIMESTAMP(3) NOT NULL,
-  CONSTRAINT "ArticleTemplate_userId_fkey"
+  CONSTRAINT "ArticleTemplate_ownerUserId_fkey"
     FOREIGN KEY ("ownerUserId") REFERENCES "User"("userId")
     ON DELETE CASCADE ON UPDATE CASCADE
 );
