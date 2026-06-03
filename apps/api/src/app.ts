@@ -27,6 +27,7 @@ import { csrfGuard } from "./middlewares/csrf";
 import articleRoutes from "./modules/articles/article.routes";
 import articleNoteRoutes from "./modules/articles/note.routes";
 import articleShareRoutes from "./modules/articles/article.share.routes";
+import articleTemplateRoutes from "./modules/articles/template.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import auditRoutes from "./modules/audit/audit.routes";
@@ -218,6 +219,7 @@ export function createApp() {
   app.use("/api/articles", articleShareRoutes);
   app.use("/api/articles", articleNoteRoutes);
   app.use("/api/articles", articleRoutes);
+  app.use("/api/article-templates", articleTemplateRoutes);
   app.use("/api/warranties", warrantyRoutes);
   app.use("/api/auth", security.authRateLimiter, authRoutes);
   app.use("/api/audit", auditRoutes);

@@ -159,6 +159,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   sessions            UserSession[]
   totp                TotpSecret?
+  articleTemplates    ArticleTemplate[]
 }
 
 model PasswordResetToken {
@@ -541,6 +542,24 @@ model AuditLog {
   // userId AND createdAt-range lookup into a single seek instead of two
   // single-column scans intersected.
   @@index([userId, createdAt(sort: Desc)])
+}
+
+// Reusable starting point for the article create form. Stores identity
+// fields + optional default locations/tags as a JSON payload — we don't
+// reference live Location/Tag rows because they could be deleted out from
+// under the template; the client decodes the payload and resolves names →
+// ids at use time.
+model ArticleTemplate {
+  id          Int      @id @default(autoincrement())
+  ownerUserId Int
+  name        String   @db.VarChar(120)
+  payload     Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)
+
+  @@index([ownerUserId])
 }
 
 // TOTP shared secret + bcrypt-hashed one-time backup codes. Setup creates

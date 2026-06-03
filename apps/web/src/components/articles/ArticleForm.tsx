@@ -39,6 +39,7 @@ import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
 import BarcodeScanner, { barcodeSupported } from "./BarcodeScanner";
+import TemplateBar from "./TemplateBar";
 import {
   barcodeLookupEnabled,
   lookupProduct,
@@ -478,6 +479,72 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       <h2 className="mb-6 text-xl font-bold tracking-tight ui-title">
         {article ? t("articleForm.editTitle") : t("articleForm.createTitle")}
       </h2>
+
+      {!article && (
+        <TemplateBar
+          locations={locations}
+          tags={tags}
+          getCurrentPayload={() => ({
+            articleNom: formData.articleNom || undefined,
+            articleModele: formData.articleModele || undefined,
+            articleDescription: formData.articleDescription || null,
+            brand: formData.brand || null,
+            serialNumber: formData.serialNumber || null,
+            productImageUrl: formData.productImageUrl || null,
+            purchasePrice:
+              purchasePrice.trim() === "" ? null : Number(purchasePrice),
+            depreciationRate:
+              depreciationRate.trim() === "" ? null : Number(depreciationRate),
+            locationNames: locations
+              .filter((l) => selectedLocationIds.includes(l.locationId))
+              .map((l) => l.name),
+            tagNames: tags
+              .filter((tg) => selectedTagIds.includes(tg.tagId))
+              .map((tg) => tg.name),
+          })}
+          onApply={(payload) => {
+            // Apply a template's payload onto the form state. Strings overwrite
+            // current values; lists merge by name → live id.
+            setFormData((prev) => ({
+              ...prev,
+              articleNom: payload.articleNom ?? prev.articleNom,
+              articleModele: payload.articleModele ?? prev.articleModele,
+              articleDescription:
+                payload.articleDescription ?? prev.articleDescription,
+              brand: payload.brand ?? prev.brand,
+              serialNumber: payload.serialNumber ?? prev.serialNumber,
+              productImageUrl: payload.productImageUrl ?? prev.productImageUrl,
+            }));
+            if (payload.purchasePrice !== undefined)
+              setPurchasePrice(
+                payload.purchasePrice == null
+                  ? ""
+                  : String(payload.purchasePrice)
+              );
+            if (payload.depreciationRate !== undefined)
+              setDepreciationRate(
+                payload.depreciationRate == null
+                  ? ""
+                  : String(payload.depreciationRate)
+              );
+            if (payload.locationNames?.length) {
+              const ids = payload.locationNames
+                .map(
+                  (n) => locations.find((l) => l.name === n)?.locationId ?? null
+                )
+                .filter((x): x is number => x !== null);
+              setSelectedLocationIds(ids);
+            }
+            if (payload.tagNames?.length) {
+              const ids = payload.tagNames
+                .map((n) => tags.find((tg) => tg.name === n)?.tagId ?? null)
+                .filter((x): x is number => x !== null);
+              setSelectedTagIds(ids);
+            }
+            setDirty(true);
+          }}
+        />
+      )}
 
       <form
         onSubmit={handleSubmit}

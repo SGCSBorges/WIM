@@ -1817,6 +1817,72 @@ export const warrantiesAPI = {
   },
 };
 
+// Article templates — reusable starting points for the create form.
+// Payload is owner-decoded; locations + tags are stored by name so they
+// survive a rename or a delete of the live row.
+export interface ArticleTemplatePayload {
+  articleNom?: string;
+  articleModele?: string;
+  articleDescription?: string | null;
+  brand?: string | null;
+  serialNumber?: string | null;
+  productImageUrl?: string | null;
+  purchasePrice?: number | null;
+  depreciationRate?: number | null;
+  locationNames?: string[];
+  tagNames?: string[];
+}
+
+export interface ArticleTemplate {
+  id: number;
+  name: string;
+  payload: ArticleTemplatePayload;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const articleTemplatesAPI = {
+  async list(): Promise<ArticleTemplate[]> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/article-templates`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch templates")
+      );
+    return response.json();
+  },
+
+  async create(
+    name: string,
+    payload: ArticleTemplatePayload
+  ): Promise<ArticleTemplate> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/article-templates`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ name, payload }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to save template"));
+    return response.json();
+  },
+
+  async remove(id: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/article-templates/${id}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to delete template")
+      );
+  },
+};
+
 // Reports API — currently only the insurance portfolio PDF. Returns a Blob
 // so the caller can download it via `downloadBlob`.
 export const reportsAPI = {

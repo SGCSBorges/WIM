@@ -617,6 +617,17 @@ export const extras = {
     "bulkEdit.apply": "Apply changes",
     "bulkEdit.success": "Updated {count} article(s).",
     "bulkEdit.errorNoFields": "Pick at least one field to change.",
+    "template.pickLabel": "Start from template",
+    "template.pickPlaceholder": "— none —",
+    "template.save": "Save as template",
+    "template.saveTitle": "Save as template",
+    "template.saveHint":
+      "Captures the current form (identity, brand, price, locations, tags). Pick the template later to prefill a new article in one click.",
+    "template.nameLabel": "Template name",
+    "template.namePlaceholder": "e.g. Kitchen appliance",
+    "template.saveConfirm": "Save template",
+    "template.saved": "Template saved.",
+    "template.deleted": "Template deleted.",
   },
   fr: {
     "auth.hero.tagline":
@@ -1247,6 +1258,17 @@ export const extras = {
     "bulkEdit.apply": "Appliquer",
     "bulkEdit.success": "{count} article(s) mis à jour.",
     "bulkEdit.errorNoFields": "Choisissez au moins un champ à modifier.",
+    "template.pickLabel": "Partir d'un modèle",
+    "template.pickPlaceholder": "— aucun —",
+    "template.save": "Enregistrer comme modèle",
+    "template.saveTitle": "Enregistrer comme modèle",
+    "template.saveHint":
+      "Capture le formulaire actuel (identité, marque, prix, lieux, étiquettes). Choisissez le modèle plus tard pour pré-remplir un nouvel article en un clic.",
+    "template.nameLabel": "Nom du modèle",
+    "template.namePlaceholder": "ex. Électroménager cuisine",
+    "template.saveConfirm": "Enregistrer le modèle",
+    "template.saved": "Modèle enregistré.",
+    "template.deleted": "Modèle supprimé.",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1871,6 +1893,17 @@ export const extras = {
     "bulkEdit.apply": "Aplicar",
     "bulkEdit.success": "{count} artigo(s) actualizado(s).",
     "bulkEdit.errorNoFields": "Escolha pelo menos um campo a alterar.",
+    "template.pickLabel": "Começar a partir de um modelo",
+    "template.pickPlaceholder": "— nenhum —",
+    "template.save": "Guardar como modelo",
+    "template.saveTitle": "Guardar como modelo",
+    "template.saveHint":
+      "Captura o formulário actual (identidade, marca, preço, localizações, etiquetas). Escolha o modelo depois para preencher um novo artigo num clique.",
+    "template.nameLabel": "Nome do modelo",
+    "template.namePlaceholder": "ex. Electrodoméstico de cozinha",
+    "template.saveConfirm": "Guardar modelo",
+    "template.saved": "Modelo guardado.",
+    "template.deleted": "Modelo eliminado.",
   },
 } as const;
 
