@@ -5,6 +5,7 @@
 // keep a single Excel cell per article without conflicting with the , delimiter.
 
 import type { Prisma } from "@prisma/client";
+import { currentValue } from "../common/depreciation";
 
 const COLUMNS = [
   "articleId",
@@ -15,6 +16,10 @@ const COLUMNS = [
   "description",
   "purchasePrice",
   "depreciationRate",
+  // Computed at export time (purchase price after straight-line depreciation
+  // based on warranty purchase date or createdAt). Read-only — the importer
+  // ignores unknown columns, so a round-trip preserves data.
+  "currentValue",
   "locations",
   "tags",
   "warrantyName",
@@ -60,6 +65,11 @@ function serializeRow(a: ExportRow): string {
     .map((t) => t.tag?.name ?? "")
     .filter(Boolean)
     .join("; ");
+  const current = currentValue(
+    a.purchasePrice == null ? null : Number(a.purchasePrice),
+    a.depreciationRate == null ? null : Number(a.depreciationRate),
+    a.garantie?.garantieDateAchat ?? a.createdAt
+  );
   const cells = [
     a.articleId,
     a.articleNom,
@@ -69,6 +79,7 @@ function serializeRow(a: ExportRow): string {
     a.articleDescription,
     a.purchasePrice,
     a.depreciationRate,
+    current,
     locationNames,
     tagNames,
     a.garantie?.garantieNom,

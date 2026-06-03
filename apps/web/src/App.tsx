@@ -89,6 +89,9 @@ const ProfileView = React.lazy(
 const LocationsView = React.lazy(
   () => import("./components/locations/LocationsView")
 );
+const ReportsView = React.lazy(
+  () => import("./components/reports/ReportsView")
+);
 
 interface ErrorBoundaryState {
   error: Error | null;
@@ -471,6 +474,7 @@ export default function App() {
           <Route path="/attachments" element={<AttachmentsList />} />
           <Route path="/locations" element={<LocationsView />} />
           <Route path="/alerts" element={<AlertsView />} />
+          <Route path="/reports" element={<ReportsView />} />
           <Route path="/profile" element={<ProfileView />} />
           <Route path="/sharing" element={sharingRoute} />
           <Route path="/sharing/accept" element={sharingRoute} />

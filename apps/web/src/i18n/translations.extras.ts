@@ -544,6 +544,23 @@ export const extras = {
     "warranty.history.event.REPLACED": "Replaced",
     "warranties.statusFilter": "Warranty status filter",
     "warranties.statusFilter.all": "All",
+    "nav.reports": "Reports",
+    "reports.title": "Reports",
+    "reports.subtitle":
+      "Insurance-ready PDF exports with depreciated value, scoped to a location, tag, or warranty status.",
+    "reports.portfolio.title": "Insurance portfolio PDF",
+    "reports.portfolio.subtitle":
+      "Cover totals, per-location manifest, and uninsured / expired warranties ranked by exposure.",
+    "reports.portfolio.download": "Download portfolio PDF",
+    "reports.portfolio.includesNote":
+      "Includes serial numbers and current depreciated value.",
+    "reports.portfolio.success": "Report downloaded.",
+    "reports.filter.location": "Location",
+    "reports.filter.allLocations": "All locations",
+    "reports.filter.tag": "Tag",
+    "reports.filter.allTags": "All tags",
+    "reports.filter.warrantyStatus": "Warranty status",
+    "reports.filter.allWarranties": "Any status",
   },
   fr: {
     "auth.hero.tagline":
@@ -1100,6 +1117,23 @@ export const extras = {
     "warranty.history.event.REPLACED": "Remplacée",
     "warranties.statusFilter": "Filtre du statut de garantie",
     "warranties.statusFilter.all": "Toutes",
+    "nav.reports": "Rapports",
+    "reports.title": "Rapports",
+    "reports.subtitle":
+      "Exports PDF prêts pour assurance avec valeur dépréciée, filtrés par lieu, étiquette ou statut de garantie.",
+    "reports.portfolio.title": "PDF portfolio d'assurance",
+    "reports.portfolio.subtitle":
+      "Totaux, inventaire par lieu, et garanties expirées triées par exposition.",
+    "reports.portfolio.download": "Télécharger le PDF",
+    "reports.portfolio.includesNote":
+      "Inclut les numéros de série et la valeur dépréciée actuelle.",
+    "reports.portfolio.success": "Rapport téléchargé.",
+    "reports.filter.location": "Lieu",
+    "reports.filter.allLocations": "Tous les lieux",
+    "reports.filter.tag": "Étiquette",
+    "reports.filter.allTags": "Toutes les étiquettes",
+    "reports.filter.warrantyStatus": "Statut de garantie",
+    "reports.filter.allWarranties": "Tous statuts",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1650,6 +1684,23 @@ export const extras = {
     "warranty.history.event.REPLACED": "Substituída",
     "warranties.statusFilter": "Filtro de estado da garantia",
     "warranties.statusFilter.all": "Todas",
+    "nav.reports": "Relatórios",
+    "reports.title": "Relatórios",
+    "reports.subtitle":
+      "PDFs prontos para seguro com valor depreciado, filtrados por localização, etiqueta ou estado da garantia.",
+    "reports.portfolio.title": "PDF de portfólio de seguro",
+    "reports.portfolio.subtitle":
+      "Totais, inventário por localização e garantias expiradas ordenadas por exposição.",
+    "reports.portfolio.download": "Transferir PDF",
+    "reports.portfolio.includesNote":
+      "Inclui números de série e valor depreciado actual.",
+    "reports.portfolio.success": "Relatório transferido.",
+    "reports.filter.location": "Localização",
+    "reports.filter.allLocations": "Todas as localizações",
+    "reports.filter.tag": "Etiqueta",
+    "reports.filter.allTags": "Todas as etiquetas",
+    "reports.filter.warrantyStatus": "Estado da garantia",
+    "reports.filter.allWarranties": "Qualquer estado",
   },
 } as const;
 

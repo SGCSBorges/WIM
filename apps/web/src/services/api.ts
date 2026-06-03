@@ -1652,6 +1652,31 @@ export const warrantiesAPI = {
   },
 };
 
+// Reports API — currently only the insurance portfolio PDF. Returns a Blob
+// so the caller can download it via `downloadBlob`.
+export const reportsAPI = {
+  async portfolioPdf(filters: {
+    locationId?: number | null;
+    tagId?: number | null;
+    warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none" | null;
+  }): Promise<Blob> {
+    const url = new URL(`${API_BASE_URL}/reports/portfolio.pdf`);
+    if (filters.locationId)
+      url.searchParams.set("locationId", String(filters.locationId));
+    if (filters.tagId) url.searchParams.set("tagId", String(filters.tagId));
+    if (filters.warrantyStatus)
+      url.searchParams.set("warrantyStatus", filters.warrantyStatus);
+    const response = await fetchWithTimeout(url.toString(), {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to download report")
+      );
+    return response.blob();
+  },
+};
+
 // Shares API (owned-inventory sharing)
 export const sharesAPI = {
   async getOwned(page?: number, limit?: number): Promise<ShareItem[]> {

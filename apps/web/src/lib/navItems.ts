@@ -12,6 +12,7 @@ import {
   MapPin,
   Bell,
   Share2,
+  FileText,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -25,6 +26,7 @@ export type NavKey =
   | "attachments"
   | "locations"
   | "alerts"
+  | "reports"
   | "sharing"
   | "admin";
 
@@ -43,6 +45,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "attachments", path: "/attachments", icon: Paperclip },
   { key: "locations", path: "/locations", icon: MapPin },
   { key: "alerts", path: "/alerts", icon: Bell },
+  { key: "reports", path: "/reports", icon: FileText },
   { key: "sharing", path: "/sharing", icon: Share2, requires: "share" },
   { key: "admin", path: "/admin", icon: Settings, requires: "admin" },
 ];
