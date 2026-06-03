@@ -13,19 +13,32 @@ import { createHttpError } from "../../utils/http-error";
 // JWT_SECRET is guaranteed present by validateEnv() called at startup.
 const JWT_EXPIRES = "7d";
 
+/** Returns the signed JWT *and* the jti the session record needs. Use
+ *  `signToken` for the legacy single-string callers (post-password-change
+ *  refresh) that don't need the session linkage. */
+export function signTokenWithJti(
+  userId: number,
+  role: string,
+  tokenVersion: number
+): { token: string; jti: string } {
+  const jti = crypto.randomUUID();
+  const token = jwt.sign(
+    // `jti` lets us address a specific token in the Redis denylist on logout.
+    // `v` is the user's tokenVersion at issue time — admin "force-logout"
+    // bumps the user's version, invalidating any older token.
+    { sub: userId, role, v: tokenVersion, jti },
+    process.env.JWT_SECRET!,
+    { expiresIn: JWT_EXPIRES }
+  );
+  return { token, jti };
+}
+
 export function signToken(
   userId: number,
   role: string,
   tokenVersion: number
 ): string {
-  return jwt.sign(
-    // `jti` lets us address a specific token in the Redis denylist on logout.
-    // `v` is the user's tokenVersion at issue time — admin "force-logout"
-    // bumps the user's version, invalidating any older token.
-    { sub: userId, role, v: tokenVersion, jti: crypto.randomUUID() },
-    process.env.JWT_SECRET!,
-    { expiresIn: JWT_EXPIRES }
-  );
+  return signTokenWithJti(userId, role, tokenVersion).token;
 }
 
 export const AuthService = {
@@ -38,10 +51,15 @@ export const AuthService = {
     const user = await prisma.user.create({
       data: { email: data.email, password: hashed, role: data.role },
     });
-    const token = signToken(user.userId, user.role, user.tokenVersion);
+    const { token, jti } = signTokenWithJti(
+      user.userId,
+      user.role,
+      user.tokenVersion
+    );
     return {
       user: { userId: user.userId, email: user.email, role: user.role },
       token,
+      jti,
     };
   },
 
@@ -52,10 +70,15 @@ export const AuthService = {
       "$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
     const valid = await bcrypt.compare(data.password, user?.password ?? DUMMY);
     if (!user || !valid) throw createHttpError(401, "Invalid credentials");
-    const token = signToken(user.userId, user.role, user.tokenVersion);
+    const { token, jti } = signTokenWithJti(
+      user.userId,
+      user.role,
+      user.tokenVersion
+    );
     return {
       user: { userId: user.userId, email: user.email, role: user.role },
       token,
+      jti,
     };
   },
 

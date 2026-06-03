@@ -568,6 +568,15 @@ export const extras = {
     "security.activity.empty": "No recent sign-in events yet.",
     "security.activity.action.LOGIN": "Sign-in",
     "security.activity.action.LOGOUT": "Sign-out",
+    "security.sessions.title": "Active sessions",
+    "security.sessions.empty": "No other active sessions.",
+    "security.sessions.unknownDevice": "Unknown device",
+    "security.sessions.thisDevice": "This device",
+    "security.sessions.lastActive": "Last active",
+    "security.sessions.revoke": "Sign out",
+    "security.sessions.revokeOthers": "Sign out other devices",
+    "security.sessions.revoked": "Session signed out.",
+    "security.sessions.othersRevoked": "Signed out {count} other device(s).",
   },
   fr: {
     "auth.hero.tagline":
@@ -1148,6 +1157,16 @@ export const extras = {
     "security.activity.empty": "Pas encore d'événements récents.",
     "security.activity.action.LOGIN": "Connexion",
     "security.activity.action.LOGOUT": "Déconnexion",
+    "security.sessions.title": "Sessions actives",
+    "security.sessions.empty": "Aucune autre session active.",
+    "security.sessions.unknownDevice": "Appareil inconnu",
+    "security.sessions.thisDevice": "Cet appareil",
+    "security.sessions.lastActive": "Dernière activité",
+    "security.sessions.revoke": "Déconnecter",
+    "security.sessions.revokeOthers": "Déconnecter les autres appareils",
+    "security.sessions.revoked": "Session déconnectée.",
+    "security.sessions.othersRevoked":
+      "{count} autre(s) appareil(s) déconnecté(s).",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1722,6 +1741,16 @@ export const extras = {
     "security.activity.empty": "Sem eventos recentes.",
     "security.activity.action.LOGIN": "Início de sessão",
     "security.activity.action.LOGOUT": "Fim de sessão",
+    "security.sessions.title": "Sessões activas",
+    "security.sessions.empty": "Sem outras sessões activas.",
+    "security.sessions.unknownDevice": "Dispositivo desconhecido",
+    "security.sessions.thisDevice": "Este dispositivo",
+    "security.sessions.lastActive": "Última actividade",
+    "security.sessions.revoke": "Terminar sessão",
+    "security.sessions.revokeOthers": "Terminar sessão nos outros dispositivos",
+    "security.sessions.revoked": "Sessão terminada.",
+    "security.sessions.othersRevoked":
+      "Terminadas sessões em {count} outro(s) dispositivo(s).",
   },
 } as const;
 

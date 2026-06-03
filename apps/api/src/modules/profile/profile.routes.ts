@@ -16,7 +16,9 @@ import {
   UpdateWeeklyDigestSchema,
 } from "./profile.schemas";
 import { ProfileService } from "./profile.service";
+import { SessionService } from "../auth/session.service";
 import { prisma } from "../../libs/prisma";
+import { idParam } from "../common/schemas";
 
 const router = Router();
 
@@ -40,6 +42,52 @@ router.get(
 // table — every LOGIN/LOGOUT already lands there with ip + userAgent and is
 // indexed by (userId, createdAt DESC). Capped to 50 rows so a giant audit
 // trail can't make the panel slow.
+// Active sessions list. We include the caller's own jti so the UI can mark
+// the "current device" row without a second round-trip.
+router.get(
+  "/me/sessions",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const items = await SessionService.list(req.user!.sub);
+    res.json({ items, currentJti: req.user!.jti ?? null });
+  })
+);
+
+router.delete(
+  "/me/sessions/:id",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const id = idParam.parse(req.params.id);
+    await SessionService.revoke(req.user!.sub, id, req.user!.exp);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { sessionRevoked: id },
+    });
+    res.status(204).send();
+  })
+);
+
+router.post(
+  "/me/sessions/revoke-others",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    if (!req.user!.jti) return res.status(400).json({ error: "Missing jti" });
+    const result = await SessionService.revokeOthers(
+      req.user!.sub,
+      req.user!.jti
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { sessionsRevoked: result.revoked, kept: "current" },
+    });
+    res.json(result);
+  })
+);
+
 router.get(
   "/me/login-history",
   authGuard,

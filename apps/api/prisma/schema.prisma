@@ -151,6 +151,7 @@ model User {
   savedViews  SavedView[]
   pushSubscriptions PushSubscription[]
   passwordResetTokens PasswordResetToken[]
+  sessions            UserSession[]
 }
 
 model PasswordResetToken {
@@ -533,4 +534,27 @@ model AuditLog {
   // userId AND createdAt-range lookup into a single seek instead of two
   // single-column scans intersected.
   @@index([userId, createdAt(sort: Desc)])
+}
+
+// One row per active sign-in. `jti` matches the JWT's jti claim and the
+// Redis denylist key, so revoking a session here also revokes the token
+// network-wide. `lastActiveAt` is bumped (best-effort, throttled) by
+// authGuard so the user can see "active 2 minutes ago" in the UI.
+// `revokedAt` soft-deletes — keeps an audit trail without polluting the
+// "active sessions" view.
+model UserSession {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  jti           String    @unique @db.VarChar(64)
+  deviceLabel   String?   @db.VarChar(120)
+  ip            String?   @db.VarChar(80)
+  userAgent     String?   @db.VarChar(255)
+  lastActiveAt  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  revokedAt     DateTime?
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([userId, lastActiveAt(sort: Desc)])
 }

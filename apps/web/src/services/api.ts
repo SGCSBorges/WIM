@@ -1228,6 +1228,48 @@ export const profileAPI = {
     return response.json();
   },
 
+  async getSessions(): Promise<{
+    items: Array<{
+      id: number;
+      jti: string;
+      deviceLabel: string | null;
+      ip: string | null;
+      userAgent: string | null;
+      lastActiveAt: string;
+      createdAt: string;
+    }>;
+    currentJti: string | null;
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/sessions`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch sessions"));
+    return response.json();
+  },
+
+  async revokeSession(id: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/sessions/${id}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to revoke session"));
+  },
+
+  async revokeOtherSessions(): Promise<{ revoked: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/sessions/revoke-others`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to revoke other sessions")
+      );
+    return response.json();
+  },
+
   async getLoginHistory(): Promise<
     Array<{
       id: number;

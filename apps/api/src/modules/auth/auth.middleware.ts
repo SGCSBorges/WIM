@@ -22,6 +22,7 @@ import jwt from "jsonwebtoken";
 import { isTokenDenied } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
 import { roleAtLeast, type RankedRole } from "../common/roles";
+import { SessionService } from "./session.service";
 
 export interface AuthRequest extends Request {
   user?: { sub: number; role: string; jti?: string; exp?: number };
@@ -70,6 +71,9 @@ export async function authGuard(
       jti: payload.jti,
       exp: payload.exp,
     };
+    // Best-effort, throttled to once per minute per session: keep the
+    // sessions list's "active N minutes ago" honest. Errors are swallowed.
+    if (payload.jti) void SessionService.touch(payload.jti);
     next();
   } catch {
     res.status(401).json({ error: "Invalid or expired token" });

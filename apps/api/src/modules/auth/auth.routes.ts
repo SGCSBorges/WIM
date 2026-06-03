@@ -21,6 +21,7 @@ import { denyToken } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
 import { cookieOptsFor } from "./cookies";
 import { PasswordResetService } from "./password-reset.service";
+import { SessionService } from "./session.service";
 import { security } from "../../config/security";
 
 const router = Router();
@@ -30,6 +31,12 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const data = RegisterSchema.parse(req.body);
     const result = await AuthService.register(data);
+    await SessionService.create({
+      userId: result.user.userId,
+      jti: result.jti,
+      ip: req.ip ?? null,
+      userAgent: req.get("user-agent") ?? null,
+    });
     await auditAction(req, {
       userId: result.user.userId,
       action: "CREATE",
@@ -46,6 +53,12 @@ router.post(
   asyncHandler(async (req, res) => {
     const data = LoginSchema.parse(req.body);
     const result = await AuthService.login(data);
+    await SessionService.create({
+      userId: result.user.userId,
+      jti: result.jti,
+      ip: req.ip ?? null,
+      userAgent: req.get("user-agent") ?? null,
+    });
     await auditAction(req, {
       userId: result.user.userId,
       action: "LOGIN",
@@ -66,6 +79,13 @@ router.post(
     if (req.user?.jti && req.user.exp) {
       const ttl = req.user.exp - Math.floor(Date.now() / 1000);
       if (ttl > 0) await denyToken(req.user.jti, ttl);
+      // Mirror the denylist in the sessions table so the UI list updates.
+      await prisma.userSession
+        .updateMany({
+          where: { jti: req.user.jti, revokedAt: null },
+          data: { revokedAt: new Date() },
+        })
+        .catch(() => {});
     }
     await auditAction(req, {
       userId: req.user?.sub,
