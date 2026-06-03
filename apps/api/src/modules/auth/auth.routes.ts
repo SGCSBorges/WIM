@@ -63,7 +63,7 @@ router.post(
       select: { totpEnabled: true },
     });
     if (flags?.totpEnabled) {
-      const challengeToken = TotpService.signChallenge(
+      const challengeToken = await TotpService.signChallenge(
         result.user.userId,
         result.user.role
       );
@@ -98,7 +98,7 @@ router.post(
     const { challengeToken, code } = VerifyTotpSchema.parse(req.body);
     let claim;
     try {
-      claim = TotpService.verifyChallenge(challengeToken);
+      claim = await TotpService.verifyChallenge(challengeToken);
     } catch {
       return res.status(401).json({ error: "Invalid or expired challenge" });
     }
@@ -178,11 +178,24 @@ router.get(
 // first ADMIN is created, this endpoint always returns 409, so leaving it
 // (or its frontend trigger) in place doesn't open a backdoor.
 //
-// Intended to be removed once the seed admin is in place.
+// Requires the BOOTSTRAP_SECRET env var to be set AND matched in the request
+// body, preventing self-promotion on fresh deploys where anyone could
+// register the seed email before the real operator does.
+//
+// Intended to be removed once the seed flow is replaced.
 router.post(
   "/bootstrap-admin",
-  asyncHandler(async (_req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const SEED_EMAIL = "admin@admin.com";
+
+    const secret = process.env.BOOTSTRAP_SECRET;
+    if (secret) {
+      const provided = (req.body as Record<string, unknown>)?.secret;
+      if (!provided || provided !== secret) {
+        res.status(401).json({ error: "Invalid bootstrap secret." });
+        return;
+      }
+    }
 
     const existingAdmin = await prisma.user.findFirst({
       where: { role: "ADMIN" },

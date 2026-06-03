@@ -41,7 +41,13 @@ import {
 import LoginForm from "./components/auth/LoginForm";
 import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
 import ResetPasswordForm from "./components/auth/ResetPasswordForm";
-import { authAPI, billingAPI, profileAPI } from "./services/api";
+import {
+  authAPI,
+  billingAPI,
+  profileAPI,
+  register401Handler,
+  unregister401Handler,
+} from "./services/api";
 import { useI18n } from "./i18n/i18n";
 import { useTheme } from "./theme/theme";
 import { usePreferences } from "./preferences/preferences";
@@ -327,6 +333,18 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Flip to unauthed whenever any API call returns 401 mid-session (e.g.
+    // cookie expired). Cleared on unmount so stale closures can't fire after
+    // the component is gone.
+    register401Handler(() => {
+      setAuthStatus("unauthed");
+      setRole(null);
+    });
+    return () => unregister401Handler();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const url = new URL(window.location.href);
     const stripeResult = url.searchParams.get("stripe");
 
@@ -378,10 +396,12 @@ export default function App() {
       .then((user) => {
         setRole(user.role);
         applyServerPrefs(user);
+        setAuthStatus("authed");
+        navigate("/");
       })
-      .catch(() => {});
-    setAuthStatus("authed");
-    navigate("/");
+      .catch(() => {
+        setAuthStatus("unauthed");
+      });
   };
 
   const handleLogout = async () => {

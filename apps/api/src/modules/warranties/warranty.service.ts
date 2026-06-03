@@ -158,8 +158,12 @@ export const WarrantyService = {
       data: patch,
     });
 
-    // Reschedule reminders if fin changed (or if update could affect fin)
-    if (patch.garantieFin) {
+    // Reschedule when fin changed OR when the article changed — a re-link
+    // changes the articleId embedded in the reminder payload's deep-link.
+    const articleChanged =
+      data.garantieArticleId != null &&
+      data.garantieArticleId !== current.garantieArticleId;
+    if (patch.garantieFin || articleChanged) {
       await AlertService.rescheduleForWarranty({
         ownerUserId: updated.ownerUserId,
         garantieId: updated.garantieId,

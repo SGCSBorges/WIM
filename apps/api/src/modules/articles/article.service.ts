@@ -742,7 +742,7 @@ export const ArticleService = {
   ): Promise<{ count: number }> => {
     if (ids.length === 0) return { count: 0 };
     const result = await prisma.article.updateMany({
-      where: { articleId: { in: ids }, ownerUserId },
+      where: { articleId: { in: ids }, ownerUserId, deletedAt: null },
       data: { sharedWithPowerUsers: shared },
     });
     return { count: result.count };

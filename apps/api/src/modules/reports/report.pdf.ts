@@ -49,6 +49,7 @@ interface ArticleForReport {
   depreciationRate: unknown;
   createdAt: Date;
   garantie: {
+    garantieDateAchat: Date | null;
     garantieFin: Date;
     garantieNom: string;
   } | null;
@@ -75,7 +76,7 @@ function filterByWarranty(
       case "expiringSoon":
         return fin !== null && fin >= now && fin <= SOON;
       case "valid":
-        return fin !== null && fin > SOON;
+        return fin !== null && fin >= now;
     }
   });
 }
@@ -105,7 +106,7 @@ export async function streamPortfolioReportPdf(
       purchasePrice: true,
       depreciationRate: true,
       createdAt: true,
-      garantie: { select: { garantieFin: true, garantieNom: true } },
+      garantie: { select: { garantieDateAchat: true, garantieFin: true, garantieNom: true } },
       locations: {
         select: { location: { select: { locationId: true, name: true } } },
       },
@@ -127,10 +128,10 @@ export async function streamPortfolioReportPdf(
     const current = currentValue(
       a.purchasePrice == null ? null : Number(a.purchasePrice),
       a.depreciationRate == null ? null : Number(a.depreciationRate),
-      a.garantie?.garantieFin ?? a.createdAt
+      a.garantie?.garantieDateAchat ?? a.createdAt
     );
     totalPurchase += purchase;
-    totalCurrent += current ?? purchase;
+    totalCurrent += current;
     const fin = a.garantie?.garantieFin
       ? new Date(a.garantie.garantieFin).getTime()
       : null;
@@ -191,7 +192,7 @@ export async function streamPortfolioReportPdf(
         currentValue(
           a.purchasePrice == null ? null : Number(a.purchasePrice),
           a.depreciationRate == null ? null : Number(a.depreciationRate),
-          a.garantie?.garantieFin ?? a.createdAt
+          a.garantie?.garantieDateAchat ?? a.createdAt
         ),
         currency
       );

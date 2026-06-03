@@ -27,12 +27,16 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { authenticator } from "otplib";
 import { prisma } from "../../libs/prisma";
+import { getRedis } from "../../libs/redis";
 import { createHttpError } from "../../utils/http-error";
+import { logger } from "../../config/logger";
 
 const ISSUER = "WIM";
 const BACKUP_CODE_COUNT = 10;
 const BACKUP_CODE_BYTES = 5; // 10 hex chars per code
 const CHALLENGE_TTL = "5m";
+const CHALLENGE_TTL_SECS = 5 * 60;
+const challengeKey = (jti: string) => `totp:challenge:${jti}`;
 
 // Slight tolerance: the previous and next 30s windows count as valid so a
 // slightly skewed phone clock doesn't lock the user out.
@@ -133,39 +137,76 @@ export const TotpService = {
     if (/^\d{6}$/.test(trimmed)) {
       return check(trimmed, row.secret);
     }
-    const codes: string[] = JSON.parse(row.backupCodesHash);
+    const originalHash = row.backupCodesHash;
+    const codes: string[] = JSON.parse(originalHash);
     for (let i = 0; i < codes.length; i++) {
       if (await bcrypt.compare(trimmed, codes[i])) {
-        codes.splice(i, 1);
-        await prisma.totpSecret.update({
-          where: { userId },
-          data: { backupCodesHash: JSON.stringify(codes) },
+        const remaining = [...codes];
+        remaining.splice(i, 1);
+        // Optimistic lock: only write if the hash array hasn't changed since
+        // we read it. A concurrent request using the same backup code will
+        // find 0 rows updated and return false.
+        const updated = await prisma.totpSecret.updateMany({
+          where: { userId, backupCodesHash: originalHash },
+          data: { backupCodesHash: JSON.stringify(remaining) },
         });
-        return true;
+        return updated.count > 0;
       }
     }
     return false;
   },
 
   /** Mint a short-lived "you've passed step 1, please prove TOTP" token.
-   *  Distinct from a session token: it carries `kind: "totp-challenge"`
-   *  and a TTL of 5 minutes so it can't be re-used as a session cookie. */
-  signChallenge(userId: number, role: string): string {
-    return jwt.sign(
-      { sub: userId, role, kind: "totp-challenge" },
+   *  Includes a jti stored in Redis so the token is single-use — a captured
+   *  challenge can't be replayed to brute-force TOTP codes. Fails open when
+   *  Redis is unavailable (the 5-minute JWT TTL still limits the window). */
+  async signChallenge(userId: number, role: string): Promise<string> {
+    const jti = crypto.randomUUID();
+    const token = jwt.sign(
+      { sub: userId, role, kind: "totp-challenge", jti },
       process.env.JWT_SECRET!,
       { expiresIn: CHALLENGE_TTL }
     );
+    try {
+      const redis = getRedis();
+      if (redis) {
+        await redis.set(challengeKey(jti), "1", "EX", CHALLENGE_TTL_SECS);
+      }
+    } catch (err) {
+      logger.warn({ err }, "[totp] could not store challenge jti in Redis");
+    }
+    return token;
   },
 
-  verifyChallenge(token: string): { sub: number; role: string } {
+  async verifyChallenge(token: string): Promise<{ sub: number; role: string }> {
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
       sub: number;
       role: string;
       kind: string;
+      jti?: string;
     };
     if (payload.kind !== "totp-challenge")
       throw createHttpError(401, "Invalid challenge token");
+
+    // Consume the single-use jti. If Redis holds the key (normal path), DEL
+    // returns 1 on the first use and 0 on any replay → reject replay.
+    // If Redis is unavailable or the key is missing, fail open so a Redis
+    // outage doesn't lock users out of their accounts.
+    if (payload.jti) {
+      try {
+        const redis = getRedis();
+        if (redis) {
+          const deleted = await redis.del(challengeKey(payload.jti));
+          if (deleted === 0) {
+            throw createHttpError(401, "Challenge already used");
+          }
+        }
+      } catch (err: unknown) {
+        if ((err as { status?: number }).status === 401) throw err;
+        logger.warn({ err }, "[totp] could not consume challenge jti from Redis");
+      }
+    }
+
     return { sub: payload.sub, role: payload.role };
   },
 };

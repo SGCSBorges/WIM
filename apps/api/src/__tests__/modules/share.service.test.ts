@@ -14,6 +14,7 @@ vi.mock("../../libs/prisma", () => ({
     },
     inventoryShare: {
       create: vi.fn(),
+      upsert: vi.fn(),
       findFirst: vi.fn(),
       update: vi.fn(),
     },
@@ -100,7 +101,7 @@ describe("ShareService.acceptInvite", () => {
 
     const txFn = vi.fn().mockImplementation(async (cb: Function) => {
       const tx = {
-        inventoryShare: { create: vi.fn().mockResolvedValue({}) },
+        inventoryShare: { upsert: vi.fn().mockResolvedValue({}) },
         shareInvite: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       };
       return cb(tx);
@@ -117,6 +118,37 @@ describe("ShareService.acceptInvite", () => {
     });
   });
 
+  it("reactivates a previously-revoked share on re-accept (upsert, not create)", async () => {
+    const invite = {
+      token: "t",
+      status: InviteStatus.PENDING,
+      expiresAt: new Date(Date.now() + 100_000),
+      ownerUserId: 1,
+      permission: "WRITE" as const,
+    };
+    mockPrisma.shareInvite.findUnique.mockResolvedValue(invite);
+
+    const upsert = vi.fn().mockResolvedValue({});
+    mockPrisma.$transaction.mockImplementation(async (cb: Function) => {
+      const tx = {
+        inventoryShare: { upsert },
+        shareInvite: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      };
+      return cb(tx);
+    });
+
+    await ShareService.acceptInvite("t", 2);
+
+    expect(upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          ownerUserId_targetUserId: { ownerUserId: 1, targetUserId: 2 },
+        },
+        update: { permission: "WRITE", active: true },
+      })
+    );
+  });
+
   it("rejects with 400 when a concurrent request already claimed the invite", async () => {
     const invite = {
       token: "t",
@@ -129,7 +161,7 @@ describe("ShareService.acceptInvite", () => {
 
     mockPrisma.$transaction.mockImplementation(async (cb: Function) => {
       const tx = {
-        inventoryShare: { create: vi.fn() },
+        inventoryShare: { upsert: vi.fn() },
         shareInvite: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
       };
       return cb(tx);

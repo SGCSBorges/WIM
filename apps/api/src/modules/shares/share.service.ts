@@ -157,11 +157,24 @@ export const ShareService = {
       if (claimed.count === 0)
         throw createHttpError(400, "Invite was already used or expired");
 
-      await tx.inventoryShare.create({
-        data: {
+      // Re-accepting after a prior revoke leaves the (owner,target) row in
+      // place (revoke only flips `active`). Upsert so a fresh accept
+      // reactivates it instead of hitting the unique constraint with a 500.
+      await tx.inventoryShare.upsert({
+        where: {
+          ownerUserId_targetUserId: {
+            ownerUserId: invite.ownerUserId,
+            targetUserId: acceptorUserId,
+          },
+        },
+        create: {
           ownerUserId: invite.ownerUserId,
           targetUserId: acceptorUserId,
           permission: invite.permission,
+        },
+        update: {
+          permission: invite.permission,
+          active: true,
         },
       });
 

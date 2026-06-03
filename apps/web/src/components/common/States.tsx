@@ -10,6 +10,7 @@
  * new list view doesn't reinvent the state UI.
  */
 import React from "react";
+import { XCircle } from "lucide-react";
 
 interface ErrorBannerProps {
   message: string;
@@ -29,9 +30,7 @@ export function ErrorBanner({
       role="alert"
       className={`border ui-alert-error rounded-lg p-4 flex items-start gap-3 ${className}`}
     >
-      <span aria-hidden="true" className="ui-text-error text-lg leading-none">
-        ❌
-      </span>
+      <XCircle className="w-5 h-5 ui-text-error shrink-0" aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className="text-sm ui-text-error break-words">{message}</p>
       </div>

@@ -10,10 +10,10 @@ import { AuthRequest } from "../auth/auth.middleware";
 import { AuditService, AuditInput } from "../audit/audit.service";
 
 export function extractClient(req: Request) {
-  const ip =
-    (req.headers["x-forwarded-for"] as string) ||
-    req.socket.remoteAddress ||
-    null;
+  // req.ip is set by Express using the `trust proxy` setting, giving a
+  // trustworthy client IP even behind Render's proxy. The raw
+  // X-Forwarded-For header is spoofable by clients and must not be used.
+  const ip = req.ip ?? req.socket.remoteAddress ?? null;
   const ua = req.headers["user-agent"] || null;
   return { ip, ua: ua as string | null };
 }

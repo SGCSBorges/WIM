@@ -47,11 +47,8 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      # `npm install` (not `npm ci`) so a stale package-lock.json doesn't
-      # block CI when a dependency is added or bumped. Render's
-      # render-build:web does the same, so dev/CI/prod stay aligned.
       - name: Install dependencies
-        run: npm install --workspaces --include-workspace-root --include=optional
+        run: npm ci --include=optional
 
       - name: Lint (all workspaces)
         run: npm run lint
@@ -139,8 +136,8 @@ jobs:
       # (vitest/vite) doesn't ship and CI runs `vitest run`, never the UI
       # server an advisory like GHSA-5xrq-8626-4rwp requires — so a major
       # bump of the test stack would be disproportionate to the actual risk.
-      - name: npm audit (high+, prod deps)
-        run: npm audit --omit=dev --audit-level=high
+      - name: npm audit (moderate+, prod deps)
+        run: npm audit --omit=dev --audit-level=moderate
         continue-on-error: ${{ github.event_name == 'pull_request' }}
 
   dependency-review:
@@ -154,6 +151,31 @@ jobs:
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
+
+  # Playwright E2E smoke tests. The webServer in playwright.config.ts builds
+  # and serves the static app so no running API is needed — the suite only
+  # exercises API-free UI (theme, nav, login screen rendering, etc.).
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --include=optional
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        working-directory: apps/web
+        run: npm run test:e2e
 
   # The docs/uml/*.svg are rendered artifacts of the *.puml sources, committed
   # so GitHub shows them inline. Re-render and fail if any committed SVG is

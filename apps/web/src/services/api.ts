@@ -94,6 +94,17 @@ export const API_BASE_URL: string = (() => {
 // In-memory role cache — populated on login/register/getMe; no localStorage.
 let _cachedRole: string | null = null;
 
+// Optional hook registered by the root App component. When set, any 401 from
+// the API (cookie expired mid-session) triggers it so the app can flip to
+// "unauthed" instead of staying stuck on a broken authenticated shell.
+let _on401: (() => void) | null = null;
+export function register401Handler(fn: () => void) {
+  _on401 = fn;
+}
+export function unregister401Handler() {
+  _on401 = null;
+}
+
 const getHeaders = (): Record<string, string> => ({
   "Content-Type": "application/json",
 });
@@ -109,15 +120,18 @@ const fetchWithTimeout = async (
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(input, {
+    const response = await fetch(input, {
       ...(init ?? {}),
       signal: controller.signal,
       credentials: "include", // always send the httpOnly cookie
     });
+    if (response.status === 401) _on401?.();
+    return response;
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       throw new Error("Request timed out — please try again");
     }
+    if (!navigator.onLine) throw new Error("You appear to be offline");
     throw err;
   } finally {
     clearTimeout(timeout);
@@ -130,9 +144,15 @@ async function extractError(
   response: Response,
   fallback: string
 ): Promise<string> {
-  const data = await response
-    .json()
-    .catch(() => ({}) as Record<string, unknown>);
+  // Try JSON first; fall back to raw text for non-JSON responses (e.g. HTML
+  // gateway pages from a Render cold-start 502).
+  const text = await response.text().catch(() => "");
+  let data: Record<string, unknown> = {};
+  try {
+    data = JSON.parse(text);
+  } catch {
+    // Not JSON — leave data empty; message falls through to fallback.
+  }
   const message = (data as { error?: string }).error ?? fallback;
   // For server errors only, append the request id so a user can quote the
   // reference when reporting a problem (4xx are user-actionable — kept clean).

@@ -19,9 +19,9 @@ const rawOrigin = process.env.CORS_ORIGIN?.split(",")
 const allowedOrigins =
   rawOrigin && rawOrigin.length > 0
     ? rawOrigin
-    : process.env.NODE_ENV !== "production"
+    : process.env.NODE_ENV === "development"
       ? true // dev convenience: allow all origins when CORS_ORIGIN not set
-      : []; // production: block all cross-origin requests if not configured
+      : []; // any other env (production, staging, test): block all cross-origin requests
 
 // Exposed so the CSRF middleware can reuse the same allowlist for Origin
 // header validation on cookie-authenticated mutating requests. `true` means

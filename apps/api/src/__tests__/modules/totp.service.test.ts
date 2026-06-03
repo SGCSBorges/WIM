@@ -14,6 +14,7 @@ vi.mock("../../libs/prisma", () => ({
       findUnique: vi.fn(),
       upsert: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
       deleteMany: vi.fn(),
     },
     user: { update: vi.fn() },
@@ -28,6 +29,10 @@ vi.mock("../../libs/prisma", () => ({
   },
 }));
 
+vi.mock("../../libs/redis", () => ({
+  getRedis: () => null, // Redis unavailable in unit tests → fail open
+}));
+
 import { TotpService } from "../../modules/auth/totp.service";
 import { prisma } from "../../libs/prisma";
 
@@ -36,6 +41,7 @@ const p = prisma as unknown as {
     findUnique: ReturnType<typeof vi.fn>;
     upsert: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
+    updateMany: ReturnType<typeof vi.fn>;
     deleteMany: ReturnType<typeof vi.fn>;
   };
   user: { update: ReturnType<typeof vi.fn> };
@@ -83,9 +89,9 @@ describe("TotpService", () => {
     );
   });
 
-  it("signChallenge / verifyChallenge round-trip; rejects a normal session token", () => {
-    const tok = TotpService.signChallenge(7, "USER");
-    expect(TotpService.verifyChallenge(tok)).toMatchObject({
+  it("signChallenge / verifyChallenge round-trip; rejects a normal session token", async () => {
+    const tok = await TotpService.signChallenge(7, "USER");
+    await expect(TotpService.verifyChallenge(tok)).resolves.toMatchObject({
       sub: 7,
       role: "USER",
     });
@@ -96,7 +102,7 @@ describe("TotpService", () => {
       process.env.JWT_SECRET!,
       { expiresIn: "5m" }
     );
-    expect(() => TotpService.verifyChallenge(sessionShaped)).toThrow(
+    await expect(TotpService.verifyChallenge(sessionShaped)).rejects.toThrow(
       /invalid challenge/i
     );
   });

@@ -14,6 +14,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { CheckCircle2, XCircle, Info, X } from "lucide-react";
 
 type ToastKind = "success" | "error" | "info";
 
@@ -50,10 +51,10 @@ const KIND_CLASS: Record<ToastKind, string> = {
   info: "ui-alert-info text-slate-800",
 };
 
-const KIND_ICON: Record<ToastKind, string> = {
-  success: "✅",
-  error: "❌",
-  info: "ℹ️",
+const KIND_ICON: Record<ToastKind, React.ReactElement> = {
+  success: <CheckCircle2 className="w-4 h-4" />,
+  error: <XCircle className="w-4 h-4" />,
+  info: <Info className="w-4 h-4" />,
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -152,7 +153,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             onBlur={() => resume(t.id, t.ttl)}
             className={`pointer-events-auto border rounded-lg p-3 flex items-start gap-3 shadow-md ${KIND_CLASS[t.kind]}`}
           >
-            <span aria-hidden="true" className="text-base leading-none mt-0.5">
+            <span aria-hidden="true" className="mt-0.5 shrink-0">
               {KIND_ICON[t.kind]}
             </span>
             <p className="text-sm flex-1 break-words">{t.message}</p>
@@ -174,7 +175,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               onClick={() => dismiss(t.id)}
               className="text-current hover:opacity-70 shrink-0"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
         ))}
