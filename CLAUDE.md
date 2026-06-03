@@ -21,6 +21,7 @@ loads into every new Claude Code session.
 
 ## Branching & deploy
 
+- **Always work on the `dev` branch. Never create custom branches — all commits go to `dev`.**
 - Develop on **`dev`**. Push to dev triggers CI and Render redeploys.
 - Render hosts two services:
   - `wimapi.onrender.com` — API service. `render-build:api` runs `npm
