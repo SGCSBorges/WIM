@@ -19,6 +19,11 @@ loads into every new Claude Code session.
 - **Shared types** (`packages/types`): plain interfaces (no Zod/Prisma) so
   both runtimes can import.
 
+## Git commit rules
+
+- Never add "Co-Authored-By" or "Generated with Claude Code" to commit messages.
+- Always use the default system `user.name` and `user.email` from git config.
+
 ## Branching & deploy
 
 - **Always work on the `dev` branch. Never create custom branches — all commits go to `dev`.**
