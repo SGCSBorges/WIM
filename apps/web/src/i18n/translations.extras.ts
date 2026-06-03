@@ -542,6 +542,8 @@ export const extras = {
     "warranty.history.event.RENEWED": "Renewed",
     "warranty.history.event.EXTENDED": "Extended",
     "warranty.history.event.REPLACED": "Replaced",
+    "warranties.statusFilter": "Warranty status filter",
+    "warranties.statusFilter.all": "All",
   },
   fr: {
     "auth.hero.tagline":
@@ -1096,6 +1098,8 @@ export const extras = {
     "warranty.history.event.RENEWED": "Renouvelée",
     "warranty.history.event.EXTENDED": "Prolongée",
     "warranty.history.event.REPLACED": "Remplacée",
+    "warranties.statusFilter": "Filtre du statut de garantie",
+    "warranties.statusFilter.all": "Toutes",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1644,6 +1648,8 @@ export const extras = {
     "warranty.history.event.RENEWED": "Renovada",
     "warranty.history.event.EXTENDED": "Prolongada",
     "warranty.history.event.REPLACED": "Substituída",
+    "warranties.statusFilter": "Filtro de estado da garantia",
+    "warranties.statusFilter.all": "Todas",
   },
 } as const;
 

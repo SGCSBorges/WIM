@@ -11,12 +11,19 @@
  */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TriangleAlert, ShieldAlert, Clock, ArrowRight } from "lucide-react";
+import {
+  TriangleAlert,
+  ShieldAlert,
+  Clock,
+  ArrowRight,
+  RotateCw,
+} from "lucide-react";
 import { alertsAPI, articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { useToast } from "../common/Toast";
 import { Section, Button, Badge } from "../ui";
+import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import type { FetchedArticle } from "../../types";
 
 interface Row {
@@ -40,6 +47,10 @@ export default function NeedsAttention() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
+  // Article whose warranty the user is renewing/extending right now. We pin
+  // the article (not just the warranty) so the optimistic remove can match
+  // the row by articleId after the dialog closes.
+  const [renewing, setRenewing] = useState<FetchedArticle | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -159,8 +170,18 @@ export default function NeedsAttention() {
             >
               {t("notifications.snooze.7d")}
             </Button>
+            {article.garantie && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<RotateCw className="h-4 w-4" />}
+                onClick={() => setRenewing(article)}
+              >
+                {t("warranty.renew.button")}
+              </Button>
+            )}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => navigate(`/articles/${article.articleId}`)}
             >
@@ -169,6 +190,29 @@ export default function NeedsAttention() {
           </li>
         ))}
       </ul>
+
+      {renewing?.garantie && (
+        <RenewWarrantyDialog
+          open
+          mode={
+            renewing.garantie.garantieFin &&
+            new Date(renewing.garantie.garantieFin).getTime() < Date.now()
+              ? "renew"
+              : "extend"
+          }
+          warranty={renewing.garantie}
+          onClose={() => setRenewing(null)}
+          onUpdated={() => {
+            // Once renewed/extended, the article no longer needs attention —
+            // drop it from the list optimistically.
+            setRows((prev) =>
+              prev
+                ? prev.filter((r) => r.article.articleId !== renewing.articleId)
+                : prev
+            );
+          }}
+        />
+      )}
     </Section>
   );
 }
