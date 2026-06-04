@@ -1,16 +1,11 @@
-/**
- * `currentValue(purchasePrice, depreciationRate, since)` — straight-line
- * depreciation. `since` is whichever of (warranty purchase date / article
- * createdAt) the caller deems the cost-basis date. Returns null when
- * either input is null; floors at zero for fully-depreciated assets.
- */
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 
 /**
  * Straight-line current value: purchase price reduced by `rate` percent per
- * year of age, floored at zero. A null/zero rate (or absent price) returns the
- * purchase value unchanged. `basis` is the date the item's age is measured
- * from (warranty purchase date when known, else the article's createdAt).
+ * year of age, floored at zero. Returns 0 when price is null/zero. A null/zero
+ * rate returns the purchase price unchanged. `basis` is the date the item's
+ * age is measured from (warranty purchase date when known, else article
+ * createdAt).
  */
 export function currentValue(
   purchasePrice: number | null | undefined,
