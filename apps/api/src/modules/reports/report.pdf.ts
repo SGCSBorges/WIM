@@ -106,7 +106,13 @@ export async function streamPortfolioReportPdf(
       purchasePrice: true,
       depreciationRate: true,
       createdAt: true,
-      garantie: { select: { garantieDateAchat: true, garantieFin: true, garantieNom: true } },
+      garantie: {
+        select: {
+          garantieDateAchat: true,
+          garantieFin: true,
+          garantieNom: true,
+        },
+      },
       locations: {
         select: { location: { select: { locationId: true, name: true } } },
       },

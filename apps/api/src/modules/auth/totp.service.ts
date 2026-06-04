@@ -203,7 +203,10 @@ export const TotpService = {
         }
       } catch (err: unknown) {
         if ((err as { status?: number }).status === 401) throw err;
-        logger.warn({ err }, "[totp] could not consume challenge jti from Redis");
+        logger.warn(
+          { err },
+          "[totp] could not consume challenge jti from Redis"
+        );
       }
     }
 
