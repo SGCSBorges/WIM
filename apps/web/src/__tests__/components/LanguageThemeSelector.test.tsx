@@ -24,11 +24,11 @@ describe("<LanguageThemeSelector />", () => {
     expect(languageSelect).toHaveValue("en");
     expect(
       Array.from(languageSelect.querySelectorAll("option")).map((o) => o.value)
-    ).toEqual(["en", "fr", "pt"]);
+    ).toEqual(["en", "fr", "pt", "es", "nl"]);
 
     expect(
       Array.from(themeSelect.querySelectorAll("option")).map((o) => o.value)
-    ).toEqual(["light", "dark", "ocean", "cyber"]);
+    ).toEqual(["light", "dark", "ocean", "cyber", "sunset"]);
   });
 
   it("persists language selection to localStorage", async () => {

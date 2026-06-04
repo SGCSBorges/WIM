@@ -30,7 +30,7 @@ const PlanSchema = z.object({
   // i18n hint from the frontend so Stripe Checkout renders in the same
   // language as the WIM UI. We accept just the languages we support;
   // anything else falls through to "auto".
-  locale: z.enum(["en", "fr", "pt"]).optional(),
+  locale: z.enum(["en", "fr", "pt", "es", "nl"]).optional(),
 });
 
 const router = Router();
@@ -214,7 +214,7 @@ router.post(
 );
 
 const PortalSchema = z.object({
-  locale: z.enum(["en", "fr", "pt"]).optional(),
+  locale: z.enum(["en", "fr", "pt", "es", "nl"]).optional(),
 });
 
 router.post(

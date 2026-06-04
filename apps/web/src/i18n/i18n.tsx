@@ -53,7 +53,7 @@ type I18nContextValue = {
 };
 
 function isLanguage(v: unknown): v is Language {
-  return v === "en" || v === "fr" || v === "pt";
+  return v === "en" || v === "fr" || v === "pt" || v === "es" || v === "nl";
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -62,11 +62,13 @@ const STORAGE_KEY = "wim.language";
 
 function detectInitialLanguage(): Language {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved === "en" || saved === "fr" || saved === "pt") return saved;
+  if (isLanguage(saved)) return saved;
 
   const nav = (navigator.language || "en").toLowerCase();
   if (nav.startsWith("fr")) return "fr";
   if (nav.startsWith("pt")) return "pt";
+  if (nav.startsWith("es")) return "es";
+  if (nav.startsWith("nl")) return "nl";
   return "en";
 }
 
@@ -91,11 +93,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<I18nContextValue>(() => {
     // BCP-47 tags so Intl.PluralRules picks the right rule set
-    // (English: one/other, French: one/many/other, Portuguese: one/other).
+    // (English: one/other, French: one/many/other, Portuguese/Spanish/Dutch:
+    // one/other).
     const localeMap: Record<Language, string> = {
       en: "en-US",
       fr: "fr-FR",
       pt: "pt-PT",
+      es: "es-ES",
+      nl: "nl-NL",
     };
     const pluralRules = new Intl.PluralRules(localeMap[language]);
 

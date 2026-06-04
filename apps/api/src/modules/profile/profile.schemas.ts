@@ -47,8 +47,8 @@ export type UpdateWeeklyDigestInput = z.infer<typeof UpdateWeeklyDigestSchema>;
 // list, supported languages, and the date-format options.
 export const UpdatePreferencesSchema = z
   .object({
-    theme: z.enum(["light", "dark", "ocean", "cyber"]).nullish(),
-    language: z.enum(["en", "fr", "pt"]).nullish(),
+    theme: z.enum(["light", "dark", "ocean", "cyber", "sunset"]).nullish(),
+    language: z.enum(["en", "fr", "pt", "es", "nl"]).nullish(),
     dateFormat: z
       .enum(["system", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd"])
       .nullish(),

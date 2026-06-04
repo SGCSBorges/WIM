@@ -22,7 +22,7 @@ import TopBar from "./TopBar";
 import MobileDrawer from "./MobileDrawer";
 
 const COLLAPSE_KEY = "wim.sidebar.collapsed";
-const THEMES: Theme[] = ["light", "dark", "ocean", "cyber"];
+const THEMES: Theme[] = ["light", "dark", "ocean", "cyber", "sunset"];
 
 export interface AppShellProps {
   role: string | null;

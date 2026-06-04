@@ -82,7 +82,8 @@
 /* Dark-substrate themes get black-based shadows so depth reads on dark bg. */
 :root[data-theme="dark"],
 :root[data-theme="ocean"],
-:root[data-theme="cyber"] {
+:root[data-theme="cyber"],
+:root[data-theme="sunset"] {
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md:
     0 4px 14px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
@@ -252,6 +253,50 @@
   --text-error: #fca5a5;
   --text-success: #5eff8f;
   --text-warn: #fde047;
+}
+
+/*
+ * Sunset — warm dusk palette: a deep plum/charcoal substrate lit by a coral
+ * primary and a golden-amber accent, like the sky just after the sun drops.
+ * Distinct from ocean (cool teal) and cyber (neon green/purple): everything
+ * here leans warm. Text is a soft warm-white so long reads stay comfortable.
+ */
+:root[data-theme="sunset"] {
+  --bg: #1a1020;
+  --surface: #251627;
+  --surface-muted: #321d30;
+  --border: #4a2740;
+  --text: #fbeae3;
+  --muted: #d8a59b;
+
+  --primary: #fb6f5c;
+  --primary-hover: #ff8a73;
+  --primary-contrast: #2a0f12;
+  --focus-ring: rgba(251, 111, 92, 0.5);
+
+  --accent: #f5b14c;
+  --accent-hover: #fbbf5e;
+  --accent-contrast: #2a1605;
+
+  --nav-bg: #251627;
+  --nav-border: #4a2740;
+  --nav-text: #fbeae3;
+  --nav-muted: #d8a59b;
+  --nav-hover-bg: rgba(216, 165, 155, 0.14);
+  --nav-active-bg: rgba(251, 111, 92, 0.2);
+  --nav-active-text: #ff8a73;
+
+  --card-bg: #251627;
+  --card-border: #4a2740;
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  --btn-ghost-text: var(--nav-muted);
+  --btn-ghost-hover-text: var(--nav-text);
+  --btn-ghost-hover-bg: var(--nav-hover-bg);
+
+  --text-error: #fca5a5;
+  --text-success: #86efac;
+  --text-warn: #fcd34d;
 }
 
 /* Apply global page background/text via variables (keeps Tailwind layout intact). */

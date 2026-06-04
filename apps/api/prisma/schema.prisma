@@ -121,8 +121,8 @@ model User {
   // Cross-device UI preferences. Null = "no server preference", so the
   // client keeps its localStorage / system-default choice. Validated
   // against the known enums at the API boundary (profile.schemas).
-  theme      String? @db.VarChar(16) // light | dark | ocean | cyber
-  language   String? @db.VarChar(8)  // en | fr | pt
+  theme      String? @db.VarChar(16) // light | dark | ocean | cyber | sunset
+  language   String? @db.VarChar(8)  // en | fr | pt | es | nl
   dateFormat String? @db.VarChar(16) // system | dd/MM/yyyy | MM/dd/yyyy | yyyy-MM-dd
 
   // High-water mark for the notification bell: alerts created after this

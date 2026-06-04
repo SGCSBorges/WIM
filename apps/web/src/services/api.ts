@@ -2063,7 +2063,7 @@ export const sharedAPI = {
 export const billingAPI = {
   async createPowerUserCheckoutSession(
     plan: "monthly" | "yearly",
-    locale?: "en" | "fr" | "pt"
+    locale?: "en" | "fr" | "pt" | "es" | "nl"
   ): Promise<{ url: string }> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/billing/upgrade/power-user/checkout`,
@@ -2084,7 +2084,9 @@ export const billingAPI = {
     return response.json();
   },
 
-  async openPortal(locale?: "en" | "fr" | "pt"): Promise<{ url: string }> {
+  async openPortal(
+    locale?: "en" | "fr" | "pt" | "es" | "nl"
+  ): Promise<{ url: string }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/billing/portal`, {
       method: "POST",
       headers: getHeaders(),

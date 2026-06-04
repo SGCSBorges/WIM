@@ -406,8 +406,8 @@ export interface AlertNotifications {
  *  "no server preference" — the client keeps its localStorage / system
  *  default. Enums mirror the client theme list, supported languages, and
  *  date-format options. */
-export type ThemePref = "light" | "dark" | "ocean" | "cyber";
-export type LanguagePref = "en" | "fr" | "pt";
+export type ThemePref = "light" | "dark" | "ocean" | "cyber" | "sunset";
+export type LanguagePref = "en" | "fr" | "pt" | "es" | "nl";
 export type DateFormatPref =
   | "system"
   | "dd/MM/yyyy"

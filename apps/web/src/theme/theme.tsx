@@ -1,8 +1,8 @@
 /**
- * Theme provider. Four themes (`light` / `dark` / `ocean` / `cyber`) are
- * driven by a `data-theme` attribute on `<html>`; the actual colour
- * tokens live as CSS variables in `src/index.css`. Selection persists in
- * `localStorage` under STORAGE_KEY. Shared components consume the
+ * Theme provider. Five themes (`light` / `dark` / `ocean` / `cyber` /
+ * `sunset`) are driven by a `data-theme` attribute on `<html>`; the actual
+ * colour tokens live as CSS variables in `src/index.css`. Selection persists
+ * in `localStorage` under STORAGE_KEY. Shared components consume the
  * variables via the `.ui-*` utility classes — don't hardcode Tailwind
  * colours on shared widgets if you want them to respect every theme.
  */
@@ -15,7 +15,7 @@ import React, {
 } from "react";
 import { authAPI, profileAPI } from "../services/api";
 
-export type Theme = "light" | "dark" | "ocean" | "cyber";
+export type Theme = "light" | "dark" | "ocean" | "cyber" | "sunset";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -28,7 +28,13 @@ type ThemeContextValue = {
 };
 
 function isTheme(v: unknown): v is Theme {
-  return v === "light" || v === "dark" || v === "ocean" || v === "cyber";
+  return (
+    v === "light" ||
+    v === "dark" ||
+    v === "ocean" ||
+    v === "cyber" ||
+    v === "sunset"
+  );
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -37,12 +43,7 @@ const STORAGE_KEY = "wim.theme";
 
 function detectInitialTheme(): Theme {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (
-    saved === "light" ||
-    saved === "dark" ||
-    saved === "ocean" ||
-    saved === "cyber"
-  ) {
+  if (isTheme(saved)) {
     return saved;
   }
 
