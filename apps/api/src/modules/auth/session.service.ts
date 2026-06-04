@@ -10,6 +10,10 @@ import { denyToken } from "./token-denylist";
 import { createHttpError } from "../../utils/http-error";
 
 const TOUCH_INTERVAL_MS = 60_000; // 1 minute throttle
+// Capped to avoid unbounded growth in long-running processes with many
+// sessions. When full, the oldest entry is evicted (Map preserves
+// insertion order, so the first key is the oldest).
+const LAST_TOUCH_MAX = 5_000;
 const lastTouchAt = new Map<string, number>();
 
 /** Build a short, human-readable label from a User-Agent string. We only
@@ -64,6 +68,9 @@ export const SessionService = {
     const now = Date.now();
     const last = lastTouchAt.get(jti) ?? 0;
     if (now - last < TOUCH_INTERVAL_MS) return;
+    if (lastTouchAt.size >= LAST_TOUCH_MAX) {
+      lastTouchAt.delete(lastTouchAt.keys().next().value!);
+    }
     lastTouchAt.set(jti, now);
     await prisma.userSession
       .updateMany({

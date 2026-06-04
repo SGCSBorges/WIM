@@ -184,53 +184,61 @@ export function CommandPalette({
             {emptyLabel}
           </li>
         )}
-        {groups.map(({ group, items }) => (
-          <li key={group}>
-            <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide ui-text-muted">
-              {group}
-            </p>
-            <ul>
-              {items.map((item) => {
-                const index = results.indexOf(item);
-                const selected = index === active;
-                return (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      id={`cmd-${item.id}`}
-                      data-cmd-index={index}
-                      role="option"
-                      aria-selected={selected}
-                      onMouseEnter={() => setActive(index)}
-                      onClick={() => run(item)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm ${
-                        selected
-                          ? "bg-primary text-primary-contrast"
-                          : "ui-title"
-                      }`}
-                    >
-                      {item.icon && (
-                        <span aria-hidden="true" className="shrink-0">
-                          {item.icon}
-                        </span>
-                      )}
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {item.hint && (
-                        <span
-                          className={`shrink-0 text-xs ${
-                            selected ? "" : "ui-text-muted"
-                          }`}
-                        >
-                          {item.hint}
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </li>
-        ))}
+        {groups.map(({ group, items }, groupIdx) => {
+          // Compute the flat index of the first item in this group so that
+          // per-item index is derived from position, not indexOf (which would
+          // diverge on duplicate item references).
+          const groupOffset = groups
+            .slice(0, groupIdx)
+            .reduce((sum, g) => sum + g.items.length, 0);
+          return (
+            <li key={group}>
+              <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide ui-text-muted">
+                {group}
+              </p>
+              <ul>
+                {items.map((item, itemIdx) => {
+                  const index = groupOffset + itemIdx;
+                  const selected = index === active;
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        id={`cmd-${item.id}`}
+                        data-cmd-index={index}
+                        role="option"
+                        aria-selected={selected}
+                        onMouseEnter={() => setActive(index)}
+                        onClick={() => run(item)}
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm ${
+                          selected
+                            ? "bg-primary text-primary-contrast"
+                            : "ui-title"
+                        }`}
+                      >
+                        {item.icon && (
+                          <span aria-hidden="true" className="shrink-0">
+                            {item.icon}
+                          </span>
+                        )}
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {item.hint && (
+                          <span
+                            className={`shrink-0 text-xs ${
+                              selected ? "" : "ui-text-muted"
+                            }`}
+                          >
+                            {item.hint}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+          );
+        })}
       </ul>
     </Modal>
   );

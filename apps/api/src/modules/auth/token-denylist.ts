@@ -27,6 +27,9 @@ const DENYLIST_CHECK_TIMEOUT_MS = 500;
 // flooding logs (and log-bill). Throttle to one error log per kind per minute
 // plus a final "still broken" beacon every 5 minutes.
 const LOG_THROTTLE_MS = 60_000;
+// Small bounded map — there are only a handful of distinct error kinds,
+// so a cap of 100 is generous and prevents unbounded growth.
+const LAST_LOGGED_MAX = 100;
 const lastLoggedAt = new Map<string, number>();
 let suppressedSinceLast = 0;
 
@@ -38,6 +41,9 @@ function logThrottled(
   const now = Date.now();
   const last = lastLoggedAt.get(kind) ?? 0;
   if (now - last >= LOG_THROTTLE_MS) {
+    if (lastLoggedAt.size >= LAST_LOGGED_MAX) {
+      lastLoggedAt.delete(lastLoggedAt.keys().next().value!);
+    }
     lastLoggedAt.set(kind, now);
     logger.error(
       { err, kind, suppressedSinceLast, ...fields },

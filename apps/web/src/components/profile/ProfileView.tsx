@@ -43,6 +43,15 @@ import {
   type ShareInviteItem,
 } from "../../services/api";
 import type { FetchedArticle } from "../../types";
+
+const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
+function isStripeUrl(url: string): boolean {
+  try {
+    return STRIPE_HOSTS.has(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
@@ -343,7 +352,7 @@ export default function ProfileView() {
     setBillingBusy(true);
     try {
       const { url } = await billingAPI.openPortal(language);
-      if (/^https?:\/\//i.test(url)) window.location.href = url;
+      if (isStripeUrl(url)) window.location.href = url;
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {

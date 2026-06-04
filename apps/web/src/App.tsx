@@ -54,6 +54,15 @@ import { usePreferences } from "./preferences/preferences";
 import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
+
+const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
+function isStripeUrl(url: string): boolean {
+  try {
+    return STRIPE_HOSTS.has(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
 import OnboardingChecklist from "./components/onboarding/OnboardingChecklist";
 import { Button, Card } from "./components/ui";
 import { NAV_ITEMS } from "./lib/navItems";
@@ -435,7 +444,7 @@ export default function App() {
         plan,
         language
       );
-      if (/^https?:\/\//i.test(url)) window.location.href = url;
+      if (isStripeUrl(url)) window.location.href = url;
     } catch (e: unknown) {
       setUpgradeError(getErrorMessage(e, t("billing.upgradeStartError")));
     }

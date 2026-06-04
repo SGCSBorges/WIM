@@ -1,33 +1,56 @@
 /**
- * `useUnsavedChangesGuard(dirty)` — installs a `beforeunload` listener
- * while `dirty` is true so the browser warns on refresh / tab-close /
- * hard-nav. Limitation: in-app SPA navigation (clicking a router link)
- * is NOT intercepted; React Router's `useBlocker` would handle that but
- * needs a data-router, which this app's BrowserRouter setup doesn't
- * expose. The forms that use this hook additionally confirm on their
- * explicit Cancel action.
+ * `useUnsavedChangesGuard(dirty)` — while `dirty` is true:
+ *   • Installs a `beforeunload` listener so the browser warns on refresh /
+ *     tab-close / hard navigation.
+ *   • Intercepts same-origin `<a>` clicks (which includes React Router
+ *     `<Link>`) via a document-level capture listener and shows a
+ *     `window.confirm` before allowing the navigation to proceed.
+ *
+ * React Router v7's `useBlocker` requires a data-router context
+ * (`createBrowserRouter`), which this app hasn't migrated to yet. The
+ * click-intercept approach covers the common in-app navigation case without
+ * that migration.
  */
 import { useEffect } from "react";
 
-/**
- * Warn before the browser unloads (refresh, tab close, hard navigation) while a
- * form has unsaved edits. Only attaches the listener while `dirty` is true, so
- * a clean form never triggers the native prompt.
- *
- * Note: this guards browser-level unloads. In-app SPA navigation (clicking a
- * router link) is not intercepted here — that needs React Router's data-router
- * `useBlocker`, which this app's `BrowserRouter` setup doesn't expose yet. The
- * forms additionally confirm on their explicit Cancel action.
- */
+const CONFIRM_MESSAGE =
+  "You have unsaved changes. Leave this page and discard them?";
+
 export function useUnsavedChangesGuard(dirty: boolean): void {
   useEffect(() => {
     if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => {
+
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      // Legacy browsers require returnValue to be set to trigger the prompt.
       e.returnValue = "";
     };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
+
+    // Intercept same-origin link clicks (covers React Router <Link> which
+    // renders as <a href="...">). Capture phase so it runs before the router.
+    const onLinkClick = (e: MouseEvent) => {
+      const target = (e.target as Element).closest("a");
+      if (!target) return;
+      const href = target.getAttribute("href");
+      if (!href) return;
+      // Only block same-origin SPA links (absolute same-origin or relative).
+      try {
+        const dest = new URL(href, window.location.href);
+        if (dest.origin !== window.location.origin) return;
+        if (dest.pathname === window.location.pathname) return;
+      } catch {
+        return;
+      }
+      if (!window.confirm(CONFIRM_MESSAGE)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    document.addEventListener("click", onLinkClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      document.removeEventListener("click", onLinkClick, true);
+    };
   }, [dirty]);
 }
