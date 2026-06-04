@@ -66,12 +66,32 @@ export const TransferService = {
   async createPull(articleId: number, requesterId: number, message?: string) {
     const article = await prisma.article.findFirst({
       where: { articleId, deletedAt: null },
-      select: { articleId: true, articleNom: true, ownerUserId: true },
+      select: {
+        articleId: true,
+        articleNom: true,
+        ownerUserId: true,
+        sharedWithPowerUsers: true,
+      },
     });
     if (!article) throw createHttpError(404, "Article not found");
 
     if (article.ownerUserId === requesterId) {
       throw createHttpError(400, "You already own this article");
+    }
+
+    // Requester must be able to see the article: either publicly shared or via
+    // a direct InventoryShare. Prevents enumeration of article IDs and spam
+    // notifications to owners who have never shared anything with the requester.
+    if (!article.sharedWithPowerUsers) {
+      const share = await prisma.inventoryShare.findFirst({
+        where: {
+          ownerUserId: article.ownerUserId,
+          targetUserId: requesterId,
+          active: true,
+        },
+        select: { inventoryShareId: true },
+      });
+      if (!share) throw createHttpError(404, "Article not found");
     }
 
     const existing = await prisma.articleTransferRequest.findFirst({

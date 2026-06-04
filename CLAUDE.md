@@ -89,14 +89,14 @@ npm --workspace apps/web run test:e2e
 
 ## Conventions
 
-- **i18n**: `apps/web/src/i18n/translations.ts` is the main dict (70 KB,
-  three languages: `en` / `fr` / `pt`). New keys go into
+- **i18n**: `apps/web/src/i18n/translations.ts` is the main dict (five
+  languages: `en` / `fr` / `pt` / `es` / `nl`). New keys go into
   `apps/web/src/i18n/translations.extras.ts` to avoid churning the big
   file. `t()` lookup chain is `extras[lang] → translations[lang] →
   extras.en → translations.en → key`, so extras can also override an
   existing key for a copy fix.
-- **Theming**: CSS variables in `apps/web/src/index.css`, four themes
-  (`light` / `dark` / `ocean` / `cyber`) toggled via `data-theme` on
+- **Theming**: CSS variables in `apps/web/src/index.css`, five themes
+  (`light` / `dark` / `ocean` / `cyber` / `sunset`) toggled via `data-theme` on
   `<html>`. Brand palette comes from the WIM shield logo (navy primary +
   orange accent). Don't hardcode Tailwind colors on shared components —
   use `.ui-*` utility classes (`ui-card`, `ui-btn-primary`,
@@ -287,6 +287,48 @@ outgoing per-user shares, and revokes pending invites — inside the same
 transaction as the role change. (Billing only ever touches POWER_USER rows;
 the ADMIN → USER case is the admin-demote path.)
 
+## Article ownership transfer
+
+Permanent transfer of an article (and all its related data) between two
+POWER_USER / ADMIN accounts. Gated on the same `requireRole("POWER_USER")`
+as sharing. Both flows require explicit validation from the second party.
+
+**PUSH** — owner initiates: `POST /api/articles/:id/transfer/push { email }`.
+The recipient (who must be a POWER_USER) receives an email with the token
+and must accept from their `/transfers` page.
+
+**PULL** — requester initiates: `POST /api/articles/:id/transfer/pull`.
+The article must already be visible to the requester (public share or active
+InventoryShare) — this prevents ID-enumeration and owner spam. The article
+owner receives an email with the token and must accept or reject.
+
+On acceptance the transfer is fully atomic (Prisma transaction):
+  - `Article.ownerUserId` updated; `sharedWithPowerUsers` reset to false
+  - `Garantie`, `WarrantyHistory`, `Alerte`, `Attachment`, `ArticleNote`
+    rows all re-owned to the new owner
+  - `ArticleLocation` + `ArticleTag` junction rows **deleted** (locations
+    and tags are owner-scoped; new owner re-assigns from their own lists)
+  - All other PENDING transfer requests for the same article are REVOKED
+
+Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day
+expiry). Email notifications are fire-and-forget (no impact on the API
+response if email is unconfigured or fails — consistent with `PushService`
+and `EmailService` best-effort pattern).
+
+Audit actions: `ARTICLE_TRANSFER_INIT`, `ARTICLE_TRANSFER_ACCEPT`,
+`ARTICLE_TRANSFER_REJECT`, `ARTICLE_TRANSFER_REVOKE` (in `@wim/types`
+`AUDIT_ACTIONS`). Entity: `ArticleTransfer`.
+
+Web: `TransferDialog` (push/pull modal), `/transfers` route with
+incoming/outgoing tabs. Transfer button in `ArticleDetail` header (push).
+Pull button in `SharedArticlesView` rows.
+
+Key files:
+  - `apps/api/src/modules/articles/transfer.service.ts`
+  - `apps/api/src/modules/articles/transfer.routes.ts`
+  - `apps/web/src/components/articles/TransferDialog.tsx`
+  - `apps/web/src/components/transfers/TransfersView.tsx`
+
 ## Billing
 
 - Subscription product = `POWER_USER` upgrade. Monthly + yearly Stripe
@@ -411,3 +453,6 @@ the ADMIN → USER case is the admin-demote path.)
   TwoFactorPanel}.tsx`
 - Article power features: `apps/web/src/components/articles/
   {BulkEditDialog,TemplateBar}.tsx`
+- Transfer system: `apps/api/src/modules/articles/{transfer.service,
+  transfer.routes}.ts`, `apps/web/src/components/articles/TransferDialog.tsx`,
+  `apps/web/src/components/transfers/TransfersView.tsx`

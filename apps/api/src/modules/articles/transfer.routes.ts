@@ -39,7 +39,7 @@ router.post(
         where: { articleId },
         select: { articleNom: true },
       });
-      await EmailService.sendReminderEmail({
+      void EmailService.sendReminderEmail({
         to: email,
         subject: `WIM: Article transfer request — ${article?.articleNom ?? "an article"}`,
         body: `Someone has offered to transfer an article to your WIM inventory.\n\nArticle: ${article?.articleNom ?? "Article"}\n\nUse token: ${transfer.token}\n\nThis offer expires in 7 days.`,
@@ -92,7 +92,7 @@ router.post(
         }),
       ]);
       if (owner?.email) {
-        await EmailService.sendReminderEmail({
+        void EmailService.sendReminderEmail({
           to: owner.email,
           subject: `WIM: Transfer request for "${article?.articleNom ?? "your article"}"`,
           body: `${requesterUser?.email ?? "A Power User"} has requested to take ownership of your article.\n\nArticle: ${article?.articleNom ?? "Article"}\n\nUse token: ${transfer.token} to accept or reject from your WIM app.\n\nThis request expires in 7 days.`,
