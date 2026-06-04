@@ -336,7 +336,7 @@ body {
 }
 
 .ui-card {
-  background: var(--card-bg);
+  background-color: var(--card-bg);
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-md);
   border-radius: var(--radius-xl);

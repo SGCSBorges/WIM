@@ -204,13 +204,13 @@ function Home({
   return (
     <div className="animate-fade-in">
       {/* Hero */}
-      <section className="ui-card relative overflow-hidden bg-gradient-brand p-6 sm:p-8 text-primary-contrast">
+      <section className="ui-card relative overflow-hidden bg-gradient-brand p-6 sm:p-8 text-white">
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-3xl font-bold tracking-tight">
               {t("home.welcomeTitle")}
             </h1>
-            <p className="mt-1 max-w-xl text-primary-contrast/90">
+            <p className="mt-1 max-w-xl text-white/80">
               {t("home.welcomeSubtitle")}
             </p>
           </div>
@@ -218,7 +218,7 @@ function Home({
             <button
               type="button"
               onClick={() => navigate("/articles")}
-              className="inline-flex items-center gap-2 rounded-lg bg-surface px-4 py-2 text-sm font-semibold text-primary shadow-md transition hover:brightness-105"
+              className="inline-flex items-center gap-2 rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white shadow-md backdrop-blur-sm transition hover:bg-white/25"
             >
               {t("home.card.inventory.cta")}
               <ArrowRight className="h-4 w-4" />
