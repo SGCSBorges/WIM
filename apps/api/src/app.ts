@@ -28,6 +28,7 @@ import articleRoutes from "./modules/articles/article.routes";
 import articleNoteRoutes from "./modules/articles/note.routes";
 import articleShareRoutes from "./modules/articles/article.share.routes";
 import articleTemplateRoutes from "./modules/articles/template.routes";
+import transferRoutes from "./modules/articles/transfer.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import auditRoutes from "./modules/audit/audit.routes";
@@ -216,6 +217,7 @@ export function createApp() {
   // articleRoutes' `GET /:id` (which coerces the segment to a number — e.g.
   // "shared-public" → NaN → a 400). Mount the specific routers before the
   // `/:id` catch-all.
+  app.use("/api/articles", transferRoutes);
   app.use("/api/articles", articleShareRoutes);
   app.use("/api/articles", articleNoteRoutes);
   app.use("/api/articles", articleRoutes);

@@ -107,6 +107,9 @@ const LocationsView = React.lazy(
 const ReportsView = React.lazy(
   () => import("./components/reports/ReportsView")
 );
+const TransfersView = React.lazy(
+  () => import("./components/transfers/TransfersView")
+);
 
 interface ErrorBoundaryState {
   error: Error | null;
@@ -507,6 +510,16 @@ export default function App() {
           <Route path="/profile" element={<ProfileView />} />
           <Route path="/sharing" element={sharingRoute} />
           <Route path="/sharing/accept" element={sharingRoute} />
+          <Route
+            path="/transfers"
+            element={
+              isPowerUserOrAdmin(role) ? (
+                <TransfersView />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
           <Route
             path="/admin"
             element={

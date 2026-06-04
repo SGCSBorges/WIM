@@ -43,6 +43,7 @@ import type {
   ShareItem,
   SharedArticleRow,
   ThemePref,
+  TransferItem,
   UserPreferences,
   WarrantyExtendRequest,
   WarrantyHistoryItem,
@@ -62,6 +63,7 @@ export type {
   ShareInviteItem,
   ShareItem,
   SharedArticleRow,
+  TransferItem,
   WarrantyItem,
 };
 
@@ -2009,6 +2011,105 @@ export const sharesAPI = {
     );
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to accept invite"));
+    return response.json();
+  },
+};
+
+// Article ownership transfers
+export const transfersAPI = {
+  async pushTransfer(
+    articleId: number,
+    email: string,
+    message?: string
+  ): Promise<TransferItem> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/transfer/push`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ email, message }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to initiate transfer")
+      );
+    return response.json();
+  },
+
+  async pullTransfer(
+    articleId: number,
+    message?: string
+  ): Promise<TransferItem> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/transfer/pull`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ message }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to request transfer")
+      );
+    return response.json();
+  },
+
+  async accept(token: string): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/transfers/${token}/accept`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to accept transfer")
+      );
+  },
+
+  async reject(token: string): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/transfers/${token}/reject`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to reject transfer")
+      );
+  },
+
+  async revoke(id: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/transfers/${id}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to revoke transfer")
+      );
+  },
+
+  async getIncoming(): Promise<{ items: TransferItem[] }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/transfers/incoming`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch incoming transfers")
+      );
+    return response.json();
+  },
+
+  async getOutgoing(): Promise<{ items: TransferItem[] }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/transfers/outgoing`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch outgoing transfers")
+      );
     return response.json();
   },
 };

@@ -14,6 +14,7 @@ import {
   Share2,
   FileText,
   Settings,
+  ArrowRightLeft,
   type LucideIcon,
 } from "lucide-react";
 import { isPowerUserOrAdmin } from "../utils/roles";
@@ -28,6 +29,7 @@ export type NavKey =
   | "alerts"
   | "reports"
   | "sharing"
+  | "transfers"
   | "admin";
 
 export interface NavItem {
@@ -47,6 +49,12 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "alerts", path: "/alerts", icon: Bell },
   { key: "reports", path: "/reports", icon: FileText },
   { key: "sharing", path: "/sharing", icon: Share2, requires: "share" },
+  {
+    key: "transfers",
+    path: "/transfers",
+    icon: ArrowRightLeft,
+    requires: "share",
+  },
   { key: "admin", path: "/admin", icon: Settings, requires: "admin" },
 ];
 

@@ -71,6 +71,11 @@ enum ArticleNoteKind {
   OTHER
 }
 
+enum TransferDirection {
+  PUSH
+  PULL
+}
+
 model Location {
   locationId  Int      @id @default(autoincrement())
   ownerUserId Int
@@ -147,6 +152,9 @@ model User {
   shareInvites ShareInvite[] @relation("UserShareInvites") // owner (créateur)
   sharesGiven  InventoryShare[] @relation("SharesGiven")   // owner -> target
   sharesReceived InventoryShare[] @relation("SharesReceived") // target -> owner
+
+  transferRequestsMade     ArticleTransferRequest[] @relation("TransferRequests")
+  transferRequestsReceived ArticleTransferRequest[] @relation("TransferOffers")
 
   // Audit (optionnel)
   auditLogs AuditLog[]
@@ -230,6 +238,7 @@ model Article {
   locations ArticleLocation[]
   tags     ArticleTag[]
   notes    ArticleNote[]
+  transferRequests ArticleTransferRequest[]
 
   @@index([ownerUserId])
   @@index([ownerUserId, deletedAt])
@@ -502,6 +511,34 @@ model ShareInvite {
   // createInvite filters on all three together (owner + email + PENDING); a
   // compound index collapses that to a single seek under concurrent invites.
   @@index([ownerUserId, email, status])
+}
+
+// Ownership transfer of one article from one user to another. A PUSH is
+// initiated by the current owner (who knows the recipient's email); a PULL
+// is initiated by a POWER_USER who can see the article and wants to own it.
+// In both cases the "second party" (recipient for PUSH, owner for PULL)
+// must accept before ownership moves. The token is sent to that party.
+model ArticleTransferRequest {
+  id          Int               @id @default(autoincrement())
+  articleId   Int
+  requesterId Int               // wants to receive the article
+  ownerId     Int               // current article owner
+  direction   TransferDirection
+  token       String            @unique @db.VarChar(128)
+  status      String            @db.VarChar(20) // PENDING | ACCEPTED | REJECTED | REVOKED | EXPIRED
+  message     String?           @db.VarChar(500)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  article   Article @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+  requester User    @relation("TransferRequests", fields: [requesterId], references: [userId], onDelete: Cascade)
+  owner     User    @relation("TransferOffers", fields: [ownerId], references: [userId], onDelete: Cascade)
+
+  @@index([ownerId, status])
+  @@index([requesterId, status])
+  @@index([articleId, status])
 }
 
 // Persistent record of every Stripe webhook event we have already

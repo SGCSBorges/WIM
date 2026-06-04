@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Send,
   Bell,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { useFileDrop } from "../../hooks/useFileDrop";
@@ -47,6 +48,7 @@ import type {
 } from "../../types";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
+import TransferDialog from "./TransferDialog";
 import { ARTICLE_NOTE_KINDS } from "@wim/types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
@@ -303,6 +305,7 @@ export default function ArticleDetail() {
 
   const [renewOpen, setRenewOpen] = useState(false);
   const [renewMode, setRenewMode] = useState<"renew" | "extend">("renew");
+  const [transferOpen, setTransferOpen] = useState(false);
   const [warrantyHistory, setWarrantyHistory] = useState<WarrantyHistoryItem[]>(
     []
   );
@@ -434,6 +437,14 @@ export default function ArticleDetail() {
               leftIcon={<Download className="h-4 w-4" />}
             >
               {t("articleDetail.downloadPdf")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTransferOpen(true)}
+              leftIcon={<ArrowRightLeft className="h-4 w-4" />}
+            >
+              {t("transfer.dialog.pushTitle")}
             </Button>
           </>
         }
@@ -693,6 +704,19 @@ export default function ArticleDetail() {
             );
             void loadHistory();
           }}
+        />
+      )}
+
+      {transferOpen && (
+        <TransferDialog
+          articleId={articleId}
+          articleName={article.articleNom}
+          direction="push"
+          onDone={() => {
+            setTransferOpen(false);
+            toast.show(t("transfer.sent"), { kind: "success" });
+          }}
+          onClose={() => setTransferOpen(false)}
         />
       )}
 

@@ -5,7 +5,7 @@
  * via `sharedAPI.updateArticle`).
  */
 import { useCallback, useEffect, useState } from "react";
-import { Inbox, RotateCw, Pencil, Check } from "lucide-react";
+import { Inbox, RotateCw, Pencil, Check, ArrowRightLeft } from "lucide-react";
 import { sharedAPI, SharedArticleRow } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -13,6 +13,8 @@ import ArticleThumb from "../articles/ArticleThumb";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { Section, Button, Input, Textarea, Badge } from "../ui";
+import TransferDialog from "../articles/TransferDialog";
+import { useToast } from "../common/Toast";
 
 type EditDraft = {
   articleNom: string;
@@ -32,9 +34,13 @@ function draftFrom(row: SharedArticleRow): EditDraft {
 
 export default function SharedArticlesView() {
   const { t } = useI18n();
+  const toast = useToast();
   const [rows, setRows] = useState<SharedArticleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [pullTransferRow, setPullTransferRow] =
+    useState<SharedArticleRow | null>(null);
 
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EditDraft | null>(null);
@@ -179,16 +185,27 @@ export default function SharedArticlesView() {
                         </div>
                       )}
                     </div>
-                    {canEdit && (
+                    <div className="flex shrink-0 gap-2">
+                      {canEdit && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEdit(r)}
+                          leftIcon={<Pencil className="h-4 w-4" />}
+                        >
+                          {t("common.edit")}
+                        </Button>
+                      )}
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => startEdit(r)}
-                        leftIcon={<Pencil className="h-4 w-4" />}
+                        onClick={() => setPullTransferRow(r)}
+                        leftIcon={<ArrowRightLeft className="h-4 w-4" />}
+                        title={t("transfer.pull")}
                       >
-                        {t("common.edit")}
+                        {t("transfer.pull")}
                       </Button>
-                    )}
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -269,6 +286,19 @@ export default function SharedArticlesView() {
             );
           })}
         </ul>
+      )}
+
+      {pullTransferRow && (
+        <TransferDialog
+          articleId={pullTransferRow.article.articleId}
+          articleName={pullTransferRow.article.articleNom}
+          direction="pull"
+          onDone={() => {
+            setPullTransferRow(null);
+            toast.show(t("transfer.requested"), { kind: "success" });
+          }}
+          onClose={() => setPullTransferRow(null)}
+        />
       )}
     </Section>
   );

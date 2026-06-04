@@ -52,6 +52,10 @@ export const AUDIT_ACTIONS = [
   "DB_IMPORT",
   "WARRANTY_RENEW",
   "WARRANTY_EXTEND",
+  "ARTICLE_TRANSFER_INIT",
+  "ARTICLE_TRANSFER_ACCEPT",
+  "ARTICLE_TRANSFER_REJECT",
+  "ARTICLE_TRANSFER_REVOKE",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
@@ -69,6 +73,7 @@ export const AUDIT_ENTITIES = [
   "ArticleNote",
   "SavedView",
   "Database",
+  "ArticleTransfer",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 
@@ -341,6 +346,36 @@ export interface SharedArticleRow {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export type TransferStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "REVOKED" | "EXPIRED";
+export type TransferDirection = "PUSH" | "PULL";
+
+/** A transfer request as returned by GET /articles/transfers/incoming|outgoing */
+export interface TransferItem {
+  id: number;
+  articleId: number;
+  direction: TransferDirection;
+  status: TransferStatus;
+  token: string;
+  message?: string | null;
+  expiresAt: string;
+  usedAt?: string | null;
+  createdAt: string;
+  article: {
+    articleId: number;
+    articleNom: string;
+    articleModele: string;
+    productImageUrl?: string | null;
+  };
+  requester: {
+    userId: number;
+    email: string;
+  };
+  owner: {
+    userId: number;
+    email: string;
+  };
 }
 
 /** The user's live Stripe subscription as returned by
