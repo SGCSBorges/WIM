@@ -3,7 +3,7 @@ CREATE TYPE "TransferDirection" AS ENUM ('PUSH', 'PULL');
 
 -- CreateTable
 CREATE TABLE "ArticleTransferRequest" (
-    "id"          SERIAL PRIMARY KEY,
+    "id"          SERIAL NOT NULL,
     "articleId"   INTEGER NOT NULL,
     "requesterId" INTEGER NOT NULL,
     "ownerId"     INTEGER NOT NULL,
