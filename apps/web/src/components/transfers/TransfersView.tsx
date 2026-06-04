@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { ArrowRightLeft, Package, Check, X } from "lucide-react";
-import { useI18n } from "../../i18n/i18n";
+import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { transfersAPI, type TransferItem } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
@@ -9,6 +9,7 @@ import { EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { PageHeader, Section, Badge, Button, type BadgeTone } from "../ui";
 import { Link } from "react-router-dom";
+import type { ExtrasKey } from "../../i18n/translations.extras";
 
 function statusTone(status: string): BadgeTone {
   switch (status) {
@@ -206,7 +207,7 @@ interface RowProps {
   onAccept?: () => void;
   onReject?: () => void;
   onRevoke?: () => void;
-  t: (k: string) => string;
+  t: (k: TranslationKey | ExtrasKey) => string;
 }
 
 function TransferRow({
@@ -235,10 +236,18 @@ function TransferRow({
           <p className="text-sm text-muted">{transfer.article.articleModele}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
             <Badge tone={statusTone(transfer.status)}>
-              {t(`transfer.status.${transfer.status}`)}
+              {t(
+                `transfer.status.${transfer.status}` as
+                  | TranslationKey
+                  | ExtrasKey
+              )}
             </Badge>
             <Badge tone="neutral">
-              {t(`transfer.direction.${transfer.direction}`)}
+              {t(
+                `transfer.direction.${transfer.direction}` as
+                  | TranslationKey
+                  | ExtrasKey
+              )}
             </Badge>
             <span>
               {t("transfer.from")} <strong>{transfer.owner.email}</strong>
