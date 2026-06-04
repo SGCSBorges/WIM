@@ -64,7 +64,9 @@ function resolveFailedMigrations(output: string) {
       { stdio: "inherit", env: process.env, shell: true }
     );
     if (result.status !== 0) {
-      console.error(`[migrate] Failed to resolve ${name} (exit ${result.status ?? "?"})`);
+      console.error(
+        `[migrate] Failed to resolve ${name} (exit ${result.status ?? "?"})`
+      );
     }
   }
 }
