@@ -1,0 +1,412 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+vi.mock("../../libs/prisma", () => ({
+  prisma: {
+    article: {
+      findFirst: vi.fn(),
+    },
+    user: {
+      findUnique: vi.fn(),
+    },
+    inventoryShare: {
+      findFirst: vi.fn(),
+    },
+    articleTransferRequest: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
+    },
+    $transaction: vi.fn(),
+  },
+}));
+
+import { prisma } from "../../libs/prisma";
+import { TransferService } from "../../modules/articles/transfer.service";
+
+const mockPrisma = prisma as unknown as {
+  article: Record<string, ReturnType<typeof vi.fn>>;
+  user: Record<string, ReturnType<typeof vi.fn>>;
+  inventoryShare: Record<string, ReturnType<typeof vi.fn>>;
+  articleTransferRequest: Record<string, ReturnType<typeof vi.fn>>;
+  $transaction: ReturnType<typeof vi.fn>;
+};
+
+beforeEach(() => {
+  vi.resetAllMocks();
+});
+
+// ---------------------------------------------------------------------------
+// createPush
+// ---------------------------------------------------------------------------
+
+describe("TransferService.createPush", () => {
+  const baseArticle = { articleId: 1, articleNom: "TV" };
+  const recipient = { userId: 2, role: "POWER_USER", email: "bob@test.com" };
+  const owner = { email: "alice@test.com" };
+
+  it("throws 404 when article not found or not owned by caller", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(null);
+    await expect(
+      TransferService.createPush(1, 10, "bob@test.com")
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("throws 400 when recipient does not exist", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(baseArticle);
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce(null) // recipient lookup
+      .mockResolvedValueOnce(owner);
+    await expect(
+      TransferService.createPush(1, 10, "unknown@test.com")
+    ).rejects.toMatchObject({ status: 400 });
+  });
+
+  it("throws 400 when recipient is a plain USER", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(baseArticle);
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce({ userId: 2, role: "USER", email: "bob@test.com" })
+      .mockResolvedValueOnce(owner);
+    await expect(
+      TransferService.createPush(1, 10, "bob@test.com")
+    ).rejects.toMatchObject({ status: 400 });
+  });
+
+  it("throws 400 on self-transfer", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(baseArticle);
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce(recipient)
+      .mockResolvedValueOnce({ email: "bob@test.com" }); // owner has same email
+    await expect(
+      TransferService.createPush(1, 10, "bob@test.com")
+    ).rejects.toMatchObject({ status: 400, message: expect.stringContaining("yourself") });
+  });
+
+  it("throws 409 when a pending push already exists for this article", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(baseArticle);
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce(recipient)
+      .mockResolvedValueOnce(owner);
+    mockPrisma.articleTransferRequest.findFirst.mockResolvedValue({ id: 99 });
+    await expect(
+      TransferService.createPush(1, 10, "bob@test.com")
+    ).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("creates transfer request on success", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(baseArticle);
+    mockPrisma.user.findUnique
+      .mockResolvedValueOnce(recipient)
+      .mockResolvedValueOnce(owner);
+    mockPrisma.articleTransferRequest.findFirst.mockResolvedValue(null);
+    const created = { id: 1, token: "tok", articleId: 1, direction: "PUSH" };
+    mockPrisma.articleTransferRequest.create.mockResolvedValue(created);
+
+    const result = await TransferService.createPush(1, 10, "bob@test.com");
+    expect(result).toEqual(created);
+    expect(mockPrisma.articleTransferRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          direction: "PUSH",
+          status: "PENDING",
+          requesterId: recipient.userId,
+          ownerId: 10,
+        }),
+      })
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// createPull
+// ---------------------------------------------------------------------------
+
+describe("TransferService.createPull", () => {
+  const article = {
+    articleId: 5,
+    articleNom: "Camera",
+    ownerUserId: 20,
+    sharedWithPowerUsers: false,
+  };
+
+  it("throws 404 when article does not exist", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(null);
+    await expect(
+      TransferService.createPull(5, 99)
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("throws 400 when requester already owns the article", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue({ ...article, ownerUserId: 99 });
+    await expect(
+      TransferService.createPull(5, 99)
+    ).rejects.toMatchObject({ status: 400, message: expect.stringContaining("already own") });
+  });
+
+  it("throws 404 when article is private and requester has no InventoryShare", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(article); // sharedWithPowerUsers: false
+    mockPrisma.inventoryShare.findFirst.mockResolvedValue(null);
+    await expect(
+      TransferService.createPull(5, 30)
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("creates request when article is publicly shared", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue({
+      ...article,
+      sharedWithPowerUsers: true,
+    });
+    mockPrisma.articleTransferRequest.findFirst.mockResolvedValue(null);
+    const created = { id: 2, token: "tok2", direction: "PULL" };
+    mockPrisma.articleTransferRequest.create.mockResolvedValue(created);
+
+    const result = await TransferService.createPull(5, 30);
+    expect(result).toEqual(created);
+    expect(mockPrisma.inventoryShare.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("creates request when requester has active InventoryShare", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue(article); // not public
+    mockPrisma.inventoryShare.findFirst.mockResolvedValue({ inventoryShareId: 7 });
+    mockPrisma.articleTransferRequest.findFirst.mockResolvedValue(null);
+    const created = { id: 3, token: "tok3", direction: "PULL" };
+    mockPrisma.articleTransferRequest.create.mockResolvedValue(created);
+
+    const result = await TransferService.createPull(5, 30, "please");
+    expect(result).toEqual(created);
+    expect(mockPrisma.articleTransferRequest.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ direction: "PULL", status: "PENDING", message: "please" }),
+      })
+    );
+  });
+
+  it("throws 409 when requester already has a pending pull for this article", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue({
+      ...article,
+      sharedWithPowerUsers: true,
+    });
+    mockPrisma.articleTransferRequest.findFirst.mockResolvedValue({ id: 4 });
+    await expect(
+      TransferService.createPull(5, 30)
+    ).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// acceptTransfer
+// ---------------------------------------------------------------------------
+
+describe("TransferService.acceptTransfer", () => {
+  const baseReq = {
+    id: 1,
+    articleId: 10,
+    requesterId: 2,
+    ownerId: 1,
+    direction: "PUSH" as const,
+    status: "PENDING",
+    expiresAt: new Date(Date.now() + 86_400_000),
+    article: { articleId: 10, articleNom: "TV", ownerUserId: 1, deletedAt: null },
+    requester: { userId: 2, email: "bob@test.com" },
+    owner: { userId: 1, email: "alice@test.com" },
+  };
+
+  it("throws 404 when token not found", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(null);
+    await expect(TransferService.acceptTransfer("bad", 2)).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("throws 409 when status is not PENDING", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...baseReq,
+      status: "ACCEPTED",
+    });
+    await expect(TransferService.acceptTransfer("tok", 2)).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("throws 410 and marks EXPIRED when past expiresAt", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...baseReq,
+      expiresAt: new Date(Date.now() - 1_000),
+    });
+    mockPrisma.articleTransferRequest.update.mockResolvedValue({});
+    await expect(TransferService.acceptTransfer("tok", 2)).rejects.toMatchObject({ status: 410 });
+    expect(mockPrisma.articleTransferRequest.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: "EXPIRED" } })
+    );
+  });
+
+  it("throws 410 when article has been soft-deleted", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...baseReq,
+      article: { ...baseReq.article, deletedAt: new Date() },
+    });
+    await expect(TransferService.acceptTransfer("tok", 2)).rejects.toMatchObject({ status: 410 });
+  });
+
+  it("throws 403 for PUSH when acceptor is not the requester", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    await expect(
+      TransferService.acceptTransfer("tok", 999) // wrong user
+    ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("throws 403 for PULL when acceptor is not the owner", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...baseReq,
+      direction: "PULL",
+    });
+    await expect(
+      TransferService.acceptTransfer("tok", 2) // requester, not owner
+    ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("runs the transfer transaction and returns request for valid PUSH", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        articleTransferRequest: {
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+          update: vi.fn(),
+        },
+        article: { update: vi.fn() },
+        garantie: { findFirst: vi.fn().mockResolvedValue(null), update: vi.fn() },
+        warrantyHistory: { updateMany: vi.fn() },
+        alerte: { updateMany: vi.fn() },
+        attachment: { updateMany: vi.fn() },
+        articleNote: { updateMany: vi.fn() },
+        articleLocation: { deleteMany: vi.fn() },
+        articleTag: { deleteMany: vi.fn() },
+      };
+      return fn(tx);
+    });
+
+    const result = await TransferService.acceptTransfer("tok", 2);
+    expect(result).toEqual(baseReq);
+    expect(mockPrisma.$transaction).toHaveBeenCalled();
+  });
+
+  it("throws 409 when updateMany count is 0 (concurrent accept race)", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    mockPrisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        articleTransferRequest: {
+          updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+          update: vi.fn(),
+        },
+        article: { update: vi.fn() },
+        garantie: { findFirst: vi.fn().mockResolvedValue(null) },
+        alerte: { updateMany: vi.fn() },
+        attachment: { updateMany: vi.fn() },
+        articleNote: { updateMany: vi.fn() },
+        articleLocation: { deleteMany: vi.fn() },
+        articleTag: { deleteMany: vi.fn() },
+      };
+      return fn(tx);
+    });
+    await expect(TransferService.acceptTransfer("tok", 2)).rejects.toMatchObject({ status: 409 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// rejectTransfer
+// ---------------------------------------------------------------------------
+
+describe("TransferService.rejectTransfer", () => {
+  const baseReq = {
+    id: 1,
+    status: "PENDING",
+    direction: "PUSH" as const,
+    requesterId: 2,
+    ownerId: 1,
+    expiresAt: new Date(Date.now() + 86_400_000),
+  };
+
+  it("throws 404 when token not found", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(null);
+    await expect(TransferService.rejectTransfer("bad", 2)).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("throws 409 when status is not PENDING", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...baseReq,
+      status: "REJECTED",
+    });
+    await expect(TransferService.rejectTransfer("tok", 2)).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("throws 403 when wrong user rejects PUSH (owner is not the rejector)", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    // For PUSH, expected rejector = requester (userId 2); owner cannot reject
+    await expect(TransferService.rejectTransfer("tok", 1)).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("marks request as REJECTED on success", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    const updated = { ...baseReq, status: "REJECTED" };
+    mockPrisma.articleTransferRequest.update.mockResolvedValue(updated);
+
+    const result = await TransferService.rejectTransfer("tok", 2);
+    expect(result.status).toBe("REJECTED");
+    expect(mockPrisma.articleTransferRequest.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: "REJECTED", usedAt: expect.any(Date) } })
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// revokeTransfer
+// ---------------------------------------------------------------------------
+
+describe("TransferService.revokeTransfer", () => {
+  const basePush = {
+    id: 1,
+    status: "PENDING",
+    direction: "PUSH" as const,
+    requesterId: 2,
+    ownerId: 1,
+  };
+  const basePull = { ...basePush, direction: "PULL" as const };
+
+  it("throws 404 when id not found", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(null);
+    await expect(TransferService.revokeTransfer(1, 1)).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("throws 409 when status is not PENDING", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...basePush,
+      status: "REVOKED",
+    });
+    await expect(TransferService.revokeTransfer(1, 1)).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("throws 403 when wrong user revokes PUSH (only owner may revoke a push)", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(basePush);
+    await expect(TransferService.revokeTransfer(1, 2)).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("throws 403 when wrong user revokes PULL (only requester may revoke a pull)", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(basePull);
+    await expect(TransferService.revokeTransfer(1, 1)).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("revokes PUSH when called by owner", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(basePush);
+    const revoked = { ...basePush, status: "REVOKED" };
+    mockPrisma.articleTransferRequest.update.mockResolvedValue(revoked);
+
+    const result = await TransferService.revokeTransfer(1, 1); // ownerId = 1
+    expect(result.status).toBe("REVOKED");
+  });
+
+  it("revokes PULL when called by requester", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(basePull);
+    const revoked = { ...basePull, status: "REVOKED" };
+    mockPrisma.articleTransferRequest.update.mockResolvedValue(revoked);
+
+    const result = await TransferService.revokeTransfer(1, 2); // requesterId = 2
+    expect(result.status).toBe("REVOKED");
+  });
+});
