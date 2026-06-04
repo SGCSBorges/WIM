@@ -74,6 +74,11 @@ npm --workspace apps/web run build             # Vite production build
 npx prettier --check \
   "apps/api/src/**/*.{ts,js}" "!apps/api/src/__tests__/**" \
   "apps/web/src/**/*.{ts,tsx}" "packages/**/src/**/*.ts"
+
+# Production-dependency audit (CI fails the push if this finds moderate+). If
+# it flags a transitive dep, pin it via the root package.json `overrides`
+# block rather than disabling the gate; dev-only advisories don't count here:
+npm audit --omit=dev --audit-level=moderate
 ```
 
 Integration tests (real Postgres) self-skip when `INTEGRATION_DATABASE_URL`

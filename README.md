@@ -337,17 +337,38 @@ API tests live in `apps/api/src/__tests__/`. Web tests live in `apps/web/src/__t
 
 ## CI
 
-GitHub Actions runs on every push and pull request:
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push to `main`/`dev`
+and on every pull request. In-flight runs are cancelled when a newer commit
+lands on the same ref (`concurrency` + `cancel-in-progress`).
 
-1. Install dependencies (`npm install --workspaces`, not `npm ci`, so a stale lockfile doesn't block a workspace adding a dep)
-2. Lint all workspaces
-3. Generate Prisma client
-4. Build the API (`tsc`)
-5. Run API + web tests
-6. Build the web app (`vite build`, with `prebuild` generating PWA icons via sharp)
-7. Upload `apps/web/dist` as an artifact (main/dev only)
+**`build` job** (the gate):
 
-See `.github/workflows/ci.yml`.
+1. Install dependencies with `npm ci --include=optional` (lockfile-exact; the
+   `--include=optional` keeps the platform-specific `@rollup/rollup-*` binary)
+2. Lint all workspaces, then a dedicated **prettier format check** (so a
+   formatting-only failure gets its own red step instead of hiding in lint)
+3. Generate the Prisma client and build the API (`tsc`)
+4. **Web typecheck** (`tsc --noEmit`) — Vite's build is transpile-only, so
+   this is the only thing that catches type regressions on the web side
+5. **Prisma migration drift check** — fails if `schema.prisma` is ahead of the
+   `migrations/` folder (model edited without `prisma migrate dev`)
+6. API unit tests + coverage gate, then **integration tests** against the
+   Postgres service (`--retry=1` to ride out transient flakes)
+7. Web tests + coverage, then the web build (`prebuild` generates PWA icons)
+8. Upload `apps/web/dist` as an artifact (main/dev only)
+9. **`npm audit --omit=dev --audit-level=moderate`** — a moderate+ vuln in a
+   *production* dependency fails the build on push (advisory on PRs). Scoped to
+   `--omit=dev` because dev-only tooling (vitest/vite) never ships.
+
+**`e2e` job:** Playwright smoke tests. `playwright.config.ts` builds and serves
+the static app, so no running API is needed — the suite only exercises API-free
+UI (theme, nav, login screen).
+
+**`dependency-review` job** (PRs only): fails on a newly-introduced high-severity
+dependency.
+
+**`uml` job:** re-renders `docs/uml/*.svg` from their `.puml` sources and fails
+if a committed SVG is stale (gating on push, advisory on PRs).
 
 ---
 
@@ -377,11 +398,13 @@ The web service is provisioned from `render.yaml` at the repo root (SPA rewrite 
 
 - JWTs are stored in `httpOnly` cookies (`wim_token`), `sameSite=none` in production (web/api are on different Render subdomains and therefore different PSL sites — the cookie must be cross-site to send), `lax` in dev. `secure` is forced on in production.
 - Every request reads `tokenVersion` + `role` from the DB in `authGuard` — bumping the version invalidates every JWT for that user, and role changes propagate immediately without re-login.
-- CORS is enforced via `CORS_ORIGIN`; production rejects all cross-origin requests if it's unset.
+- CORS is enforced via `CORS_ORIGIN`; production rejects all cross-origin requests if it's unset. In non-production environments (dev/test) an unset `CORS_ORIGIN` falls back to allow-all for convenience — so **production must set it explicitly**.
+- **CSRF**: because the auth cookie is `sameSite=none` in production, CORS alone isn't a CSRF defence (it gates the response, not the request). `csrfGuard` additionally requires the `Origin` (or `Referer` fallback) of every cookie-authenticated mutating request to be in the same allowlist. Bearer-token / cookie-less requests are exempt — an attacker page can't forge an `Authorization` header.
 - `JWT_SECRET` is required at boot; the API exits otherwise.
-- Rate limiting is applied globally (100 req/min by default) via `RATE_LIMIT_*`.
+- Rate limiting is applied globally (100 req/min by default) via `RATE_LIMIT_*`, with tighter buckets for auth, destructive, and resource-creation routes (see `config/security.ts`).
 - File uploads are size-capped (10 MB) and magic-byte validated before being kept on disk.
 - The Stripe webhook verifies signatures and uses a `ProcessedStripeEvent` table for idempotency.
+- **Dependency pins**: the root `package.json` `overrides` block forces transitive dependencies to patched versions (e.g. `qs` to `6.15.2`) so a vulnerable nested copy can't slip in via `stripe`/`swagger-ui-express`/`supertest`. `npm audit --omit=dev` is expected to report **0 vulnerabilities**; if it doesn't, add or bump an override rather than disabling the CI gate.
 
 ---
 

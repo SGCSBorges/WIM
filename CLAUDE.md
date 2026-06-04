@@ -29,9 +29,11 @@ loads into every new Claude Code session.
 - **Always work on the `dev` branch. Never create custom branches — all commits go to `dev`.**
 - Develop on **`dev`**. Push to dev triggers CI and Render redeploys.
 - Render hosts two services:
-  - `wimapi.onrender.com` — API service. `render-build:api` runs `npm
-    install --include=optional --workspaces && prisma migrate deploy &&
-    tsc`.
+  - `wimapi.onrender.com` — API service. `render-build:api` runs `npm ci
+    --include=optional` then the API's `render-build` (`prisma generate &&
+    prisma:deploy:retry && tsc`). `npm ci` is lockfile-exact, so a
+    workspace dep bump must land in `package-lock.json` or the deploy
+    fails.
   - `wim-web.onrender.com` — static web site. Built from `apps/web/dist`
     via the `render.yaml` Blueprint at the repo root (SPA rewrite is in
     `render.yaml`, not the dashboard).
@@ -102,7 +104,14 @@ npm --workspace apps/web run test:e2e
   semantic tokens (`bg-surface`, `text-muted`, `border-line`,
   `bg-primary text-primary-contrast`, etc.) onto those CSS vars so
   utility classes also resolve per-theme — same rule applies, never
-  reach for `bg-blue-500`/etc. on a shared widget.
+  reach for `bg-blue-500`/etc. on a shared widget. Two traps when layering
+  on a colored surface: (1) `.ui-card` sets `background-color` (not the
+  `background` shorthand) precisely so a `bg-gradient-brand` can sit on the
+  same element — don't switch it back to `background`, that resets
+  `background-image` and kills the gradient; (2) `text-primary-contrast` is
+  the contrast color *for a primary-filled button* and is near-black in the
+  dark/ocean/cyber themes — for text on the brand gradient use `text-white`,
+  which reads on every theme's gradient.
 - **Design system**: primitives live in `apps/web/src/components/ui/`
   (`Button`, `Field/Input/Textarea/Select`, `PageHeader`, `Tabs`,
   `ConfirmDialog`, `Badge`, `Card/Section`, `Stat`, `Pagination`,
@@ -325,16 +334,32 @@ the ADMIN → USER case is the admin-demote path.)
   pushing via the GitHub MCP `push_files` tool. Useful for text-only
   commits; binary files don't survive that path (utf-8 corruption), so
   keep generated PNGs out of git (see PWA section).
-- **`npm ci` vs `npm install`**: CI and `render-build:*` use `npm
-  install --workspaces` so a stale root lockfile doesn't block deploys
-  when a workspace adds a dep. Reproducibility is slightly weaker than
-  `npm ci` but the lockfile, when in sync, still pins.
+- **`npm ci` vs `npm install`**: CI and `render-build:*` use `npm ci
+  --include=optional` for lockfile-exact, reproducible installs (and to
+  keep the platform `@rollup/rollup-*` optional binary). This means **the
+  lockfile must be kept in sync** — if a workspace adds/bumps a dep, commit
+  the updated `package-lock.json` or `npm ci` fails the build. Use plain
+  `npm install` locally; never hand-edit the lockfile except when surgically
+  patching a transitive version that an `overrides` entry can't reach (and
+  re-run `npm install` afterwards to let npm reconcile it).
 - **Cookie sameSite**: `none` in production (web/api on different
   Render subdomains = different PSL sites), `lax` in dev. Requires
   `secure=true` which is set automatically in prod.
 - **Vite hashes asset filenames**, so a new deploy invalidates old CSS
   references in the SW cache automatically. `index.html` is fetched
   network-first so users get the fresh hash.
+- **Dependency `overrides`** (root `package.json`): pin transitive deps to
+  patched versions so the `npm audit --omit=dev --audit-level=moderate` CI
+  gate stays green (e.g. `qs: 6.15.2`, forced into `stripe` /
+  `swagger-ui-express` / `supertest`). The gate is **production-only** —
+  remaining dev-tooling advisories (esbuild/vite/vitest) are accepted
+  because that stack never ships and the fix is a breaking Vite major.
+  When an audit finding appears, prefer adding/bumping an override over
+  loosening the gate. Caveat: an override on a package that's also a *peer
+  dep* of another (e.g. `express` under `swagger-ui-express`) can relocate
+  the install into a workspace `node_modules` and break root resolution —
+  if `npm ci` then can't find the module at runtime, ensure the root
+  `node_modules/<pkg>` lockfile entry still exists.
 
 ## Open items / temporary stuff
 
