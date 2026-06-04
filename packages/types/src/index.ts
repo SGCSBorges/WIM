@@ -348,7 +348,12 @@ export interface SharedArticleRow {
   updatedAt: string;
 }
 
-export type TransferStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "REVOKED" | "EXPIRED";
+export type TransferStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "REVOKED"
+  | "EXPIRED";
 export type TransferDirection = "PUSH" | "PULL";
 
 /** A transfer request as returned by GET /articles/transfers/incoming|outgoing */
