@@ -4,7 +4,7 @@ import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { denyToken } from "../auth/token-denylist";
 import { cookieOptsFor } from "../auth/cookies";
-import { signToken } from "../auth/auth.service";
+import { signTokenWithJti } from "../auth/auth.service";
 import { security } from "../../config/security";
 import {
   DeleteAccountSchema,
@@ -320,7 +320,17 @@ router.put(
       const ttl = req.user.exp - Math.floor(Date.now() / 1000);
       if (ttl > 0) await denyToken(req.user.jti, ttl);
     }
-    const fresh = signToken(updated.userId, updated.role, updated.tokenVersion);
+    const { token: fresh, jti: freshJti } = signTokenWithJti(
+      updated.userId,
+      updated.role,
+      updated.tokenVersion
+    );
+    await SessionService.create({
+      userId: updated.userId,
+      jti: freshJti,
+      ip: req.ip ?? null,
+      userAgent: req.get("user-agent") ?? null,
+    });
     res.cookie("wim_token", fresh, cookieOptsFor(req));
 
     res.json({

@@ -327,13 +327,16 @@ export const WarrantyService = {
       where: { garantieId: id, ownerUserId },
     });
     if (!current) throw createHttpError(404, "Warranty not found");
-    // Delete first so that if alert/queue cleanup partially fails, the
-    // warranty row is already gone and cannot be left with stale alerts.
-    const deleted = await prisma.garantie.delete({ where: { garantieId: id } });
+    // Cancel BullMQ jobs before deleting: the Garantie → Alerte FK is
+    // onDelete:Cascade, so deleting the Garantie row immediately removes
+    // the Alerte rows that cancelForWarranty queries to find which jobs to
+    // cancel. Cancelling first ensures no orphaned reminder jobs are left
+    // in the queue; if this call fails the warranty row is left intact and
+    // the caller receives a 500 rather than a silent data inconsistency.
     await AlertService.cancelForWarranty({
       ownerUserId: current.ownerUserId,
       garantieId: current.garantieId,
     });
-    return deleted;
+    return prisma.garantie.delete({ where: { garantieId: id } });
   },
 };

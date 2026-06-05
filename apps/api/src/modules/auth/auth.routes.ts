@@ -63,6 +63,10 @@ router.post(
       select: { totpEnabled: true },
     });
     if (flags?.totpEnabled) {
+      // The session JWT minted by login() is valid but must not be used —
+      // deny its jti immediately so it cannot serve as a bearer token if
+      // ever exposed (e.g. via logs or a memory dump).
+      void denyToken(result.jti, 7 * 24 * 60 * 60);
       const challengeToken = await TotpService.signChallenge(
         result.user.userId,
         result.user.role

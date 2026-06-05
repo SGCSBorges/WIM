@@ -346,13 +346,15 @@ describe("TransferService.rejectTransfer", () => {
 
   it("marks request as REJECTED on success", async () => {
     mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
-    const updated = { ...baseReq, status: "REJECTED" };
-    mockPrisma.articleTransferRequest.update.mockResolvedValue(updated);
+    mockPrisma.articleTransferRequest.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await TransferService.rejectTransfer("tok", 2);
     expect(result.status).toBe("REJECTED");
-    expect(mockPrisma.articleTransferRequest.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: "REJECTED", usedAt: expect.any(Date) } })
+    expect(mockPrisma.articleTransferRequest.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: "PENDING" }),
+        data: { status: "REJECTED", usedAt: expect.any(Date) },
+      })
     );
   });
 });
@@ -398,23 +400,25 @@ describe("TransferService.revokeTransfer", () => {
 
   it("revokes PUSH when called by owner", async () => {
     mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(basePush);
-    const revoked = { ...basePush, status: "REVOKED" };
-    mockPrisma.articleTransferRequest.update.mockResolvedValue(revoked);
+    mockPrisma.articleTransferRequest.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await TransferService.revokeTransfer(1, 1); // ownerId = 1
     expect(result.status).toBe("REVOKED");
+    expect(mockPrisma.articleTransferRequest.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: "REVOKED" } })
+    );
   });
 
   it("revokes PULL when called by requester", async () => {
     mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(basePull);
-    const revoked = { ...basePull, status: "REVOKED" };
-    mockPrisma.articleTransferRequest.update.mockResolvedValue(revoked);
+    mockPrisma.articleTransferRequest.updateMany.mockResolvedValue({ count: 1 });
 
     const result = await TransferService.revokeTransfer(1, 2); // requesterId = 2
     expect(result.status).toBe("REVOKED");
   });
 
-  it("writes EXPIRED and throws 410 when the request has expired", async () => {
+  it("writes EXPIRED and throws 410 when the request has expired (owner calling PUSH)", async () => {
+    // ownerId=1 matches userId=1 so the auth check passes; expiry is in the past
     mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
       ...basePush,
       expiresAt: new Date(Date.now() - 1000),

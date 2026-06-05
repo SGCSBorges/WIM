@@ -257,10 +257,11 @@ export const TransferService = {
     if (rejectingUserId !== expectedRejector)
       throw createHttpError(403, "Not authorised to reject this request");
 
-    return prisma.articleTransferRequest.update({
-      where: { id: req.id },
+    await prisma.articleTransferRequest.updateMany({
+      where: { id: req.id, status: "PENDING" },
       data: { status: "REJECTED", usedAt: new Date() },
     });
+    return { ...req, status: "REJECTED" as const };
   },
 
   async revokeTransfer(id: number, userId: number) {
@@ -279,6 +280,15 @@ export const TransferService = {
     if (!req) throw createHttpError(404, "Transfer request not found");
     if (req.status !== "PENDING")
       throw createHttpError(409, "Transfer request is no longer pending");
+
+    // Auth check BEFORE the expiry write — prevents an unauthorized caller
+    // from marking another user's expired transfer as EXPIRED.
+    // PUSH initiator = owner, PULL initiator = requester
+    const expectedRevoker =
+      req.direction === "PUSH" ? req.ownerId : req.requesterId;
+    if (userId !== expectedRevoker)
+      throw createHttpError(403, "Not authorised to revoke this request");
+
     if (new Date() > req.expiresAt) {
       await prisma.articleTransferRequest.updateMany({
         where: { id: req.id, status: "PENDING" },
@@ -287,16 +297,11 @@ export const TransferService = {
       throw createHttpError(410, "Transfer request has expired");
     }
 
-    // PUSH initiator = owner, PULL initiator = requester
-    const expectedRevoker =
-      req.direction === "PUSH" ? req.ownerId : req.requesterId;
-    if (userId !== expectedRevoker)
-      throw createHttpError(403, "Not authorised to revoke this request");
-
-    return prisma.articleTransferRequest.update({
-      where: { id: req.id },
+    await prisma.articleTransferRequest.updateMany({
+      where: { id: req.id, status: "PENDING" },
       data: { status: "REVOKED" },
     });
+    return { ...req, status: "REVOKED" as const };
   },
 
   async listIncoming(userId: number) {
