@@ -4,14 +4,16 @@
  * Handles two failure modes for `prisma migrate deploy`:
  *
  *  P1002 — transient advisory-lock timeout (Render cold-start race).
- *           Retry with exponential backoff; Prisma prints details.
+ *           Retry with linear backoff (baseDelay * attempt); Prisma prints
+ *           details. Default: 10 s, 15 s, 20 s … 50 s (275 s total).
  *
  *  P3009 — a previous migration attempt left a "failed" row in
  *           _prisma_migrations (e.g. the deploy container died mid-apply).
  *           Prisma refuses to continue until each failed migration is
  *           explicitly resolved. When detected, this script runs
  *           `prisma migrate resolve --rolled-back <name>` for every
- *           migration listed in the P3009 error, then retries.
+ *           migration listed in the P3009 error, then retries immediately
+ *           (no sleep — the lock issue is resolved, not transient).
  */
 
 import { spawn, spawnSync } from "child_process";
@@ -85,19 +87,22 @@ async function main() {
     getArg("delayMs", process.env.MIGRATE_RETRY_DELAY_MS ?? "5000")
   );
 
+  let skipNextSleep = false;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    if (attempt > 1) {
+    if (attempt > 1 && !skipNextSleep) {
       const backoff = baseDelayMs * attempt;
       console.log(
         `[migrate] Retry attempt ${attempt}/${maxAttempts} (waiting ${backoff}ms before retry)…`
       );
       await sleep(backoff);
     }
+    skipNextSleep = false;
 
     const { code, output } = await runPrismaMigrateDeploy();
     if (code === 0) return;
 
-    // P3009: failed migration blocking deploy — resolve then retry immediately.
+    // P3009: failed migration blocking deploy — resolve then retry immediately
+    // (no sleep needed; the lock issue is already resolved).
     // On the last attempt, still exit non-zero so the deploy is not silently
     // marked successful when the schema was never updated.
     if (output.includes("P3009")) {
@@ -108,6 +113,7 @@ async function main() {
         );
         process.exit(code);
       }
+      skipNextSleep = true;
       continue;
     }
 

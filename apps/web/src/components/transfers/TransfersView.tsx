@@ -231,7 +231,9 @@ function TransferRow({
           <Package className="h-5 w-5 text-muted" />
         </div>
         <div className="min-w-0">
-          {side === "incoming" || transfer.status !== "ACCEPTED" ? (
+          {side === "incoming" ||
+          transfer.status !== "ACCEPTED" ||
+          transfer.direction === "PULL" ? (
             <Link
               to={`/articles/${transfer.articleId}`}
               className="font-medium hover:underline"

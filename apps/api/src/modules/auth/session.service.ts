@@ -68,7 +68,7 @@ export const SessionService = {
     const now = Date.now();
     const last = lastTouchAt.get(jti) ?? 0;
     if (now - last < TOUCH_INTERVAL_MS) return;
-    if (lastTouchAt.size >= LAST_TOUCH_MAX) {
+    if (!lastTouchAt.has(jti) && lastTouchAt.size >= LAST_TOUCH_MAX) {
       lastTouchAt.delete(lastTouchAt.keys().next().value!);
     }
     lastTouchAt.set(jti, now);

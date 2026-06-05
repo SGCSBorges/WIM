@@ -29,11 +29,7 @@ export const TransferService = {
       );
     }
 
-    const owner = await prisma.user.findUnique({
-      where: { userId: ownerUserId },
-      select: { email: true },
-    });
-    if (owner?.email === toEmail)
+    if (recipient.userId === ownerUserId)
       throw createHttpError(400, "You cannot transfer to yourself");
 
     const existing = await prisma.articleTransferRequest.findFirst({
@@ -248,8 +244,9 @@ export const TransferService = {
     if (req.status !== "PENDING")
       throw createHttpError(409, "Transfer request is no longer pending");
     if (new Date() > req.expiresAt) {
-      await prisma.articleTransferRequest.update({
-        where: { id: req.id },
+      // Guard status in WHERE to avoid overwriting a concurrent ACCEPTED commit.
+      await prisma.articleTransferRequest.updateMany({
+        where: { id: req.id, status: "PENDING" },
         data: { status: "EXPIRED" },
       });
       throw createHttpError(410, "Transfer request has expired");
@@ -342,6 +339,7 @@ export const TransferService = {
         owner: { select: { userId: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
+      take: 100,
     });
   },
 };

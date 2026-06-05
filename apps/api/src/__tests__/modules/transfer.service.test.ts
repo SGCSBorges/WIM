@@ -75,9 +75,11 @@ describe("TransferService.createPush", () => {
 
   it("throws 400 on self-transfer", async () => {
     mockPrisma.article.findFirst.mockResolvedValue(baseArticle);
-    mockPrisma.user.findUnique
-      .mockResolvedValueOnce(recipient)
-      .mockResolvedValueOnce({ email: "bob@test.com" }); // owner has same email
+    // recipient.userId (2) must equal ownerUserId for self-transfer; use userId=10 to match ownerUserId
+    mockPrisma.user.findUnique.mockResolvedValueOnce({
+      ...recipient,
+      userId: 10,
+    });
     await expect(
       TransferService.createPush(1, 10, "bob@test.com")
     ).rejects.toMatchObject({ status: 400, message: expect.stringContaining("yourself") });

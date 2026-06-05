@@ -327,10 +327,13 @@ export const WarrantyService = {
       where: { garantieId: id, ownerUserId },
     });
     if (!current) throw createHttpError(404, "Warranty not found");
+    // Delete first so that if alert/queue cleanup partially fails, the
+    // warranty row is already gone and cannot be left with stale alerts.
+    const deleted = await prisma.garantie.delete({ where: { garantieId: id } });
     await AlertService.cancelForWarranty({
       ownerUserId: current.ownerUserId,
       garantieId: current.garantieId,
     });
-    return prisma.garantie.delete({ where: { garantieId: id } });
+    return deleted;
   },
 };
