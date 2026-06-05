@@ -20,12 +20,12 @@ operational guide.
 - **Forms**: react-hook-form for validated forms, plain `useState` for
   smaller ones. The `useUnsavedChangesGuard` hook prompts on tab-close /
   refresh when a form is dirty (`hooks/`).
-- **i18n**: three-language dictionary (en / fr / pt) split between
+- **i18n**: five-language dictionary (en / fr / pt / es / nl) split between
   `i18n/translations.ts` (large, low-churn) and
   `i18n/translations.extras.ts` (new + overrides). The `t()` lookup chain
   is `extras[lang] → translations[lang] → extras.en → translations.en →
   key`. **New keys go into `translations.extras.ts`.**
-- **Theming**: four themes (`light` / `dark` / `ocean` / `cyber`) via
+- **Theming**: five themes (`light` / `dark` / `ocean` / `cyber` / `sunset`) via
   `data-theme` on `<html>` and CSS variables in `src/index.css`. Shared
   components use the `.ui-*` utility classes (`ui-card`, `ui-btn-primary`,
   `ui-badge-power`, …) — don't hardcode Tailwind colors on shared widgets.

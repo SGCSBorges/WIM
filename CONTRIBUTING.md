@@ -153,7 +153,7 @@ integration tests.
 UI strings go through the `t()` function in `apps/web/src/i18n/i18n.tsx`. The
 lookup chain is **`extras[lang] → translations[lang] → extras.en →
 translations.en → key`**. New keys go into
-`apps/web/src/i18n/translations.extras.ts` (en / fr / pt blocks) so the
+`apps/web/src/i18n/translations.extras.ts` (en / fr / pt / es / nl blocks) so the
 70-KB main dictionary stays low-churn. Extras can also override an existing
 key for a copy fix without touching the big file.
 

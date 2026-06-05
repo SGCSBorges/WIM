@@ -84,8 +84,8 @@ devices:
 | Field        | Type / values                                              | Endpoint                                                          |
 | ------------ | ---------------------------------------------------------- | ----------------------------------------------------------------- |
 | `currency`   | ISO 4217 alpha-3 (default `USD`)                           | `PUT /api/profile/me/currency` — `{ "currency": "EUR" }`          |
-| `theme`      | `light \| dark \| ocean \| cyber` (nullable)               | `PUT /api/profile/me/preferences` — `{ "theme": "ocean" }`        |
-| `language`   | `en \| fr \| pt` (nullable)                                | `PUT /api/profile/me/preferences` — `{ "language": "fr" }`        |
+| `theme`      | `light \| dark \| ocean \| cyber \| sunset` (nullable)     | `PUT /api/profile/me/preferences` — `{ "theme": "ocean" }`        |
+| `language`   | `en \| fr \| pt \| es \| nl` (nullable)                    | `PUT /api/profile/me/preferences` — `{ "language": "fr" }`        |
 | `dateFormat` | `system \| dd/MM/yyyy \| MM/dd/yyyy \| yyyy-MM-dd` (nullable) | `PUT /api/profile/me/preferences` — `{ "dateFormat": "yyyy-MM-dd" }` |
 
 `/api/profile/me/preferences` accepts a partial body — any combination of
@@ -146,6 +146,31 @@ The inventory CSV (`/api/articles/export/inventory.csv`) gains a
 `currentValue` column at export time (computed via the same
 `currentValue` helper the dashboard + claim PDF use). The importer
 ignores unknown columns so a round-trip preserves data.
+
+## Article ownership transfer
+
+Permanent, atomic transfer of an article and all related data between two share-capable accounts. Requires POWER_USER (or ADMIN, which inherits). See `CLAUDE.md` for the full lifecycle.
+
+**Initiation** (mounted on `/api/articles`):
+
+| Method | Path | Body | Description |
+| ------ | ---- | ---- | ----------- |
+| POST   | `/:id/transfer/push` | `{ email, message? }` | Offer article to the recipient; fires an email with the token |
+| POST   | `/:id/transfer/pull` | `{ message? }` | Request ownership of a visible article; fires an email to the owner |
+
+**Management** (also mounted on `/api/articles`):
+
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+| GET    | `/transfers/incoming` | Pending transfers waiting on the caller to act |
+| GET    | `/transfers/outgoing` | Transfers the caller initiated (full history) |
+| POST   | `/transfers/:token/accept` | Accept — PUSH: recipient; PULL: owner |
+| POST   | `/transfers/:token/reject` | Reject — PULL: owner rejects |
+| DELETE | `/transfers/:id` | Revoke — PUSH: owner cancels; PULL: requester cancels |
+
+On **accept**, a single transaction re-owns the article, its warranty + warranty history, alerts, attachments, and notes. `ArticleLocation` + `ArticleTag` rows are deleted (owner-scoped; new owner re-assigns from their own lists). All other PENDING transfers for the same article are REVOKED atomically.
+
+Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day window). Concurrent accepts are race-safe: `updateMany` with `status:"PENDING"` in both the transfer row and the expiry check means only one commit can win; the loser gets 409.
 
 ## Account security
 

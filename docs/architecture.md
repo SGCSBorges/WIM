@@ -125,6 +125,32 @@ invites — **inside the same transaction as the role change**. The Stripe
 upgrade/downgrade path (webhook guards + the `sync` fallback) is drawn in
 UML `10`.
 
+## Article ownership transfer
+
+Permanent transfer between two share-capable accounts (POWER_USER or ADMIN),
+detailed in the "Article ownership transfer" section of
+[`CLAUDE.md`](../CLAUDE.md). Two flows:
+
+- **PUSH** — owner sends an offer to a specific email. Recipient accepts from
+  their `/transfers` page.
+- **PULL** — share-capable user requests ownership of a visible article
+  (publicly shared or via an active `InventoryShare`). Owner accepts or rejects.
+
+On acceptance, a single Prisma transaction re-owns `Article`, `Garantie`,
+`WarrantyHistory`, `Alerte`, `Attachment`, and `ArticleNote` to the new owner,
+then deletes `ArticleLocation` + `ArticleTag` (they're owner-scoped — the new
+owner re-assigns from their own lists) and revokes all other PENDING transfer
+requests for the same article.
+
+Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day
+window). Role downgrade via Stripe cancel or admin demote additionally revokes
+all PENDING transfer requests where the downgraded user is a party — the same
+`ShareService.cleanupSharingForUser` call that handles sharing cleanup handles
+this too.
+
+Audit actions: `ARTICLE_TRANSFER_INIT`, `ARTICLE_TRANSFER_ACCEPT`,
+`ARTICLE_TRANSFER_REJECT`, `ARTICLE_TRANSFER_REVOKE`.
+
 ## Background jobs
 
 Workers run **in the same process** as the API (cheap on Render's free tier).
@@ -144,7 +170,7 @@ Live queue depth and recent failures surface in the Admin → Jobs tab
 ## Web app shell & design system
 
 The web client is built on a tokenized design system with theme-aware CSS
-variables (light / dark / ocean / cyber) bridged into Tailwind utility
+variables (light / dark / ocean / cyber / sunset) bridged into Tailwind utility
 classes via `apps/web/tailwind.config.js` — so primitives don't hardcode
 colors and every route works across all four themes.
 
