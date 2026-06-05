@@ -97,9 +97,17 @@ async function main() {
     const { code, output } = await runPrismaMigrateDeploy();
     if (code === 0) return;
 
-    // P3009: failed migration blocking deploy — resolve then retry immediately
+    // P3009: failed migration blocking deploy — resolve then retry immediately.
+    // On the last attempt, still exit non-zero so the deploy is not silently
+    // marked successful when the schema was never updated.
     if (output.includes("P3009")) {
       resolveFailedMigrations(output);
+      if (attempt === maxAttempts) {
+        console.error(
+          "[migrate] P3009 persists after all attempts — giving up."
+        );
+        process.exit(code);
+      }
       continue;
     }
 

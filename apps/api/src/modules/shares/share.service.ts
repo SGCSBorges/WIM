@@ -96,9 +96,10 @@ export const ShareService = {
     articlesUnshared: number;
     sharesRevoked: number;
     invitesRevoked: number;
+    transfersRevoked: number;
   }> {
-    const [articlesUnshared, sharesRevoked, invitesRevoked] = await Promise.all(
-      [
+    const [articlesUnshared, sharesRevoked, invitesRevoked, transfersRevoked] =
+      await Promise.all([
         tx.article.updateMany({
           where: { ownerUserId: userId, sharedWithPowerUsers: true },
           data: { sharedWithPowerUsers: false },
@@ -111,12 +112,21 @@ export const ShareService = {
           where: { ownerUserId: userId, status: "PENDING" },
           data: { status: "REVOKED" },
         }),
-      ]
-    );
+        // Revoke any PENDING transfer requests the user is party to — they
+        // can no longer accept or honour them as a non-POWER_USER.
+        tx.articleTransferRequest.updateMany({
+          where: {
+            status: "PENDING",
+            OR: [{ ownerId: userId }, { requesterId: userId }],
+          },
+          data: { status: "REVOKED" },
+        }),
+      ]);
     return {
       articlesUnshared: articlesUnshared.count,
       sharesRevoked: sharesRevoked.count,
       invitesRevoked: invitesRevoked.count,
+      transfersRevoked: transfersRevoked.count,
     };
   },
 

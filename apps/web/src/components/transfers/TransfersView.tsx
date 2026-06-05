@@ -44,10 +44,14 @@ export default function TransfersView() {
       ]);
       setIncoming(inc.items);
       setOutgoing(out.items);
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast, t]);
 
   useEffect(() => {
     void load();
@@ -227,12 +231,16 @@ function TransferRow({
           <Package className="h-5 w-5 text-muted" />
         </div>
         <div className="min-w-0">
-          <Link
-            to={`/articles/${transfer.articleId}`}
-            className="font-medium hover:underline"
-          >
-            {transfer.article.articleNom}
-          </Link>
+          {side === "incoming" || transfer.status !== "ACCEPTED" ? (
+            <Link
+              to={`/articles/${transfer.articleId}`}
+              className="font-medium hover:underline"
+            >
+              {transfer.article.articleNom}
+            </Link>
+          ) : (
+            <span className="font-medium">{transfer.article.articleNom}</span>
+          )}
           <p className="text-sm text-muted">{transfer.article.articleModele}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
             <Badge tone={statusTone(transfer.status)}>

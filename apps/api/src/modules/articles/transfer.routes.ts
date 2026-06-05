@@ -5,6 +5,7 @@ import { TransferService } from "./transfer.service";
 import { auditAction } from "../common/audit";
 import { EmailService } from "../email/email.service";
 import { prisma } from "../../libs/prisma";
+import { idParam } from "../common/schemas";
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.post(
   requireRole("POWER_USER"),
   async (req: AuthRequest, res, next) => {
     try {
-      const articleId = parseInt(req.params.id, 10);
+      const articleId = idParam.parse(req.params.id);
       const ownerUserId = req.user!.sub;
       const { email, message } = PushSchema.parse(req.body);
 
@@ -67,7 +68,7 @@ router.post(
   requireRole("POWER_USER"),
   async (req: AuthRequest, res, next) => {
     try {
-      const articleId = parseInt(req.params.id, 10);
+      const articleId = idParam.parse(req.params.id);
       const requesterId = req.user!.sub;
       const { message } = PullSchema.parse(req.body);
 
@@ -183,7 +184,7 @@ router.delete(
   requireRole("POWER_USER"),
   async (req: AuthRequest, res, next) => {
     try {
-      const id = parseInt(req.params.id, 10);
+      const id = idParam.parse(req.params.id);
       const userId = req.user!.sub;
       const transfer = await TransferService.revokeTransfer(id, userId);
 

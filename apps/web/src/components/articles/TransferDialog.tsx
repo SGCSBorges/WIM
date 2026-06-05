@@ -3,7 +3,6 @@ import { ArrowRightLeft } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { transfersAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
-import { isValidEmail } from "../../utils/validation";
 import { Button, Input } from "../ui";
 
 interface Props {
@@ -29,10 +28,6 @@ export default function TransferDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (direction === "push" && !isValidEmail(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
     setError(null);
     setLoading(true);
     try {

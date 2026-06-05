@@ -302,11 +302,14 @@ describe("ShareService.createInvite", () => {
 });
 
 describe("ShareService.cleanupSharingForUser", () => {
-  it("flips public articles, deactivates outgoing shares, revokes pending invites", async () => {
+  it("flips public articles, deactivates outgoing shares, revokes pending invites and transfers", async () => {
     const tx = {
       article: { updateMany: vi.fn().mockResolvedValue({ count: 3 }) },
       inventoryShare: { updateMany: vi.fn().mockResolvedValue({ count: 2 }) },
       shareInvite: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      articleTransferRequest: {
+        updateMany: vi.fn().mockResolvedValue({ count: 4 }),
+      },
     };
 
     const result = await ShareService.cleanupSharingForUser(
@@ -326,10 +329,18 @@ describe("ShareService.cleanupSharingForUser", () => {
       where: { ownerUserId: 42, status: "PENDING" },
       data: { status: "REVOKED" },
     });
+    expect(tx.articleTransferRequest.updateMany).toHaveBeenCalledWith({
+      where: {
+        status: "PENDING",
+        OR: [{ ownerId: 42 }, { requesterId: 42 }],
+      },
+      data: { status: "REVOKED" },
+    });
     expect(result).toEqual({
       articlesUnshared: 3,
       sharesRevoked: 2,
       invitesRevoked: 1,
+      transfersRevoked: 4,
     });
   });
 });
