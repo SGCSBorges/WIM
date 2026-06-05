@@ -299,8 +299,9 @@ and must accept from their `/transfers` page.
 
 **PULL** — requester initiates: `POST /api/articles/:id/transfer/pull`.
 The article must already be visible to the requester (public share or active
-InventoryShare) — this prevents ID-enumeration and owner spam. The article
-owner receives an email with the token and must accept or reject.
+InventoryShare — which is inventory-wide, not per-article) — this prevents
+ID-enumeration and owner spam. The article owner receives an email with the
+token and must accept or reject.
 
 On acceptance the transfer is fully atomic (Prisma transaction):
   - `Article.ownerUserId` updated; `sharedWithPowerUsers` reset to false
@@ -311,9 +312,15 @@ On acceptance the transfer is fully atomic (Prisma transaction):
   - All other PENDING transfer requests for the same article are REVOKED
 
 Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day
-expiry). Email notifications are fire-and-forget (no impact on the API
-response if email is unconfigured or fails — consistent with `PushService`
-and `EmailService` best-effort pattern).
+expiry). `rejectTransfer` and `acceptTransfer` both check `expiresAt` and
+write `EXPIRED` status if the window has passed. Email notifications are
+fire-and-forget (no impact on the API response if email is unconfigured —
+consistent with `PushService` and `EmailService` best-effort pattern).
+
+Role downgrade (`POWER_USER → USER`) via Stripe cancel or admin demote calls
+`ShareService.cleanupSharingForUser` which **also revokes all PENDING
+transfer requests** where the downgraded user is either party (owner or
+requester), preventing orphaned transfers that neither party can cancel.
 
 Audit actions: `ARTICLE_TRANSFER_INIT`, `ARTICLE_TRANSFER_ACCEPT`,
 `ARTICLE_TRANSFER_REJECT`, `ARTICLE_TRANSFER_REVOKE` (in `@wim/types`
@@ -321,7 +328,15 @@ Audit actions: `ARTICLE_TRANSFER_INIT`, `ARTICLE_TRANSFER_ACCEPT`,
 
 Web: `TransferDialog` (push/pull modal), `/transfers` route with
 incoming/outgoing tabs. Transfer button in `ArticleDetail` header (push).
-Pull button in `SharedArticlesView` rows.
+Pull button in `SharedArticlesView` rows. Outgoing ACCEPTED rows render
+the article name as plain text (not a link) — the former owner no longer
+has access to the article after a successful transfer.
+
+Known limitation: two concurrent PULL accepts for the **same article** (but
+different request rows) can both complete under Postgres READ COMMITTED, with
+the last commit silently winning the `ownerUserId`. This is unlikely in
+practice (owner must explicitly accept two different requests near-simultaneously)
+and not yet mitigated with a `SELECT ... FOR UPDATE` on the article row.
 
 Key files:
   - `apps/api/src/modules/articles/transfer.service.ts`
