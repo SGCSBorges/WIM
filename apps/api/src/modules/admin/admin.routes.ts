@@ -392,6 +392,13 @@ router.post(
       data: { tokenVersion: { increment: 1 } },
     });
 
+    void prisma.userSession
+      .updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      })
+      .catch(() => {});
+
     await auditAction(req, {
       userId: req.user!.sub,
       action: "FORCE_LOGOUT",

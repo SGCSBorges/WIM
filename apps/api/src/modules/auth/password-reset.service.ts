@@ -83,18 +83,25 @@ export const PasswordResetService = {
       throw createHttpError(400, "Invalid or expired reset token");
     }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await prisma.$transaction([
-      prisma.user.update({
+    // Use an async transaction so the token is atomically claimed and the
+    // password is updated in the same commit. The updateMany with
+    // consumedAt:null is the optimistic lock — if two concurrent requests
+    // both pass the findUnique guard above, only one will see count>0 and
+    // the other will be rejected as "already processed".
+    await prisma.$transaction(async (tx) => {
+      const claimed = await tx.passwordResetToken.updateMany({
+        where: { id: row.id, consumedAt: null },
+        data: { consumedAt: new Date() },
+      });
+      if (claimed.count === 0)
+        throw createHttpError(400, "Invalid or expired reset token");
+      await tx.user.update({
         where: { userId: row.userId },
         data: {
           password: hashedPassword,
           tokenVersion: { increment: 1 },
         },
-      }),
-      prisma.passwordResetToken.update({
-        where: { id: row.id },
-        data: { consumedAt: new Date() },
-      }),
-    ]);
+      });
+    });
   },
 };

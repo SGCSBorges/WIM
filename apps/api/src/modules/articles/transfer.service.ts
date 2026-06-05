@@ -257,10 +257,12 @@ export const TransferService = {
     if (rejectingUserId !== expectedRejector)
       throw createHttpError(403, "Not authorised to reject this request");
 
-    await prisma.articleTransferRequest.updateMany({
+    const updated = await prisma.articleTransferRequest.updateMany({
       where: { id: req.id, status: "PENDING" },
       data: { status: "REJECTED", usedAt: new Date() },
     });
+    if (updated.count === 0)
+      throw createHttpError(409, "Transfer request was already processed");
     return { ...req, status: "REJECTED" as const };
   },
 
