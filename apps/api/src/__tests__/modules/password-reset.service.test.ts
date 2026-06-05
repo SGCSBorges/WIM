@@ -1,16 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../../libs/prisma", () => ({
-  prisma: {
-    user: { findUnique: vi.fn(), update: vi.fn() },
-    passwordResetToken: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      update: vi.fn(),
+vi.mock("../../libs/prisma", () => {
+  const userUpdate = vi.fn();
+  const userFindUnique = vi.fn();
+  const tokenCreate = vi.fn();
+  const tokenFindUnique = vi.fn();
+  const tokenUpdate = vi.fn();
+  const tokenUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+
+  return {
+    prisma: {
+      user: { findUnique: userFindUnique, update: userUpdate },
+      passwordResetToken: {
+        create: tokenCreate,
+        findUnique: tokenFindUnique,
+        update: tokenUpdate,
+        updateMany: tokenUpdateMany,
+      },
+      $transaction: vi.fn((fn: unknown) => {
+        // Interactive (callback) transaction form used by consume()
+        if (typeof fn === "function") {
+          return fn({
+            passwordResetToken: { updateMany: tokenUpdateMany },
+            user: { update: userUpdate },
+          });
+        }
+        // Array form (not used here, kept for safety)
+        return Promise.all(fn as Promise<unknown>[]);
+      }),
     },
-    $transaction: vi.fn(async (ops: unknown[]) => Promise.all(ops as Promise<unknown>[])),
-  },
-}));
+  };
+});
 
 vi.mock("../../modules/email/email.service", () => ({
   EmailService: {
@@ -36,6 +56,7 @@ const mockPrisma = prisma as unknown as {
     create: ReturnType<typeof vi.fn>;
     findUnique: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
+    updateMany: ReturnType<typeof vi.fn>;
   };
 };
 
@@ -115,6 +136,23 @@ describe("PasswordResetService.consume", () => {
     ).rejects.toMatchObject({ status: 400 });
   });
 
+  it("throws 400 when the optimistic lock fails (concurrent redemption)", async () => {
+    mockPrisma.passwordResetToken.findUnique.mockResolvedValue({
+      id: 1,
+      userId: 7,
+      expiresAt: new Date(Date.now() + 60_000),
+      consumedAt: null,
+    });
+    // Simulate the updateMany seeing count=0 (another request already claimed it)
+    mockPrisma.passwordResetToken.updateMany.mockResolvedValueOnce({
+      count: 0,
+    });
+    await expect(
+      PasswordResetService.consume("e".repeat(64), "Passw0rd!")
+    ).rejects.toMatchObject({ status: 400 });
+    expect(mockPrisma.user.update).not.toHaveBeenCalled();
+  });
+
   it("consumes a valid token: sets password, bumps tokenVersion, marks consumed", async () => {
     mockPrisma.passwordResetToken.findUnique.mockResolvedValue({
       id: 1,
@@ -123,11 +161,15 @@ describe("PasswordResetService.consume", () => {
       consumedAt: null,
     });
     await PasswordResetService.consume("d".repeat(64), "Passw0rd!");
+    // The token was claimed atomically via updateMany inside the transaction
+    const tokenClaim =
+      mockPrisma.passwordResetToken.updateMany.mock.calls[0][0];
+    expect(tokenClaim.where).toMatchObject({ id: 1, consumedAt: null });
+    expect(tokenClaim.data.consumedAt).toBeInstanceOf(Date);
+    // The user password and tokenVersion were updated
     const userUpdate = mockPrisma.user.update.mock.calls[0][0];
     expect(userUpdate.where).toEqual({ userId: 7 });
     expect(userUpdate.data.password).toMatch(/^\$2[aby]\$/); // bcrypt hash
     expect(userUpdate.data.tokenVersion).toEqual({ increment: 1 });
-    const tokenUpdate = mockPrisma.passwordResetToken.update.mock.calls[0][0];
-    expect(tokenUpdate.data.consumedAt).toBeInstanceOf(Date);
   });
 });
