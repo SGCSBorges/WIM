@@ -299,10 +299,12 @@ export const TransferService = {
       throw createHttpError(410, "Transfer request has expired");
     }
 
-    await prisma.articleTransferRequest.updateMany({
+    const revoked = await prisma.articleTransferRequest.updateMany({
       where: { id: req.id, status: "PENDING" },
       data: { status: "REVOKED" },
     });
+    if (revoked.count === 0)
+      throw createHttpError(409, "Transfer request was already processed");
     return { ...req, status: "REVOKED" as const };
   },
 

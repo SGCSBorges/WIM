@@ -33,12 +33,12 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     const data = RegisterSchema.parse(req.body);
     const result = await AuthService.register(data);
-    await SessionService.create({
+    void SessionService.create({
       userId: result.user.userId,
       jti: result.jti,
       ip: req.ip ?? null,
       userAgent: req.get("user-agent") ?? null,
-    });
+    }).catch(() => {});
     await auditAction(req, {
       userId: result.user.userId,
       action: "CREATE",
@@ -65,8 +65,9 @@ router.post(
     if (flags?.totpEnabled) {
       // The session JWT minted by login() is valid but must not be used —
       // deny its jti immediately so it cannot serve as a bearer token if
-      // ever exposed (e.g. via logs or a memory dump).
-      void denyToken(result.jti, 7 * 24 * 60 * 60);
+      // ever exposed (e.g. via logs or a memory dump). Awaited so a Redis
+      // hiccup doesn't silently leave the token live.
+      await denyToken(result.jti, 7 * 24 * 60 * 60);
       const challengeToken = await TotpService.signChallenge(
         result.user.userId,
         result.user.role
@@ -74,12 +75,12 @@ router.post(
       res.json({ totpRequired: true, challengeToken });
       return;
     }
-    await SessionService.create({
+    void SessionService.create({
       userId: result.user.userId,
       jti: result.jti,
       ip: req.ip ?? null,
       userAgent: req.get("user-agent") ?? null,
-    });
+    }).catch(() => {});
     await auditAction(req, {
       userId: result.user.userId,
       action: "LOGIN",
@@ -120,12 +121,12 @@ router.post(
       user.role,
       user.tokenVersion
     );
-    await SessionService.create({
+    void SessionService.create({
       userId: user.userId,
       jti,
       ip: req.ip ?? null,
       userAgent: req.get("user-agent") ?? null,
-    });
+    }).catch(() => {});
     await auditAction(req, {
       userId: user.userId,
       action: "LOGIN",

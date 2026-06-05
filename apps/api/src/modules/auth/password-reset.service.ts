@@ -90,7 +90,7 @@ export const PasswordResetService = {
     // the other will be rejected as "already processed".
     await prisma.$transaction(async (tx) => {
       const claimed = await tx.passwordResetToken.updateMany({
-        where: { id: row.id, consumedAt: null },
+        where: { id: row.id, consumedAt: null, expiresAt: { gt: new Date() } },
         data: { consumedAt: new Date() },
       });
       if (claimed.count === 0)
