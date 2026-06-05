@@ -70,7 +70,13 @@ export async function denyToken(
   const redis = getRedis();
   if (!redis || ttlSeconds <= 0) return;
   try {
-    await redis.set(KEY_PREFIX + jti, "1", "EX", ttlSeconds);
+    // Same timeout guard as isTokenDenied — ioredis can stall for ~2s in a
+    // reconnecting state; cap it so callers on the login hot path don't hang.
+    await withTimeout(
+      redis.set(KEY_PREFIX + jti, "1", "EX", ttlSeconds),
+      DENYLIST_CHECK_TIMEOUT_MS,
+      null
+    );
   } catch (err) {
     logThrottled("denyToken", err, { jti });
   }

@@ -137,8 +137,9 @@ export const TransferService = {
     if (req.status !== "PENDING")
       throw createHttpError(409, "Transfer request is no longer pending");
     if (new Date() > req.expiresAt) {
-      await prisma.articleTransferRequest.update({
-        where: { id: req.id },
+      // Guard status in WHERE to avoid overwriting a concurrent ACCEPTED commit.
+      await prisma.articleTransferRequest.updateMany({
+        where: { id: req.id, status: "PENDING" },
         data: { status: "EXPIRED" },
       });
       throw createHttpError(410, "Transfer request has expired");
@@ -243,19 +244,24 @@ export const TransferService = {
     if (!req) throw createHttpError(404, "Transfer request not found");
     if (req.status !== "PENDING")
       throw createHttpError(409, "Transfer request is no longer pending");
-    if (new Date() > req.expiresAt) {
-      // Guard status in WHERE to avoid overwriting a concurrent ACCEPTED commit.
-      await prisma.articleTransferRequest.updateMany({
-        where: { id: req.id, status: "PENDING" },
-        data: { status: "EXPIRED" },
-      });
-      throw createHttpError(410, "Transfer request has expired");
-    }
 
+    // Auth check BEFORE the expiry write — prevents an unauthorized caller
+    // from marking another user's expired transfer as EXPIRED.
     const expectedRejector =
       req.direction === "PUSH" ? req.requesterId : req.ownerId;
     if (rejectingUserId !== expectedRejector)
       throw createHttpError(403, "Not authorised to reject this request");
+
+    if (new Date() > req.expiresAt) {
+      // Guard status in WHERE to avoid overwriting a concurrent ACCEPTED commit.
+      const expired = await prisma.articleTransferRequest.updateMany({
+        where: { id: req.id, status: "PENDING" },
+        data: { status: "EXPIRED" },
+      });
+      if (expired.count === 0)
+        throw createHttpError(409, "Transfer request was already processed");
+      throw createHttpError(410, "Transfer request has expired");
+    }
 
     const updated = await prisma.articleTransferRequest.updateMany({
       where: { id: req.id, status: "PENDING" },
@@ -292,16 +298,18 @@ export const TransferService = {
       throw createHttpError(403, "Not authorised to revoke this request");
 
     if (new Date() > req.expiresAt) {
-      await prisma.articleTransferRequest.updateMany({
+      const expired = await prisma.articleTransferRequest.updateMany({
         where: { id: req.id, status: "PENDING" },
         data: { status: "EXPIRED" },
       });
+      if (expired.count === 0)
+        throw createHttpError(409, "Transfer request was already processed");
       throw createHttpError(410, "Transfer request has expired");
     }
 
     const revoked = await prisma.articleTransferRequest.updateMany({
       where: { id: req.id, status: "PENDING" },
-      data: { status: "REVOKED" },
+      data: { status: "REVOKED", usedAt: new Date() },
     });
     if (revoked.count === 0)
       throw createHttpError(409, "Transfer request was already processed");
