@@ -362,12 +362,14 @@ describe("TransferService.rejectTransfer", () => {
 // ---------------------------------------------------------------------------
 
 describe("TransferService.revokeTransfer", () => {
+  const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const basePush = {
     id: 1,
     status: "PENDING",
     direction: "PUSH" as const,
     requesterId: 2,
     ownerId: 1,
+    expiresAt: futureDate,
   };
   const basePull = { ...basePush, direction: "PULL" as const };
 
@@ -410,5 +412,19 @@ describe("TransferService.revokeTransfer", () => {
 
     const result = await TransferService.revokeTransfer(1, 2); // requesterId = 2
     expect(result.status).toBe("REVOKED");
+  });
+
+  it("writes EXPIRED and throws 410 when the request has expired", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...basePush,
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    mockPrisma.articleTransferRequest.updateMany.mockResolvedValue({ count: 1 });
+    await expect(TransferService.revokeTransfer(1, 1)).rejects.toMatchObject({
+      status: 410,
+    });
+    expect(mockPrisma.articleTransferRequest.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: "EXPIRED" } })
+    );
   });
 });

@@ -68,8 +68,15 @@ export const SessionService = {
     const now = Date.now();
     const last = lastTouchAt.get(jti) ?? 0;
     if (now - last < TOUCH_INTERVAL_MS) return;
-    if (!lastTouchAt.has(jti) && lastTouchAt.size >= LAST_TOUCH_MAX) {
+    const isNew = !lastTouchAt.has(jti);
+    if (isNew && lastTouchAt.size >= LAST_TOUCH_MAX) {
       lastTouchAt.delete(lastTouchAt.keys().next().value!);
+    } else if (!isNew) {
+      // Map.set() on an existing key updates the value but keeps the original
+      // insertion position. Delete first so the re-insert lands at the back
+      // (most-recently-used end), preventing active sessions from being
+      // evicted ahead of stale ones.
+      lastTouchAt.delete(jti);
     }
     lastTouchAt.set(jti, now);
     await prisma.userSession

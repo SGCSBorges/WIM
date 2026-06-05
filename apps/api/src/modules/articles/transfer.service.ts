@@ -273,11 +273,19 @@ export const TransferService = {
         requesterId: true,
         ownerId: true,
         articleId: true,
+        expiresAt: true,
       },
     });
     if (!req) throw createHttpError(404, "Transfer request not found");
     if (req.status !== "PENDING")
       throw createHttpError(409, "Transfer request is no longer pending");
+    if (new Date() > req.expiresAt) {
+      await prisma.articleTransferRequest.updateMany({
+        where: { id: req.id, status: "PENDING" },
+        data: { status: "EXPIRED" },
+      });
+      throw createHttpError(410, "Transfer request has expired");
+    }
 
     // PUSH initiator = owner, PULL initiator = requester
     const expectedRevoker =

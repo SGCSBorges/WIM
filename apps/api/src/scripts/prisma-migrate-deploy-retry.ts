@@ -54,9 +54,11 @@ function runPrismaMigrateDeploy(): Promise<RunResult> {
 
 // P3009 error lines look like:
 //   The `20260604000000_add_article_transfer` migration started at … failed
-function resolveFailedMigrations(output: string) {
+// Returns true only if every failed migration resolved successfully.
+function resolveFailedMigrations(output: string): boolean {
   const pattern = /The `([^`]+)` migration started at .+ failed/g;
   let match: RegExpExecArray | null;
+  let allResolved = true;
   while ((match = pattern.exec(output)) !== null) {
     const name = match[1];
     console.log(`[migrate] Resolving failed migration as rolled-back: ${name}`);
@@ -69,8 +71,10 @@ function resolveFailedMigrations(output: string) {
       console.error(
         `[migrate] Failed to resolve ${name} (exit ${result.status ?? "?"})`
       );
+      allResolved = false;
     }
   }
+  return allResolved;
 }
 
 function getArg(name: string, def: string) {
@@ -106,14 +110,17 @@ async function main() {
     // On the last attempt, still exit non-zero so the deploy is not silently
     // marked successful when the schema was never updated.
     if (output.includes("P3009")) {
-      resolveFailedMigrations(output);
+      const resolved = resolveFailedMigrations(output);
       if (attempt === maxAttempts) {
         console.error(
           "[migrate] P3009 persists after all attempts — giving up."
         );
         process.exit(code);
       }
-      skipNextSleep = true;
+      // Only skip the sleep if resolution succeeded; if resolve itself
+      // failed, wait the normal backoff before retrying so the DB has
+      // time to recover before the next attempt.
+      skipNextSleep = resolved;
       continue;
     }
 
