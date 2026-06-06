@@ -5,10 +5,12 @@
 # This file lets Render configure the deploy from the repo instead of the
 # dashboard. Once "Sync from render.yaml" is enabled on the service (or a
 # new service is created via "New Blueprint Instance"), every deploy uses
-# the rules below — including the SPA rewrite that fixes deep-link 404s.
+# the rules below — including the SPA rewrite that fixes deep-link 404s and
+# the /api/* proxy that keeps the API same-origin (see routes below).
 #
-# Set VITE_API_BASE_URL in the dashboard to point at the API
-# (e.g. https://wimapi.onrender.com/api).
+# Leave VITE_API_BASE_URL EMPTY in the dashboard so the web app calls
+# same-origin "/api" (see apps/web/src/services/api.ts) — the rewrite below
+# proxies that through to the API service.
 
 services:
   - type: web
@@ -19,11 +21,24 @@ services:
     staticPublishPath: ./apps/web/dist
     pullRequestPreviewsEnabled: false
 
+    # /api/* proxy — forwarded to the API service so the browser only ever
+    # talks to a single origin (wim-web.onrender.com). This makes the auth
+    # cookie first-party: Safari's Intelligent Tracking Prevention blocks
+    # cookies set via fetch/XHR from a "different site" (wim-web and wimapi
+    # are different *.onrender.com registrable domains per the Public Suffix
+    # List), which is why login silently fails to persist on iOS Safari and
+    # the installed PWA while working fine on Android/Chrome. Must come
+    # before the SPA fallback below, or /api/* would be swallowed by the
+    # /index.html rewrite.
+    #
     # SPA fallback — every unknown path serves /index.html with a 200,
     # so React Router can take over. This is the Render-native equivalent
     # of the public/_redirects file (which we keep as a fallback for
     # non-Render hosts).
     routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://wimapi.onrender.com/api/*
       - type: rewrite
         source: /*
         destination: /index.html
