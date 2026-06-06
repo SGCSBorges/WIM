@@ -35,8 +35,10 @@ loads into every new Claude Code session.
     workspace dep bump must land in `package-lock.json` or the deploy
     fails.
   - `wim-web.onrender.com` — static web site. Built from `apps/web/dist`
-    via the `render.yaml` Blueprint at the repo root (SPA rewrite is in
-    `render.yaml`, not the dashboard).
+    via the `render.yaml` Blueprint at the repo root. `render.yaml` contains
+    both the SPA fallback rewrite and a `/api/*` proxy rule that forwards API
+    calls to `wimapi.onrender.com` server-side — keeping the browser on a
+    single origin (required for Safari/iOS auth; see Known gotchas).
 - Critical Render env vars (set in dashboard, never in repo):
   - API: `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `STRIPE_SECRET_KEY`,
     `STRIPE_WEBHOOK_SECRET`, `STRIPE_POWER_USER_PRICE_MONTHLY/YEARLY`,
@@ -59,7 +61,13 @@ loads into every new Claude Code session.
     worker deletes AuditLog rows older than the window via the
     `wim-maintenance` BullMQ queue. The one-shot script under
     `src/scripts/prune-audit-log.ts` still works for manual runs.
-  - Web: `VITE_API_BASE_URL=https://wimapi.onrender.com/api`.
+  - Web: `VITE_API_BASE_URL` — **leave empty / deleted** in the dashboard.
+    The `render.yaml` `/api/*` rewrite proxies browser requests through
+    `wim-web.onrender.com` to the API, so the web app calls same-origin
+    `/api` (the production fallback in `apps/web/src/services/api.ts` when
+    the var is unset). Do **not** set this to the absolute `wimapi`
+    URL — doing so bypasses the proxy and breaks Safari/iOS login (ITP
+    blocks cross-site `Set-Cookie` from fetch/XHR).
 - Render free-tier Postgres expires after ~30 days and the API container
   cold-starts in ~30 s. The fetch timeout in `apps/web/src/services/api.ts`
   is 45 s for that reason. After a DB reset, re-seed admin via the
@@ -381,6 +389,11 @@ Key files:
   navigations, cache-first hashed assets, never intercepts `/api/`).
   Registered in `main.tsx` only in production. Required for Chrome to
   treat the site as installable.
+- **iOS "Add to Home Screen"**: `index.html` includes the three
+  `apple-mobile-web-app-*` meta tags (`capable`, `status-bar-style`,
+  `title`) because iOS ignores `manifest.webmanifest` for installed apps —
+  without them the icon launches as a bookmarked Safari tab, not a
+  standalone app.
 - After deploying, installed-app users will keep seeing the old shell
   until the SW updates or they reinstall. Telling them to hard-refresh
   + DevTools → Application → Service Workers → "Update" usually works.
@@ -399,9 +412,17 @@ Key files:
   `npm install` locally; never hand-edit the lockfile except when surgically
   patching a transitive version that an `overrides` entry can't reach (and
   re-run `npm install` afterwards to let npm reconcile it).
-- **Cookie sameSite**: `none` in production (web/api on different
-  Render subdomains = different PSL sites), `lax` in dev. Requires
-  `secure=true` which is set automatically in prod.
+- **Cookie sameSite / Safari ITP**: `wim-web.onrender.com` and
+  `wimapi.onrender.com` are different registrable domains (PSL treats each
+  `*.onrender.com` subdomain as its own site). Safari's ITP silently drops
+  `Set-Cookie` responses from cross-site `fetch`/XHR — which made login
+  fail on iOS (both Safari and the installed PWA) while working on Android.
+  Fix: `render.yaml` proxies `/api/*` through the static CDN so the browser
+  always sees a single origin. The API still sets `SameSite=none; Secure` in
+  production (for any direct API access) and `lax` in dev (`cookieOptsFor`
+  in `apps/api/src/modules/auth/cookies.ts`). If login ever breaks on iOS
+  again, the first thing to check is whether `VITE_API_BASE_URL` was
+  accidentally set back to the absolute `wimapi` URL in the Render dashboard.
 - **Vite hashes asset filenames**, so a new deploy invalidates old CSS
   references in the SW cache automatically. `index.html` is fetched
   network-first so users get the fresh hash.
