@@ -25,12 +25,11 @@ export type HealthReport = {
 };
 
 async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error("health-check timeout")), ms)
-    ),
-  ]);
+  let t: NodeJS.Timeout | undefined;
+  const timer = new Promise<T>((_, reject) => {
+    t = setTimeout(() => reject(new Error("health-check timeout")), ms);
+  });
+  return Promise.race([p.finally(() => t && clearTimeout(t)), timer]);
 }
 
 /**

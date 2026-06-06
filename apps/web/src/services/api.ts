@@ -69,9 +69,11 @@ export type {
 
 // API base URL strategy:
 // - In development, default to the local API.
-// - In production, prefer setting VITE_API_BASE_URL (e.g. https://wimapi.onrender.com/api).
-//   If you *do* have a reverse proxy that serves the web app and forwards /api to the API service,
-//   you can omit VITE_API_BASE_URL and same-origin "/api" will work.
+// - In production (Render): leave VITE_API_BASE_URL unset. The render.yaml /api/* rewrite
+//   proxies calls through wim-web.onrender.com to the API service, keeping the auth cookie
+//   first-party so Safari's ITP doesn't block it. Setting the var to an absolute wimapi URL
+//   bypasses the proxy and silently breaks login on iOS Safari.
+// - Without the proxy (non-Render host): set VITE_API_BASE_URL to the absolute API origin.
 export const API_BASE_URL: string = (() => {
   const fromEnv = import.meta.env.VITE_API_BASE_URL?.trim();
   if (fromEnv) {

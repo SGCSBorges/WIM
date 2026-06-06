@@ -1,3 +1,8 @@
+# API proxy: forward /api/* to the API service so the browser talks to a
+# single origin (required for the auth cookie to be first-party on Safari).
+# Render uses render.yaml for this; the rule below covers Netlify deployments.
+/api/*  https://wimapi.onrender.com/api/:splat  200
+
 # SPA fallback: every unknown path serves the React entry so client-side
 # routing (React Router) can take over. The 200 status keeps it a regular
 # response — not a redirect — so URLs stay intact and the browser doesn't

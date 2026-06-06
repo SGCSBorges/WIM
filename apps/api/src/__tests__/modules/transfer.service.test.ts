@@ -261,7 +261,7 @@ describe("TransferService.acceptTransfer", () => {
       TransferService.acceptTransfer("tok", 2)
     ).rejects.toMatchObject({ status: 410 });
     expect(mockPrisma.articleTransferRequest.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: "EXPIRED" } })
+      expect.objectContaining({ data: { status: "EXPIRED", usedAt: expect.any(Date) } })
     );
   });
 
@@ -514,7 +514,7 @@ describe("TransferService.revokeTransfer", () => {
       status: 410,
     });
     expect(mockPrisma.articleTransferRequest.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: "EXPIRED" } })
+      expect.objectContaining({ data: { status: "EXPIRED", usedAt: expect.any(Date) } })
     );
   });
 
