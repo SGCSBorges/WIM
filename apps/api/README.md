@@ -33,7 +33,7 @@ Each module is a small slice of the API and follows the same shape:
 | Module          | Responsibility                                              |
 | --------------- | ----------------------------------------------------------- |
 | `auth`          | Register/login/logout, password reset, JWT issue + guard, `session.service` (per-device sessions keyed by jti), `totp.service` (TOTP 2FA + 5-minute challenge tokens). |
-| `articles`      | List + CRUD + bulk ops (delete, share, assign, **bulk-update** scalar fields) + soft-delete + Trash + CSV/PDF export + `template.routes` for the reusable Article-create payloads. |
+| `articles`      | List + CRUD + bulk ops (delete, share, assign, **bulk-update** scalar fields) + soft-delete + Trash + CSV/PDF export + `template.routes` (reusable Article-create payloads) + `transfer.routes`/`transfer.service` (PUSH/PULL ownership transfer between Power Users, 7-day expiry lifecycle). |
 | `warranties`    | CRUD + claim workflow + **renew / extend / history** (rolls the live row forward into `WarrantyHistory`; reuses `AlertService.rescheduleForWarranty`). |
 | `attachments`   | File upload (Multer + signature check), thumbs, bulk delete.|
 | `locations`     | Location CRUD + paginated articles-in-location.             |

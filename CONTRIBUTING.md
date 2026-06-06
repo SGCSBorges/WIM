@@ -59,8 +59,8 @@ Conventional Commits:
 ## The local CI gate (run before opening a PR)
 
 These are the same steps `.github/workflows/ci.yml` runs. **Check the exit
-code, not just the tail of the output** — round 8 cost us an extra round-trip
-because `npm run lint | tail -3` masked a failing workspace.
+code, not just the tail of the output** — piping through `tail` can mask a
+failing workspace.
 
 ```bash
 npm run lint                                   # 0 errors, every workspace

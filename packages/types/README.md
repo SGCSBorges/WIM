@@ -10,8 +10,11 @@ client.
 - **`as const` tuples** that are the single source of truth for string
   unions appearing on both sides:
   - `AUDIT_ACTIONS` / `AUDIT_ENTITIES` — what the API may log; what the
-    admin Audit Log dropdowns filter by.
-  - `ARTICLE_NOTE_KINDS` — note categories.
+    admin Audit Log dropdowns filter by. Includes transfer actions:
+    `ARTICLE_TRANSFER_INIT`, `ARTICLE_TRANSFER_ACCEPT`,
+    `ARTICLE_TRANSFER_REJECT`, `ARTICLE_TRANSFER_REVOKE`.
+  - `ARTICLE_NOTE_KINDS` — note categories (`SERVICE`, `WARRANTY_CLAIM`,
+    `MAINTENANCE`, `OTHER`).
   - `ATTACHMENT_TYPES`, `INVITE_STATUSES`, `SHARE_PERMISSIONS` — keep
     Prisma enums and front-end dropdowns in sync without duplicating the
     literal list.
@@ -31,11 +34,14 @@ import from either runtime and makes it usable in build tooling.
 ## Updating a shape
 
 1. Edit `src/index.ts` (add a field, widen a union, etc.).
-2. Run `npm run lint` at the repo root — types is just `tsc --noEmit` for
-   this package, so any consumer that drifts will fail typecheck.
-3. The API likely has a local copy or schema — round 10 consolidated
-   `DashboardStatistics` to live only here; do the same for any future
-   shape that diverges.
+2. If you added an `AUDIT_ACTION`, also add the string to
+   `apps/api/src/modules/audit/audit.service.ts` — the union is validated
+   there at write time.
+3. Run `npm run lint` at the repo root — the `tsc --noEmit` step for this
+   package will catch any consumer that drifts.
+4. If the API has a local copy of the shape, remove it and import from here
+   instead — keeping a single source of truth is the whole point of the
+   package.
 
 ## Const-tuple pattern
 
