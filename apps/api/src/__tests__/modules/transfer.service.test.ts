@@ -265,6 +265,20 @@ describe("TransferService.acceptTransfer", () => {
     );
   });
 
+  it("throws 409 (not 410) when the expiry write finds count=0 (concurrent accept/revoke won)", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...baseReq,
+      expiresAt: new Date(Date.now() - 1_000),
+    });
+    // another request already moved the row out of PENDING
+    mockPrisma.articleTransferRequest.updateMany.mockResolvedValue({
+      count: 0,
+    });
+    await expect(
+      TransferService.acceptTransfer("tok", 2)
+    ).rejects.toMatchObject({ status: 409 });
+  });
+
   it("throws 410 when article has been soft-deleted", async () => {
     mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
       ...baseReq,
@@ -294,11 +308,12 @@ describe("TransferService.acceptTransfer", () => {
 
   it("runs the transfer transaction and returns request for valid PUSH", async () => {
     mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    const transferRequestUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
     mockPrisma.$transaction.mockImplementation(
       async (fn: (tx: unknown) => Promise<unknown>) => {
         const tx = {
           articleTransferRequest: {
-            updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+            updateMany: transferRequestUpdateMany,
             update: vi.fn(),
           },
           article: { update: vi.fn() },
@@ -320,6 +335,16 @@ describe("TransferService.acceptTransfer", () => {
     const result = await TransferService.acceptTransfer("tok", 2);
     expect(result).toEqual(baseReq);
     expect(mockPrisma.$transaction).toHaveBeenCalled();
+    // Cascade-revoke of other PENDING requests for the same article must
+    // stamp usedAt — same terminal-transition contract as reject/revoke.
+    expect(transferRequestUpdateMany).toHaveBeenCalledWith({
+      where: {
+        articleId: baseReq.articleId,
+        status: "PENDING",
+        id: { not: baseReq.id },
+      },
+      data: { status: "REVOKED", usedAt: expect.any(Date) },
+    });
   });
 
   it("throws 409 when updateMany count is 0 (concurrent accept race)", async () => {

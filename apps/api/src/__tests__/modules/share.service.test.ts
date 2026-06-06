@@ -334,7 +334,7 @@ describe("ShareService.cleanupSharingForUser", () => {
         status: "PENDING",
         OR: [{ ownerId: 42 }, { requesterId: 42 }],
       },
-      data: { status: "REVOKED" },
+      data: { status: "REVOKED", usedAt: expect.any(Date) },
     });
     expect(result).toEqual({
       articlesUnshared: 3,

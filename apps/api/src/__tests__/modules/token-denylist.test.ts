@@ -133,4 +133,30 @@ describe("error log throttling", () => {
       expect.arrayContaining(["denyToken", "isTokenDenied"])
     );
   });
+
+  // Regression coverage for a stalled (never-settling) redis call: withTimeout
+  // must reject rather than silently resolve, so the stall surfaces through
+  // the same logged failure path as a hard redis error — see the file-level
+  // "fail open ... and log" contract.
+  it("denyToken logs rather than silently succeeding when redis stalls past the timeout", async () => {
+    fakeRedis.set.mockReturnValue(new Promise(() => {}));
+    const pending = denyToken("stalled-jti", 3600);
+    await vi.advanceTimersByTimeAsync(600);
+    await pending;
+    expect(mockLoggerError).toHaveBeenCalledTimes(1);
+    expect(mockLoggerError.mock.calls[0][0]).toMatchObject({
+      kind: "denyToken",
+    });
+  });
+
+  it("isTokenDenied fails open and logs when redis stalls past the timeout", async () => {
+    fakeRedis.exists.mockReturnValue(new Promise(() => {}));
+    const pending = isTokenDenied("stalled-jti");
+    await vi.advanceTimersByTimeAsync(600);
+    expect(await pending).toBe(false);
+    expect(mockLoggerError).toHaveBeenCalledTimes(1);
+    expect(mockLoggerError.mock.calls[0][0]).toMatchObject({
+      kind: "isTokenDenied",
+    });
+  });
 });

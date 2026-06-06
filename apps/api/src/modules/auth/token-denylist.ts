@@ -55,10 +55,10 @@ function logThrottled(
   }
 }
 
-function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let t: NodeJS.Timeout | undefined;
-  const timer = new Promise<T>((resolve) => {
-    t = setTimeout(() => resolve(fallback), ms);
+  const timer = new Promise<T>((_, reject) => {
+    t = setTimeout(() => reject(new Error("redis denylist op timed out")), ms);
   });
   return Promise.race([p.finally(() => t && clearTimeout(t)), timer]);
 }
@@ -72,10 +72,12 @@ export async function denyToken(
   try {
     // Same timeout guard as isTokenDenied — ioredis can stall for ~2s in a
     // reconnecting state; cap it so callers on the login hot path don't hang.
+    // Rejects (rather than resolving with a fallback) so a stall surfaces
+    // through the catch below — see the file-level "fail open ... and log"
+    // contract; a silent timeout would leave a denied token looking live.
     await withTimeout(
       redis.set(KEY_PREFIX + jti, "1", "EX", ttlSeconds),
-      DENYLIST_CHECK_TIMEOUT_MS,
-      null
+      DENYLIST_CHECK_TIMEOUT_MS
     );
   } catch (err) {
     logThrottled("denyToken", err, { jti });
@@ -88,8 +90,7 @@ export async function isTokenDenied(jti: string): Promise<boolean> {
   try {
     const result = await withTimeout(
       redis.exists(KEY_PREFIX + jti),
-      DENYLIST_CHECK_TIMEOUT_MS,
-      0
+      DENYLIST_CHECK_TIMEOUT_MS
     );
     return result === 1;
   } catch (err) {

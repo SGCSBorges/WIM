@@ -119,7 +119,7 @@ export const ShareService = {
             status: "PENDING",
             OR: [{ ownerId: userId }, { requesterId: userId }],
           },
-          data: { status: "REVOKED" },
+          data: { status: "REVOKED", usedAt: new Date() },
         }),
       ]);
     return {

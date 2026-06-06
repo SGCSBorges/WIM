@@ -137,11 +137,14 @@ export const TransferService = {
     if (req.status !== "PENDING")
       throw createHttpError(409, "Transfer request is no longer pending");
     if (new Date() > req.expiresAt) {
-      // Guard status in WHERE to avoid overwriting a concurrent ACCEPTED commit.
-      await prisma.articleTransferRequest.updateMany({
+      // Guard status in WHERE to avoid overwriting a concurrent ACCEPTED commit;
+      // count===0 means another request already moved it out of PENDING.
+      const expired = await prisma.articleTransferRequest.updateMany({
         where: { id: req.id, status: "PENDING" },
         data: { status: "EXPIRED" },
       });
+      if (expired.count === 0)
+        throw createHttpError(409, "Transfer request was already processed");
       throw createHttpError(410, "Transfer request has expired");
     }
     if (req.article.deletedAt)
@@ -221,7 +224,7 @@ export const TransferService = {
           status: "PENDING",
           id: { not: req.id },
         },
-        data: { status: "REVOKED" },
+        data: { status: "REVOKED", usedAt: new Date() },
       });
     });
 
