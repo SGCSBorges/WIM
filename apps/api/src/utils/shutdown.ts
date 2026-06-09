@@ -26,15 +26,16 @@ async function withTimeout(
   ms: number,
   label: string
 ): Promise<void> {
+  let t: ReturnType<typeof setTimeout> | undefined;
   try {
     await Promise.race([
-      task(),
-      new Promise((_, reject) =>
-        setTimeout(
+      task().finally(() => t && clearTimeout(t)),
+      new Promise((_, reject) => {
+        t = setTimeout(
           () => reject(new Error(`${label} timed out after ${ms}ms`)),
           ms
-        )
-      ),
+        );
+      }),
     ]);
     logger.info({ phase: label }, "[shutdown] phase complete");
   } catch (err) {

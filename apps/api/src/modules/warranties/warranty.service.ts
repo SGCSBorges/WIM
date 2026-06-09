@@ -142,7 +142,7 @@ export const WarrantyService = {
 
     const patch: Prisma.GarantieUpdateInput = { ...data };
     // Recalculate fin if either dateAchat or duration changes (use current for missing)
-    if (data.garantieDateAchat || data.garantieDuration) {
+    if (data.garantieDateAchat != null || data.garantieDuration != null) {
       const dateAchat = data.garantieDateAchat
         ? new Date(data.garantieDateAchat)
         : new Date(current.garantieDateAchat);

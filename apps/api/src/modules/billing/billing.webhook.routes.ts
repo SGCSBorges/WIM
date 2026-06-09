@@ -108,6 +108,13 @@ router.post(
     // requires the marker to NOT have been saved. So we wrap both in one
     // transaction. A duplicate delivery races on the marker insert and the
     // P2002 unique-violation is treated as "already processed".
+    //
+    // AuditService.log uses the module-level prisma client and cannot join
+    // this transaction, so we collect audit inputs here and fire them after
+    // the transaction commits — the audit row only lands if the business
+    // change actually persisted.
+    const pendingAudit: Parameters<typeof AuditService.log>[0][] = [];
+
     try {
       await prisma.$transaction(async (tx) => {
         // Marker first inside the tx — concurrent deliveries of the same
@@ -157,7 +164,7 @@ router.post(
                 },
               });
               if (willPromote) {
-                await AuditService.log({
+                pendingAudit.push({
                   userId,
                   action: "BILLING_UPGRADE",
                   entity: "User",
@@ -182,11 +189,15 @@ router.post(
           const status = sub.status;
           const endedAt = sub.ended_at as number | null | undefined;
 
+          // Guard Boolean(endedAt) against active/trialing status: a
+          // subscription.updated event can carry a non-null ended_at while
+          // status='active' (e.g. after a successful payment retry), which
+          // would otherwise trigger a spurious downgrade.
           const shouldDowngrade =
             status === "canceled" ||
             status === "unpaid" ||
             status === "incomplete_expired" ||
-            Boolean(endedAt);
+            (Boolean(endedAt) && status !== "active" && status !== "trialing");
 
           if (shouldDowngrade) {
             // Scope by userId: stripeSubscriptionId is now @unique in the
@@ -213,7 +224,7 @@ router.post(
                 { userId: owner.userId, ...counts, reason: "stripe-cancel" },
                 "[stripe-webhook] downgrade cleanup"
               );
-              await AuditService.log({
+              pendingAudit.push({
                 userId: owner.userId,
                 action: "BILLING_DOWNGRADE",
                 entity: "User",
@@ -231,6 +242,10 @@ router.post(
           }
         }
       });
+
+      for (const input of pendingAudit) {
+        await AuditService.log(input);
+      }
 
       return res.status(200).json({ received: true });
     } catch (err) {
