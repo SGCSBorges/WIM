@@ -151,10 +151,9 @@ export const TransferService = {
     if (!req) throw createHttpError(404, "Transfer request not found");
     if (req.status !== "PENDING")
       throw createHttpError(409, "Transfer request is no longer pending");
-    await assertNotExpired(req.id, req.expiresAt);
-    if (req.article.deletedAt)
-      throw createHttpError(410, "Article has been deleted");
 
+    // Auth check BEFORE the expiry write — prevents an unauthorized caller
+    // from marking another user's expired transfer as EXPIRED.
     // PUSH: acceptor must be the requester (recipient)
     // PULL: acceptor must be the owner
     const expectedAcceptor =
@@ -164,6 +163,10 @@ export const TransferService = {
         403,
         "You are not the intended recipient of this transfer"
       );
+
+    if (req.article.deletedAt)
+      throw createHttpError(410, "Article has been deleted");
+    await assertNotExpired(req.id, req.expiresAt);
 
     const newOwnerId = req.requesterId;
 

@@ -427,6 +427,21 @@ describe("TransferService.rejectTransfer", () => {
       })
     );
   });
+
+  it("writes EXPIRED and throws 410 when the request has expired (requester calling PUSH)", async () => {
+    // requesterId=2 matches userId=2 so the auth check passes; expiry is in the past
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      ...baseReq,
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    mockPrisma.articleTransferRequest.updateMany.mockResolvedValue({ count: 1 });
+    await expect(TransferService.rejectTransfer("tok", 2)).rejects.toMatchObject({
+      status: 410,
+    });
+    expect(mockPrisma.articleTransferRequest.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: "EXPIRED", usedAt: expect.any(Date) } })
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -547,6 +562,53 @@ describe("TransferService.rejectTransfer — auth-before-expiry ordering", () =>
     // If auth ran AFTER expiry, updateMany would be called first. It must NOT be.
     await expect(
       TransferService.rejectTransfer("tok", 99)
+    ).rejects.toMatchObject({
+      status: 403,
+    });
+    expect(mockPrisma.articleTransferRequest.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("TransferService.revokeTransfer — auth-before-expiry ordering", () => {
+  it("throws 403 before writing EXPIRED when the caller is unauthorised", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      id: 1,
+      status: "PENDING",
+      direction: "PUSH" as const,
+      requesterId: 2,
+      ownerId: 1,
+      articleId: 10,
+      expiresAt: new Date(Date.now() - 1000), // already expired
+    });
+    // For PUSH, expectedRevoker = ownerId (1). userId 99 is unauthorized.
+    // If auth ran AFTER expiry, updateMany would be called first. It must NOT be.
+    await expect(
+      TransferService.revokeTransfer(1, 99)
+    ).rejects.toMatchObject({
+      status: 403,
+    });
+    expect(mockPrisma.articleTransferRequest.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("TransferService.acceptTransfer — auth-before-expiry ordering", () => {
+  it("throws 403 before writing EXPIRED when the caller is unauthorised", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue({
+      id: 1,
+      articleId: 10,
+      requesterId: 2,
+      ownerId: 1,
+      direction: "PUSH" as const,
+      status: "PENDING",
+      expiresAt: new Date(Date.now() - 1000), // already expired
+      article: { articleId: 10, articleNom: "TV", ownerUserId: 1, deletedAt: null },
+      requester: { userId: 2, email: "bob@test.com" },
+      owner: { userId: 1, email: "alice@test.com" },
+    });
+    // For PUSH, expectedAcceptor = requesterId (2). userId 99 is unauthorized.
+    // If auth ran AFTER expiry, updateMany would be called first. It must NOT be.
+    await expect(
+      TransferService.acceptTransfer("tok", 99)
     ).rejects.toMatchObject({
       status: 403,
     });
