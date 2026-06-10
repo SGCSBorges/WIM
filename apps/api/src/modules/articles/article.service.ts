@@ -635,7 +635,10 @@ export const ArticleService = {
         await ArticleService.restore(a.articleId, ownerUserId);
         count++;
       } catch (err) {
-        logger.warn({ articleId: a.articleId, err }, "[article] bulkRestore: row failed");
+        logger.warn(
+          { articleId: a.articleId, err },
+          "[article] bulkRestore: row failed"
+        );
       }
     }
     return { count };
@@ -659,7 +662,10 @@ export const ArticleService = {
         await ArticleService.hardRemove(a.articleId, ownerUserId);
         count++;
       } catch (err) {
-        logger.warn({ articleId: a.articleId, err }, "[article] bulkHardRemove: row failed");
+        logger.warn(
+          { articleId: a.articleId, err },
+          "[article] bulkHardRemove: row failed"
+        );
       }
     }
     return { count };
@@ -682,7 +688,10 @@ export const ArticleService = {
         await ArticleService.hardRemove(row.articleId, row.ownerUserId);
         deleted++;
       } catch (err) {
-        logger.warn({ articleId: row.articleId, err }, "[article] purgeTrashOlderThan: row failed");
+        logger.warn(
+          { articleId: row.articleId, err },
+          "[article] purgeTrashOlderThan: row failed"
+        );
       }
     }
     return { deleted };
