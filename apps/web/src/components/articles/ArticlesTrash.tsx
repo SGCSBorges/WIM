@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Trash2, Undo2 } from "lucide-react";
 import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import type { FetchedArticle } from "@wim/types";
 import { ErrorBanner, EmptyState } from "../common/States";
@@ -18,7 +19,8 @@ import { useToast } from "../common/Toast";
 import { PageHeader, Button } from "../ui";
 
 export default function ArticlesTrash() {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
+  const { formatDate } = usePreferences();
   const toast = useToast();
   const [items, setItems] = useState<FetchedArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -236,9 +238,7 @@ export default function ArticlesTrash() {
                 <p className="truncate font-medium ui-title">{a.articleNom}</p>
                 <p className="truncate text-xs ui-text-muted">
                   {a.articleModele}
-                  {a.updatedAt
-                    ? ` · ${new Date(a.updatedAt).toLocaleDateString(language)}`
-                    : ""}
+                  {a.updatedAt ? ` · ${formatDate(a.updatedAt)}` : ""}
                 </p>
               </div>
               <Button

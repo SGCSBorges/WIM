@@ -26,6 +26,7 @@ import { addMonths } from "../common/date";
 import { createHttpError } from "../../utils/http-error";
 import { AlertService } from "../alerts/alert.service";
 import { unlinkAttachmentFiles } from "../attachments/attachment.fs";
+import { logger } from "../../config/logger";
 
 // Reject a create/update that references location rows the caller does not own.
 // A single round trip: count owned rows in the requested set and compare. Any
@@ -633,8 +634,8 @@ export const ArticleService = {
       try {
         await ArticleService.restore(a.articleId, ownerUserId);
         count++;
-      } catch {
-        // Best-effort — a failure on one row shouldn't abort the whole bulk.
+      } catch (err) {
+        logger.warn({ articleId: a.articleId, err }, "[article] bulkRestore: row failed");
       }
     }
     return { count };
@@ -657,8 +658,8 @@ export const ArticleService = {
       try {
         await ArticleService.hardRemove(a.articleId, ownerUserId);
         count++;
-      } catch {
-        // Best-effort — same rationale as bulkRestore.
+      } catch (err) {
+        logger.warn({ articleId: a.articleId, err }, "[article] bulkHardRemove: row failed");
       }
     }
     return { count };
@@ -680,9 +681,8 @@ export const ArticleService = {
       try {
         await ArticleService.hardRemove(row.articleId, row.ownerUserId);
         deleted++;
-      } catch {
-        // Best-effort: a single failure (e.g. an attachment file already
-        // gone) shouldn't abort the whole sweep.
+      } catch (err) {
+        logger.warn({ articleId: row.articleId, err }, "[article] purgeTrashOlderThan: row failed");
       }
     }
     return { deleted };

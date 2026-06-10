@@ -116,7 +116,10 @@ export const ReminderProcessor = {
         },
         "[alerts] reminder failed"
       );
-      await AlertService.markFailed(data.alerteId, err);
+      // markFailed may itself throw if the alert was cascade-deleted while the
+      // job was in-flight. Swallow that so we always rethrow the original error
+      // and BullMQ records the correct failure reason.
+      await AlertService.markFailed(data.alerteId, err).catch(() => {});
       throw err;
     }
   },
@@ -177,7 +180,7 @@ export const ReminderProcessor = {
         },
         "[alerts] custom failed"
       );
-      await AlertService.markFailed(alerteId, err);
+      await AlertService.markFailed(alerteId, err).catch(() => {});
       throw err;
     }
   },

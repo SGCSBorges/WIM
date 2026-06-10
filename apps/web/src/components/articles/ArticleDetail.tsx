@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { format, parseISO } from "date-fns";
+import { usePreferences } from "../../preferences/preferences";
 import {
   Copy,
   Download,
@@ -94,12 +94,6 @@ type TimelineEntry = {
   body?: string;
 };
 
-function safeDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = parseISO(iso);
-  return Number.isNaN(d.getTime()) ? "—" : format(d, "dd MMM yyyy");
-}
-
 const TIMELINE_TONE: Record<TimelineEntry["kind"], BadgeTone> = {
   note: "neutral",
   attachment: "info",
@@ -116,6 +110,8 @@ const TIMELINE_ICON: Record<TimelineEntry["kind"], React.ReactNode> = {
 
 export default function ArticleDetail() {
   const { t, language } = useI18n();
+  const { formatDate } = usePreferences();
+  const safeDate = (iso: string | null | undefined) => formatDate(iso) || "—";
   const toast = useToast();
   const navigate = useNavigate();
   const [duplicating, setDuplicating] = useState(false);
