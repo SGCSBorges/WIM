@@ -597,7 +597,7 @@ export default function ProfileView() {
                     navigator.clipboard
                       ?.writeText(calendarUrl)
                       .then(() => showSuccess(t("calendar.copied")))
-                      .catch(() => {});
+                      .catch(() => toast.show(t("alerts.copyFailed"), { kind: "error" }));
                   }}
                   leftIcon={<Copy className="h-4 w-4" />}
                 >
