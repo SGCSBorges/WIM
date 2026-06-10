@@ -113,6 +113,13 @@ const getHeaders = (): Record<string, string> => ({
   "Content-Type": "application/json",
 });
 
+// Build a URL for an API endpoint. API_BASE_URL is a *relative* path ("/api")
+// in production behind the Render proxy, and `new URL()` throws on a relative
+// URL unless given a base — anchor on the current origin. An absolute
+// API_BASE_URL (dev / custom host) ignores the base, so one helper covers both.
+const apiUrl = (path: string): URL =>
+  new URL(`${API_BASE_URL}${path}`, window.location.origin);
+
 // 45s default — generous enough to ride out a Render free-tier cold start
 // (Postgres + API container can take ~30s to wake) without leaving real
 // hangs unbounded. Override per-call when the endpoint is known to be fast.
@@ -307,7 +314,7 @@ export const articlesAPI = {
    * so the caller can render a pager without a second fetch.
    */
   async getAll(params: ArticleListParams = {}): Promise<ArticleListResult> {
-    const url = new URL(`${API_BASE_URL}/articles`);
+    const url = apiUrl("/articles");
     const p = url.searchParams;
     if (params.locationId) p.set("locationId", String(params.locationId));
     if (params.tagId) p.set("tag", String(params.tagId));
@@ -422,7 +429,7 @@ export const articlesAPI = {
     errors: Array<{ row: number; message: string }>;
     dryRun?: boolean;
   }> {
-    const url = new URL(`${API_BASE_URL}/articles/import`);
+    const url = apiUrl("/articles/import");
     if (options.dryRun) url.searchParams.set("dryRun", "1");
     const response = await fetchWithTimeout(url.toString(), {
       method: "POST",
@@ -707,7 +714,7 @@ export const locationsAPI = {
    *  Returns `{ items, total, page, limit }` when pagination params are
    *  supplied; a bare list otherwise (legacy callers that don't paginate). */
   async getAll(page?: number, limit?: number) {
-    const url = new URL(`${API_BASE_URL}/locations`);
+    const url = apiUrl("/locations");
     if (page != null) url.searchParams.set("page", String(page));
     if (limit != null) url.searchParams.set("limit", String(limit));
     const response = await fetchWithTimeout(url.toString(), {
@@ -836,7 +843,7 @@ export const attachmentsAPI = {
     page?: number;
     limit?: number;
   }) {
-    const url = new URL(`${API_BASE_URL}/attachments`);
+    const url = apiUrl("/attachments");
     if (options?.articleId)
       url.searchParams.set("articleId", options.articleId.toString());
     if (options?.garantieId)
@@ -897,7 +904,7 @@ export const attachmentsAPI = {
    *  references the same file). */
   async deleteAttachment(id: number, options?: { removeFile?: boolean }) {
     const removeFile = options?.removeFile === true;
-    const url = new URL(`${API_BASE_URL}/attachments/${id}`);
+    const url = apiUrl(`/attachments/${id}`);
     if (removeFile) url.searchParams.set("removeFile", "true");
 
     const response = await fetchWithTimeout(url.toString(), {
@@ -1143,10 +1150,12 @@ export const calendarAPI = {
       );
   },
 
-  // Build the absolute feed URL from the API origin + returned path.
+  // Build the absolute feed URL from the API origin + returned path. When
+  // API_BASE_URL is relative ("/api" behind the proxy) the feed is served
+  // from the current origin.
   feedUrl(path: string): string {
     try {
-      return new URL(API_BASE_URL).origin + path;
+      return new URL(API_BASE_URL, window.location.origin).origin + path;
     } catch {
       return path;
     }
@@ -1162,7 +1171,7 @@ export const alertsAPI = {
     kind?: "WARRANTY" | "CUSTOM",
     articleId?: number
   ) {
-    const url = new URL(`${API_BASE_URL}/alerts`);
+    const url = apiUrl("/alerts");
     if (status) url.searchParams.set("status", status);
     if (kind) url.searchParams.set("kind", kind);
     if (articleId != null) url.searchParams.set("articleId", String(articleId));
@@ -1543,7 +1552,7 @@ export const adminAPI = {
       dir?: "asc" | "desc";
     } = {}
   ) {
-    const url = new URL(`${API_BASE_URL}/admin/users`);
+    const url = apiUrl("/admin/users");
     if (options.q) url.searchParams.set("q", options.q);
     if (options.sort) url.searchParams.set("sort", options.sort);
     if (options.dir) url.searchParams.set("dir", options.dir);
@@ -1768,7 +1777,7 @@ export const adminAPI = {
 // Warranties API
 export const warrantiesAPI = {
   async getAll(page?: number, limit?: number): Promise<WarrantyItem[]> {
-    const url = new URL(`${API_BASE_URL}/warranties`);
+    const url = apiUrl("/warranties");
     if (page != null) url.searchParams.set("page", String(page));
     if (limit != null) url.searchParams.set("limit", String(limit));
     const response = await fetchWithTimeout(url.toString(), {
@@ -1915,7 +1924,7 @@ export const reportsAPI = {
     tagId?: number | null;
     warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none" | null;
   }): Promise<Blob> {
-    const url = new URL(`${API_BASE_URL}/reports/portfolio.pdf`);
+    const url = apiUrl("/reports/portfolio.pdf");
     if (filters.locationId)
       url.searchParams.set("locationId", String(filters.locationId));
     if (filters.tagId) url.searchParams.set("tagId", String(filters.tagId));
@@ -1935,7 +1944,7 @@ export const reportsAPI = {
 // Shares API (owned-inventory sharing)
 export const sharesAPI = {
   async getOwned(page?: number, limit?: number): Promise<ShareItem[]> {
-    const url = new URL(`${API_BASE_URL}/shares/owned`);
+    const url = apiUrl("/shares/owned");
     if (page != null) url.searchParams.set("page", String(page));
     if (limit != null) url.searchParams.set("limit", String(limit));
     const response = await fetchWithTimeout(url.toString(), {
@@ -1976,7 +1985,7 @@ export const sharesAPI = {
     page?: number,
     limit?: number
   ): Promise<ShareInviteItem[]> {
-    const url = new URL(`${API_BASE_URL}/shares/invites/sent`);
+    const url = apiUrl("/shares/invites/sent");
     if (page != null) url.searchParams.set("page", String(page));
     if (limit != null) url.searchParams.set("limit", String(limit));
     const response = await fetchWithTimeout(url.toString(), {
@@ -2122,7 +2131,7 @@ export const sharedAPI = {
     page?: number,
     limit?: number
   ): Promise<SharedArticleRow[]> {
-    const url = new URL(`${API_BASE_URL}/shared/articles`);
+    const url = apiUrl("/shared/articles");
     if (page != null) url.searchParams.set("page", String(page));
     if (limit != null) url.searchParams.set("limit", String(limit));
     const response = await fetchWithTimeout(url.toString(), {
