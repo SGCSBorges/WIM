@@ -187,6 +187,9 @@ export const extras = {
     "export.target.warranties": "Warranties",
     "export.target.attachments": "Attachments",
     "export.success": "Exported {target} as {format}.",
+    "export.truncated":
+      "Export may be partial — your inventory has {total} records but only the first page was downloaded.",
+    "admin.forceLogout.success": "User has been signed out of all devices.",
 
     "nav.locations": "Locations",
     "locations.title": "Locations",
@@ -571,6 +574,7 @@ export const extras = {
       "Recent sign-in activity. Anything suspicious here? Change your password and review your sessions.",
     "security.activity.title": "Recent sign-in activity",
     "security.activity.empty": "No recent sign-in events yet.",
+    "security.activity.fetchError": "Failed to load sign-in history.",
     "security.activity.action.LOGIN": "Sign-in",
     "security.activity.action.LOGOUT": "Sign-out",
     "security.sessions.title": "Active sessions",
@@ -858,6 +862,10 @@ export const extras = {
     "export.target.warranties": "Garanties",
     "export.target.attachments": "Pièces jointes",
     "export.success": "{target} exportés en {format}.",
+    "export.truncated":
+      "L'export peut être incomplet — votre inventaire contient {total} éléments mais seulement la première page a été téléchargée.",
+    "admin.forceLogout.success":
+      "L'utilisateur a été déconnecté de tous ses appareils.",
 
     "nav.locations": "Lieux",
     "locations.title": "Lieux",
@@ -1257,6 +1265,8 @@ export const extras = {
       "Activité de connexion récente. Quelque chose de suspect ? Changez votre mot de passe et passez en revue vos sessions.",
     "security.activity.title": "Activité de connexion récente",
     "security.activity.empty": "Pas encore d'événements récents.",
+    "security.activity.fetchError":
+      "Impossible de charger l'historique des connexions.",
     "security.activity.action.LOGIN": "Connexion",
     "security.activity.action.LOGOUT": "Déconnexion",
     "security.sessions.title": "Sessions actives",
@@ -1542,6 +1552,10 @@ export const extras = {
     "export.target.warranties": "Garantias",
     "export.target.attachments": "Anexos",
     "export.success": "{target} exportados em {format}.",
+    "export.truncated":
+      "A exportação pode estar incompleta — o seu inventário tem {total} registos mas apenas a primeira página foi transferida.",
+    "admin.forceLogout.success":
+      "O utilizador foi desligado de todos os dispositivos.",
 
     "nav.locations": "Locais",
     "locations.title": "Locais",
@@ -1938,6 +1952,8 @@ export const extras = {
       "Actividade recente de sessão. Algo suspeito? Altere a sua palavra-passe e reveja as suas sessões.",
     "security.activity.title": "Actividade recente",
     "security.activity.empty": "Sem eventos recentes.",
+    "security.activity.fetchError":
+      "Não foi possível carregar o histórico de sessões.",
     "security.activity.action.LOGIN": "Início de sessão",
     "security.activity.action.LOGOUT": "Fim de sessão",
     "security.sessions.title": "Sessões activas",
@@ -2230,6 +2246,10 @@ export const extras = {
     "export.target.warranties": "Garantías",
     "export.target.attachments": "Adjuntos",
     "export.success": "{target} exportado(s) como {format}.",
+    "export.truncated":
+      "La exportación puede estar incompleta — su inventario tiene {total} registros pero solo se descargó la primera página.",
+    "admin.forceLogout.success":
+      "El usuario ha sido desconectado de todos los dispositivos.",
 
     "nav.locations": "Ubicaciones",
     "locations.title": "Ubicaciones",
@@ -2630,6 +2650,8 @@ export const extras = {
     "security.activity.title": "Actividad de inicio de sesión reciente",
     "security.activity.empty":
       "Aún no hay eventos de inicio de sesión recientes.",
+    "security.activity.fetchError":
+      "No se pudo cargar el historial de inicio de sesión.",
     "security.activity.action.LOGIN": "Inicio de sesión",
     "security.activity.action.LOGOUT": "Cierre de sesión",
     "security.sessions.title": "Sesiones activas",
@@ -2917,6 +2939,9 @@ export const extras = {
     "export.target.warranties": "Garanties",
     "export.target.attachments": "Bijlagen",
     "export.success": "{target} geëxporteerd als {format}.",
+    "export.truncated":
+      "Export kan onvolledig zijn — uw inventaris heeft {total} records maar alleen de eerste pagina is gedownload.",
+    "admin.forceLogout.success": "De gebruiker is afgemeld van alle apparaten.",
 
     "nav.locations": "Locaties",
     "locations.title": "Locaties",
@@ -3314,6 +3339,8 @@ export const extras = {
       "Recente aanmeldactiviteit. Ziet u hier iets verdachts? Wijzig uw wachtwoord en controleer uw sessies.",
     "security.activity.title": "Recente aanmeldactiviteit",
     "security.activity.empty": "Nog geen recente aanmeldgebeurtenissen.",
+    "security.activity.fetchError":
+      "Aanmeldgeschiedenis kon niet worden geladen.",
     "security.activity.action.LOGIN": "Aanmelden",
     "security.activity.action.LOGOUT": "Afmelden",
     "security.sessions.title": "Actieve sessies",

@@ -90,6 +90,7 @@ export default function NeedsAttention() {
 
   // Snooze the next scheduled warranty alert (if any) for this article.
   const snooze = async (a: FetchedArticle) => {
+    setBusyId(a.articleId);
     try {
       const items = await alertsAPI.getAll(
         "SCHEDULED",
@@ -103,7 +104,6 @@ export default function NeedsAttention() {
         toast.show(t("needsAttention.noPendingAlert"), { kind: "info" });
         return;
       }
-      setBusyId(a.articleId);
       await alertsAPI.snooze(next.alerteId, 7);
       setRows((prev) =>
         prev ? prev.filter((r) => r.article.articleId !== a.articleId) : prev
@@ -127,7 +127,7 @@ export default function NeedsAttention() {
           variant="ghost"
           size="sm"
           rightIcon={<ArrowRight className="h-4 w-4" />}
-          onClick={() => navigate("/articles?warranty=expiringSoon")}
+          onClick={() => navigate("/articles")}
         >
           {t("needsAttention.seeAll")}
         </Button>

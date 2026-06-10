@@ -93,6 +93,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   }, [t]);
 
   const fetchInvites = useCallback(async () => {
+    setError(null);
     try {
       const data = await sharesAPI.getSentInvites();
       setInvites(data);
@@ -112,11 +113,11 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
     setConfirmRevokeId(null);
     const share = shares.find((s) => s.inventoryShareId === shareId);
     if (!share) return;
-    if (onRevoke) onRevoke(shareId);
     setError(null);
     try {
       await sharesAPI.revoke(share.target.userId);
       setShares((prev) => prev.filter((s) => s.inventoryShareId !== shareId));
+      if (onRevoke) onRevoke(shareId);
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     }
@@ -279,7 +280,11 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
           aria-label={t("shares.title")}
           idPrefix="shares-tab"
           value={activeTab}
-          onChange={(id) => setActiveTab(id as "shares" | "invites")}
+          onChange={(id) => {
+            setActiveTab(id as "shares" | "invites");
+            setConfirmRevokeId(null);
+            setConfirmRevokeInviteId(null);
+          }}
           tabs={[
             {
               id: "shares",

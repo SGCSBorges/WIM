@@ -35,7 +35,12 @@ export default function DataExportPanel() {
       const filename = `wim-${target}-${stamp}.${format}`;
 
       if (target === "articles") {
-        const { items: rows } = await articlesAPI.getAll({ limit: 200 });
+        const { items: rows, total } = await articlesAPI.getAll({ limit: 200 });
+        if (total > rows.length) {
+          toast.show(t("export.truncated").replace("{total}", String(total)), {
+            kind: "info",
+          });
+        }
         if (format === "json") {
           downloadFile(
             filename,
@@ -90,7 +95,12 @@ export default function DataExportPanel() {
           downloadFile(filename, csv, "text/csv");
         }
       } else if (target === "warranties") {
-        const rows = await warrantiesAPI.getAll(1, 1000);
+        const rows = await warrantiesAPI.getAll(1, 500);
+        if (rows.length >= 500) {
+          toast.show(t("export.truncated").replace("{total}", "500+"), {
+            kind: "info",
+          });
+        }
         if (format === "json") {
           downloadFile(
             filename,

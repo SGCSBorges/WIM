@@ -30,6 +30,7 @@ import {
   statisticsAPI,
 } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
 import CreateUserModal from "./CreateUserModal";
 import ResetPasswordModal from "./ResetPasswordModal";
@@ -113,6 +114,7 @@ type AdminStatistics = {
 
 export default function AdminUsers() {
   const { t } = useI18n();
+  const toast = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [inventory, setInventory] = useState<UserInventory | null>(null);
@@ -246,6 +248,7 @@ export default function AdminUsers() {
     setError(null);
     try {
       await adminAPI.forceLogout(userId);
+      toast.show(t("admin.forceLogout.success"), { kind: "success" });
     } catch (e) {
       setError(getErrorMessage(e, t("admin.error.forceLogout")));
     } finally {
@@ -305,7 +308,13 @@ export default function AdminUsers() {
             variant="outline"
             size="sm"
             onClick={activeTab === "users" ? fetchUsers : fetchStatistics}
-            disabled={activeTab === "users" ? loadingUsers : loadingStats}
+            disabled={
+              activeTab === "users"
+                ? loadingUsers
+                : activeTab === "dashboard"
+                  ? loadingStats
+                  : true
+            }
             leftIcon={<RotateCw className="h-4 w-4" />}
           >
             {t("common.refresh")}

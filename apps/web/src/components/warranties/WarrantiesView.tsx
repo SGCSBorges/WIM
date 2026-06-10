@@ -182,6 +182,12 @@ export default function WarrantiesView() {
                         {t("warranties.duration")}: {w.garantieDuration}{" "}
                         {t("warranties.months")}
                       </span>
+                      {(w.garantieFin ?? w.garantieEndDate) && (
+                        <span>
+                          {t("warrantyForm.expiresOn")}{" "}
+                          {safeFormat(w.garantieFin ?? w.garantieEndDate)}
+                        </span>
+                      )}
                       <span className="inline-flex items-center gap-1">
                         <Package className="h-3.5 w-3.5" aria-hidden="true" />
                         {t("warranties.articleId")}: {w.garantieArticleId}

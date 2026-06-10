@@ -89,15 +89,6 @@ type Me = {
 // A small curated list keeps the selector usable; the API accepts any ISO code.
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF", "JPY", "BRL"];
 
-function formatDate(unixSeconds: number | null, language: string): string {
-  if (!unixSeconds) return "—";
-  return new Date(unixSeconds * 1000).toLocaleDateString(language, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
 function daysFromNow(unixSeconds: number | null): number | null {
   if (!unixSeconds) return null;
   const ms = unixSeconds * 1000 - Date.now();
@@ -110,7 +101,9 @@ function disconnectAndRedirect() {
 
 export default function ProfileView() {
   const { t, language } = useI18n();
-  const { density, setDensity } = usePreferences();
+  const { density, setDensity, formatDate: fmtDate } = usePreferences();
+  const formatBillingDate = (unixSeconds: number | null) =>
+    unixSeconds ? fmtDate(new Date(unixSeconds * 1000)) || "—" : "—";
   const toast = useToast();
   const [me, setMe] = useState<Me | null>(null);
   const [subscription, setSubscription] = useState<BillingSubscription | null>(
@@ -597,7 +590,9 @@ export default function ProfileView() {
                     navigator.clipboard
                       ?.writeText(calendarUrl)
                       .then(() => showSuccess(t("calendar.copied")))
-                      .catch(() => toast.show(t("alerts.copyFailed"), { kind: "error" }));
+                      .catch(() =>
+                        toast.show(t("alerts.copyFailed"), { kind: "error" })
+                      );
                   }}
                   leftIcon={<Copy className="h-4 w-4" />}
                 >
@@ -697,11 +692,10 @@ export default function ProfileView() {
                   <p className="mt-1 ui-text-warn">
                     {t("profile.billing.accessEndsOn")}{" "}
                     <strong>
-                      {formatDate(
+                      {formatBillingDate(
                         subscription.cancelAt ??
                           subscription.endedAt ??
-                          subscription.currentPeriodEnd,
-                        language
+                          subscription.currentPeriodEnd
                       )}
                     </strong>
                     {(() => {
@@ -739,7 +733,7 @@ export default function ProfileView() {
                       {t("profile.billing.nextBilling")}:
                     </span>{" "}
                     <strong>
-                      {formatDate(subscription.currentPeriodEnd, language)}
+                      {formatBillingDate(subscription.currentPeriodEnd)}
                     </strong>
                     {(() => {
                       const days = daysFromNow(subscription.currentPeriodEnd);

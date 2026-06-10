@@ -220,8 +220,8 @@ export default function SecuritySection() {
             {t("security.activity.title")}
           </p>
           {historyFailed && (
-            <p className="text-sm ui-text-muted">
-              {t("security.activity.empty")}
+            <p className="text-sm ui-text-error">
+              {t("security.activity.fetchError")}
             </p>
           )}
           {!historyFailed && events === null && (
