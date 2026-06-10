@@ -106,18 +106,15 @@ export const SessionService = {
 
   /** Revoke a specific session: deny the jti in Redis (so the live cookie
    *  bounces on the next request) and stamp `revokedAt` for the UI list. */
-  async revoke(userId: number, id: number, tokenExpUnix?: number) {
+  async revoke(userId: number, id: number) {
     const session = await prisma.userSession.findFirst({
       where: { id, userId, revokedAt: null },
     });
     if (!session) throw createHttpError(404, "Session not found");
-    // Token TTL: pass the *current* token's exp when available, otherwise
-    // assume a full 7d (the longest a WIM token can live).
-    const ttl =
-      tokenExpUnix && tokenExpUnix > Math.floor(Date.now() / 1000)
-        ? tokenExpUnix - Math.floor(Date.now() / 1000)
-        : 7 * 24 * 60 * 60;
-    await denyToken(session.jti, ttl);
+    // UserSession does not store the token's own exp, so we use the JWT max
+    // lifetime (7d) as the denylist TTL — always safe since tokens can't live
+    // longer than this and it matches what revokeOthers uses.
+    await denyToken(session.jti, 7 * 24 * 60 * 60);
     await prisma.userSession.update({
       where: { id },
       data: { revokedAt: new Date() },

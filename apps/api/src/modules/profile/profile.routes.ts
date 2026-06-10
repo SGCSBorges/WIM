@@ -63,7 +63,7 @@ router.delete(
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const id = idParam.parse(req.params.id);
-    await SessionService.revoke(req.user!.sub, id, req.user!.exp);
+    await SessionService.revoke(req.user!.sub, id);
     await auditAction(req, {
       action: "UPDATE",
       entity: "User",

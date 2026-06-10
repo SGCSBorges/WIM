@@ -346,25 +346,26 @@ describe("ShareService.cleanupSharingForUser", () => {
 });
 
 describe("ShareService.revokeInvite", () => {
-  it("rejects with 404 when invite does not belong to the user", async () => {
-    mockPrisma.shareInvite.findFirst.mockResolvedValue(null);
+  it("rejects with 404 when invite does not belong to the user or is not PENDING", async () => {
+    mockPrisma.shareInvite.updateMany.mockResolvedValue({ count: 0 });
     await expect(ShareService.revokeInvite(99, 1)).rejects.toMatchObject({
       status: 404,
-      message: "Invite not found",
     });
-    expect(mockPrisma.shareInvite.update).not.toHaveBeenCalled();
   });
 
-  it("marks invite as REVOKED when ownership is confirmed", async () => {
-    mockPrisma.shareInvite.findFirst.mockResolvedValue({
-      shareInviteId: 5,
-      ownerUserId: 1,
-    });
-    mockPrisma.shareInvite.update.mockResolvedValue({});
+  it("marks invite as REVOKED when ownership is confirmed and invite is PENDING", async () => {
+    mockPrisma.shareInvite.updateMany.mockResolvedValue({ count: 1 });
 
     await ShareService.revokeInvite(5, 1);
-    expect(mockPrisma.shareInvite.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: "REVOKED" } })
+    expect(mockPrisma.shareInvite.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          shareInviteId: 5,
+          ownerUserId: 1,
+          status: "PENDING",
+        }),
+        data: { status: "REVOKED" },
+      })
     );
   });
 });

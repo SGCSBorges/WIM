@@ -226,14 +226,12 @@ export const ShareService = {
   },
 
   async revokeInvite(inviteId: number, ownerUserId: number) {
-    const invite = await prisma.shareInvite.findFirst({
-      where: { shareInviteId: inviteId, ownerUserId },
-    });
-    if (!invite) throw createHttpError(404, "Invite not found");
-    await prisma.shareInvite.update({
-      where: { shareInviteId: inviteId },
+    const updated = await prisma.shareInvite.updateMany({
+      where: { shareInviteId: inviteId, ownerUserId, status: "PENDING" },
       data: { status: "REVOKED" },
     });
+    if (updated.count === 0)
+      throw createHttpError(404, "Invite not found or already processed");
   },
 
   async updateShare(

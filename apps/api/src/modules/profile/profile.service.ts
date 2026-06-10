@@ -256,6 +256,18 @@ export const ProfileService = {
         }) as Promise<{ count: number }>,
       userId
     );
+    // Also remove invites where this user is the *invitee* (matched by email).
+    // Without this, a future account registered with the same email could
+    // accept a token that was intended for the now-deleted user.
+    await chunkedDelete(
+      "shareInvite.invitee",
+      () => prisma.shareInvite.count({ where: { email: user.email } }),
+      () =>
+        prisma.shareInvite.deleteMany({
+          where: { email: user.email },
+        }) as Promise<{ count: number }>,
+      userId
+    );
     await chunkedDelete(
       "auditLog",
       () => prisma.auditLog.count({ where: { userId } }),
