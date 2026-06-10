@@ -14,6 +14,7 @@
 
 import { getRedis } from "../../libs/redis";
 import { logger } from "../../config/logger";
+import { withTimeout as raceTimeout } from "../../utils/with-timeout";
 
 const KEY_PREFIX = "auth:denylist:";
 
@@ -55,13 +56,8 @@ function logThrottled(
   }
 }
 
-function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
-  let t: NodeJS.Timeout | undefined;
-  const timer = new Promise<T>((_, reject) => {
-    t = setTimeout(() => reject(new Error("redis denylist op timed out")), ms);
-  });
-  return Promise.race([p.finally(() => t && clearTimeout(t)), timer]);
-}
+const withTimeout = <T>(p: Promise<T>, ms: number) =>
+  raceTimeout(p, ms, "redis denylist op timed out");
 
 export async function denyToken(
   jti: string,

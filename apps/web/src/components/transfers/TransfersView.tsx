@@ -58,6 +58,7 @@ export default function TransfersView() {
   }, [load]);
 
   async function handleAccept(transfer: TransferItem) {
+    if (actionLoading !== null) return;
     setActionLoading(transfer.id);
     try {
       await transfersAPI.accept(transfer.token);
@@ -73,6 +74,7 @@ export default function TransfersView() {
   }
 
   async function handleReject(transfer: TransferItem) {
+    if (actionLoading !== null) return;
     setActionLoading(transfer.id);
     try {
       await transfersAPI.reject(transfer.token);
@@ -88,6 +90,7 @@ export default function TransfersView() {
   }
 
   async function handleRevoke(transfer: TransferItem) {
+    if (actionLoading !== null) return;
     setActionLoading(transfer.id);
     try {
       await transfersAPI.revoke(transfer.id);

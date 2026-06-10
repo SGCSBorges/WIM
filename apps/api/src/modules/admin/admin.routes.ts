@@ -177,9 +177,16 @@ router.delete(
 
     // Wrap count-check and delete in a serializable transaction so two
     // concurrent admin-deletion requests cannot both bypass the last-admin guard.
+    // The role is re-read inside the tx — the snapshot above is only for the
+    // audit metadata and could be stale by the time the tx runs.
     await prisma.$transaction(
       async (tx) => {
-        if (user.role === "ADMIN") {
+        const fresh = await tx.user.findUnique({
+          where: { userId },
+          select: { role: true },
+        });
+        if (!fresh) throw createHttpError(404, "User not found");
+        if (fresh.role === "ADMIN") {
           const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
           if (adminCount <= 1)
             throw createHttpError(400, "Cannot delete the last admin user");
@@ -266,8 +273,17 @@ router.patch(
     > | null = null;
     const updated = await prisma.$transaction(
       async (tx) => {
+        // Re-read the role inside the tx — the snapshot above is for audit
+        // metadata only; a concurrent role change between the outer read and
+        // this tx would otherwise defeat the last-admin guard.
+        const fresh = await tx.user.findUnique({
+          where: { userId },
+          select: { role: true },
+        });
+        if (!fresh) throw createHttpError(404, "User not found");
+
         if (
-          target.role === "ADMIN" &&
+          fresh.role === "ADMIN" &&
           data.role !== undefined &&
           data.role !== "ADMIN"
         ) {
@@ -305,7 +321,7 @@ router.patch(
         // (USER). Covers POWER_USER→USER and ADMIN→USER; a POWER_USER↔ADMIN
         // move keeps shares since both can share.
         if (
-          roleAtLeast(target.role, "POWER_USER") &&
+          roleAtLeast(fresh.role, "POWER_USER") &&
           data.role !== undefined &&
           !roleAtLeast(data.role, "POWER_USER")
         ) {

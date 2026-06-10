@@ -10,6 +10,7 @@
 import { prisma } from "./libs/prisma";
 import { getRedis } from "./libs/redis";
 import { alertQueue } from "./jobs/queues";
+import { withTimeout as raceTimeout } from "./utils/with-timeout";
 
 // Short per-check timeouts so a slow/dead dependency can't hold up the
 // health endpoint past the timeouts an ops monitor expects.
@@ -24,13 +25,8 @@ export type HealthReport = {
   queue: { status: "ok" | "fail" | "skipped"; waiting: number };
 };
 
-async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
-  let t: NodeJS.Timeout | undefined;
-  const timer = new Promise<T>((_, reject) => {
-    t = setTimeout(() => reject(new Error("health-check timeout")), ms);
-  });
-  return Promise.race([p.finally(() => t && clearTimeout(t)), timer]);
-}
+const withTimeout = <T>(p: Promise<T>, ms: number) =>
+  raceTimeout(p, ms, "health-check timeout");
 
 /**
  * Probe every backing dependency the API depends on and return a structured

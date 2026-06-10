@@ -28,6 +28,10 @@ export default function TransferDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Guard against a second Enter/submit landing before the re-render
+    // disables the button — two in-flight requests would create two
+    // PENDING transfer rows.
+    if (loading) return;
     setError(null);
     setLoading(true);
     try {

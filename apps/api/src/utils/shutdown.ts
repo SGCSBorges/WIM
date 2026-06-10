@@ -6,6 +6,7 @@
 import type { Server } from "http";
 import type { Worker } from "bullmq";
 import { logger } from "../config/logger";
+import { withTimeout as raceTimeout } from "./with-timeout";
 
 const HTTP_DRAIN_MS = 10_000;
 const WORKER_DRAIN_MS = 10_000;
@@ -26,17 +27,8 @@ async function withTimeout(
   ms: number,
   label: string
 ): Promise<void> {
-  let t: ReturnType<typeof setTimeout> | undefined;
   try {
-    await Promise.race([
-      task().finally(() => t && clearTimeout(t)),
-      new Promise((_, reject) => {
-        t = setTimeout(
-          () => reject(new Error(`${label} timed out after ${ms}ms`)),
-          ms
-        );
-      }),
-    ]);
+    await raceTimeout(task(), ms, `${label} timed out after ${ms}ms`);
     logger.info({ phase: label }, "[shutdown] phase complete");
   } catch (err) {
     // A phase exceeding its drain budget is logged but doesn't stop the

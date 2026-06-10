@@ -17,6 +17,7 @@ vi.mock("../../libs/prisma", () => ({
       upsert: vi.fn(),
       findFirst: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -372,28 +373,46 @@ describe("ShareService.revokeInvite", () => {
 
 describe("ShareService.revokeShare", () => {
   it("rejects with 404 when active share does not exist", async () => {
-    mockPrisma.inventoryShare.findFirst.mockResolvedValue(null);
+    mockPrisma.inventoryShare.updateMany.mockResolvedValue({ count: 0 });
     await expect(ShareService.revokeShare(1, 2)).rejects.toMatchObject({
       status: 404,
       message: "Share not found",
     });
-    expect(mockPrisma.inventoryShare.update).not.toHaveBeenCalled();
   });
 
-  it("sets active to false on the share when found", async () => {
-    mockPrisma.inventoryShare.findFirst.mockResolvedValue({
-      inventoryShareId: 11,
-      ownerUserId: 1,
-      targetUserId: 2,
-      active: true,
-    });
-    mockPrisma.inventoryShare.update.mockResolvedValue({});
+  it("sets active to false atomically, scoped to the active share", async () => {
+    mockPrisma.inventoryShare.updateMany.mockResolvedValue({ count: 1 });
 
     await ShareService.revokeShare(1, 2);
-    expect(mockPrisma.inventoryShare.update).toHaveBeenCalledWith(
+    expect(mockPrisma.inventoryShare.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { inventoryShareId: 11 },
+        where: { ownerUserId: 1, targetUserId: 2, active: true },
         data: { active: false },
+      })
+    );
+  });
+});
+
+describe("ShareService.updateShare", () => {
+  it("rejects with 404 when the share is revoked or missing (active filter in predicate)", async () => {
+    mockPrisma.inventoryShare.updateMany.mockResolvedValue({ count: 0 });
+    await expect(ShareService.updateShare(1, 2, "WRITE")).rejects.toMatchObject(
+      { status: 404 }
+    );
+  });
+
+  it("updates permission only on the active share", async () => {
+    mockPrisma.inventoryShare.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.inventoryShare.findFirst.mockResolvedValue({
+      inventoryShareId: 11,
+      permission: "WRITE",
+    });
+
+    await ShareService.updateShare(1, 2, "WRITE");
+    expect(mockPrisma.inventoryShare.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { ownerUserId: 1, targetUserId: 2, active: true },
+        data: { permission: "WRITE" },
       })
     );
   });

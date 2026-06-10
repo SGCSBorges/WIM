@@ -159,9 +159,16 @@ export const ShareService = {
       throw createHttpError(400, "You cannot accept your own invite");
 
     return prisma.$transaction(async (tx) => {
-      // Atomically claim the invite: only one concurrent request wins.
+      // Atomically claim the invite: only one concurrent request wins. The
+      // expiresAt filter re-checks expiry inside the claim itself — the outer
+      // check above is just for the friendlier 410, and an invite expiring in
+      // the gap between the two must not be accepted.
       const claimed = await tx.shareInvite.updateMany({
-        where: { token, status: InviteStatus.PENDING },
+        where: {
+          token,
+          status: InviteStatus.PENDING,
+          expiresAt: { gt: new Date() },
+        },
         data: { status: InviteStatus.ACCEPTED, usedAt: new Date() },
       });
       if (claimed.count === 0)
@@ -239,32 +246,25 @@ export const ShareService = {
     targetUserId: number,
     permission: "READ" | "WRITE"
   ) {
+    // Single atomic write with active:true in the predicate — a revoked
+    // share must 404, and a revoke racing this call must not be overwritten.
+    const updated = await prisma.inventoryShare.updateMany({
+      where: { ownerUserId, targetUserId, active: true },
+      data: { permission },
+    });
+    if (updated.count === 0) throw createHttpError(404, "Share not found");
     const share = await prisma.inventoryShare.findFirst({
       where: { ownerUserId, targetUserId },
     });
-
-    if (!share) {
-      throw createHttpError(404, "Share not found");
-    }
-
-    return prisma.inventoryShare.update({
-      where: { inventoryShareId: share.inventoryShareId },
-      data: { permission },
-    });
+    if (!share) throw createHttpError(404, "Share not found");
+    return share;
   },
 
   async revokeShare(ownerUserId: number, targetUserId: number) {
-    const share = await prisma.inventoryShare.findFirst({
+    const revoked = await prisma.inventoryShare.updateMany({
       where: { ownerUserId, targetUserId, active: true },
-    });
-
-    if (!share) {
-      throw createHttpError(404, "Share not found");
-    }
-
-    await prisma.inventoryShare.update({
-      where: { inventoryShareId: share.inventoryShareId },
       data: { active: false },
     });
+    if (revoked.count === 0) throw createHttpError(404, "Share not found");
   },
 };
