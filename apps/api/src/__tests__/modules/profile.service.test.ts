@@ -35,6 +35,7 @@ vi.mock("../../libs/prisma", () => ({
     attachment: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
     garantie: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
     article: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
+    userSession: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
     $transaction: vi.fn(async (cb: unknown) => {
       if (typeof cb === "function") {
         return cb({ user: { count: vi.fn().mockResolvedValue(2) } });
@@ -135,6 +136,7 @@ describe("ProfileService.updateEmail", () => {
       userId: 1,
       email: "new@x.com",
       role: "USER",
+      tokenVersion: 2,
     });
 
     const result = await ProfileService.updateEmail(
@@ -142,9 +144,14 @@ describe("ProfileService.updateEmail", () => {
       "new@x.com",
       "correct-pw"
     );
-    expect(result).toEqual({ userId: 1, email: "new@x.com", role: "USER" });
+    expect(result).toMatchObject({ userId: 1, email: "new@x.com", role: "USER" });
     expect(mockPrisma.user.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { email: "new@x.com" } })
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: "new@x.com",
+          tokenVersion: { increment: 1 },
+        }),
+      })
     );
   });
 });

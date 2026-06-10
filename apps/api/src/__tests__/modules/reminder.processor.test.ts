@@ -11,7 +11,7 @@ vi.mock("../../libs/prisma", () => ({
 vi.mock("../../modules/alerts/alert.service", () => ({
   AlertService: {
     markSent: vi.fn(),
-    markFailed: vi.fn(),
+    markFailed: vi.fn().mockResolvedValue(undefined),
     createRecurrenceFollowUp: vi.fn(),
   },
 }));
