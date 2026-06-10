@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { AUDIT_ACTIONS, AUDIT_ENTITIES } from "@wim/types";
 import { Field, Input, Select, Button } from "../ui";
@@ -31,6 +32,7 @@ const ENTITIES = ["", ...AUDIT_ENTITIES];
 
 export default function AuditLogTab() {
   const { t } = useI18n();
+  const { formatDateTime } = usePreferences();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -151,7 +153,7 @@ export default function AuditLogTab() {
               <div className="flex items-center justify-between gap-2">
                 <span className="font-mono text-xs">{e.action}</span>
                 <span className="text-xs ui-text-muted">
-                  {new Date(e.createdAt).toLocaleString()}
+                  {formatDateTime(e.createdAt)}
                 </span>
               </div>
               <div className="text-xs ui-text-muted">
@@ -201,7 +203,7 @@ export default function AuditLogTab() {
               {entries.map((e) => (
                 <tr key={e.id} className="border-t ui-divider align-top">
                   <td className="whitespace-nowrap px-3 py-2 text-xs">
-                    {new Date(e.createdAt).toLocaleString()}
+                    {formatDateTime(e.createdAt)}
                   </td>
                   <td className="px-3 py-2">
                     {e.user?.email ?? (

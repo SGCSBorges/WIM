@@ -6,8 +6,8 @@
  * fields are optional; they print on the claim PDF.
  */
 import React, { useState } from "react";
-import { format } from "date-fns";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
 
 interface Warranty {
@@ -37,6 +37,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
   isLoading = false,
 }) => {
   const { t } = useI18n();
+  const { formatDate } = usePreferences();
   const [formData, setFormData] = useState<Omit<Warranty, "garantieId">>({
     garantieNom: warranty?.garantieNom || "",
     garantieDateAchat:
@@ -112,13 +113,12 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
     }
   };
 
-  // Calculate warranty end date
   const calculateEndDate = () => {
     if (formData.garantieDateAchat && formData.garantieDuration) {
       const purchaseDate = new Date(formData.garantieDateAchat);
       const endDate = new Date(purchaseDate);
       endDate.setMonth(endDate.getMonth() + formData.garantieDuration);
-      return format(endDate, "dd MMM yyyy");
+      return formatDate(endDate) || "";
     }
     return "";
   };

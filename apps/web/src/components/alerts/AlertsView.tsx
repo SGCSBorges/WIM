@@ -5,9 +5,9 @@
  * launches its own form within the page.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { format, parseISO } from "date-fns";
 import { Bell, Plus, RotateCw, ArrowUpDown, Ban, Repeat } from "lucide-react";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { alertsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
@@ -39,6 +39,7 @@ function statusTone(status: AlertStatus): BadgeTone {
 
 export default function AlertsView() {
   const { t } = useI18n();
+  const { formatDateTime } = usePreferences();
   const toast = useToast();
   const [items, setItems] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -349,8 +350,7 @@ export default function AlertsView() {
                     <div className="min-w-0">
                       <div className="font-medium ui-title">{a.alerteNom}</div>
                       <div className="text-xs ui-text-muted">
-                        {t("alerts.date")}:{" "}
-                        {format(parseISO(a.alerteDate), "dd MMM yyyy, HH:mm")}
+                        {t("alerts.date")}: {formatDateTime(a.alerteDate)}
                       </div>
 
                       {(a.garantie ||

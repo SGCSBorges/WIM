@@ -6,7 +6,6 @@
  * atomically on role downgrade — see acl.ts).
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { format, parseISO } from "date-fns";
 import {
   Users,
   Plus,
@@ -17,6 +16,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { sharesAPI, ShareItem, ShareInviteItem } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { isValidEmail } from "../../utils/validation";
@@ -58,6 +58,7 @@ function statusTone(status: string): BadgeTone {
 
 const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const { t } = useI18n();
+  const { formatDate } = usePreferences();
   const [shares, setShares] = useState<ShareItem[]>([]);
   const [invites, setInvites] = useState<ShareInviteItem[]>([]);
   const [activeTab, setActiveTab] = useState<"shares" | "invites">("shares");
@@ -363,7 +364,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       </div>
                       <p className="text-xs ui-text-muted">
                         {t("shares.label.sharedOn")}{" "}
-                        {format(parseISO(share.createdAt), "dd MMM yyyy")}
+                        {formatDate(share.createdAt)}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -455,16 +456,16 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                       <div className="space-y-0.5 text-xs ui-text-muted">
                         <p>
                           {t("shares.label.sentOn")}{" "}
-                          {format(parseISO(invite.createdAt), "dd MMM yyyy")}
+                          {formatDate(invite.createdAt)}
                         </p>
                         <p>
                           {t("shares.label.expiresOn")}{" "}
-                          {format(parseISO(invite.expiresAt), "dd MMM yyyy")}
+                          {formatDate(invite.expiresAt)}
                         </p>
                         {invite.usedAt && (
                           <p>
                             {t("shares.label.acceptedOn")}{" "}
-                            {format(parseISO(invite.usedAt), "dd MMM yyyy")}
+                            {formatDate(invite.usedAt)}
                           </p>
                         )}
                       </div>

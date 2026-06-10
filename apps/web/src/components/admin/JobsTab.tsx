@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Pause, Play, ChevronDown, ChevronRight } from "lucide-react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { Button, Section, Badge } from "../ui";
 
@@ -41,7 +42,8 @@ const COUNT_FIELDS = [
 ] as const;
 
 export default function JobsTab() {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
+  const { formatDateTime } = usePreferences();
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
@@ -138,9 +140,7 @@ export default function JobsTab() {
 
       <p className="text-xs ui-text-muted">
         {t("admin.jobs.nextRun")}:{" "}
-        {snap?.auditPruneNextRun
-          ? new Date(snap.auditPruneNextRun).toLocaleString(language)
-          : "—"}
+        {snap?.auditPruneNextRun ? formatDateTime(snap.auditPruneNextRun) : "—"}
       </p>
 
       <div className="ui-card space-y-2 p-4">
@@ -203,7 +203,7 @@ export default function JobsTab() {
                         </span>
                         {j.finishedOn && (
                           <span className="ui-text-muted">
-                            {new Date(j.finishedOn).toLocaleString(language)}
+                            {formatDateTime(j.finishedOn)}
                           </span>
                         )}
                         <Button

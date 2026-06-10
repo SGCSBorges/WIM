@@ -17,7 +17,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { addMonths, format as dfFormat } from "date-fns";
+import { addMonths } from "date-fns";
 import {
   ScanLine,
   Plus,
@@ -207,20 +207,16 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     onCancel?.();
   };
 
-  const { dateFormat } = usePreferences();
+  const { formatDate } = usePreferences();
 
-  // Live "Warranty expires on …" hint under the duration field. We keep the
-  // computation local instead of plumbing date-fns through Field so the read
-  // stays a plain `<p>`.
+  // Live "Warranty expires on …" hint under the duration field.
   const warrantyEndsAt = useMemo(() => {
     if (!warrantyEnabled || !warrantyDateAchat || !warrantyDuration)
       return null;
     const start = new Date(warrantyDateAchat);
     if (Number.isNaN(start.getTime())) return null;
-    const end = addMonths(start, warrantyDuration);
-    if (dateFormat === "system") return end.toLocaleDateString();
-    return dfFormat(end, dateFormat);
-  }, [warrantyEnabled, warrantyDateAchat, warrantyDuration, dateFormat]);
+    return formatDate(addMonths(start, warrantyDuration)) || null;
+  }, [warrantyEnabled, warrantyDateAchat, warrantyDuration, formatDate]);
 
   // Drag-and-drop wrapper for the proof input. The hidden <input> below stays
   // for keyboard / screen-reader users; this just makes the surrounding area

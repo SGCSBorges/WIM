@@ -6,7 +6,6 @@
  * that normalizes API-hosted /uploads paths to absolute URLs.
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { format, parseISO } from "date-fns";
 import {
   Paperclip,
   Plus,
@@ -20,6 +19,7 @@ import {
   File as FileIcon,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
@@ -61,6 +61,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   isLoading = false,
 }) => {
   const { t } = useI18n();
+  const { formatDate } = usePreferences();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<
@@ -434,7 +435,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                   </div>
                   <p className="text-xs ui-text-muted">
                     {formatFileSize(attachment.fileSize)} ·{" "}
-                    {format(parseISO(attachment.createdAt), "dd MMM yyyy")}
+                    {formatDate(attachment.createdAt)}
                   </p>
 
                   {(attachment.article || attachment.garantie) && (
