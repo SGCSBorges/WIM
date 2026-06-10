@@ -183,7 +183,15 @@ export default function BulkEditDialog({
       {error && <p className="text-sm ui-text-error">{error}</p>}
 
       <div className="flex items-center justify-end gap-2">
-        <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            reset();
+            onClose();
+          }}
+          disabled={busy}
+        >
           {t("common.cancel")}
         </Button>
         <Button onClick={apply} loading={busy} disabled={ids.length === 0}>

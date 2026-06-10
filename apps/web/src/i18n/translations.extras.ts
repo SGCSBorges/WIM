@@ -594,6 +594,7 @@ export const extras = {
       "Scan this QR code with an authenticator app (1Password, Authy, Google Authenticator).",
     "twoFactor.qrAlt": "TOTP setup QR code",
     "twoFactor.urlCopied": "Setup URL copied to clipboard.",
+    "twoFactor.urlCopyFailed": "Could not copy to clipboard.",
     "twoFactor.codeLabel": "Enter the 6-digit code",
     "twoFactor.backupTitle": "Save these backup codes",
     "twoFactor.backupHint":
@@ -1280,6 +1281,7 @@ export const extras = {
       "Scannez ce code QR avec une application d'authentification (1Password, Authy, Google Authenticator).",
     "twoFactor.qrAlt": "Code QR de configuration TOTP",
     "twoFactor.urlCopied": "URL de configuration copiée.",
+    "twoFactor.urlCopyFailed": "Impossible de copier dans le presse-papiers.",
     "twoFactor.codeLabel": "Entrez le code à 6 chiffres",
     "twoFactor.backupTitle": "Sauvegardez ces codes de secours",
     "twoFactor.backupHint":
@@ -1960,6 +1962,8 @@ export const extras = {
       "Leia este código QR com uma app de autenticação (1Password, Authy, Google Authenticator).",
     "twoFactor.qrAlt": "Código QR de configuração TOTP",
     "twoFactor.urlCopied": "URL de configuração copiado.",
+    "twoFactor.urlCopyFailed":
+      "Não foi possível copiar para a área de transferência.",
     "twoFactor.codeLabel": "Introduza o código de 6 dígitos",
     "twoFactor.backupTitle": "Guarde estes códigos de recuperação",
     "twoFactor.backupHint":
@@ -2650,6 +2654,7 @@ export const extras = {
       "Escanea este código QR con una app de autenticación (1Password, Authy, Google Authenticator).",
     "twoFactor.qrAlt": "Código QR de configuración TOTP",
     "twoFactor.urlCopied": "URL de configuración copiada al portapapeles.",
+    "twoFactor.urlCopyFailed": "No se pudo copiar al portapapeles.",
     "twoFactor.codeLabel": "Introduce el código de 6 dígitos",
     "twoFactor.backupTitle": "Guarda estos códigos de recuperación",
     "twoFactor.backupHint":
@@ -3333,6 +3338,7 @@ export const extras = {
       "Scan deze QR-code met een authenticator-app (1Password, Authy, Google Authenticator).",
     "twoFactor.qrAlt": "QR-code voor TOTP-instellingen",
     "twoFactor.urlCopied": "Setup-URL naar klembord gekopieerd.",
+    "twoFactor.urlCopyFailed": "Kopiëren naar klembord mislukt.",
     "twoFactor.codeLabel": "Voer de 6-cijferige code in",
     "twoFactor.backupTitle": "Bewaar deze back-upcodes",
     "twoFactor.backupHint":

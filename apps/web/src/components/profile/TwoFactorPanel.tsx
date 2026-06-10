@@ -179,7 +179,9 @@ export default function TwoFactorPanel({
                   .then(() =>
                     toast.show(t("twoFactor.urlCopied"), { kind: "success" })
                   )
-                  .catch(() => {});
+                  .catch(() =>
+                    toast.show(t("twoFactor.urlCopyFailed"), { kind: "error" })
+                  );
               }}
             >
               {otpauthUrl}
