@@ -819,7 +819,9 @@ export default function AdminUsers() {
           userId={resetPwTarget.userId}
           email={resetPwTarget.email}
           onClose={() => setResetPwTarget(null)}
-          onDone={() => undefined}
+          onDone={() =>
+            toast.show(t("admin.resetPassword.success"), { kind: "success" })
+          }
         />
       )}
     </div>

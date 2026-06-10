@@ -212,6 +212,31 @@ router.put(
       metadata: { field: "email" },
     });
 
+    // tokenVersion was bumped — deny the current jti and reissue a fresh
+    // token at the new version so the calling device stays logged in.
+    if (req.user?.jti && req.user.exp) {
+      const ttl = req.user.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) await denyToken(req.user.jti, ttl);
+      void prisma.userSession
+        .updateMany({
+          where: { jti: req.user.jti, revokedAt: null },
+          data: { revokedAt: new Date() },
+        })
+        .catch(() => {});
+    }
+    const { token: fresh, jti: freshJti } = signTokenWithJti(
+      updated.userId,
+      updated.role,
+      updated.tokenVersion
+    );
+    void SessionService.create({
+      userId: updated.userId,
+      jti: freshJti,
+      ip: req.ip ?? null,
+      userAgent: req.get("user-agent") ?? null,
+    }).catch(() => {});
+    res.cookie("wim_token", fresh, cookieOptsFor(req));
+
     res.json(updated);
   })
 );

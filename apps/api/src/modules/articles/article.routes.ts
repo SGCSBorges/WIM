@@ -49,8 +49,8 @@ const ImportSchema = z.object({
   rows: z
     .array(
       z.object({
-        name: z.string().trim().max(100),
-        model: z.string().trim().max(100),
+        name: z.string().trim().min(1).max(100),
+        model: z.string().trim().min(1).max(100),
         description: z.string().trim().max(255).optional().nullable(),
         price: z.coerce.number().nonnegative().max(1e10).optional().nullable(),
         locations: z.array(z.string().trim().max(120)).default([]),

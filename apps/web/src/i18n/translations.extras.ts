@@ -57,6 +57,7 @@ export const extras = {
     "trash.bulk.restore": "Restore selected",
     "trash.bulk.purge": "Delete selected forever",
     "trash.bulk.clear": "Clear selection",
+    "articles.bulk.selectRow": "Select {name}",
     "trash.bulk.selectRow": "Select {name}",
     "trash.bulk.restored": "Restored {count} article(s).",
     "trash.bulk.purged": "Permanently deleted {count} article(s).",
@@ -190,6 +191,7 @@ export const extras = {
     "export.truncated":
       "Export may be partial — your inventory has {total} records but only the first page was downloaded.",
     "admin.forceLogout.success": "User has been signed out of all devices.",
+    "admin.resetPassword.success": "Password reset successfully.",
 
     "nav.locations": "Locations",
     "locations.title": "Locations",
@@ -728,6 +730,7 @@ export const extras = {
     "trash.bulk.restore": "Restaurer la sélection",
     "trash.bulk.purge": "Supprimer définitivement la sélection",
     "trash.bulk.clear": "Effacer la sélection",
+    "articles.bulk.selectRow": "Sélectionner {name}",
     "trash.bulk.selectRow": "Sélectionner {name}",
     "trash.bulk.restored": "{count} article(s) restauré(s).",
     "trash.bulk.purged": "{count} article(s) supprimé(s) définitivement.",
@@ -866,6 +869,7 @@ export const extras = {
       "L'export peut être incomplet — votre inventaire contient {total} éléments mais seulement la première page a été téléchargée.",
     "admin.forceLogout.success":
       "L'utilisateur a été déconnecté de tous ses appareils.",
+    "admin.resetPassword.success": "Mot de passe réinitialisé avec succès.",
 
     "nav.locations": "Lieux",
     "locations.title": "Lieux",
@@ -1420,6 +1424,7 @@ export const extras = {
     "trash.bulk.restore": "Restaurar selecionados",
     "trash.bulk.purge": "Eliminar selecionados definitivamente",
     "trash.bulk.clear": "Limpar seleção",
+    "articles.bulk.selectRow": "Selecionar {name}",
     "trash.bulk.selectRow": "Selecionar {name}",
     "trash.bulk.restored": "{count} artigo(s) restaurado(s).",
     "trash.bulk.purged": "{count} artigo(s) eliminado(s) definitivamente.",
@@ -1556,6 +1561,7 @@ export const extras = {
       "A exportação pode estar incompleta — o seu inventário tem {total} registos mas apenas a primeira página foi transferida.",
     "admin.forceLogout.success":
       "O utilizador foi desligado de todos os dispositivos.",
+    "admin.resetPassword.success": "Palavra-passe redefinida com sucesso.",
 
     "nav.locations": "Locais",
     "locations.title": "Locais",
@@ -2109,6 +2115,7 @@ export const extras = {
     "trash.bulk.restore": "Restaurar selección",
     "trash.bulk.purge": "Eliminar selección para siempre",
     "trash.bulk.clear": "Borrar selección",
+    "articles.bulk.selectRow": "Seleccionar {name}",
     "trash.bulk.selectRow": "Seleccionar {name}",
     "trash.bulk.restored": "Restaurado(s) {count} artículo(s).",
     "trash.bulk.purged": "Eliminado(s) permanentemente {count} artículo(s).",
@@ -2250,6 +2257,7 @@ export const extras = {
       "La exportación puede estar incompleta — su inventario tiene {total} registros pero solo se descargó la primera página.",
     "admin.forceLogout.success":
       "El usuario ha sido desconectado de todos los dispositivos.",
+    "admin.resetPassword.success": "Contraseña restablecida con éxito.",
 
     "nav.locations": "Ubicaciones",
     "locations.title": "Ubicaciones",
@@ -2805,6 +2813,7 @@ export const extras = {
     "trash.bulk.restore": "Selectie herstellen",
     "trash.bulk.purge": "Selectie definitief verwijderen",
     "trash.bulk.clear": "Selectie wissen",
+    "articles.bulk.selectRow": "{name} selecteren",
     "trash.bulk.selectRow": "{name} selecteren",
     "trash.bulk.restored": "{count} artikel(en) hersteld.",
     "trash.bulk.purged": "{count} artikel(en) definitief verwijderd.",
@@ -2942,6 +2951,7 @@ export const extras = {
     "export.truncated":
       "Export kan onvolledig zijn — uw inventaris heeft {total} records maar alleen de eerste pagina is gedownload.",
     "admin.forceLogout.success": "De gebruiker is afgemeld van alle apparaten.",
+    "admin.resetPassword.success": "Wachtwoord succesvol opnieuw ingesteld.",
 
     "nav.locations": "Locaties",
     "locations.title": "Locaties",

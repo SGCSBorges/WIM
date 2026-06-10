@@ -126,10 +126,14 @@ export const ProfileService = {
     if (existing && existing.userId !== userId)
       throw createHttpError(409, "Email already in use");
 
+    // Bump tokenVersion to invalidate every JWT issued before this point —
+    // same rationale as updatePassword: changing the primary identity
+    // credential (email) should kill all other sessions. The route layer
+    // reissues a fresh token to the calling device so the user stays logged in.
     return prisma.user.update({
       where: { userId },
-      data: { email },
-      select: { userId: true, email: true, role: true },
+      data: { email, tokenVersion: { increment: 1 } },
+      select: { userId: true, email: true, role: true, tokenVersion: true },
     });
   },
 
@@ -335,6 +339,11 @@ export const ProfileService = {
       },
       userId
     );
+
+    // Active sessions — delete so rows don't linger as orphans after the
+    // user row is gone (the FK cascade handles this in most setups, but
+    // the explicit delete keeps the sequence predictable).
+    await prisma.userSession.deleteMany({ where: { userId } });
 
     // Finally, the user row itself.
     await prisma.user.delete({ where: { userId } });

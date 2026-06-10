@@ -1139,7 +1139,10 @@ const ArticlesList: React.FC = () => {
                   >
                     <input
                       type="checkbox"
-                      aria-label={`Select ${article.articleNom}`}
+                      aria-label={t("articles.bulk.selectRow").replace(
+                        "{name}",
+                        article.articleNom
+                      )}
                       checked={selectedIds.has(article.articleId)}
                       onChange={() => toggleSelected(article.articleId)}
                       className="mt-1 h-4 w-4 accent-[var(--primary)]"
@@ -1249,7 +1252,10 @@ const ArticlesList: React.FC = () => {
                         <td className="px-3 py-4">
                           <input
                             type="checkbox"
-                            aria-label={`Select ${article.articleNom}`}
+                            aria-label={t("articles.bulk.selectRow").replace(
+                              "{name}",
+                              article.articleNom
+                            )}
                             checked={selectedIds.has(article.articleId)}
                             onChange={() => toggleSelected(article.articleId)}
                             className="h-4 w-4 accent-[var(--primary)]"

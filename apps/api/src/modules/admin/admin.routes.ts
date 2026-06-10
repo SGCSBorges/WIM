@@ -306,6 +306,11 @@ router.patch(
           data: {
             ...(data.email !== undefined ? { email: data.email } : {}),
             ...(data.role !== undefined ? { role: data.role } : {}),
+            // Bump tokenVersion when email changes so all of the target user's
+            // existing sessions are invalidated on their next request.
+            ...(data.email !== undefined && data.email !== target.email
+              ? { tokenVersion: { increment: 1 } }
+              : {}),
           },
           select: {
             userId: true,
