@@ -5,7 +5,6 @@
  * label so the signal isn't color-only.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { format, parseISO } from "date-fns";
 import {
   ShieldCheck,
   RotateCw,
@@ -14,6 +13,7 @@ import {
   Package,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { warrantiesAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
@@ -24,14 +24,6 @@ import {
   type WarrantyStatus,
 } from "../../utils/warrantyStatus";
 import RenewWarrantyDialog from "./RenewWarrantyDialog";
-
-// Format an ISO date defensively — a malformed/empty value from the API must
-// not crash the whole list. Falls back to an em dash.
-function safeFormat(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = parseISO(iso);
-  return Number.isNaN(d.getTime()) ? "—" : format(d, "dd MMM yyyy");
-}
 
 type Warranty = {
   garantieId: number;
@@ -49,6 +41,10 @@ type StatusFilter = WarrantyStatus | "all";
 
 export default function WarrantiesView() {
   const { t } = useI18n();
+  const { formatDate } = usePreferences();
+  // Pref-aware date with a defensive em-dash fallback — a malformed value
+  // from the API must not crash the whole list.
+  const safeFormat = (iso: string | null | undefined) => formatDate(iso) || "—";
   const [items, setItems] = useState<Warranty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

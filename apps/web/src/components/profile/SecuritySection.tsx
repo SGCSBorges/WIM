@@ -200,7 +200,7 @@ export default function SecuritySection() {
                           variant="ghost"
                           size="sm"
                           className="ml-auto text-danger"
-                          disabled={busyId === s.id}
+                          loading={busyId === s.id}
                           onClick={() => revoke(s.id)}
                         >
                           {t("security.sessions.revoke")}

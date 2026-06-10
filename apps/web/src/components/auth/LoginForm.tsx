@@ -122,7 +122,9 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   return (
     <div className="flex min-h-screen bg-bg">
       {/* Brand panel (lg+) */}
-      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-brand p-12 text-primary-contrast lg:flex">
+      {/* text-white (not text-primary-contrast): the contrast token is
+          near-black in dark/ocean/cyber and would vanish on the gradient. */}
+      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-brand p-12 text-white lg:flex">
         <div className="flex items-center gap-3">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 backdrop-blur">
             <ShieldCheck className="h-6 w-6" aria-hidden="true" />
@@ -140,13 +142,13 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/15">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <span className="text-primary-contrast/90">{label}</span>
+                <span className="text-white/90">{label}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative z-10 text-sm text-primary-contrast/70">
+        <p className="relative z-10 text-sm text-white/70">
           {t("auth.subtitle")}
         </p>
 
@@ -204,18 +206,28 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           </div>
 
           {challengeToken ? (
-            <div className="space-y-4">
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void submitTotp();
+              }}
+            >
               <Field
                 label={t("auth.totp.codeLabel")}
                 htmlFor="auth-totp-code"
                 hint={t("auth.totp.hint")}
               >
+                {/* Callback ref focuses on mount: the challenge step replaces
+                    the password form the user just submitted, so moving focus
+                    to its only input is the expected continuation. */}
                 <Input
                   id="auth-totp-code"
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   pattern="[0-9]*"
+                  ref={(el: HTMLInputElement | null) => el?.focus()}
                   value={totpCode}
                   onChange={(e) => setTotpCode(e.target.value)}
                   placeholder="123456"
@@ -231,9 +243,9 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               )}
               <Button
                 fullWidth
+                type="submit"
                 loading={totpBusy}
                 disabled={!totpCode.trim()}
-                onClick={submitTotp}
               >
                 {t("auth.totp.verify")}
               </Button>
@@ -248,7 +260,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               >
                 {t("common.cancel")}
               </button>
-            </div>
+            </form>
           ) : (
             <form
               onSubmit={handleApiSubmit(onSubmit)}

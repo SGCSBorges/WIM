@@ -159,7 +159,11 @@ export default function SharedArticlesView() {
                               : "shared.permission.read.tooltip"
                           )}
                         >
-                          {r.permission}
+                          {t(
+                            r.permission === "WRITE"
+                              ? "shared.permission.write"
+                              : "shared.permission.read"
+                          )}
                         </Badge>
                         <Badge
                           tone="neutral"

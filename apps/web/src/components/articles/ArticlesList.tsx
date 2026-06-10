@@ -59,14 +59,8 @@ import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
 import { consumeSharedDraft } from "../../utils/shareTarget";
 import { isPowerUserOrAdmin } from "../../utils/roles";
-import {
-  PageHeader,
-  Button,
-  Input,
-  Select,
-  Badge,
-  type BadgeTone,
-} from "../ui";
+import { warrantyStatusFor } from "../../utils/warrantyStatus";
+import { PageHeader, Button, Input, Select, Badge } from "../ui";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
@@ -84,61 +78,45 @@ const ArticlesList: React.FC = () => {
     return Math.floor((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  // Defer to the server-side CSV export: it honours every list filter, returns
-  // a full structured export (locations/tags/warranty columns), and isn't
-  // capped to the current page like a client-side serializer would be.
-  const exportToCsv = async () => {
+  // Busy flag per export so a Render cold start (~30s) shows a spinner
+  // instead of a dead-looking button that queues duplicate downloads.
+  const [exporting, setExporting] = useState<"csv" | "pdf" | "labels" | null>(
+    null
+  );
+  const runExport = async (
+    kind: "csv" | "pdf" | "labels",
+    job: () => Promise<void>
+  ) => {
+    if (exporting !== null) return;
+    setExporting(kind);
     try {
-      const qs = searchParams.toString();
-      const blob = await articlesAPI.inventoryCsv(qs);
-      downloadBlob(
-        `wim-inventory-${new Date().toISOString().slice(0, 10)}.csv`,
-        blob
-      );
+      await job();
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
         kind: "error",
       });
+    } finally {
+      setExporting(null);
     }
   };
 
+  // Defer to the server-side CSV export: it honours every list filter, returns
+  // a full structured export (locations/tags/warranty columns), and isn't
+  // capped to the current page like a client-side serializer would be.
+  const exportToCsv = async () => {
+    const qs = searchParams.toString();
+    const blob = await articlesAPI.inventoryCsv(qs);
+    downloadBlob(
+      `wim-inventory-${new Date().toISOString().slice(0, 10)}.csv`,
+      blob
+    );
+  };
+
+  // Shared classifier so the list badge can never disagree with the detail
+  // page, the filter pill, or the dashboard (see utils/warrantyStatus).
   const getWarrantyStatus = (garantie: Article["garantie"]) => {
-    if (!garantie || !garantie.garantieFin) {
-      return { status: "none", label: t("common.no"), color: "gray" };
-    }
-
-    const endDate = new Date(garantie.garantieFin);
-    const now = new Date();
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(now.getDate() + 30);
-
-    if (endDate < now) {
-      return {
-        status: "expired",
-        label: t("articles.warranty.expired"),
-        color: "red",
-      };
-    } else if (endDate <= thirtyDaysFromNow) {
-      return {
-        status: "expiring-soon",
-        label: t("articles.warranty.expiringSoon"),
-        color: "yellow",
-      };
-    } else {
-      return {
-        status: "valid",
-        label: t("articles.warranty.valid"),
-        color: "green",
-      };
-    }
-  };
-
-  // Theme-aware Badge tone for the warranty color buckets.
-  const warrantyTone = (color: string): BadgeTone => {
-    if (color === "red") return "danger";
-    if (color === "yellow") return "warning";
-    if (color === "green") return "success";
-    return "neutral";
+    const info = warrantyStatusFor(garantie?.garantieFin);
+    return { tone: info.tone, label: t(info.labelKey) };
   };
 
   const [articles, setArticles] = useState<FetchedArticle[]>([]);
@@ -575,29 +553,53 @@ const ArticlesList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // Themed inline naming form (window.prompt is unstyled, blocks the main
+  // thread, and looks broken inside the installed PWA).
+  const [namingView, setNamingView] = useState(false);
+  const [viewName, setViewName] = useState("");
+  const [savingView, setSavingView] = useState(false);
+
   const saveCurrentView = async () => {
-    const name = window.prompt(t("savedViews.namePrompt"))?.trim();
-    if (!name) return;
+    const name = viewName.trim();
+    if (!name || savingView) return;
+    setSavingView(true);
     try {
       await savedViewsAPI.create(name, searchParams.toString());
       await loadSavedViews();
       toast.show(t("savedViews.saved"), { kind: "success" });
+      setNamingView(false);
+      setViewName("");
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
         kind: "error",
       });
+    } finally {
+      setSavingView(false);
     }
   };
 
-  const deleteView = async (id: number) => {
-    try {
-      await savedViewsAPI.remove(id);
-      setSavedViews((prev) => prev.filter((v) => v.id !== id));
-    } catch (e) {
-      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-        kind: "error",
+  // Optimistic remove + Undo toast — same pattern as single-article delete,
+  // since the X sits a few px from the apply button and misclicks happen.
+  const deleteView = (view: SavedView) => {
+    setSavedViews((prev) => prev.filter((v) => v.id !== view.id));
+    const timer = setTimeout(() => {
+      savedViewsAPI.remove(view.id).catch((e) => {
+        setSavedViews((prev) => [...prev, view]);
+        toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+          kind: "error",
+        });
       });
-    }
+    }, 5000);
+    toast.show(t("savedViews.deleted").replace("{name}", view.name), {
+      ttl: 5000,
+      action: {
+        label: t("common.undo"),
+        onClick: () => {
+          clearTimeout(timer);
+          setSavedViews((prev) => [...prev, view]);
+        },
+      },
+    });
   };
 
   return (
@@ -773,8 +775,9 @@ const ArticlesList: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={exportToCsv}
-            disabled={articles.length === 0}
+            onClick={() => void runExport("csv", exportToCsv)}
+            loading={exporting === "csv"}
+            disabled={articles.length === 0 || exporting !== null}
             leftIcon={<FileDown className="h-4 w-4" />}
           >
             {t("articles.export.csv")}
@@ -782,18 +785,16 @@ const ArticlesList: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={async () => {
-              try {
+            onClick={() =>
+              void runExport("pdf", async () =>
                 downloadBlob(
                   "inventory-manifest.pdf",
                   await articlesAPI.inventoryPdf()
-                );
-              } catch (e) {
-                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-                  kind: "error",
-                });
-              }
-            }}
+                )
+              )
+            }
+            loading={exporting === "pdf"}
+            disabled={exporting !== null}
             leftIcon={<FileText className="h-4 w-4" />}
           >
             {t("articles.export.pdf")}
@@ -801,19 +802,16 @@ const ArticlesList: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={async () => {
-              try {
+            onClick={() =>
+              void runExport("labels", async () =>
                 downloadBlob(
                   "article-labels.pdf",
                   await articlesAPI.labelsPdf()
-                );
-              } catch (e) {
-                toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-                  kind: "error",
-                });
-              }
-            }}
-            disabled={articles.length === 0}
+                )
+              )
+            }
+            loading={exporting === "labels"}
+            disabled={articles.length === 0 || exporting !== null}
             leftIcon={<FileText className="h-4 w-4" />}
           >
             {t("articles.export.labels")}
@@ -870,7 +868,7 @@ const ArticlesList: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => deleteView(v.id)}
+              onClick={() => deleteView(v)}
               aria-label={t("savedViews.delete")}
               className="text-danger leading-none"
             >
@@ -878,14 +876,59 @@ const ArticlesList: React.FC = () => {
             </button>
           </span>
         ))}
-        <button
-          type="button"
-          onClick={saveCurrentView}
-          className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs ui-text-muted hover:bg-surface-muted"
-        >
-          <Plus className="h-3 w-3" aria-hidden="true" />
-          {t("savedViews.save")}
-        </button>
+        {namingView ? (
+          <form
+            className="inline-flex items-center gap-1"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void saveCurrentView();
+            }}
+          >
+            {/* Callback ref focuses on mount: the user's explicit "save
+                view" click moves focus into the form's only input. */}
+            <Input
+              ref={(el: HTMLInputElement | null) => el?.focus()}
+              value={viewName}
+              onChange={(e) => setViewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setNamingView(false);
+                  setViewName("");
+                }
+              }}
+              placeholder={t("savedViews.namePrompt")}
+              className="h-7 w-44 rounded-full px-2.5 text-xs"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              loading={savingView}
+              disabled={!viewName.trim()}
+            >
+              {t("common.save")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setNamingView(false);
+                setViewName("");
+              }}
+            >
+              {t("common.cancel")}
+            </Button>
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setNamingView(true)}
+            className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs ui-text-muted hover:bg-surface-muted"
+          >
+            <Plus className="h-3 w-3" aria-hidden="true" />
+            {t("savedViews.save")}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -1013,10 +1056,13 @@ const ArticlesList: React.FC = () => {
                     <td className="w-10 px-3 py-4">
                       <div className="h-4 w-4 animate-pulse rounded ui-panel" />
                     </td>
+                    {/* Inline width: an interpolated `w-${w}` class would be
+                        purged by Tailwind's scanner and render zero-width. */}
                     {[12, 60, 40, 80, 20, 24, 20, 24, 16, 48].map((w, j) => (
                       <td key={j} className="px-6 py-4">
                         <div
-                          className={`h-4 animate-pulse rounded ui-panel w-${w}`}
+                          className="h-4 animate-pulse rounded ui-panel"
+                          style={{ width: `${w * 4}px`, maxWidth: "100%" }}
                         />
                       </td>
                     ))}
@@ -1028,10 +1074,14 @@ const ArticlesList: React.FC = () => {
         ) : articles.length === 0 && hasActiveFilters ? (
           <EmptyState
             icon={<Search className="h-6 w-6" />}
-            title={t("articles.search.noResults").replace(
-              "{query}",
+            title={
               qParam.trim()
-            )}
+                ? t("articles.search.noResults").replace(
+                    "{query}",
+                    qParam.trim()
+                  )
+                : t("articles.filter.noResults")
+            }
             action={
               <Button
                 variant="outline"
@@ -1109,7 +1159,7 @@ const ArticlesList: React.FC = () => {
                         {article.articleModele}
                       </p>
                       <div className="flex flex-wrap items-center gap-1 text-xs">
-                        <Badge tone={warrantyTone(ws.color)}>{ws.label}</Badge>
+                        <Badge tone={ws.tone}>{ws.label}</Badge>
                         {article.purchasePrice != null && (
                           <span className="ui-text-muted">
                             {formatMoney(
@@ -1244,9 +1294,7 @@ const ArticlesList: React.FC = () => {
                             : "—"}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm">
-                          <Badge tone={warrantyTone(ws.color)}>
-                            {ws.label}
-                          </Badge>
+                          <Badge tone={ws.tone}>{ws.label}</Badge>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                           {!article.garantie?.garantieFin || days === null ? (

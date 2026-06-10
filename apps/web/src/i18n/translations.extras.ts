@@ -249,6 +249,9 @@ export const extras = {
 
     "articles.search.placeholder": "Search by name or model…",
     "articles.search.noResults": 'No articles match "{query}".',
+    "articles.filter.noResults": "No articles match the current filters.",
+    "shared.permission.read": "Read",
+    "shared.permission.write": "Edit",
     "articles.export.csv": "Export CSV",
     "articles.table.expiresIn": "Expires in",
     "articles.warranty.daysLeft": "days",
@@ -431,6 +434,7 @@ export const extras = {
     "savedViews.save": "Save view",
     "savedViews.title": "Saved filter views",
     "savedViews.saved": "View saved.",
+    "savedViews.deleted": 'Deleted view "{name}".',
     "savedViews.delete": "Delete view",
     "savedViews.namePrompt": "Name this filtered view:",
     "scan.button": "Scan",
@@ -667,7 +671,7 @@ export const extras = {
     "transfer.expiresOn": "Expires",
     "transfer.tabIncoming": "Incoming",
     "transfer.tabOutgoing": "Outgoing",
-    "transfer.pendingCount": "pending",
+    "transfer.pendingCount": "{count} pending",
   },
   fr: {
     "auth.hero.tagline":
@@ -918,6 +922,10 @@ export const extras = {
 
     "articles.search.placeholder": "Rechercher par nom ou modèle…",
     "articles.search.noResults": "Aucun article ne correspond à « {query} ».",
+    "articles.filter.noResults":
+      "Aucun article ne correspond aux filtres actuels.",
+    "shared.permission.read": "Lecture",
+    "shared.permission.write": "Modification",
     "articles.export.csv": "Exporter CSV",
     "articles.table.expiresIn": "Expire dans",
     "articles.warranty.daysLeft": "jours",
@@ -1107,6 +1115,7 @@ export const extras = {
     "savedViews.save": "Enregistrer la vue",
     "savedViews.title": "Vues de filtres enregistrées",
     "savedViews.saved": "Vue enregistrée.",
+    "savedViews.deleted": "Vue « {name} » supprimée.",
     "savedViews.delete": "Supprimer la vue",
     "savedViews.namePrompt": "Nommez cette vue filtrée :",
     "scan.button": "Scanner",
@@ -1348,7 +1357,7 @@ export const extras = {
     "transfer.expiresOn": "Expire le",
     "transfer.tabIncoming": "Entrants",
     "transfer.tabOutgoing": "Sortants",
-    "transfer.pendingCount": "en attente",
+    "transfer.pendingCount": "{count} en attente",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -1595,6 +1604,10 @@ export const extras = {
 
     "articles.search.placeholder": "Pesquisar por nome ou modelo…",
     "articles.search.noResults": 'Nenhum artigo corresponde a "{query}".',
+    "articles.filter.noResults":
+      "Nenhum artigo corresponde aos filtros atuais.",
+    "shared.permission.read": "Leitura",
+    "shared.permission.write": "Edição",
     "articles.export.csv": "Exportar CSV",
     "articles.table.expiresIn": "Expira em",
     "articles.warranty.daysLeft": "dias",
@@ -1784,6 +1797,7 @@ export const extras = {
     "savedViews.save": "Guardar vista",
     "savedViews.title": "Vistas de filtros guardadas",
     "savedViews.saved": "Vista guardada.",
+    "savedViews.deleted": 'Vista "{name}" eliminada.',
     "savedViews.delete": "Eliminar vista",
     "savedViews.namePrompt": "Dê um nome a esta vista filtrada:",
     "scan.button": "Digitalizar",
@@ -2024,7 +2038,7 @@ export const extras = {
     "transfer.expiresOn": "Expira em",
     "transfer.tabIncoming": "Recebidos",
     "transfer.tabOutgoing": "Enviados",
-    "transfer.pendingCount": "pendente",
+    "transfer.pendingCount": "{count} pendente(s)",
   },
   es: {
     "auth.hero.tagline": "Todo lo que posees, con garantía, en un solo lugar.",
@@ -2276,6 +2290,10 @@ export const extras = {
 
     "articles.search.placeholder": "Buscar por nombre o modelo…",
     "articles.search.noResults": 'Ningún artículo coincide con "{query}".',
+    "articles.filter.noResults":
+      "Ningún artículo coincide con los filtros actuales.",
+    "shared.permission.read": "Lectura",
+    "shared.permission.write": "Edición",
     "articles.export.csv": "Exportar CSV",
     "articles.table.expiresIn": "Caduca en",
     "articles.warranty.daysLeft": "días",
@@ -2466,6 +2484,7 @@ export const extras = {
     "savedViews.save": "Guardar vista",
     "savedViews.title": "Vistas de filtro guardadas",
     "savedViews.saved": "Vista guardada.",
+    "savedViews.deleted": 'Vista "{name}" eliminada.',
     "savedViews.delete": "Eliminar vista",
     "savedViews.namePrompt": "Nombra esta vista filtrada:",
     "scan.button": "Escanear",
@@ -2708,7 +2727,7 @@ export const extras = {
     "transfer.expiresOn": "Expira el",
     "transfer.tabIncoming": "Entrantes",
     "transfer.tabOutgoing": "Salientes",
-    "transfer.pendingCount": "pendiente",
+    "transfer.pendingCount": "{count} pendiente(s)",
   },
   nl: {
     "auth.hero.tagline": "Alles wat u bezit, onder garantie, op één plek.",
@@ -2956,6 +2975,10 @@ export const extras = {
 
     "articles.search.placeholder": "Zoeken op naam of model…",
     "articles.search.noResults": 'Geen artikelen komen overeen met "{query}".',
+    "articles.filter.noResults":
+      "Geen artikelen komen overeen met de huidige filters.",
+    "shared.permission.read": "Lezen",
+    "shared.permission.write": "Bewerken",
     "articles.export.csv": "CSV exporteren",
     "articles.table.expiresIn": "Verloopt over",
     "articles.warranty.daysLeft": "dagen",
@@ -3144,6 +3167,7 @@ export const extras = {
     "savedViews.save": "Weergave opslaan",
     "savedViews.title": "Opgeslagen filterweergaven",
     "savedViews.saved": "Weergave opgeslagen.",
+    "savedViews.deleted": 'Weergave "{name}" verwijderd.',
     "savedViews.delete": "Weergave verwijderen",
     "savedViews.namePrompt": "Geef deze gefilterde weergave een naam:",
     "scan.button": "Scannen",
@@ -3387,7 +3411,7 @@ export const extras = {
     "transfer.expiresOn": "Verloopt op",
     "transfer.tabIncoming": "Inkomend",
     "transfer.tabOutgoing": "Uitgaand",
-    "transfer.pendingCount": "in behandeling",
+    "transfer.pendingCount": "{count} in behandeling",
   },
 } as const;
 
