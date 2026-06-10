@@ -7,7 +7,7 @@
  * Shows a live "new end date" preview so the user sees exactly what the
  * server will compute, using the same `addMonths` semantic the API uses.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { addMonths, format as dfFormat } from "date-fns";
 import Modal from "../common/Modal";
 import { Button, Field, Input, Segmented, Textarea } from "../ui";
@@ -69,6 +69,23 @@ export default function RenewWarrantyDialog({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset to the caller's intended mode (and clear transient state) each time
+  // the dialog opens — without this, mode/note/error persist across open cycles
+  // when the component stays mounted (ArticleDetail keeps it alive while
+  // article.garantie exists and only toggles `open`).
+  useEffect(() => {
+    if (!open) return;
+    setMode(initialMode);
+    setNote("");
+    setError(null);
+    setRenewDate(toIsoDate(new Date()));
+    setRenewDuration(warranty.garantieDuration || 24);
+    setExtendMonths(12);
+    // Capture prop values at open time; intentionally exclude them from deps
+    // so the effect only fires on the open transition, not on every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Live preview of what `garantieFin` will become on the server. Date-fns
   // `addMonths` matches the API implementation in apps/api/src/modules/common/date.
@@ -132,7 +149,10 @@ export default function RenewWarrantyDialog({
       <Segmented
         ariaLabel={t("warranty.renew.modeLabel")}
         value={mode}
-        onChange={(v) => setMode(v as RenewWarrantyDialogMode)}
+        onChange={(v) => {
+          setMode(v as RenewWarrantyDialogMode);
+          setError(null);
+        }}
         options={[
           { value: "renew", label: t("warranty.renew.tab.renew") },
           { value: "extend", label: t("warranty.renew.tab.extend") },

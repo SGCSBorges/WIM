@@ -110,8 +110,10 @@ const TIMELINE_ICON: Record<TimelineEntry["kind"], React.ReactNode> = {
 
 export default function ArticleDetail() {
   const { t, language } = useI18n();
-  const { formatDate } = usePreferences();
+  const { formatDate, formatDateTime } = usePreferences();
   const safeDate = (iso: string | null | undefined) => formatDate(iso) || "—";
+  const safeDateTime = (iso: string | null | undefined) =>
+    formatDateTime(iso) || "—";
   const toast = useToast();
   const navigate = useNavigate();
   const [duplicating, setDuplicating] = useState(false);
@@ -780,7 +782,7 @@ export default function ArticleDetail() {
                       </span>
                     </span>
                     <span className="shrink-0 text-xs ui-text-muted">
-                      {safeDate(e.date)}
+                      {safeDateTime(e.date)}
                     </span>
                   </div>
                   {e.body && (
@@ -1052,7 +1054,7 @@ export default function ArticleDetail() {
                             <p className="break-words text-sm">{n.content}</p>
                           </div>
                           <p className="text-xs ui-text-muted">
-                            {safeDate(n.createdAt)}
+                            {safeDateTime(n.createdAt)}
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">

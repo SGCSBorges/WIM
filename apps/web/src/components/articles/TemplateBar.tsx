@@ -15,11 +15,8 @@ import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
 import Modal from "../common/Modal";
 import { Button, Field, Input, Select } from "../ui";
-import type { Location, Tag } from "../../types";
 
 interface TemplateBarProps {
-  locations: Location[];
-  tags: Tag[];
   /** Called by the bar to snapshot the form's current state at save time. */
   getCurrentPayload: () => ArticleTemplatePayload;
   /** Called when the user picks a template; the form merges the payload. */
@@ -38,6 +35,7 @@ export default function TemplateBar({
   const [templates, setTemplates] = useState<ArticleTemplate[] | null>(null);
   const [picked, setPicked] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [failed, setFailed] = useState(false);
@@ -88,7 +86,8 @@ export default function TemplateBar({
   };
 
   const removeTemplate = async () => {
-    if (!picked || !templates) return;
+    if (!picked || !templates || deleting) return;
+    setDeleting(true);
     try {
       await articleTemplatesAPI.remove(Number(picked));
       setTemplates((prev) =>
@@ -100,6 +99,8 @@ export default function TemplateBar({
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
         kind: "error",
       });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -127,6 +128,8 @@ export default function TemplateBar({
           className="text-danger"
           leftIcon={<Trash2 className="h-4 w-4" />}
           onClick={removeTemplate}
+          loading={deleting}
+          disabled={deleting}
         >
           {t("common.delete")}
         </Button>
@@ -143,7 +146,10 @@ export default function TemplateBar({
 
       <Modal
         open={saveOpen}
-        onClose={() => setSaveOpen(false)}
+        onClose={() => {
+          setSaveName("");
+          setSaveOpen(false);
+        }}
         titleId={TITLE_ID}
         panelClassName="ui-card w-full max-w-md space-y-4 p-5"
       >
@@ -165,7 +171,10 @@ export default function TemplateBar({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setSaveOpen(false)}
+            onClick={() => {
+              setSaveName("");
+              setSaveOpen(false);
+            }}
             disabled={saving}
           >
             {t("common.cancel")}

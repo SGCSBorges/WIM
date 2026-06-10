@@ -478,8 +478,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 
       {!article && (
         <TemplateBar
-          locations={locations}
-          tags={tags}
           getCurrentPayload={() => ({
             articleNom: formData.articleNom || undefined,
             articleModele: formData.articleModele || undefined,

@@ -43,6 +43,7 @@ export default function BarcodeScanner({ open, onClose, onDetected }: Props) {
 
   useEffect(() => {
     if (!open) return;
+    setError(null);
     const Ctor = getCtor();
     if (!Ctor) {
       setError(t("scan.unsupported"));
@@ -63,8 +64,10 @@ export default function BarcodeScanner({ open, onClose, onDetected }: Props) {
       try {
         const codes = await detector.detect(video);
         if (codes.length > 0 && codes[0].rawValue) {
+          stream?.getTracks().forEach((tr) => tr.stop());
+          stream = null;
           onDetected(codes[0].rawValue);
-          return; // stop the loop; parent closes the modal
+          return;
         }
       } catch {
         // transient decode errors are expected between frames
@@ -93,7 +96,8 @@ export default function BarcodeScanner({ open, onClose, onDetected }: Props) {
       cancelAnimationFrame(raf);
       stream?.getTracks().forEach((tr) => tr.stop());
     };
-  }, [open, onDetected, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, t]);
 
   return (
     <Modal
