@@ -165,6 +165,21 @@ npm --workspace apps/web run test:e2e
 - **Don't introduce email enumeration**: helpers that look up a user by
   email should return the same error for "not found" vs "found but
   wrong role" (see `ShareService.createInvite`).
+- **Status transitions are atomic `updateMany` with the precondition in
+  the WHERE clause** (`status: "PENDING"`, `active: true`,
+  `expiresAt: { gt: now }`), checking `count === 0` — never
+  read-then-update, which races. See `assertNotExpired`,
+  `ShareService.revokeInvite/updateShare/revokeShare`, `acceptInvite`.
+- **Auth checks come BEFORE any state-mutating guard** (e.g. the lazy
+  EXPIRED stamp in `assertNotExpired`) so an unauthorized caller can't
+  trigger writes. Tests under "auth-before-expiry ordering" enforce it.
+- **Serializable-transaction guards must re-read inside the tx**: a role
+  snapshot taken before `$transaction` is stale by definition — the
+  admin last-admin guards re-fetch the target's role inside the tx and
+  keep the outer read only for audit metadata.
+- **Timeout racing**: use `utils/with-timeout.ts` (`withTimeout(p, ms,
+  message)`) — it cancels the timer when the promise settles. Don't
+  hand-roll `Promise.race` + `setTimeout` copies.
 - **Don't add error handling, fallbacks, or comments for impossible
   cases.** Only at system boundaries.
 - **Comments**: describe *why*, not *what*. Skip them entirely when the
@@ -235,6 +250,10 @@ unchanged when `User.totpEnabled = false`.
   the UI can mark "this device"); `DELETE /api/profile/me/sessions/:id`
   (revokes via the existing `denyToken` + sets `revokedAt`);
   `POST /api/profile/me/sessions/revoke-others`.
+  Denylist TTL on revoke is always the JWT max lifetime (7d):
+  `UserSession` doesn't store each token's own `exp`, and using the
+  *caller's* exp once let a revoked session reactivate when the
+  caller's token expired first. Don't "optimize" this back.
 - **TOTP 2FA**: `User.totpEnabled` (fast-path flag) + `TotpSecret`
   (base32 secret + bcrypt-hashed single-use backup codes + verified
   flag). Setup → verify → disable, all password-gated. Login: when
@@ -243,7 +262,9 @@ unchanged when `User.totpEnabled = false`.
   for a session) instead of dropping a cookie; the client POSTs the
   code to `/auth/login/verify-totp` to mint the real session cookie +
   `UserSession`. `otplib` is pinned at `^12.0.1` (v13 dropped the
-  named `authenticator` export).
+  named `authenticator` export). `TotpService.verify` checks the code
+  *before* the already-verified early return — an idempotent re-verify
+  must still require a valid code.
 - Web: `Profile → Security` mounts `SecuritySection` (sessions list +
   login history) and the `TwoFactorPanel` wizard.
 
@@ -295,6 +316,11 @@ outgoing per-user shares, and revokes pending invites — inside the same
 transaction as the role change. (Billing only ever touches POWER_USER rows;
 the ADMIN → USER case is the admin-demote path.)
 
+Account deletion (`ProfileService.deleteAccount`) also deletes ShareInvite
+rows where the deleted user is the **invitee** (matched by email — there's
+no FK). Without that, someone re-registering with the same email could
+accept a stale token and gain access to a third party's inventory.
+
 ## Article ownership transfer
 
 Permanent transfer of an article (and all its related data) between two
@@ -340,11 +366,15 @@ Pull button in `SharedArticlesView` rows. Outgoing ACCEPTED rows render
 the article name as plain text (not a link) — the former owner no longer
 has access to the article after a successful transfer.
 
-Known limitation: two concurrent PULL accepts for the **same article** (but
-different request rows) can both complete under Postgres READ COMMITTED, with
-the last commit silently winning the `ownerUserId`. This is unlikely in
-practice (owner must explicitly accept two different requests near-simultaneously)
-and not yet mitigated with a `SELECT ... FOR UPDATE` on the article row.
+Known limitations (accepted, low-probability):
+  - Two concurrent PULL accepts for the **same article** (different request
+    rows) can both complete under Postgres READ COMMITTED, the last commit
+    silently winning `ownerUserId`. Would need `SELECT ... FOR UPDATE` on
+    the article row.
+  - The "one PENDING PUSH per article" / "one PENDING invite per
+    (owner,email)" duplicate checks are read-then-create, not atomic — two
+    truly simultaneous creates can both pass. A partial unique index would
+    close it; the client-side double-submit guards make it improbable.
 
 Key files:
   - `apps/api/src/modules/articles/transfer.service.ts`
@@ -366,6 +396,14 @@ Key files:
   the Stripe `success_url`.
 - Per-user billing details (next bill / cancel-at-period-end) come from
   `GET /api/billing/me`, which calls Stripe live.
+- Webhook handler details that look odd but are load-bearing:
+  `AuditService.log` always uses the module-level prisma client, so audit
+  inputs are collected into `pendingAudit` during the idempotency
+  `$transaction` and written *after* it commits (an in-tx call would
+  survive a rollback). The downgrade condition guards `Boolean(endedAt)`
+  with `status !== "active" && status !== "trialing"` — Stripe can send
+  `subscription.updated` with a non-null `ended_at` on a recovered
+  subscription, which must not demote the user.
 
 ## Admin
 
@@ -374,7 +412,9 @@ Key files:
   tabs: Dashboard / Users / Audit log.
 - User row actions: inline role edit (last-admin protection in a
   serializable tx), reset password (bumps tokenVersion), force-logout
-  (also bumps tokenVersion), delete user.
+  (also bumps tokenVersion), delete user. The last-admin guards re-read
+  the target's role **inside** the tx (the pre-tx snapshot is for audit
+  metadata only — see Conventions).
 - Cursor-paginated audit log under `/api/admin/audit-log`. Action union
   is in `apps/api/src/modules/audit/audit.service.ts` — add new strings
   there before logging them.
