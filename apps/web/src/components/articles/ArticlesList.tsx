@@ -788,7 +788,7 @@ const ArticlesList: React.FC = () => {
             onClick={() =>
               void runExport("pdf", async () =>
                 downloadBlob(
-                  "inventory-manifest.pdf",
+                  `wim-inventory-${new Date().toISOString().slice(0, 10)}.pdf`,
                   await articlesAPI.inventoryPdf()
                 )
               )
@@ -805,7 +805,7 @@ const ArticlesList: React.FC = () => {
             onClick={() =>
               void runExport("labels", async () =>
                 downloadBlob(
-                  "article-labels.pdf",
+                  `wim-labels-${new Date().toISOString().slice(0, 10)}.pdf`,
                   await articlesAPI.labelsPdf()
                 )
               )
