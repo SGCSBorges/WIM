@@ -52,7 +52,15 @@ export default function TagsManager({
   }, [t, toast]);
 
   useEffect(() => {
-    if (open) void load();
+    if (!open) return;
+    // Clear inline row state from the previous open cycle — a leftover edit
+    // input, delete confirm, or merge picker would otherwise reappear (and
+    // could point at a tag renamed/deleted in the meantime).
+    setEditId(null);
+    setEditName("");
+    setMergeFor(null);
+    setDeleteFor(null);
+    void load();
   }, [open, load]);
 
   const afterChange = async () => {
@@ -88,6 +96,9 @@ export default function TagsManager({
       );
       await afterChange();
     } catch (e) {
+      // Close the picker so a retry remounts the (uncontrolled) Select —
+      // re-selecting the same target wouldn't fire onChange otherwise.
+      setMergeFor(null);
       toast.show(getErrorMessage(e, t("tags.manage.mergeError")), {
         kind: "error",
       });
@@ -203,9 +214,11 @@ export default function TagsManager({
                     className="w-44"
                     aria-label={t("tags.manage.mergeTarget")}
                     defaultValue=""
+                    disabled={busyId !== null}
                     onChange={(e) => {
                       const intoId = Number(e.target.value);
-                      if (intoId) void doMerge(tag.tagId, intoId);
+                      if (intoId && busyId === null)
+                        void doMerge(tag.tagId, intoId);
                     }}
                   >
                     <option value="">{t("tags.manage.mergePick")}</option>

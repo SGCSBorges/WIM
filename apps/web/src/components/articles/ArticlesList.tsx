@@ -445,7 +445,13 @@ const ArticlesList: React.FC = () => {
     );
     setTotal((t0) => Math.max(0, t0 - 1));
 
+    // fired/undone flags close the hover-pause edge: the toast's auto-dismiss
+    // pauses while hovered, so Undo can remain clickable after the 5s timer
+    // has already sent the DELETE.
+    const state = { fired: false, undone: false };
     const timer = setTimeout(() => {
+      if (state.undone) return;
+      state.fired = true;
       articlesAPI.delete(article.articleId).catch((err) => {
         restoreArticle(article);
         toast.show(getErrorMessage(err, t("common.errorOccurred")), {
@@ -461,6 +467,8 @@ const ArticlesList: React.FC = () => {
         action: {
           label: t("common.undo"),
           onClick: () => {
+            if (state.fired) return;
+            state.undone = true;
             clearTimeout(timer);
             restoreArticle(article);
           },
@@ -582,7 +590,10 @@ const ArticlesList: React.FC = () => {
   // since the X sits a few px from the apply button and misclicks happen.
   const deleteView = (view: SavedView) => {
     setSavedViews((prev) => prev.filter((v) => v.id !== view.id));
+    const state = { fired: false, undone: false };
     const timer = setTimeout(() => {
+      if (state.undone) return;
+      state.fired = true;
       savedViewsAPI.remove(view.id).catch((e) => {
         setSavedViews((prev) => [...prev, view]);
         toast.show(getErrorMessage(e, t("common.errorOccurred")), {
@@ -595,6 +606,8 @@ const ArticlesList: React.FC = () => {
       action: {
         label: t("common.undo"),
         onClick: () => {
+          if (state.fired) return;
+          state.undone = true;
           clearTimeout(timer);
           setSavedViews((prev) => [...prev, view]);
         },

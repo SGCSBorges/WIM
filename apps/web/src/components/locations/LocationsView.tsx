@@ -146,7 +146,14 @@ export default function LocationsView() {
     if (!snapshot) return;
     setItems((prev) => prev.filter((l) => l.locationId !== id));
 
+    // The toast ttl must match the delete timer: the default undo-toast ttl
+    // (8s, pausable on hover) outlives the 5s window, leaving a clickable
+    // Undo after the DELETE has already been sent. The fired/undone flags
+    // close the remaining hover-pause edge.
+    const state = { fired: false, undone: false };
     const timer = window.setTimeout(() => {
+      if (state.undone) return;
+      state.fired = true;
       void locationsAPI.delete(id).catch((e) => {
         setItems((prev) =>
           prev.some((l) => l.locationId === id) ? prev : [...prev, snapshot]
@@ -159,9 +166,12 @@ export default function LocationsView() {
 
     toast.show(t("locations.deleted"), {
       kind: "success",
+      ttl: 5000,
       action: {
         label: t("common.undo"),
         onClick: () => {
+          if (state.fired) return;
+          state.undone = true;
           window.clearTimeout(timer);
           setItems((prev) =>
             prev.some((l) => l.locationId === id) ? prev : [...prev, snapshot]
@@ -288,7 +298,6 @@ export default function LocationsView() {
                                 variant="danger"
                                 size="sm"
                                 onClick={() => remove(l.locationId)}
-                                loading={busy === l.locationId}
                               >
                                 {t("common.yes")}
                               </Button>

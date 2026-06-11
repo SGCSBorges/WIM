@@ -166,6 +166,9 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
         accept=".csv,text/csv"
         onChange={(e) => {
           const f = e.target.files?.[0];
+          // Clear the input so picking the same (fixed-in-Excel) file again
+          // still fires change — same value means no event otherwise.
+          e.target.value = "";
           if (f) void handleFile(f);
         }}
         className="block w-full text-sm"

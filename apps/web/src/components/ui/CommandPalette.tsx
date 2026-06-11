@@ -94,6 +94,13 @@ export function CommandPalette({
     return [...local, ...remote];
   }, [commands, remote, query]);
 
+  // Reset the highlight when the query changes — clamping on length alone
+  // kept the old index when a new query yielded the same count, leaving
+  // Enter pointed at an unrelated command.
+  useEffect(() => {
+    setActive(0);
+  }, [query]);
+
   // Keep the active index in range as results change.
   useEffect(() => {
     setActive((i) =>
