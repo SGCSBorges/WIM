@@ -480,6 +480,7 @@ async function userCurrency(userId: number): Promise<string> {
 router.get(
   "/export/inventory.csv",
   authGuard,
+  security.destructiveRateLimiter,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const q = ArticleListQuerySchema.parse(req.query);
     const rows = await ArticleService.listAll(req.user!.sub, {
@@ -494,6 +495,11 @@ router.get(
       sort: q.sort,
       dir: q.dir,
     });
+    await auditAction(req, {
+      action: "DB_EXPORT",
+      entity: "Article",
+      metadata: { report: "inventory.csv", rows: rows.length },
+    });
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
       "Content-Disposition",
@@ -507,8 +513,14 @@ router.get(
 router.get(
   "/export/inventory.pdf",
   authGuard,
+  security.destructiveRateLimiter,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const currency = await userCurrency(req.user!.sub);
+    await auditAction(req, {
+      action: "DB_EXPORT",
+      entity: "Article",
+      metadata: { report: "inventory.pdf" },
+    });
     await streamInventoryPdf(res, req.user!.sub, currency);
   })
 );
@@ -517,10 +529,16 @@ router.get(
 router.get(
   "/export/labels.pdf",
   authGuard,
+  security.destructiveRateLimiter,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const appBaseUrl =
       process.env.APP_URL?.replace(/\/$/, "") ??
       `${req.protocol}://${req.get("host")}`;
+    await auditAction(req, {
+      action: "DB_EXPORT",
+      entity: "Article",
+      metadata: { report: "labels.pdf" },
+    });
     await streamLabelsPdf(res, req.user!.sub, appBaseUrl);
   })
 );
