@@ -16,6 +16,7 @@ actor "Navigateur\n(PWA installable)" as Browser
 node "Render – Site statique\nwim-web.onrender.com" as WebHost {
   component "apps/web\n(Vite + React 19)" as Web
   component "Service Worker\n(sw.js)" as SW
+  component "Proxy /api/*\n(render.yaml)" as Proxy
 }
 
 node "Render – Service Node\nwimapi.onrender.com" as ApiHost {
@@ -32,7 +33,8 @@ cloud "Web Push\n(VAPID)" as Push
 
 Browser --> Web : HTTPS
 Web ..> SW : enregistre (prod)
-Web --> Api : fetch(credentials: include)\ncookie httpOnly wim_token + CSRF (Origin/Referer)
+Web --> Proxy : fetch("/api/...", credentials: include)\ncookie httpOnly wim_token + CSRF (Origin/Referer)
+Proxy --> Api : réécriture serveur\n(le navigateur reste sur UNE origine)
 
 Api --> PG : Prisma (SQL)
 Api --> Redis : jti denylist + tokenVersion
@@ -45,10 +47,13 @@ Workers --> Resend : rappels + digest (best-effort)
 Workers --> Push : notifications push
 
 note bottom
-Frontière de sécurité : le cookie wim_token est httpOnly + SameSite=none
-en prod (sous-domaines Render différents) ; les mutations exigent un
-Origin/Referer autorisé (csrfGuard). Le webhook Stripe est monté AVANT
-express.json() et s'authentifie par signature, hors du chemin cookie/CSRF.
-Les workers tournent dans le même processus que l'API.
+Frontière de sécurité : en prod, le proxy /api/* de render.yaml garde le
+navigateur sur une seule origine (wim-web) — indispensable sur Safari/iOS,
+dont l'ITP bloque les Set-Cookie cross-site. L'API pose quand même le
+cookie wim_token en httpOnly + SameSite=none (accès direct possible) ;
+les mutations exigent un Origin/Referer autorisé (csrfGuard). Le webhook
+Stripe est monté AVANT express.json() et s'authentifie par signature,
+hors du chemin cookie/CSRF. Les workers tournent dans le même processus
+que l'API.
 end note
 @enduml

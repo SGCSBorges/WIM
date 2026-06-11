@@ -12,9 +12,20 @@ User -> Web : Saisir e-mail + mot de passe
 Web -> API : POST /api/auth/login {email, password}
 API -> DB : SELECT User (bcrypt.compare, dummy si absent)
 note right of API : compare toujours exécuté\n(anti-énumération par timing)
-API -> API : signToken(sub, role, v=tokenVersion, jti aléatoire)
-API --> Web : 200 + Set-Cookie wim_token (httpOnly)
-note right of Web : aucun token manipulé côté JS ;\nle cookie part ensuite tout seul
+alt totpEnabled = false (chemin classique)
+  API -> API : signToken(sub, role, v=tokenVersion, jti aléatoire)
+  API -> DB : INSERT UserSession (jti, appareil, IP)
+  API --> Web : 200 + Set-Cookie wim_token (httpOnly)
+  note right of Web : aucun token manipulé côté JS ;\nle cookie part ensuite tout seul
+else totpEnabled = true (2FA)
+  API --> Web : 200 { totpRequired, challengeToken }
+  note right of API : JWT pré-auth 5 min, kind="totp-challenge"\n(inutilisable comme session)
+  User -> Web : Saisir le code TOTP (ou code de secours)
+  Web -> API : POST /api/auth/login/verify-totp {challengeToken, code}
+  API -> DB : Vérifier TotpSecret (ou consommer un code de secours)
+  API -> DB : INSERT UserSession
+  API --> Web : 200 + Set-Cookie wim_token (httpOnly)
+end
 
 == Requête protégée ==
 User -> Web : Action authentifiée
@@ -39,10 +50,13 @@ API -> Redis : ajouter jti à la denylist (TTL = exp du token)
 API --> Web : 200 + cookie vidé
 
 note over API, DB
-Force-logout admin / reset de mot de passe : on incrémente
-User.tokenVersion. Tout JWT émis avant le bump échoue à
-l'étape « v(token) < tokenVersion » ci-dessus, sans toucher
-à Redis. Un changement de rôle se propage de la même façon,
-sans reconnexion (role relu à chaque requête).
+Force-logout admin / reset de mot de passe / changement
+d'e-mail : on incrémente User.tokenVersion. Tout JWT émis
+avant le bump échoue à l'étape « v(token) < tokenVersion »
+ci-dessus, sans toucher à Redis. Un changement de rôle se
+propage de la même façon, sans reconnexion (role relu à
+chaque requête). Révocation par appareil : la page Profil →
+Sécurité liste les UserSession ; en révoquer une denylist
+son jti (TTL = durée de vie max du JWT) + stampe revokedAt.
 end note
 @enduml

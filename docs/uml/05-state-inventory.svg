@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="STATE" height="704px" preserveAspectRatio="none" style="width:951px;height:704px;background:#FFFFFF;"
-version="1.1" viewBox="0 0 951 704" width="951px" zoomAndPan="magnify">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="STATE" height="719px" preserveAspectRatio="none" style="width:951px;height:719px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 951 719" width="951px" zoomAndPan="magnify">
 <title>WIM - Diagrammes d'&#233;tats (R&#233;clamation de garantie &amp; Cycle de vie de l'article)</title>
 <defs/>
 <g>
@@ -138,22 +138,24 @@ garantie &amp; Cycle de vie de l'article)</text>
 <polygon fill="#181818" points="645.16,498.1938,649.16,489.1938,645.16,493.1938,641.16,489.1938,645.16,498.1938" style="stroke:#181818;stroke-width:1;"/>
 </g>
 <g class="entity" data-entity="GMN2" data-source-line="30" data-uid="ent0003" id="entity_GMN2">
-<path d="M6,634.1669 L6,689.5653 A0,0 0 0 0 6,689.5653 L455.0415,689.5653 A0,0 0 0 0 455.0415,689.5653 L455.0415,644.1669 L445.0415,634.1669 L234.52,634.1669 L230.52,566.8169 L226.52,634.1669 L6,634.1669
-A0,0 0 0 0 6,634.1669" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M445.0415,634.1669 L445.0415,644.1669 L455.0415,644.1669 L445.0415,634.1669" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="428.0415" x="12" y="651.2338">claimStatus vit sur la Garantie. NONE tant qu'aucune r&#233;clamation</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="406.6943" x="12" y="666.3666">n'est ouverte ; les transitions sont surfac&#233;es sur la timeline de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="293.1665" x="12" y="681.4994">l'article, le PDF de r&#233;clamation et le flux iCal.</text>
+<path d="M6,626.5969 L6,712.2609 A0,0 0 0 0 6,712.2609 L455.0415,712.2609 A0,0 0 0 0 455.0415,712.2609 L455.0415,636.5969 L445.0415,626.5969 L234.52,626.5969 L230.52,566.6269 L226.52,626.5969 L6,626.5969
+A0,0 0 0 0 6,626.5969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M445.0415,626.5969 L445.0415,636.5969 L455.0415,636.5969 L445.0415,626.5969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="428.0415" x="12" y="643.6638">claimStatus vit sur la Garantie. NONE tant qu'aucune r&#233;clamation</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="406.6943" x="12" y="658.7966">n'est ouverte ; les transitions sont surfac&#233;es sur la timeline de</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="394.5703" x="12" y="673.9294">l'article, le PDF de r&#233;clamation et le flux iCal. Le flux dessin&#233;</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="401.9653" x="12" y="689.0622">est le parcours nominal : l'API ne verrouille pas les transitions</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="414.6733" x="12" y="704.195">(repasser &#224; NONE efface note + horodatage de la r&#233;clamation).</text>
 </g>
-<g class="entity" data-entity="GMN5" data-source-line="36" data-uid="ent0006" id="entity_GMN5">
-<path d="M490.19,626.5969 L490.19,697.1281 A0,0 0 0 0 490.19,697.1281 L942.8433,697.1281 A0,0 0 0 0 942.8433,697.1281 L942.8433,636.5969 L932.8433,626.5969 L720.52,626.5969 L716.52,530.9069 L712.52,626.5969
-L490.19,626.5969 A0,0 0 0 0 490.19,626.5969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M932.8433,626.5969 L932.8433,636.5969 L942.8433,636.5969 L932.8433,626.5969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="431.6533" x="496.19" y="643.6638">La suppression est un soft-delete (deletedAt). Les lectures &#171; live
+<g class="entity" data-entity="GMN5" data-source-line="38" data-uid="ent0006" id="entity_GMN5">
+<path d="M490.19,634.1569 L490.19,704.6881 A0,0 0 0 0 490.19,704.6881 L942.8433,704.6881 A0,0 0 0 0 942.8433,704.6881 L942.8433,644.1569 L932.8433,634.1569 L720.52,634.1569 L716.52,531.0569 L712.52,634.1569
+L490.19,634.1569 A0,0 0 0 0 490.19,634.1569" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M932.8433,634.1569 L932.8433,644.1569 L942.8433,644.1569 L932.8433,634.1569" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="431.6533" x="496.19" y="651.2238">La suppression est un soft-delete (deletedAt). Les lectures &#171; live
 &#187;</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="409.4365" x="496.19" y="658.7966">filtrent deletedAt = null ; la Corbeille liste les lignes marqu&#233;es.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="326.6758" x="496.19" y="673.9294">Le worker de maintenance hard-delete au-del&#224; de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="231.7148" x="496.19" y="689.0622">ARTICLE_TRASH_RETENTION_DAYS.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="409.4365" x="496.19" y="666.3566">filtrent deletedAt = null ; la Corbeille liste les lignes marqu&#233;es.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="326.6758" x="496.19" y="681.4894">Le worker de maintenance hard-delete au-del&#224; de</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="231.7148" x="496.19" y="696.6222">ARTICLE_TRASH_RETENTION_DAYS.</text>
 </g>
 </g>
 </svg>

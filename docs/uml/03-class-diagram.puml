@@ -24,6 +24,12 @@ class User {
   +currency: char(3)
   +emailReminders: bool
   +weeklyDigest: bool
+  +theme: varchar(16)
+  +language: varchar(8)
+  +dateFormat: varchar(16)
+  +calendarToken: varchar(64)
+  +alertsSeenAt: datetime
+  +totpEnabled: bool
   +stripeCustomerId: string
   +stripeSubscriptionId: string
 }
@@ -33,6 +39,7 @@ class Article {
   +articleNom: varchar(100)
   +articleModele: varchar(100)
   +articleDescription: varchar(255)
+  +productImageUrl: varchar(500)
   +serialNumber: varchar(120)
   +brand: varchar(120)
   +purchasePrice: decimal(12,2)
@@ -49,9 +56,21 @@ class Garantie {
   +garantieFin: date
   +garantieIsValide: bool
   +claimStatus: ClaimStatus
+  +claimNote: varchar(2000)
+  +claimUpdatedAt: datetime
   +providerName: varchar(120)
   +providerPhone: varchar(40)
   +providerUrl: varchar(2048)
+  +renewedAt: datetime
+}
+
+class WarrantyHistory {
+  +id: int
+  +event: WarrantyHistoryEvent
+  +priorDateAchat: date
+  +priorDuration: int
+  +priorFin: date
+  +note: varchar(500)
 }
 
 class Alerte {
@@ -96,6 +115,12 @@ class SavedView {
   +query: varchar(500)
 }
 
+class ArticleTemplate {
+  +id: int
+  +name: varchar(120)
+  +payload: jsonb  ' noms (pas d'ids)
+}
+
 class InventoryShare {
   +inventoryShareId: int
   +permission: SharePermission
@@ -111,6 +136,15 @@ class ShareInvite {
   +expiresAt: datetime
 }
 
+class ArticleTransferRequest {
+  +id: int
+  +direction: TransferDirection
+  +token: varchar(128)
+  +status: varchar(20)  ' PENDING|ACCEPTED|REJECTED|REVOKED|EXPIRED
+  +message: varchar(500)
+  +expiresAt: datetime
+}
+
 class AuditLog {
   +id: int
   +action: varchar(80)
@@ -119,11 +153,49 @@ class AuditLog {
   +createdAt: datetime
 }
 
+' --- Sécurité & infrastructure ---
+
+class UserSession {
+  +id: int
+  +jti: varchar(64)  ' = claim JWT + clé denylist Redis
+  +deviceLabel: varchar(120)
+  +lastActiveAt: datetime
+  +revokedAt: datetime
+}
+
+class TotpSecret {
+  +id: int
+  +secret: varchar(64)  ' base32
+  +backupCodesHash: text  ' bcrypt, usage unique
+  +verified: bool
+}
+
+class PasswordResetToken {
+  +id: int
+  +tokenHash: varchar(64)  ' SHA-256, jamais le clair
+  +expiresAt: datetime
+  +consumedAt: datetime
+}
+
+class PushSubscription {
+  +id: int
+  +endpoint: varchar(500)
+  +p256dh: varchar(200)
+  +auth: varchar(100)
+}
+
+class ProcessedStripeEvent {
+  +eventId: varchar(255)  ' PK = idempotence webhook
+  +type: varchar(100)
+  +processedAt: datetime
+}
+
 ' Possession (tout est rattaché à un User propriétaire)
 User "1" --> "0..*" Article : possède
 User "1" --> "0..*" Location : possède
 User "1" --> "0..*" Tag : possède
 User "1" --> "0..*" SavedView : possède
+User "1" --> "0..*" ArticleTemplate : possède
 User "1" --> "0..*" AuditLog : trace
 
 ' Articles et leurs entités liées
@@ -133,6 +205,7 @@ Article "1" o-- "0..*" Alerte : déclenche
 Article "1" o-- "0..*" ArticleNote : historique
 Garantie "1" o-- "0..3" Alerte : génère (J-30/J-7/J-1)
 Garantie "1" o-- "0..*" Attachment : preuves
+Garantie "1" o-- "0..*" WarrantyHistory : renouvellements\n(append-only)
 
 ' Relations M:N via tables de jonction
 Article "0..*" -- "0..*" Location : ArticleLocation
@@ -142,13 +215,28 @@ Article "0..*" -- "0..*" Tag : ArticleTag
 User "1" --> "0..*" ShareInvite : émet
 User "1" --> "0..*" InventoryShare : partage (owner -> target)
 
+' Transfert de propriété (PUSH par l'owner / PULL par le demandeur)
+Article "1" o-- "0..*" ArticleTransferRequest : transferts
+User "1" --> "0..*" ArticleTransferRequest : demandeur / owner
+
+' Sécurité du compte
+User "1" --> "0..*" UserSession : appareils connectés
+User "1" --> "0..1" TotpSecret : 2FA (TOTP)
+User "1" --> "0..*" PasswordResetToken : réinitialisations
+User "1" --> "0..*" PushSubscription : navigateurs abonnés
+
 note bottom
-Hypothèses (alignées sur prisma/schema.prisma) :
-- Une Garantie appartient à 0..1 Article (lien unique).
+Aligné sur prisma/schema.prisma :
+- Une Garantie appartient à 0..1 Article (lien unique) ; le renouvellement
+  fait avancer la ligne vivante et archive l'état antérieur dans
+  WarrantyHistory (append-only).
+- ProcessedStripeEvent est autonome (marqueur d'idempotence du webhook,
+  inséré dans la même transaction que l'effet métier).
 - Les noms français legacy (Alerte*, Garantie, articleNom...) sont
   intentionnellement conservés ; les unions @wim/types sont anglaises
   (AlertStatus) mais les valeurs littérales coïncident.
 - Enums : Role, ClaimStatus, AlerteStatus, AlerteKind, AttachmentType,
-  ArticleNoteKind, SharePermission, InviteStatus.
+  ArticleNoteKind, SharePermission, InviteStatus, TransferDirection,
+  WarrantyHistoryEvent.
 end note
 @enduml

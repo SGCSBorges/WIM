@@ -211,9 +211,11 @@ colors and every route works across all four themes.
 
 ## Auth & security recap
 
-- **Cookie** — `sameSite=none` in production (web and API are different PSL
-  sites on Render subdomains, so the cookie must be cross-site + `secure`);
-  `lax` in dev.
+- **Cookie** — in production the browser talks to a single origin: the
+  `render.yaml` `/api/*` proxy on the static site forwards API calls
+  server-side, which is what keeps login working on Safari/iOS (ITP drops
+  cross-site `Set-Cookie`). The API still sets `sameSite=none; secure` so
+  direct API access works too; `lax` in dev.
 - **Force-logout / revocation** — `tokenVersion` (per-user, invalidates all
   tokens) and the Redis `jti` denylist (per-token, on logout). Detail in
   [`docs/api.md`](./api.md#authentication).

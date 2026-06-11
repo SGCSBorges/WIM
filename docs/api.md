@@ -59,8 +59,9 @@ curl -b jar.txt https://wimapi.onrender.com/api/auth/me
 - Date / datetime fields are ISO strings.
 - **Paginated list endpoints** return `{ items, total, page, limit }` —
   e.g. `GET /api/articles`, `GET /api/locations/:id/articles`. Notable
-  exception: `GET /api/admin/users` returns a raw array (no pagination —
-  it's behind ADMIN and the user list is small).
+  exception: `GET /api/admin/users` accepts `page`/`limit` (max 500) but
+  returns a **raw array** without a total count — it's behind ADMIN and
+  the user list is expected to stay small.
 - Errors come back as `{ "error": "human message" }` with a numeric status
   code. 5xx responses also include `requestId` so support can quote it.
 
@@ -195,6 +196,12 @@ revokedAt) and `TotpSecret` (one-per-user, base32 secret, JSON of bcrypt-
 hashed single-use backup codes, verified). `authGuard` calls
 `SessionService.touch(jti)` best-effort (throttled to 1/min per jti) so
 "active N minutes ago" stays honest without a DB hit per request.
+
+Changing the account email (`PUT /api/profile/me/email`) or the password
+(`PUT /api/profile/me/password`) bumps `tokenVersion` — every other
+session is invalidated, and the calling device gets a fresh cookie in the
+same response. An admin changing a user's email via
+`PATCH /api/admin/users/:id` invalidates that user's sessions the same way.
 
 ## Article power features
 

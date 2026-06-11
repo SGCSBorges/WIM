@@ -30,7 +30,9 @@ state "Cycle de vie de l'article" as Lifecycle {
 note bottom of Claim
 claimStatus vit sur la Garantie. NONE tant qu'aucune réclamation
 n'est ouverte ; les transitions sont surfacées sur la timeline de
-l'article, le PDF de réclamation et le flux iCal.
+l'article, le PDF de réclamation et le flux iCal. Le flux dessiné
+est le parcours nominal : l'API ne verrouille pas les transitions
+(repasser à NONE efface note + horodatage de la réclamation).
 end note
 
 note bottom of Lifecycle

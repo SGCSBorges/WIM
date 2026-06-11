@@ -15,30 +15,37 @@ actor "Administrateur" as Admin
 
 rectangle "WIM (PWA)" {
   usecase "S'authentifier / Se déconnecter" as UC_Auth
+  usecase "Sécuriser le compte (2FA, sessions, historique)" as UC_Security
   usecase "Gérer l'inventaire (articles)" as UC_Items
+  usecase "Modèles d'articles & édition en masse" as UC_Templates
   usecase "Organiser : tags & emplacements" as UC_Organize
   usecase "Joindre des pièces (facture PDF/JPEG)" as UC_Attach
   usecase "Gérer la garantie" as UC_Warranty
+  usecase "Renouveler / prolonger une garantie" as UC_Renew
   usecase "Suivre une réclamation de garantie" as UC_Claim
   usecase "Configurer des alertes J-30 / J-7 / J-1" as UC_Alerts
   usecase "Recevoir notifications push / e-mail" as UC_Notify
   usecase "Recevoir le digest hebdomadaire" as UC_Digest
   usecase "S'abonner au flux iCal" as UC_Ical
   usecase "Importer / Exporter (CSV)" as UC_ImportExport
-  usecase "Exporter en PDF (réclamation, inventaire, étiquettes)" as UC_Pdf
+  usecase "Exporter en PDF (réclamation, inventaire,\nétiquettes, portefeuille assurance)" as UC_Pdf
   usecase "Consulter le tableau de bord & la valeur" as UC_Stats
   usecase "Enregistrer des vues filtrées" as UC_Views
   usecase "Corbeille : supprimer / restaurer / purger" as UC_Trash
   usecase "Partager l'inventaire" as UC_Sharing
+  usecase "Transférer la propriété d'un article" as UC_Transfer
   usecase "Souscrire l'offre Power User (Stripe)" as UC_Billing
   usecase "Administrer : utilisateurs, audit, jobs, sauvegarde" as UC_Admin
 }
 
 User --> UC_Auth
+User --> UC_Security
 User --> UC_Items
+User --> UC_Templates
 User --> UC_Organize
 User --> UC_Attach
 User --> UC_Warranty
+User --> UC_Renew
 User --> UC_Claim
 User --> UC_Alerts
 User --> UC_Notify
@@ -53,25 +60,33 @@ User --> UC_Billing
 
 PowerUser --|> User
 PowerUser --> UC_Sharing
+PowerUser --> UC_Transfer
 
 Admin --> UC_Admin
 
 UC_Items ..> UC_Attach : <<extend>> ajout de pièce jointe
 UC_Items ..> UC_Warranty : <<extend>> associer une garantie
+UC_Warranty ..> UC_Renew : <<extend>> garantie expirée / à prolonger
 UC_Warranty ..> UC_Alerts : <<extend>> proposer des rappels
 UC_Warranty ..> UC_Claim : <<extend>> ouvrir une réclamation
 UC_Alerts ..> UC_Notify : <<include>> envoi de notification
 UC_Billing ..> UC_Sharing : <<include>> débloque le partage
+UC_Billing ..> UC_Transfer : <<include>> débloque le transfert
 
 note bottom
 Portée actuelle (post-MVP) :
 - Inventaire + tags + emplacements (M:N), recherche plein-texte (trigram)
-- Garanties (fin calculée), réclamations (états), prix/dépréciation
+- Modèles d'articles, édition en masse, scan code-barres
+- Garanties (fin calculée), renouvellement/prolongation (historique),
+  réclamations (états), prix/dépréciation
 - Alertes J-30/J-7/J-1 + alertes custom récurrentes (BullMQ)
 - Notifications Web Push ET e-mail (Resend) + digest hebdo opt-in
-- Pièces jointes, import/export CSV, exports PDF, flux iCal
+- Pièces jointes, import/export CSV, exports PDF (dont portefeuille
+  assurance), flux iCal
 - Corbeille (soft-delete) + purge planifiée
-- Partage = option "Power User" (public + par utilisateur)
+- Sécurité du compte : 2FA TOTP, sessions par appareil, historique
+- Partage + transfert de propriété = option "Power User"
+  (ADMIN en hérite sans abonnement)
 - Facturation Stripe (mensuel/annuel)
 - Admin : utilisateurs, logs d'audit, jobs, export/import BDD
 end note
