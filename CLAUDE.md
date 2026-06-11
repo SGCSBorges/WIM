@@ -254,6 +254,10 @@ unchanged when `User.totpEnabled = false`.
   `UserSession` doesn't store each token's own `exp`, and using the
   *caller's* exp once let a revoked session reactivate when the
   caller's token expired first. Don't "optimize" this back.
+  **Identity changes invalidate sessions**: email change (self-serve
+  `PUT /profile/me/email` or admin `PATCH /admin/users/:id`) bumps
+  `tokenVersion` exactly like a password change; the self-serve route
+  reissues a fresh cookie so the calling device stays signed in.
 - **TOTP 2FA**: `User.totpEnabled` (fast-path flag) + `TotpSecret`
   (base32 secret + bcrypt-hashed single-use backup codes + verified
   flag). Setup → verify → disable, all password-gated. Login: when
@@ -463,6 +467,13 @@ Key files:
   in `apps/api/src/modules/auth/cookies.ts`). If login ever breaks on iOS
   again, the first thing to check is whether `VITE_API_BASE_URL` was
   accidentally set back to the absolute `wimapi` URL in the Render dashboard.
+- **`API_BASE_URL` is a relative path in production** (`/api`, because of the
+  proxy above) — `new URL(\`${API_BASE_URL}/...\`)` therefore **throws**
+  ("Failed to construct 'URL'") unless given a base. Use the `apiUrl(path)`
+  helper in `apps/web/src/services/api.ts` (anchors on
+  `window.location.origin`; absolute bases ignore it) whenever an endpoint
+  needs `URL`/`searchParams` — never construct `new URL` from `API_BASE_URL`
+  directly. This broke every list view in production once.
 - **Vite hashes asset filenames**, so a new deploy invalidates old CSS
   references in the SW cache automatically. `index.html` is fetched
   network-first so users get the fresh hash.
