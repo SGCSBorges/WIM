@@ -42,9 +42,10 @@ export function getMaintenanceWorker(): Worker<MaintenanceJobPayload> | null {
   return maintenanceWorkerSingleton;
 }
 
-// Daily audit-log prune is the only maintenance job today. Read the retention
-// window from env: 0 (or invalid/missing) disables the schedule entirely so
-// an operator can opt out without code changes.
+// Three repeatable maintenance jobs: daily audit-log prune, daily article
+// trash purge, weekly warranty digest. Retention windows come from env;
+// 0 (or invalid/missing) disables that schedule entirely so an operator
+// can opt out without code changes.
 const AUDIT_PRUNE_REPEAT_KEY = "audit-prune-daily";
 const TRASH_PURGE_REPEAT_KEY = "article-trash-purge-daily";
 const WARRANTY_DIGEST_REPEAT_KEY = "warranty-digest-weekly";

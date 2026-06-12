@@ -19,7 +19,12 @@ export const LocationService = {
       skip: (page - 1) * limit,
       orderBy: { updatedAt: "desc" },
       include: {
-        _count: { select: { articles: true } },
+        // Count only live articles — `get`/`listArticles` exclude trash, so
+        // an unfiltered count here would disagree with the location's own
+        // roster until the purge job runs.
+        _count: {
+          select: { articles: { where: { article: { deletedAt: null } } } },
+        },
       },
     });
     if (locations.length === 0) {
@@ -27,10 +32,13 @@ export const LocationService = {
     }
 
     const ids = locations.map((l) => l.locationId);
-    // Restrict to articles the caller owns (defence-in-depth — locations
-    // are owner-scoped above already).
+    // Restrict to live articles the caller owns (defence-in-depth —
+    // locations are owner-scoped above already).
     const rows = await prisma.articleLocation.findMany({
-      where: { locationId: { in: ids }, article: { ownerUserId } },
+      where: {
+        locationId: { in: ids },
+        article: { ownerUserId, deletedAt: null },
+      },
       select: {
         locationId: true,
         article: { select: { purchasePrice: true } },
@@ -152,16 +160,21 @@ export const LocationService = {
     });
     if (!location) throw createHttpError(404, "Location not found");
 
+    // No deletedAt filter: detaching a *trashed* article from a location is
+    // legitimate housekeeping (and the only way to fix its link manually).
     const article = await prisma.article.findFirst({
-      where: { articleId, ownerUserId, deletedAt: null },
+      where: { articleId, ownerUserId },
       select: { articleId: true },
     });
     if (!article)
-      throw createHttpError(403, "Article not found or not owned by you");
+      throw createHttpError(404, "Article not found or not owned by you");
 
-    await prisma.articleLocation.delete({
-      where: { articleId_locationId: { articleId, locationId } },
+    // deleteMany so a missing link is a clean 404 instead of a P2025 throw.
+    const { count } = await prisma.articleLocation.deleteMany({
+      where: { articleId, locationId },
     });
+    if (count === 0)
+      throw createHttpError(404, "Article is not in this location");
     return { ok: true };
   },
 

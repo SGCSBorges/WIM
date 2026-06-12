@@ -26,10 +26,13 @@ const router = Router();
 // Reduced article-update schema for non-owners with WRITE permission. We
 // deliberately *don't* let shared editors touch warranty, locations, or
 // owner-only fields — those are the article owner's responsibility.
+// Limits mirror the owner-side ArticleCreateSchema AND the DB columns
+// (VarChar(100)/(100)/(255)) — a longer value would pass Zod only to blow
+// up as a Postgres P2000 → 500.
 const SharedArticleEditSchema = z.object({
-  articleNom: z.string().min(1).max(120).optional(),
-  articleModele: z.string().min(1).max(120).optional(),
-  articleDescription: z.string().max(2000).nullable().optional(),
+  articleNom: z.string().trim().min(1).max(100).optional(),
+  articleModele: z.string().trim().min(1).max(100).optional(),
+  articleDescription: z.string().trim().max(255).nullable().optional(),
   productImageUrl: z
     .string()
     .url()
@@ -173,9 +176,23 @@ router.put(
 
     // Direct partial update — no warranty/locations side-effects, those
     // belong to the owner. Only the small subset whitelisted by the schema.
-    const updated = await prisma.article.update({
-      where: { articleId: id },
+    // Atomic updateMany with the preconditions in the WHERE: between the
+    // share check above and this write, the article can be transferred to
+    // a new owner (atomic accept resets sharing) or soft-deleted — an
+    // unconditioned update would then write into a row the caller no
+    // longer has any relationship with.
+    const { count } = await prisma.article.updateMany({
+      where: {
+        articleId: id,
+        ownerUserId: article.ownerUserId,
+        deletedAt: null,
+      },
       data,
+    });
+    if (count === 0) throw createHttpError(404, "Article not found");
+
+    const updated = await prisma.article.findUniqueOrThrow({
+      where: { articleId: id },
       include: {
         owner: { select: { userId: true, email: true } },
         garantie: true,

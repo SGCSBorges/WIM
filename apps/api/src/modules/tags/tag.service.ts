@@ -9,12 +9,18 @@ import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 
 export const TagService = {
-  // Owner's tags with how many articles carry each one.
+  // Owner's tags with how many LIVE articles carry each one — an
+  // unfiltered count would keep counting trashed articles the filtered
+  // article list no longer shows.
   list: async (ownerUserId: number) => {
     const tags = await prisma.tag.findMany({
       where: { ownerUserId },
       orderBy: { name: "asc" },
-      include: { _count: { select: { articles: true } } },
+      include: {
+        _count: {
+          select: { articles: { where: { article: { deletedAt: null } } } },
+        },
+      },
     });
     return tags.map((t) => ({
       tagId: t.tagId,
@@ -62,16 +68,16 @@ export const TagService = {
 
       // Articles already carrying `into` would collide on the (articleId,
       // tagId) PK when we repoint `from` — drop those duplicate links first.
-      const intoLinks = await tx.articleTag.findMany({
-        where: { tagId: intoId },
-        select: { articleId: true },
+      // One set-based statement (not read-then-IN-delete): a concurrent tag
+      // assign between a read and the delete would make the repoint hit the
+      // PK and surface as a misleading 409, and a large tag would blow the
+      // 65k bind-parameter cap.
+      await tx.articleTag.deleteMany({
+        where: {
+          tagId: fromId,
+          article: { tags: { some: { tagId: intoId } } },
+        },
       });
-      const intoArticleIds = intoLinks.map((l) => l.articleId);
-      if (intoArticleIds.length > 0) {
-        await tx.articleTag.deleteMany({
-          where: { tagId: fromId, articleId: { in: intoArticleIds } },
-        });
-      }
       const moved = await tx.articleTag.updateMany({
         where: { tagId: fromId },
         data: { tagId: intoId },

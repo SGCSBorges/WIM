@@ -57,10 +57,16 @@ export const security = {
     legacyHeaders: false,
     message: { error: "Too many requests, please try again later." },
   }),
-  // Tighter limit for auth endpoints to slow brute-force attacks.
+  // Tighter limit for auth endpoints to slow brute-force attacks. Only
+  // FAILED requests count: this limiter covers the whole /api/auth router,
+  // and the SPA calls GET /me on every page load — without the skip, one
+  // user refreshing 20 times in 15 min (or several users behind one
+  // CGNAT IP) would 429 the session check and appear logged out, while a
+  // brute-forcer's attempts all fail and still burn the bucket.
   authRateLimiter: rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 20),
+    skipSuccessfulRequests: true,
     standardHeaders: true,
     legacyHeaders: false,
     message: {

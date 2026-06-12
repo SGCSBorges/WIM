@@ -117,8 +117,6 @@ describe("TagService", () => {
       updateMany: vi.fn(),
     };
     txTag.findMany.mockResolvedValue([{ tagId: 3 }, { tagId: 8 }]);
-    // intoId=8 already on article 12; fromId=3 is on 12 and 17.
-    txArticleTag.findMany.mockResolvedValue([{ articleId: 12 }]);
     txArticleTag.deleteMany.mockResolvedValue({ count: 1 });
     txArticleTag.updateMany.mockResolvedValue({ count: 1 });
     txTag.delete.mockResolvedValue({ tagId: 3 });
@@ -134,8 +132,10 @@ describe("TagService", () => {
       where: { tagId: { in: [3, 8] }, ownerUserId: 7 },
       select: { tagId: true },
     });
+    // Dedup is a single set-based delete (no read-then-IN-delete): drop the
+    // `from` link on every article that already carries `into`.
     expect(txArticleTag.deleteMany).toHaveBeenCalledWith({
-      where: { tagId: 3, articleId: { in: [12] } },
+      where: { tagId: 3, article: { tags: { some: { tagId: 8 } } } },
     });
     expect(txArticleTag.updateMany).toHaveBeenCalledWith({
       where: { tagId: 3 },

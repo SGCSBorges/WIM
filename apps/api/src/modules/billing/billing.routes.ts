@@ -24,6 +24,7 @@ import { asyncHandler } from "../common/http";
 import { createHttpError } from "../../utils/http-error";
 import { prisma } from "../../libs/prisma";
 import { auditAction } from "../common/audit";
+import { roleAtLeast } from "../common/roles";
 
 const PlanSchema = z.object({
   plan: z.enum(["monthly", "yearly"]).optional(),
@@ -50,10 +51,17 @@ async function getOrCreateStripeCustomer(
   stripeCustomerId: string | null
 ): Promise<string> {
   if (stripeCustomerId) return stripeCustomerId;
-  const customer = await stripe.customers.create({
-    email,
-    metadata: { userId: String(userId) },
-  });
+  // Idempotency key: two concurrent requests (double-click, checkout +
+  // portal) would otherwise both create a customer and the last DB write
+  // wins — leaving a Stripe customer whose subscription our cancel/portal
+  // routes can never find.
+  const customer = await stripe.customers.create(
+    {
+      email,
+      metadata: { userId: String(userId) },
+    },
+    { idempotencyKey: `wim-customer-${userId}` }
+  );
   await prisma.user.update({
     where: { userId },
     data: { stripeCustomerId: customer.id },
@@ -99,7 +107,7 @@ router.post(
   asyncHandler(async (req: AuthRequest, res) => {
     const appUrl = getAppUrl();
 
-    const { plan = "monthly", locale } = PlanSchema.parse(req.body);
+    const { plan = "monthly", locale } = PlanSchema.parse(req.body ?? {});
 
     const monthlyPriceId = process.env.STRIPE_POWER_USER_PRICE_MONTHLY;
     const yearlyPriceId = process.env.STRIPE_POWER_USER_PRICE_YEARLY;
@@ -124,9 +132,24 @@ router.post(
 
     const user = await prisma.user.findUnique({
       where: { userId },
-      select: { userId: true, email: true, stripeCustomerId: true },
+      select: {
+        userId: true,
+        email: true,
+        role: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
+      },
     });
     if (!user) throw createHttpError(404, "User not found");
+
+    // Already subscribed (or ADMIN, who has the tier for free): a second
+    // Checkout would create a SECOND active subscription on the same
+    // customer — double-billing the user, with cancel/portal only ever able
+    // to reach the newest one. A stale success tab or back button makes
+    // this an easy accident.
+    if (roleAtLeast(user.role, "POWER_USER") || user.stripeSubscriptionId) {
+      throw createHttpError(409, "You already have an active subscription");
+    }
 
     const stripeCustomerId = await getOrCreateStripeCustomer(
       stripe,

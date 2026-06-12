@@ -2,6 +2,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";
+import { security } from "../../config/security";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
@@ -26,6 +27,9 @@ router.get(
 router.post(
   "/",
   authGuard,
+  // Same creation limiter tags + locations apply — names are unique per
+  // owner, so a loop with random names could insert unbounded rows.
+  security.createRateLimiter,
   asyncHandler(async (req: AuthRequest, res) => {
     const { name, query } = CreateSchema.parse(req.body);
     const created = await SavedViewService.create(req.user!.sub, name, query);
