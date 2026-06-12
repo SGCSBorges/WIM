@@ -390,6 +390,13 @@ Key files:
 
 - Subscription product = `POWER_USER` upgrade. Monthly + yearly Stripe
   prices.
+- **Checkout 409s for anyone already share-capable or holding a
+  `stripeSubscriptionId`** — without the guard, a stale success tab could
+  mint a second active subscription on the same customer, and since the
+  webhook stores only the newest sub id, cancel/portal could never reach
+  the older one (double-billing). Customer creation uses a per-user
+  idempotency key so concurrent first-time requests can't strand a
+  duplicate Stripe customer.
 - Webhook + manual sync are both supported. The Webhook is canonical;
   `POST /api/billing/sync` is a fallback the frontend calls on return
   from Checkout so the UI doesn't have to wait for webhook delivery (free
