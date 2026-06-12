@@ -134,9 +134,19 @@ export function createApp() {
       // refs to walk the share graph.
       const viewerId = req.user!.sub;
       const viewerRole = req.user!.role;
+      // Match either the original (fileUrl) or its generated thumbnail
+      // (thumbUrl) — thumbnails live in the same directory under a
+      // `<name>-thumb.webp` filename and must inherit the same access rules.
+      const suffix = `/uploads/${storedName}`;
       const attachment = await prisma.attachment.findFirst({
-        where: { fileUrl: { endsWith: `/uploads/${storedName}` } },
+        where: {
+          OR: [
+            { fileUrl: { endsWith: suffix } },
+            { thumbUrl: { endsWith: suffix } },
+          ],
+        },
         select: {
+          thumbUrl: true,
           mimeType: true,
           fileName: true,
           ownerUserId: true,
@@ -199,7 +209,13 @@ export function createApp() {
       if (!fs.existsSync(fullPath)) {
         return res.status(404).json({ error: "File missing on disk" });
       }
-      res.setHeader("Content-Type", attachment.mimeType);
+      // The row's mimeType describes the original; thumbnails are always
+      // webp (sharp output) regardless of the source format.
+      const isThumb = attachment.thumbUrl?.endsWith(suffix) === true;
+      res.setHeader(
+        "Content-Type",
+        isThumb ? "image/webp" : attachment.mimeType
+      );
       res.setHeader("X-Content-Type-Options", "nosniff");
       // Inline display for images and PDFs (the only allowed types); browsers
       // can render these safely with the explicit MIME type above.

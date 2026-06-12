@@ -12,13 +12,42 @@ import crypto from "crypto";
 import { AlerteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 
-// Escape per RFC 5545: backslash, semicolon, comma, and newlines.
+// Escape per RFC 5545: backslash, semicolon, comma, and newlines. A lone
+// \r counts as a line break for permissive parsers, so it must be caught
+// too — otherwise a name like "TV\rX-WR-CALNAME:x" injects a content line.
+// Remaining C0 control chars are stripped (they're never legal in TEXT).
 function escapeText(s: string): string {
-  return s
-    .replace(/\\/g, "\\\\")
-    .replace(/;/g, "\\;")
-    .replace(/,/g, "\\,")
-    .replace(/\r?\n/g, "\\n");
+  return (
+    s
+      .replace(/\\/g, "\\\\")
+      .replace(/;/g, "\\;")
+      .replace(/,/g, "\\,")
+      .replace(/\r\n|\r|\n/g, "\\n")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+  );
+}
+
+// RFC 5545 §3.1: content lines must not exceed 75 octets; longer lines are
+// folded with CRLF + a single space. Splits on UTF-8 octet count without
+// breaking a multi-byte character.
+function foldLine(line: string): string {
+  const bytes = Buffer.from(line, "utf8");
+  if (bytes.length <= 75) return line;
+  const parts: string[] = [];
+  let start = 0;
+  while (start < bytes.length) {
+    // Continuation lines start with a space, which costs one octet.
+    const budget = start === 0 ? 75 : 74;
+    let end = Math.min(start + budget, bytes.length);
+    // Back off to a UTF-8 character boundary (continuation bytes are 10xxxxxx).
+    while (end > start && end < bytes.length && (bytes[end] & 0xc0) === 0x80) {
+      end--;
+    }
+    parts.push(bytes.subarray(start, end).toString("utf8"));
+    start = end;
+  }
+  return parts.join("\r\n ");
 }
 
 function dateOnly(d: Date): string {
@@ -40,7 +69,9 @@ function vevent(e: CalEvent, stamp: string): string {
     `DTEND;VALUE=DATE:${dateOnly(end)}`,
     `SUMMARY:${escapeText(e.summary)}`,
     "END:VEVENT",
-  ].join("\r\n");
+  ]
+    .map(foldLine)
+    .join("\r\n");
 }
 
 /** Build an RFC-5545 VCALENDAR string from a user's warranties + alerts. */

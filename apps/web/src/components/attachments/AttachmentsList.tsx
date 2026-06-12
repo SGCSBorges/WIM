@@ -154,7 +154,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     setDeleteError(null);
     if (onDelete) onDelete(attachmentId);
     try {
-      await attachmentsAPI.deleteAttachment(attachmentId);
+      await attachmentsAPI.deleteAttachment(attachmentId, {
+        removeFile: true,
+      });
       setAttachments(
         attachments.filter((a) => a.attachmentId !== attachmentId)
       );

@@ -54,6 +54,9 @@ vi.mock("../../libs/prisma", () => ({
 vi.mock("../../modules/alerts/alert.service", () => ({
   AlertService: {
     cancelForWarranty: vi.fn().mockResolvedValue(undefined),
+    cancelCustomForArticle: vi.fn().mockResolvedValue(undefined),
+    rearmCustomForArticle: vi.fn().mockResolvedValue(undefined),
+    scheduleForWarranty: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -97,12 +100,13 @@ describe("ArticleService.remove", () => {
       ownerUserId: 1,
       garantieId: 42,
     });
+    expect(AlertService.cancelCustomForArticle).toHaveBeenCalledWith(1, 5);
     const updateCall = mockPrisma.article.update.mock.calls[0][0];
     expect(updateCall.where).toEqual({ articleId: 5 });
     expect(updateCall.data.deletedAt).toBeInstanceOf(Date);
   });
 
-  it("soft-deletes the article without calling AlertService when there is no warranty", async () => {
+  it("soft-deletes without the warranty cancel when there is no warranty (custom alerts still cancelled)", async () => {
     mockPrisma.article.findFirst.mockResolvedValue({
       articleId: 7,
       garantie: null,
@@ -112,6 +116,7 @@ describe("ArticleService.remove", () => {
     await ArticleService.remove(7, 1);
 
     expect(AlertService.cancelForWarranty).not.toHaveBeenCalled();
+    expect(AlertService.cancelCustomForArticle).toHaveBeenCalledWith(1, 7);
     const updateCall = mockPrisma.article.update.mock.calls[0][0];
     expect(updateCall.where).toEqual({ articleId: 7 });
     expect(updateCall.data.deletedAt).toBeInstanceOf(Date);

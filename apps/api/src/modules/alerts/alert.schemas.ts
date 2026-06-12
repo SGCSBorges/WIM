@@ -33,7 +33,17 @@ export const AlertCreateSchema = z
   .refine((d) => d.alerteDate.getTime() > Date.now() - 60_000, {
     message: "alerteDate must be in the future",
     path: ["alerteDate"],
-  });
+  })
+  // Bound the horizon — a year-9999 date would park a delayed BullMQ job
+  // in Redis effectively forever.
+  .refine(
+    (d) =>
+      d.alerteDate.getTime() < Date.now() + 20 * 365.25 * 24 * 60 * 60 * 1000,
+    {
+      message: "alerteDate must be within 20 years",
+      path: ["alerteDate"],
+    }
+  );
 
 export const AlertSnoozeSchema = z.object({
   days: z.number().int().min(1).max(365),

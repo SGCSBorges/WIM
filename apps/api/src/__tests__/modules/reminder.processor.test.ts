@@ -66,6 +66,7 @@ describe("ReminderProcessor", () => {
       garantieNom: "W",
       garantieFin: new Date(),
     });
+    mockPrisma.alerte.findUnique.mockResolvedValue({ status: "SCHEDULED" });
     await ReminderProcessor.handle(
       job({
         type: "warranty_reminder",
@@ -78,6 +79,27 @@ describe("ReminderProcessor", () => {
     );
     expect(svc.markSent).toHaveBeenCalledWith(9);
     expect(push.sendToUser).toHaveBeenCalledWith(1, expect.any(Object));
+  });
+
+  it("skips a warranty reminder whose alert row is no longer SCHEDULED", async () => {
+    mockPrisma.garantie.findUnique.mockResolvedValue({
+      garantieId: 5,
+      garantieNom: "W",
+      garantieFin: new Date(),
+    });
+    mockPrisma.alerte.findUnique.mockResolvedValue({ status: "CANCELLED" });
+    await ReminderProcessor.handle(
+      job({
+        type: "warranty_reminder",
+        ownerUserId: 1,
+        garantieId: 5,
+        reminderKind: "J30",
+        executeAt: new Date().toISOString(),
+        alerteId: 9,
+      })
+    );
+    expect(push.sendToUser).not.toHaveBeenCalled();
+    expect(svc.markSent).not.toHaveBeenCalled();
   });
 
   it("skips a warranty reminder whose warranty was deleted", async () => {
@@ -139,6 +161,7 @@ describe("ReminderProcessor", () => {
       garantieNom: "W",
       garantieFin: new Date(),
     });
+    mockPrisma.alerte.findUnique.mockResolvedValue({ status: "SCHEDULED" });
     push.sendToUser.mockRejectedValueOnce(new Error("VAPID transient"));
     await expect(
       ReminderProcessor.handle(

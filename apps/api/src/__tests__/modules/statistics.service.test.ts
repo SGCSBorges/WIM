@@ -70,12 +70,14 @@ function setupDashboardMocks({
   warrantiesWithAttachment = 1,
   alertsTotal = 4,
   ownedSharedArticles = 2,
+  unassigned = 0,
   totalSharedArticles = 0,
 } = {}) {
   mockPrisma.article.count
     .mockResolvedValueOnce(articlesTotal) // total
     .mockResolvedValueOnce(articlesWithWarranty) // withWarranty
     .mockResolvedValueOnce(ownedSharedArticles) // ownedSharedArticles
+    .mockResolvedValueOnce(unassigned) // unassigned (locations: none)
     .mockResolvedValueOnce(totalSharedArticles); // totalSharedArticles (if role is POWER_USER)
   mockPrisma.location.findMany.mockResolvedValue(locations);
   mockPrisma.articleLocation.groupBy.mockResolvedValue(articleCountsByLocation);
@@ -130,9 +132,13 @@ describe("getDashboardStatistics", () => {
     expect(result.warranties.withAttachment).toBe(2);
   });
 
-  it("calculates unassigned articles correctly", async () => {
+  it("reports unassigned articles via a direct locations:none count", async () => {
+    // The count comes straight from Prisma (articles with no location row),
+    // NOT from subtracting junction-row sums — an article in two locations
+    // must not mask a genuinely unassigned one.
     setupDashboardMocks({
       articlesTotal: 7,
+      unassigned: 3,
       locations: [{ locationId: 1, name: "Home" }],
       articleCountsByLocation: [{ locationId: 1, _count: { articleId: 4 } }],
     });
@@ -164,6 +170,7 @@ describe("getDashboardStatistics", () => {
       .mockResolvedValueOnce(3) // total
       .mockResolvedValueOnce(1) // withWarranty
       .mockResolvedValueOnce(1) // ownedSharedArticles
+      .mockResolvedValueOnce(0) // unassigned
       .mockResolvedValueOnce(5); // totalSharedArticles
     mockPrisma.location.findMany.mockResolvedValue([]);
     mockPrisma.articleLocation.groupBy.mockResolvedValue([]);

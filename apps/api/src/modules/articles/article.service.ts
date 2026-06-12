@@ -540,6 +540,9 @@ export const ArticleService = {
         garantieId: existing.garantie.garantieId,
       });
     }
+    // Custom alerts hang off the article directly — cancel those too, or
+    // they keep firing against a trashed article (deep link 404s).
+    await AlertService.cancelCustomForArticle(ownerUserId, id);
 
     return prisma.article.update({
       where: { articleId: id },
@@ -573,6 +576,8 @@ export const ArticleService = {
         garantieFin: existing.garantie.garantieFin,
       });
     }
+    // Mirror the soft-delete: revive the future-dated custom alerts.
+    await AlertService.rearmCustomForArticle(ownerUserId, id);
 
     return restored;
   },

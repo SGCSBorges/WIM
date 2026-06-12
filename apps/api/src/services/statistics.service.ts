@@ -64,6 +64,13 @@ export async function getDashboardStatistics(
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(currentDate.getDate() + 30);
 
+    // Warranties of trashed articles must not count — a Garantie row
+    // survives the article's soft-delete (only the article row is stamped),
+    // so every warranty aggregate joins through to a live (or absent) article.
+    const liveWarrantyScope = {
+      OR: [{ garantieArticleId: null }, { article: { deletedAt: null } }],
+    };
+
     // Fire all independent counts concurrently.
     const [
       articlesTotal,
@@ -97,23 +104,43 @@ export async function getDashboardStatistics(
         where: { article: { ownerUserId, deletedAt: null } },
         _count: { articleId: true },
       }),
-      prisma.garantie.count({ where: { ownerUserId } }),
       prisma.garantie.count({
-        where: { ownerUserId, garantieFin: { gte: currentDate } },
+        where: { ownerUserId, ...liveWarrantyScope },
       }),
       prisma.garantie.count({
-        where: { ownerUserId, garantieFin: { lt: currentDate } },
+        where: {
+          ownerUserId,
+          garantieFin: { gte: currentDate },
+          ...liveWarrantyScope,
+        },
+      }),
+      prisma.garantie.count({
+        where: {
+          ownerUserId,
+          garantieFin: { lt: currentDate },
+          ...liveWarrantyScope,
+        },
       }),
       prisma.garantie.count({
         where: {
           ownerUserId,
           garantieFin: { gte: currentDate, lte: thirtyDaysFromNow },
+          ...liveWarrantyScope,
         },
       }),
       prisma.garantie.count({
-        where: { ownerUserId, garantieImageAttachmentId: { not: null } },
+        where: {
+          ownerUserId,
+          garantieImageAttachmentId: { not: null },
+          ...liveWarrantyScope,
+        },
       }),
-      prisma.alerte.count({ where: { ownerUserId } }),
+      prisma.alerte.count({
+        where: {
+          ownerUserId,
+          OR: [{ article: null }, { article: { deletedAt: null } }],
+        },
+      }),
       prisma.article.count({
         where: { ownerUserId, sharedWithPowerUsers: true, deletedAt: null },
       }),
@@ -166,6 +193,7 @@ export async function getDashboardStatistics(
           where: {
             ownerUserId,
             garantieFin: { gte: currentDate, lte: twelveMonthsAhead },
+            ...liveWarrantyScope,
           },
           select: { garantieFin: true },
         }),
@@ -185,6 +213,11 @@ export async function getDashboardStatistics(
     // a related column). Decimal columns come back as Prisma.Decimal | null.
     // Accumulate in integer cents so repeated float addition can't drift the
     // displayed totals; divide back to a currency amount at the end.
+    //
+    // Semantics: an article in N locations (or with N tags) contributes its
+    // FULL price to each slice — "value present at this location" — so slice
+    // sums can exceed inventoryValue.total. Intentional; don't "fix" by
+    // splitting the price across slices.
     const cents = (price: unknown) =>
       price ? Math.round(Number(price) * 100) : 0;
 
@@ -241,12 +274,12 @@ export async function getDashboardStatistics(
       })
     );
 
-    const locationsAssignedTotal = articleCountsByLocation.reduce(
-      (sum: number, r: { _count: { articleId: number } }) =>
-        sum + r._count.articleId,
-      0
-    );
-    const unassigned = Math.max(0, articlesTotal - locationsAssignedTotal);
+    // Count articles with NO location directly — summing junction rows
+    // counts a multi-location article N times, and the subtraction then
+    // hides genuinely unassigned articles.
+    const unassigned = await prisma.article.count({
+      where: { ownerUserId, deletedAt: null, locations: { none: {} } },
+    });
 
     // Total shared articles of all users (only meaningful for POWER_USER)
     const totalSharedArticles =
@@ -255,6 +288,7 @@ export async function getDashboardStatistics(
             where: {
               sharedWithPowerUsers: true,
               ownerUserId: { not: ownerUserId },
+              deletedAt: null,
             },
           })
         : 0;
@@ -361,6 +395,9 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.groupBy({ by: ["role"], _count: { userId: true } }),
+      // Platform totals intentionally include trashed rows — they still
+      // occupy storage until the purge job runs. The shared count below is
+      // the exception: a trashed article isn't visible to anyone.
       prisma.article.count(),
       prisma.garantie.count(),
       prisma.garantie.count({ where: { garantieFin: { gte: currentDate } } }),
@@ -369,7 +406,9 @@ export async function getAdminStatistics(): Promise<AdminStatistics> {
         where: { garantieImageAttachmentId: { not: null } },
       }),
       prisma.alerte.count(),
-      prisma.article.count({ where: { sharedWithPowerUsers: true } }),
+      prisma.article.count({
+        where: { sharedWithPowerUsers: true, deletedAt: null },
+      }),
     ]);
 
     const roleCounts = { USER: 0, POWER_USER: 0, ADMIN: 0 };
@@ -412,10 +451,22 @@ export async function getBasicStatistics(params: { userId: number }) {
   try {
     const ownerUserId = Number(params.userId);
 
+    // Exclude trash everywhere — these counters must agree with the
+    // dashboard's own totals or the two surfaces drift after a soft-delete.
     const [articlesCount, warrantiesCount, alertsCount] = await Promise.all([
-      prisma.article.count({ where: { ownerUserId } }),
-      prisma.garantie.count({ where: { ownerUserId } }),
-      prisma.alerte.count({ where: { ownerUserId } }),
+      prisma.article.count({ where: { ownerUserId, deletedAt: null } }),
+      prisma.garantie.count({
+        where: {
+          ownerUserId,
+          OR: [{ garantieArticleId: null }, { article: { deletedAt: null } }],
+        },
+      }),
+      prisma.alerte.count({
+        where: {
+          ownerUserId,
+          OR: [{ article: null }, { article: { deletedAt: null } }],
+        },
+      }),
     ]);
 
     return {

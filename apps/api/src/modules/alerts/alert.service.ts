@@ -63,6 +63,9 @@ export const AlertService = {
         ...(status ? { status } : {}),
         ...(kind ? { kind } : {}),
         ...(articleId ? { alerteArticleId: articleId } : {}),
+        // Hide alerts whose article sits in the trash — same live-article
+        // scope the calendar feed applies, so the surfaces agree.
+        OR: [{ article: null }, { article: { deletedAt: null } }],
       },
       take: limit,
       skip: (page - 1) * limit,
@@ -117,20 +120,34 @@ export const AlertService = {
         skipDuplicates: true,
       });
 
+      // The (garantieId, alerteDate) unique means createMany silently skips
+      // when a row already exists for the same date — e.g. trash → restore,
+      // or a renew that lands on identical dates. That existing row may be
+      // CANCELLED; re-arm it atomically so the restored warranty's reminders
+      // are live again instead of resurrecting a dead row into the queue.
+      await prisma.alerte.updateMany({
+        where: {
+          ownerUserId: input.ownerUserId,
+          alerteGarantieId: input.garantieId,
+          alerteDate: executeAt,
+          status: AlerteStatus.CANCELLED,
+        },
+        data: { status: AlerteStatus.SCHEDULED },
+      });
+
       const alerte = await prisma.alerte.findFirst({
         where: {
           ownerUserId: input.ownerUserId,
           alerteGarantieId: input.garantieId,
           alerteDate: executeAt,
+          status: AlerteStatus.SCHEDULED,
         },
         orderBy: { alerteId: "desc" },
       });
 
       if (!alerte) {
-        logger.warn(
-          { garantieId: input.garantieId, executeAt },
-          "[alerts] alert record not found after createMany — skipping job"
-        );
+        // SENT/FAILED row already occupies this (garantie, date) slot — the
+        // reminder was already delivered for this exact date; nothing to do.
         continue;
       }
 
@@ -213,23 +230,32 @@ export const AlertService = {
   cancelForUser: async (ownerUserId: number) => {
     const alerts = await prisma.alerte.findMany({
       where: { ownerUserId, status: AlerteStatus.SCHEDULED },
-      select: { alerteGarantieId: true, alerteDate: true },
+      select: { alerteId: true, alerteGarantieId: true, alerteDate: true },
     });
 
     for (const a of alerts) {
-      if (!a.alerteGarantieId) continue;
-      for (const reminderKind of ["J30", "J7", "J1"] as const) {
-        const jobId = buildJobId(
-          a.alerteGarantieId,
-          reminderKind,
-          a.alerteDate
-        );
-        const job = await alertQueue.getJob(jobId);
-        if (job) {
-          await job.remove();
-          logger.info({ jobId }, "[alerts] cancelled job for account deletion");
+      if (a.alerteGarantieId) {
+        for (const reminderKind of ["J30", "J7", "J1"] as const) {
+          const jobId = buildJobId(
+            a.alerteGarantieId,
+            reminderKind,
+            a.alerteDate
+          );
+          const job = await alertQueue.getJob(jobId);
+          if (job) {
+            await job.remove();
+            logger.info(
+              { jobId },
+              "[alerts] cancelled job for account deletion"
+            );
+          }
         }
       }
+      // Custom alerts — and snoozed warranty alerts, which get re-keyed to
+      // the generic id — live under `alert:<id>`; without this they sit in
+      // Redis as stale delayed jobs until their fire time.
+      const generic = await alertQueue.getJob(customJobId(a.alerteId));
+      if (generic) await generic.remove();
     }
   },
 
@@ -268,6 +294,60 @@ export const AlertService = {
     }
     const generic = await alertQueue.getJob(customJobId(alert.alerteId));
     if (generic) await generic.remove();
+  },
+
+  // Trash flow: CUSTOM alerts hang off the article directly (not the
+  // warranty), so cancelForWarranty misses them — without this, a trashed
+  // article's custom reminders keep firing and deep-link to a 404.
+  cancelCustomForArticle: async (ownerUserId: number, articleId: number) => {
+    const alerts = await prisma.alerte.findMany({
+      where: {
+        ownerUserId,
+        alerteArticleId: articleId,
+        kind: AlerteKind.CUSTOM,
+        status: AlerteStatus.SCHEDULED,
+      },
+      select: { alerteId: true },
+    });
+    for (const a of alerts) {
+      const job = await alertQueue.getJob(customJobId(a.alerteId));
+      if (job) await job.remove();
+    }
+    await prisma.alerte.updateMany({
+      where: {
+        ownerUserId,
+        alerteArticleId: articleId,
+        kind: AlerteKind.CUSTOM,
+        status: AlerteStatus.SCHEDULED,
+      },
+      data: { status: AlerteStatus.CANCELLED },
+    });
+  },
+
+  // Restore flow: re-arm the custom alerts the trash cancelled, but only
+  // future-dated ones — a past date would fire immediately on restore.
+  // (An alert the user cancelled manually before trashing is also revived;
+  // accepted trade-off vs. silently losing alerts through a trash round-trip.)
+  rearmCustomForArticle: async (ownerUserId: number, articleId: number) => {
+    const candidates = await prisma.alerte.findMany({
+      where: {
+        ownerUserId,
+        alerteArticleId: articleId,
+        kind: AlerteKind.CUSTOM,
+        status: AlerteStatus.CANCELLED,
+        alerteDate: { gt: new Date() },
+      },
+      select: { alerteId: true, alerteDate: true },
+    });
+    for (const a of candidates) {
+      const { count } = await prisma.alerte.updateMany({
+        where: { alerteId: a.alerteId, status: AlerteStatus.CANCELLED },
+        data: { status: AlerteStatus.SCHEDULED },
+      });
+      if (count > 0) {
+        await AlertService.enqueueCustom(ownerUserId, a.alerteId, a.alerteDate);
+      }
+    }
   },
 
   enqueueCustom: async (ownerUserId: number, alerteId: number, when: Date) => {
@@ -344,31 +424,49 @@ export const AlertService = {
   },
 
   snooze: async (alerteId: number, ownerUserId: number, days: number) => {
-    const alert = await prisma.alerte.findFirst({
-      where: { alerteId, ownerUserId, status: AlerteStatus.SCHEDULED },
+    // Pre-read ONLY to reconstruct the old queue jobIds (warranty jobs are
+    // keyed by the pre-snooze alerteDate). The guard itself is the atomic
+    // updateMany below — the worker may flip this row to SENT between this
+    // read and the write, and a snooze applied on top of SENT would
+    // silently never fire (the processor skips non-SCHEDULED rows).
+    const prior = await prisma.alerte.findFirst({
+      where: { alerteId, ownerUserId },
+      select: {
+        alerteId: true,
+        alerteGarantieId: true,
+        alerteDate: true,
+        kind: true,
+      },
     });
-    if (!alert) throw createHttpError(404, "Scheduled alert not found");
+    if (!prior) throw createHttpError(404, "Scheduled alert not found");
 
-    await AlertService.removeJobsForAlert(alert);
     const newDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-    const updated = await prisma.alerte.update({
-      where: { alerteId },
+    const { count } = await prisma.alerte.updateMany({
+      where: { alerteId, ownerUserId, status: AlerteStatus.SCHEDULED },
       data: { alerteDate: newDate, snoozedUntil: newDate },
     });
+    if (count === 0) throw createHttpError(404, "Scheduled alert not found");
+
+    await AlertService.removeJobsForAlert(prior);
     await AlertService.enqueueCustom(ownerUserId, alerteId, newDate);
-    return updated;
+    return prisma.alerte.findUniqueOrThrow({ where: { alerteId } });
   },
 
   cancel: async (alerteId: number, ownerUserId: number) => {
-    const alert = await prisma.alerte.findFirst({
+    // Same atomicity rationale as snooze: never read-then-update a status.
+    // Cancelling a row the worker just marked SENT would falsely record
+    // that the user was never notified.
+    const { count } = await prisma.alerte.updateMany({
       where: { alerteId, ownerUserId, status: AlerteStatus.SCHEDULED },
-    });
-    if (!alert) throw createHttpError(404, "Scheduled alert not found");
-    await AlertService.removeJobsForAlert(alert);
-    return prisma.alerte.update({
-      where: { alerteId },
       data: { status: AlerteStatus.CANCELLED },
     });
+    if (count === 0) throw createHttpError(404, "Scheduled alert not found");
+
+    const updated = await prisma.alerte.findUniqueOrThrow({
+      where: { alerteId },
+    });
+    await AlertService.removeJobsForAlert(updated);
+    return updated;
   },
 
   // Feed for the notification bell: scheduled alerts that are overdue or
@@ -386,6 +484,7 @@ export const AlertService = {
           ownerUserId,
           status: AlerteStatus.SCHEDULED,
           alerteDate: { lte: horizon },
+          OR: [{ article: null }, { article: { deletedAt: null } }],
         },
         orderBy: { alerteDate: "asc" },
         take: 20,

@@ -55,10 +55,12 @@ async function fetchSubscriptionForUser(
   } | null
 ): Promise<SubSummary | null> {
   if (!user || !user.stripeCustomerId) return null;
-  const stripe = getStripe();
 
-  // Prefer the recorded subscription id; fall back to listing customer subs.
+  // getStripe() throws synchronously when STRIPE_SECRET_KEY is unset — keep
+  // it inside the try so a user with a lingering stripeCustomerId degrades
+  // to "no subscription" instead of a 500 on /billing/me.
   try {
+    const stripe = getStripe();
     if (user.stripeSubscriptionId) {
       const sub = await stripe.subscriptions.retrieve(
         user.stripeSubscriptionId
@@ -143,9 +145,9 @@ router.post(
       });
     }
 
-    const stripe = getStripe();
     let activeSubscriptionId: string | null = null;
     try {
+      const stripe = getStripe();
       const subs = await stripe.subscriptions.list({
         customer: user.stripeCustomerId,
         status: "all",

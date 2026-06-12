@@ -74,6 +74,21 @@ export const ReminderProcessor = {
         return;
       }
 
+      // Mirror handleCustom: if the alert row is gone or no longer SCHEDULED
+      // (cancelled by a trash/renew while the job stayed queued — e.g. a
+      // Redis blip during job removal), don't deliver against a dead row.
+      const alerte = await prisma.alerte.findUnique({
+        where: { alerteId: data.alerteId },
+        select: { status: true },
+      });
+      if (!alerte || alerte.status !== "SCHEDULED") {
+        logger.warn(
+          { jobId: job.id, alerteId: data.alerteId, status: alerte?.status },
+          "[alerts] warranty alert not actionable — skipping"
+        );
+        return;
+      }
+
       logger.info(
         {
           jobId: job.id,
