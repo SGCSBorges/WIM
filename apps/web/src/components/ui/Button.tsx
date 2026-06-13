@@ -33,7 +33,9 @@ const SIZES: Record<ButtonSize, string> = {
 
 const BASE =
   "inline-flex items-center justify-center font-medium rounded-lg select-none " +
-  "disabled:cursor-not-allowed whitespace-nowrap";
+  "disabled:cursor-not-allowed whitespace-nowrap " +
+  // Subtle press feedback; motion-safe so it's skipped under prefers-reduced-motion.
+  "transition-transform motion-safe:active:scale-[0.97]";
 
 export function buttonClasses(opts?: {
   variant?: ButtonVariant;

@@ -5,7 +5,15 @@
  * launches its own form within the page.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Bell, Plus, RotateCw, ArrowUpDown, Ban, Repeat } from "lucide-react";
+import {
+  Bell,
+  Plus,
+  RotateCw,
+  ArrowUp,
+  ArrowDown,
+  Ban,
+  Repeat,
+} from "lucide-react";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { alertsAPI } from "../../services/api";
@@ -275,7 +283,13 @@ export default function AlertsView() {
                   setSortDir((d) => (d === "asc" ? "desc" : "asc"))
                 }
                 aria-label={t("alerts.sortDirection")}
-                leftIcon={<ArrowUpDown className="h-4 w-4" />}
+                leftIcon={
+                  sortDir === "asc" ? (
+                    <ArrowUp className="h-4 w-4" />
+                  ) : (
+                    <ArrowDown className="h-4 w-4" />
+                  )
+                }
               >
                 {sortDir === "asc"
                   ? t("alerts.sort.asc")

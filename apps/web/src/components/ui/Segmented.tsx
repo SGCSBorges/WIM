@@ -27,6 +27,23 @@ export function Segmented<T extends string>({
   ariaLabel,
   className = "",
 }: SegmentedProps<T>) {
+  // Roving focus: Arrow/Home/End move the selection like a native radiogroup,
+  // so the whole control is one Tab stop and arrow keys cycle the options.
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const idx = options.findIndex((o) => o.value === value);
+    if (idx < 0) return;
+    let next = idx;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown")
+      next = (idx + 1) % options.length;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+      next = (idx - 1 + options.length) % options.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = options.length - 1;
+    else return;
+    e.preventDefault();
+    onChange(options[next].value);
+  };
+
   return (
     <div
       role="radiogroup"
@@ -41,6 +58,8 @@ export function Segmented<T extends string>({
             type="button"
             role="radio"
             aria-checked={selected}
+            tabIndex={selected ? 0 : -1}
+            onKeyDown={onKeyDown}
             onClick={() => onChange(o.value)}
             className={[
               "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",

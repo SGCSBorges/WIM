@@ -6,7 +6,7 @@
  */
 import { forwardRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, User, LogOut, Search } from "lucide-react";
+import { Menu, X, User, LogOut, Search } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { isActivePath } from "../../lib/navItems";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
@@ -47,7 +47,11 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
           onClick={onToggleMobileNav}
           className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg ui-btn-ghost"
         >
-          <Menu className="h-5 w-5" aria-hidden="true" />
+          {mobileNavOpen ? (
+            <X className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          )}
         </button>
 
         {/* Mobile brand */}
@@ -91,6 +95,7 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
           type="button"
           onClick={() => navigate("/profile")}
           aria-label={t("nav.profile")}
+          title={t("nav.profile")}
           aria-current={profileActive ? "page" : undefined}
           className={`inline-flex h-10 w-10 items-center justify-center rounded-lg ${
             profileActive ? "ui-nav-item-active" : "ui-btn-ghost"

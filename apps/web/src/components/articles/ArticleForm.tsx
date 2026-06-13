@@ -427,6 +427,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         behavior: "smooth",
         block: "center",
       });
+      // Move focus to the error so keyboard/screen-reader users land on it
+      // instead of being left wherever the submit button was.
+      formErrorRef.current.focus();
     }
   }, [formError]);
 
@@ -970,7 +973,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             ref={formErrorRef}
             role="alert"
             aria-live="polite"
-            className="rounded-lg border ui-alert-error p-3 text-sm ui-text-error"
+            tabIndex={-1}
+            className="rounded-lg border ui-alert-error p-3 text-sm ui-text-error outline-none"
           >
             {formError}
           </div>

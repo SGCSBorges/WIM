@@ -28,6 +28,8 @@ export function ErrorBanner({
   return (
     <div
       role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       className={`border ui-alert-error rounded-lg p-4 flex items-start gap-3 ${className}`}
     >
       <XCircle className="w-5 h-5 ui-text-error shrink-0" aria-hidden="true" />
@@ -67,7 +69,10 @@ export function EmptyState({
       className={`ui-card rounded-lg p-8 text-center flex flex-col items-center gap-3 ${className}`}
     >
       {icon && (
-        <div className="text-4xl leading-none" aria-hidden="true">
+        <div
+          className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-muted ui-text-muted"
+          aria-hidden="true"
+        >
           {icon}
         </div>
       )}

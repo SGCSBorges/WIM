@@ -43,14 +43,13 @@ export default function MobileDrawer({
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    const focusTimer = window.setTimeout(
-      () => firstLinkRef.current?.focus(),
-      0
-    );
+    // Defer focus to the next frame so the drawer is painted and its first
+    // link is reliably focusable (a 0ms timeout can fire before layout).
+    const focusRaf = requestAnimationFrame(() => firstLinkRef.current?.focus());
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
-      window.clearTimeout(focusTimer);
+      cancelAnimationFrame(focusRaf);
       // eslint-disable-next-line react-hooks/exhaustive-deps
       toggleRef.current?.focus();
     };

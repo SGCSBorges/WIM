@@ -52,7 +52,10 @@ const MAX_TOASTS = 4;
 const KIND_CLASS: Record<ToastKind, string> = {
   success: "ui-alert-success ui-text-success",
   error: "ui-alert-error ui-text-error",
-  info: "ui-alert-info text-slate-800",
+  // `ui-title` (var(--text)) instead of a hardcoded slate so the info toast
+  // text stays readable on dark themes — the translucent info background is
+  // dark there and slate-800 would all but vanish.
+  info: "ui-alert-info ui-title",
 };
 
 const KIND_ICON: Record<ToastKind, React.ReactElement> = {
