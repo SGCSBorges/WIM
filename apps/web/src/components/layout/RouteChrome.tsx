@@ -26,8 +26,10 @@ const APP_NAME = "WIM";
 
 // Pathname → i18n key for the page name. Longest-prefix wins so
 // "/articles/trash" beats "/articles". Dynamic segments (e.g. an article id)
-// resolve to the section name.
-const ROUTE_TITLE_KEYS: ReadonlyArray<readonly [string, string]> = [
+// resolve to the section name. `as const` keeps the value type a union of
+// real translation keys, so `t()` accepts it without a cast and a typo'd
+// key fails the build.
+const ROUTE_TITLE_KEYS = [
   ["/articles/trash", "trash.title"],
   ["/articles", "nav.articles"],
   ["/dashboard", "nav.dashboard"],
@@ -41,9 +43,11 @@ const ROUTE_TITLE_KEYS: ReadonlyArray<readonly [string, string]> = [
   ["/transfers", "nav.transfers"],
   ["/admin", "nav.admin"],
   ["/", "nav.home"],
-];
+] as const;
 
-function titleKeyForPath(pathname: string): string {
+type RouteTitleKey = (typeof ROUTE_TITLE_KEYS)[number][1];
+
+function titleKeyForPath(pathname: string): RouteTitleKey {
   const match = ROUTE_TITLE_KEYS.find(
     ([prefix]) =>
       pathname === prefix || (prefix !== "/" && pathname.startsWith(prefix))
