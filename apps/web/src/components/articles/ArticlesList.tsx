@@ -49,6 +49,7 @@ import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
+import { formatCount } from "../../utils/number";
 import { downloadBlob } from "../../utils/csv";
 import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner, EmptyState } from "../common/States";
@@ -284,6 +285,16 @@ const ArticlesList: React.FC = () => {
 
   const allPageSelected =
     articles.length > 0 && articles.every((a) => selectedIds.has(a.articleId));
+  // Some-but-not-all of this page selected → render the checkbox's native
+  // indeterminate dash (can't be expressed via `checked`; needs a ref).
+  const pagePartiallySelected =
+    !allPageSelected && articles.some((a) => selectedIds.has(a.articleId));
+  const selectAllRef = useCallback(
+    (el: HTMLInputElement | null) => {
+      if (el) el.indeterminate = pagePartiallySelected;
+    },
+    [pagePartiallySelected]
+  );
 
   const toggleSelectAll = () => {
     setSelectedIds((prev) => {
@@ -641,12 +652,24 @@ const ArticlesList: React.FC = () => {
             />
             <Input
               type="search"
+              enterKeyHint="search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder={t("articles.search.placeholder")}
               aria-label={t("articles.search.placeholder")}
-              className="pl-9"
+              className="pl-9 pr-9"
             />
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => setSearchInput("")}
+                aria-label={t("common.clear")}
+                title={t("common.clear")}
+                className="absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md ui-btn-ghost text-muted"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
           </div>
 
           <Select
@@ -1132,6 +1155,7 @@ const ArticlesList: React.FC = () => {
             >
               <li className="flex items-center gap-2 p-3">
                 <input
+                  ref={selectAllRef}
                   type="checkbox"
                   aria-label={t("articles.bulk.selectAll")}
                   checked={allPageSelected}
@@ -1224,6 +1248,7 @@ const ArticlesList: React.FC = () => {
                   <tr>
                     <th className="w-10 px-3 py-3">
                       <input
+                        ref={selectAllRef}
                         type="checkbox"
                         aria-label={t("articles.bulk.selectAll")}
                         checked={allPageSelected}
@@ -1402,7 +1427,10 @@ const ArticlesList: React.FC = () => {
         {!loading && total > 0 && (
           <div className="flex items-center justify-between gap-3 border-t ui-divider p-4 text-sm">
             <span className="ui-text-muted tabular-nums">
-              {t("articles.results.count").replace("{total}", String(total))}
+              {t("articles.results.count").replace(
+                "{total}",
+                formatCount(total, language)
+              )}
             </span>
             {total > LIMIT && (
               <div className="flex items-center gap-2">

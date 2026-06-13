@@ -45,6 +45,10 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 let nextId = 1;
 
+// Cap the visible stack so a burst of toasts can't bury the UI; the oldest
+// are dropped (their timers cleared) when the cap is exceeded.
+const MAX_TOASTS = 4;
+
 const KIND_CLASS: Record<ToastKind, string> = {
   success: "ui-alert-success ui-text-success",
   error: "ui-alert-error ui-text-error",
@@ -80,10 +84,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       // user can react before they vanish; explicit ttl wins.
       const defaultTtl = options?.action ? 8000 : 5000;
       const ttl = options?.ttl === undefined ? defaultTtl : options.ttl;
-      setToasts((prev) => [
-        ...prev,
-        { id, kind, message, ttl, action: options?.action },
-      ]);
+      setToasts((prev) => {
+        const next = [
+          ...prev,
+          { id, kind, message, ttl, action: options?.action },
+        ];
+        // Drop the oldest beyond the cap and clear their pending timers.
+        if (next.length > MAX_TOASTS) {
+          for (const stale of next.slice(0, next.length - MAX_TOASTS)) {
+            const timer = timersRef.current.get(stale.id);
+            if (timer) {
+              clearTimeout(timer);
+              timersRef.current.delete(stale.id);
+            }
+          }
+          return next.slice(next.length - MAX_TOASTS);
+        }
+        return next;
+      });
       if (ttl !== null && ttl > 0) {
         const timer = setTimeout(() => dismiss(id), ttl);
         timersRef.current.set(id, timer);

@@ -846,6 +846,7 @@ export default function ArticleDetail() {
                         src={att.thumbUrl || att.fileUrl}
                         alt={att.fileName}
                         loading="lazy"
+                        decoding="async"
                         className="h-24 w-full rounded-md object-cover"
                       />
                     </a>

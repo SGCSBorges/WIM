@@ -12,6 +12,7 @@ interface FieldCtx {
   id: string;
   describedBy?: string;
   invalid: boolean;
+  required: boolean;
 }
 const FieldContext = React.createContext<FieldCtx | null>(null);
 
@@ -49,7 +50,14 @@ export function Field({
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <FieldContext.Provider value={{ id, describedBy, invalid: Boolean(error) }}>
+    <FieldContext.Provider
+      value={{
+        id,
+        describedBy,
+        invalid: Boolean(error),
+        required: Boolean(required),
+      }}
+    >
       <div className={`flex flex-col gap-1.5 ${className}`}>
         <label htmlFor={id} className="text-sm font-medium ui-title">
           {label}
@@ -80,6 +88,7 @@ function useControlAria(explicit: {
   id?: string;
   "aria-invalid"?: React.AriaAttributes["aria-invalid"];
   "aria-describedby"?: string;
+  required?: boolean;
 }) {
   const ctx = React.useContext(FieldContext);
   const explicitInvalid = explicit["aria-invalid"];
@@ -87,10 +96,16 @@ function useControlAria(explicit: {
     explicitInvalid === true ||
     explicitInvalid === "true" ||
     (explicitInvalid === undefined && (ctx?.invalid ?? false));
+  // Reflect the Field's `required` onto the control so assistive tech
+  // announces "required" — the visual `*` on the label is decorative
+  // (aria-hidden) and wouldn't be heard otherwise. An explicit `required`
+  // on the control still wins.
+  const required = explicit.required ?? ctx?.required ?? false;
   return {
     id: explicit.id ?? ctx?.id,
     "aria-invalid": explicitInvalid ?? (ctx?.invalid || undefined),
     "aria-describedby": explicit["aria-describedby"] ?? ctx?.describedBy,
+    required: required || undefined,
     invalid,
   };
 }
@@ -98,15 +113,24 @@ function useControlAria(explicit: {
 export const Input = React.forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>
->(function Input({ className = "", ...rest }, ref) {
+>(function Input({ className = "", onWheel, ...rest }, ref) {
   const aria = useControlAria(rest);
+  // On a focused number input the scroll wheel silently increments/
+  // decrements the value — a classic way to corrupt a price/duration while
+  // scrolling the form. Blur on wheel so the page scrolls instead.
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    if (rest.type === "number") e.currentTarget.blur();
+    onWheel?.(e);
+  };
   return (
     <input
       ref={ref}
       {...rest}
+      onWheel={handleWheel}
       id={aria.id}
       aria-invalid={aria["aria-invalid"]}
       aria-describedby={aria["aria-describedby"]}
+      required={aria.required}
       className={`ui-input ${CONTROL_BASE} ${invalidRing(aria.invalid)} ${className}`}
     />
   );
@@ -124,6 +148,7 @@ export const Textarea = React.forwardRef<
       id={aria.id}
       aria-invalid={aria["aria-invalid"]}
       aria-describedby={aria["aria-describedby"]}
+      required={aria.required}
       className={`ui-input ${CONTROL_BASE} ${invalidRing(aria.invalid)} ${className}`}
     />
   );
@@ -141,6 +166,7 @@ export const Select = React.forwardRef<
       id={aria.id}
       aria-invalid={aria["aria-invalid"]}
       aria-describedby={aria["aria-describedby"]}
+      required={aria.required}
       className={`ui-select ${CONTROL_BASE} ${invalidRing(aria.invalid)} ${className}`}
     >
       {children}

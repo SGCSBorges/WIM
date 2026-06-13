@@ -35,6 +35,7 @@ import { statisticsAPI, profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
+import { formatCount } from "../../utils/number";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import { ErrorBanner } from "../common/States";
 import { PageHeader, Stat, Section, type StatTone } from "../ui";
@@ -75,7 +76,10 @@ function ChartCard({
           {emptyLabel}
         </div>
       ) : (
-        <div className="h-56">
+        // role="img" + the chart title as the label gives screen readers a
+        // single meaningful announcement instead of diving into the
+        // unlabeled recharts SVG.
+        <div className="h-56" role="img" aria-label={title}>
           <ResponsiveContainer width="100%" height="100%">
             {children}
           </ResponsiveContainer>
@@ -90,7 +94,15 @@ interface DetailRow {
   value: number | string;
   tone?: string;
 }
-function DetailCard({ title, data }: { title: string; data: DetailRow[] }) {
+function DetailCard({
+  title,
+  data,
+  locale,
+}: {
+  title: string;
+  data: DetailRow[];
+  locale?: string;
+}) {
   return (
     <Section title={title}>
       <ul className="space-y-2.5">
@@ -100,7 +112,9 @@ function DetailCard({ title, data }: { title: string; data: DetailRow[] }) {
             <span
               className={`text-sm font-semibold tabular-nums ${item.tone ?? "ui-title"}`}
             >
-              {item.value}
+              {typeof item.value === "number"
+                ? formatCount(item.value, locale)
+                : item.value}
             </span>
           </li>
         ))}
@@ -186,6 +200,7 @@ const Dashboard: React.FC = () => {
   }
 
   const money = (n: number) => formatMoney(n, currency, language);
+  const count = (n: number) => formatCount(n, language);
 
   const kpis: {
     title: string;
@@ -222,18 +237,19 @@ const Dashboard: React.FC = () => {
     },
     {
       title: t("dashboard.totalArticles"),
-      value: statistics.articles.total,
+      value: count(statistics.articles.total),
       icon: <Package className="h-5 w-5" />,
       tone: "primary",
       footer: (
         <span className="ui-text-muted">
-          {statistics.articles.withWarranty} {t("dashboard.withWarranty")}
+          {count(statistics.articles.withWarranty)}{" "}
+          {t("dashboard.withWarranty")}
         </span>
       ),
     },
     {
       title: t("dashboard.activeWarranties"),
-      value: statistics.warranties.active,
+      value: count(statistics.warranties.active),
       icon: <ShieldCheck className="h-5 w-5" />,
       tone: "success",
       footer: (
@@ -242,13 +258,14 @@ const Dashboard: React.FC = () => {
           className="ui-action-primary hover:underline"
           title={t("dashboard.showExpiringSoon")}
         >
-          {statistics.warranties.expiringSoon} {t("dashboard.expiringSoon")}
+          {count(statistics.warranties.expiringSoon)}{" "}
+          {t("dashboard.expiringSoon")}
         </Link>
       ),
     },
     {
       title: t("dashboard.sharedByMe"),
-      value: statistics.sharing.ownedSharedArticles,
+      value: count(statistics.sharing.ownedSharedArticles),
       icon: <Share2 className="h-5 w-5" />,
       tone: "accent",
       footer: (
@@ -259,7 +276,7 @@ const Dashboard: React.FC = () => {
     },
     {
       title: t("dashboard.sharedWithMe"),
-      value: statistics.sharing.totalSharedArticles,
+      value: count(statistics.sharing.totalSharedArticles),
       icon: <Inbox className="h-5 w-5" />,
       tone: "warning",
       footer: (
@@ -451,6 +468,7 @@ const Dashboard: React.FC = () => {
       {/* Detailed breakdowns */}
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <DetailCard
+          locale={language}
           title={t("dashboard.articlesOverview")}
           data={[
             {
@@ -471,6 +489,7 @@ const Dashboard: React.FC = () => {
         />
 
         <DetailCard
+          locale={language}
           title={t("dashboard.sharing")}
           data={[
             {
@@ -485,6 +504,7 @@ const Dashboard: React.FC = () => {
         />
 
         <DetailCard
+          locale={language}
           title={t("dashboard.articlesByLocation")}
           data={[
             ...statistics.locations.byLocation.map((l) => ({
@@ -500,6 +520,7 @@ const Dashboard: React.FC = () => {
         />
 
         <DetailCard
+          locale={language}
           title={t("dashboard.warrantiesStatus")}
           data={[
             {

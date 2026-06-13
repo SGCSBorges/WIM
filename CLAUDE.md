@@ -125,7 +125,10 @@ npm --workspace apps/web run test:e2e
   set, so it never duplicates hex codes) — that colors the mobile browser
   chrome + installed-PWA status bar to match `ocean`/`cyber`/`sunset`, not
   just the OS light/dark preference. `index.html` still ships the static
-  `prefers-color-scheme` metas for the pre-hydration first paint.
+  `prefers-color-scheme` metas for the pre-hydration first paint. Each
+  `:root[data-theme]` block also sets `color-scheme` (light theme → `light`;
+  dark/ocean/cyber/sunset → `dark`) so native controls, scrollbars, and
+  autofill render to match instead of staying light-on-dark.
 - **Design system**: primitives live in `apps/web/src/components/ui/`
   (`Button`, `Field/Input/Textarea/Select`, `PageHeader`, `Tabs`,
   `ConfirmDialog`, `Badge`, `Card/Section`, `Stat`, `Pagination`,
@@ -134,8 +137,15 @@ npm --workspace apps/web run test:e2e
   `tone="danger"` defaults focus to **Cancel** (not Confirm) so a reflexive
   Enter/Space can't fire an irreversible action; `Pagination` wraps its
   "page X / N" status in an `aria-live` region so screen readers hear page
-  changes. Icons come from `lucide-react`
-  (never emoji); the central nav-icon map is `src/lib/navItems.ts`.
+  changes. `Field` threads `required` through its context so the control
+  gets `required`/`aria-required` (the visual `*` is decorative), and the
+  `Input` primitive blurs a focused `type="number"` on wheel so scrolling a
+  form can't silently change a price/duration. Toasts cap the visible stack
+  at `MAX_TOASTS` (oldest dropped) so a burst can't bury the UI. Counts use
+  `utils/number.formatCount(n, language)` for locale grouping ("1,234" /
+  "1 234"); money uses `utils/money.formatMoney`. Icons come from
+  `lucide-react` (never emoji); the central nav-icon map is
+  `src/lib/navItems.ts`.
   Self-hosted Inter Variable via `@fontsource-variable/inter`. Charts
   use `recharts`, lazy-loaded inside the Dashboard chunk only.
 - **App shell**: `components/layout/{AppShell,Sidebar,TopBar,MobileDrawer}`.

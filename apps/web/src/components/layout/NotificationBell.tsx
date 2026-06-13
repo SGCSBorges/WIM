@@ -90,7 +90,11 @@ export default function NotificationBell() {
 
   return (
     <Popover
-      ariaLabel={t("notifications.title")}
+      ariaLabel={
+        unseen > 0
+          ? t("notifications.titleUnread").replace("{count}", String(unseen))
+          : t("notifications.title")
+      }
       buttonClassName="relative inline-flex h-10 w-10 items-center justify-center rounded-lg ui-btn-ghost"
       onOpen={onOpen}
       panelClassName="ui-card w-[22rem] max-w-[calc(100vw-1rem)] overflow-hidden p-0 shadow-xl"

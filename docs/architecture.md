@@ -182,7 +182,11 @@ the mobile browser chrome and installed-PWA status bar match it, and
   `Badge`, `Card`/`Section`, `Stat`, `Pagination`, `Breadcrumbs`,
   `Segmented`, `Popover`, `Dropzone`, `CommandPalette`. All accessible
   (focus management, ARIA, `prefers-reduced-motion`), tokenized, and
-  imported via the barrel `components/ui`.
+  imported via the barrel `components/ui`. `Field` reflects `required` onto
+  its control; destructive `ConfirmDialog`s focus Cancel; numeric `Input`s
+  ignore the scroll wheel; toasts cap their visible stack. Counts render
+  through `utils/number.formatCount` for locale grouping, and CSS
+  `color-scheme` per theme keeps native controls in step with dark themes.
 - **App shell** (`apps/web/src/components/layout/`): persistent
   `Sidebar` (icon-rail collapse persisted in localStorage), sticky
   `TopBar` (search affordance for the command palette, `NotificationBell`,

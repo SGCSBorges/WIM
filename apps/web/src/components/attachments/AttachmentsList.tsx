@@ -420,6 +420,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     src={attachment.thumbUrl}
                     alt={attachment.fileName}
                     loading="lazy"
+                    decoding="async"
                     className="h-12 w-12 rounded-lg border ui-divider object-cover"
                   />
                 ) : (
