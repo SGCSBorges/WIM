@@ -466,6 +466,7 @@ export default function AlertsView() {
                           {customSnoozeId === a.alerteId ? (
                             <Input
                               type="date"
+                              autoFocus
                               aria-label={t("alerts.snooze.customLabel")}
                               min={new Date(Date.now() + 86400_000)
                                 .toISOString()

@@ -51,9 +51,10 @@ export function Dropzone({
   return (
     <div
       {...dropProps}
+      aria-disabled={disabled || undefined}
       className={`rounded-xl border-2 border-dashed p-4 text-center transition-colors ${
         isOver ? "border-primary bg-surface-muted" : "border-line ui-text-muted"
-      } ${disabled ? "opacity-60" : ""} ${className ?? ""}`}
+      } ${disabled ? "cursor-not-allowed opacity-60" : ""} ${className ?? ""}`}
     >
       <input
         ref={inputRef}

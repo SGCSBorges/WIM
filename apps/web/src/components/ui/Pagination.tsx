@@ -50,6 +50,7 @@ export function Pagination({
         <span
           role="status"
           aria-live="polite"
+          aria-atomic="true"
           className="text-sm ui-text-muted tabular-nums px-1"
         >
           {page} / {pages}

@@ -9,7 +9,7 @@
  * user actually opens /reports.
  */
 import { useEffect, useState } from "react";
-import { Download, FileText } from "lucide-react";
+import { Check, Download, FileText } from "lucide-react";
 import { locationsAPI, reportsAPI, tagsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { useToast } from "../common/Toast";
@@ -38,6 +38,7 @@ export default function ReportsView() {
   const [tagId, setTagId] = useState<string>("");
   const [warrantyStatus, setWarrantyStatus] = useState<"" | WarrantyStatus>("");
   const [downloading, setDownloading] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
     void locationsAPI
@@ -65,6 +66,8 @@ export default function ReportsView() {
       });
       const date = new Date().toISOString().slice(0, 10);
       downloadBlob(`wim-portfolio-${date}.pdf`, blob);
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 2000);
       toast.show(t("reports.portfolio.success"), { kind: "success" });
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
@@ -142,7 +145,13 @@ export default function ReportsView() {
           <Button
             onClick={downloadPortfolio}
             loading={downloading}
-            leftIcon={<Download className="h-4 w-4" />}
+            leftIcon={
+              downloaded ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )
+            }
           >
             {t("reports.portfolio.download")}
           </Button>

@@ -104,7 +104,9 @@ export default function SharedArticlesView() {
           size="sm"
           onClick={fetchRows}
           disabled={loading}
-          leftIcon={<RotateCw className="h-4 w-4" />}
+          leftIcon={
+            <RotateCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          }
         >
           {t("common.refresh")}
         </Button>

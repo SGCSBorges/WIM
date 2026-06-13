@@ -13,6 +13,9 @@ import {
   useState,
 } from "react";
 
+const FOCUSABLE =
+  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
 interface PopoverProps {
   /** Trigger button contents; receives the current open state. */
   button: (open: boolean) => ReactNode;
@@ -40,6 +43,7 @@ export function Popover({
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
   const panelId = useId();
 
   const close = useCallback(() => {
@@ -62,6 +66,11 @@ export function Popover({
 
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
+    // Move focus into the panel so keyboard users can immediately interact.
+    setTimeout(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>(FOCUSABLE);
+      first?.focus();
+    }, 0);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
@@ -92,10 +101,12 @@ export function Popover({
       </button>
       {open && (
         <div
+          ref={panelRef}
           id={panelId}
           role="dialog"
+          aria-modal="false"
           aria-label={ariaLabel}
-          className={`absolute z-40 mt-2 ${
+          className={`absolute z-40 mt-2 animate-fade-in ${
             align === "end" ? "right-0" : "left-0"
           } ${panelClassName ?? ""}`}
         >

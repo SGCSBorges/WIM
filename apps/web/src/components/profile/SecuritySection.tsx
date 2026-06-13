@@ -24,6 +24,7 @@ import { usePreferences } from "../../preferences/preferences";
 import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
 import { Section, Badge, Button } from "../ui";
+import { Skeleton } from "../common/Skeleton";
 import TwoFactorPanel from "./TwoFactorPanel";
 
 interface LoginEvent {
@@ -162,7 +163,11 @@ export default function SecuritySection() {
               )}
             </div>
             {sessions === null && (
-              <p className="text-sm ui-text-muted">{t("common.loading")}</p>
+              <div className="space-y-2">
+                {[0, 1, 2].map((i) => (
+                  <Skeleton key={i} height={44} />
+                ))}
+              </div>
             )}
             {sessions && sessions.length === 0 && (
               <p className="text-sm ui-text-muted">
@@ -225,7 +230,11 @@ export default function SecuritySection() {
             </p>
           )}
           {!historyFailed && events === null && (
-            <p className="text-sm ui-text-muted">{t("common.loading")}</p>
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} height={40} />
+              ))}
+            </div>
           )}
           {!historyFailed && events && events.length === 0 && (
             <p className="text-sm ui-text-muted">

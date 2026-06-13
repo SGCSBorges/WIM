@@ -23,6 +23,7 @@ import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { useToast } from "../common/Toast";
 import { Section, Button, Badge } from "../ui";
+import { Skeleton } from "../common/Skeleton";
 import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import type { FetchedArticle } from "../../types";
 
@@ -84,9 +85,24 @@ export default function NeedsAttention() {
   }, []);
 
   if (failed) return null;
-  // Skeleton-ish space; the rest of the dashboard already shows its own.
-  if (!rows) return null;
-  if (rows.length === 0) return null;
+  if (rows?.length === 0) return null;
+
+  if (!rows) {
+    return (
+      <Section
+        icon={<TriangleAlert className="h-5 w-5" />}
+        title={t("needsAttention.title")}
+        description={t("needsAttention.subtitle")}
+        className="mb-6"
+      >
+        <div className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} height={48} />
+          ))}
+        </div>
+      </Section>
+    );
+  }
 
   // Snooze the next scheduled warranty alert (if any) for this article.
   const snooze = async (a: FetchedArticle) => {
@@ -165,7 +181,8 @@ export default function NeedsAttention() {
             <Button
               variant="ghost"
               size="sm"
-              disabled={busyId === article.articleId}
+              loading={busyId === article.articleId}
+              disabled={busyId !== null && busyId !== article.articleId}
               onClick={() => snooze(article)}
             >
               {t("notifications.snooze.7d")}

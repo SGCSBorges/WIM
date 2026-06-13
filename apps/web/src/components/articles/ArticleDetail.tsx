@@ -65,6 +65,7 @@ import {
   Input,
   Select,
   Badge,
+  Segmented,
   type BadgeTone,
 } from "../ui";
 
@@ -957,37 +958,19 @@ export default function ArticleDetail() {
         </div>
 
         {notes.length > 0 && (
-          <div
-            role="group"
-            aria-label={t("notes.filterLabel")}
-            className="mt-3 flex flex-wrap items-center gap-1 text-xs"
-          >
-            <button
-              type="button"
-              onClick={() => setNoteFilter("ALL")}
-              className={`rounded-full px-2.5 py-0.5 transition-colors ${
-                noteFilter === "ALL"
-                  ? "ui-badge-info"
-                  : "border border-line ui-text-muted hover:bg-surface-muted"
-              }`}
-            >
-              {t("notes.filter.all")}
-            </button>
-            {ARTICLE_NOTE_KINDS.map((k) => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setNoteFilter(k)}
-                className={`rounded-full px-2.5 py-0.5 transition-colors ${
-                  noteFilter === k
-                    ? "ui-badge-info"
-                    : "border border-line ui-text-muted hover:bg-surface-muted"
-                }`}
-              >
-                {t(`notes.kind.${k}`)}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            ariaLabel={t("notes.filterLabel")}
+            value={noteFilter}
+            onChange={setNoteFilter}
+            options={[
+              { value: "ALL" as const, label: t("notes.filter.all") },
+              ...ARTICLE_NOTE_KINDS.map((k) => ({
+                value: k,
+                label: t(`notes.kind.${k}`),
+              })),
+            ]}
+            className="mt-3"
+          />
         )}
 
         {(() => {
