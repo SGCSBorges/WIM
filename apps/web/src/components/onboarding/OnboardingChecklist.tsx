@@ -82,7 +82,7 @@ export default function OnboardingChecklist() {
     <Card className="my-4 border border-line">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="rounded-lg bg-gradient-brand p-2 text-primary-contrast">
+          <span className="rounded-lg bg-primary bg-gradient-brand p-2 text-primary-contrast">
             <Sparkles className="h-5 w-5" />
           </span>
           <div>
@@ -120,6 +120,11 @@ export default function OnboardingChecklist() {
               <span
                 className={s.done ? "ui-text-muted line-through" : "ui-title"}
               >
+                <span className="sr-only">
+                  {s.done
+                    ? t("onboarding.status.done")
+                    : t("onboarding.status.todo")}{" "}
+                </span>
                 {s.label}
               </span>
             </div>

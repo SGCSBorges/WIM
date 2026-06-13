@@ -238,7 +238,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-brand text-primary-contrast shadow-md">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary bg-gradient-brand text-primary-contrast shadow-md">
             <Paperclip className="h-5 w-5" aria-hidden="true" />
           </span>
           <h2 className="truncate text-2xl font-bold tracking-tight ui-title">

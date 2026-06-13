@@ -32,14 +32,17 @@ export function PageHeader({
         <div className="flex items-center gap-3 min-w-0">
           {icon && (
             <span
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-brand text-primary-contrast shadow-md"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary bg-gradient-brand text-primary-contrast shadow-md"
               aria-hidden="true"
             >
               {icon}
             </span>
           )}
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold tracking-tight ui-title">
+            <h1
+              className="truncate text-2xl font-bold tracking-tight ui-title"
+              title={typeof title === "string" ? title : undefined}
+            >
               {title}
             </h1>
             {subtitle && (

@@ -33,7 +33,7 @@ export function Breadcrumbs({
               ) : (
                 <span
                   aria-current={last ? "page" : undefined}
-                  className="ui-title"
+                  className={last ? "ui-title font-medium" : "ui-title"}
                 >
                   {c.label}
                 </span>

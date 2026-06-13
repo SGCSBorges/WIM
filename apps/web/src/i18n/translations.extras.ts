@@ -517,6 +517,8 @@ export const extras = {
     "onboarding.step.warranty": "Track a warranty",
     "onboarding.step.alert": "Set up an alert",
     "onboarding.go": "Go",
+    "onboarding.status.done": "Completed:",
+    "onboarding.status.todo": "To do:",
     "needsAttention.title": "Needs attention",
     "needsAttention.subtitle":
       "Warranties that have expired or expire soon — handle them before they bite.",
@@ -1217,6 +1219,8 @@ export const extras = {
     "onboarding.step.warranty": "Suivez une garantie",
     "onboarding.step.alert": "Créez une alerte",
     "onboarding.go": "Y aller",
+    "onboarding.status.done": "Terminé :",
+    "onboarding.status.todo": "À faire :",
     "needsAttention.title": "À traiter",
     "needsAttention.subtitle":
       "Garanties expirées ou bientôt expirées — traitez-les avant qu'elles ne mordent.",
@@ -1914,6 +1918,8 @@ export const extras = {
     "onboarding.step.warranty": "Acompanhe uma garantia",
     "onboarding.step.alert": "Crie um alerta",
     "onboarding.go": "Ir",
+    "onboarding.status.done": "Concluído:",
+    "onboarding.status.todo": "A fazer:",
     "needsAttention.title": "Requer atenção",
     "needsAttention.subtitle":
       "Garantias expiradas ou prestes a expirar — trate-as antes que mordam.",
@@ -2621,6 +2627,8 @@ export const extras = {
     "onboarding.step.warranty": "Controla una garantía",
     "onboarding.step.alert": "Configura una alerta",
     "onboarding.go": "Ir",
+    "onboarding.status.done": "Completado:",
+    "onboarding.status.todo": "Pendiente:",
     "needsAttention.title": "Requiere atención",
     "needsAttention.subtitle":
       "Garantías que han caducado o caducan pronto — gestiónalas antes de que sea tarde.",
@@ -3321,6 +3329,8 @@ export const extras = {
     "onboarding.step.warranty": "Volg een garantie",
     "onboarding.step.alert": "Stel een waarschuwing in",
     "onboarding.go": "Ga",
+    "onboarding.status.done": "Voltooid:",
+    "onboarding.status.todo": "Te doen:",
     "needsAttention.title": "Vereist aandacht",
     "needsAttention.subtitle":
       "Garanties die zijn verlopen of binnenkort verlopen — pak ze aan voordat ze problemen geven.",

@@ -339,6 +339,12 @@ export default function LocationsView() {
                             type="text"
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && editName.trim()) {
+                                e.preventDefault();
+                                saveEdit(l.locationId);
+                              }
+                            }}
                             placeholder={t("locations.placeholder.name")}
                             maxLength={120}
                             aria-label={t("locations.placeholder.name")}

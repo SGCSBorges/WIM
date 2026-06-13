@@ -15,11 +15,31 @@ export function Card({
   as: Tag = "div",
   className = "",
   children,
+  onKeyDown,
   ...rest
 }: CardProps) {
+  // An interactive card is a clickable surface, so give it button semantics:
+  // it becomes a keyboard tab stop, Enter/Space activate it (via the native
+  // click the onClick handler already listens for), and the global
+  // :focus-visible ring applies through role="button".
+  const interactiveProps = interactive
+    ? {
+        role: "button",
+        tabIndex: 0,
+        onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.currentTarget.click();
+          }
+          onKeyDown?.(e);
+        },
+      }
+    : { onKeyDown };
+
   return (
     <Tag
       className={`ui-card p-5 ${interactive ? "ui-lift cursor-pointer" : ""} ${className}`}
+      {...interactiveProps}
       {...rest}
     >
       {children}

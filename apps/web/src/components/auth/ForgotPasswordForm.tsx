@@ -37,7 +37,7 @@ export default function ForgotPasswordForm() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg p-4">
       <div className="ui-card w-full max-w-md space-y-5 p-8 animate-scale-in">
-        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-brand text-primary-contrast shadow-md">
+        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary bg-gradient-brand text-primary-contrast shadow-md">
           <KeyRound className="h-6 w-6" aria-hidden="true" />
         </span>
         <div>
@@ -75,7 +75,10 @@ export default function ForgotPasswordForm() {
               <Input
                 id="forgot-email"
                 type="email"
+                inputMode="email"
                 autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

@@ -7,7 +7,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Lock, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Lock, CheckCircle2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -23,6 +23,7 @@ export default function ResetPasswordForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   useEffect(() => {
     if (!token) setError(t("auth.reset.missingToken"));
@@ -51,7 +52,7 @@ export default function ResetPasswordForm() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg p-4">
       <div className="ui-card w-full max-w-md space-y-5 p-8 animate-scale-in">
-        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-brand text-primary-contrast shadow-md">
+        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary bg-gradient-brand text-primary-contrast shadow-md">
           <Lock className="h-6 w-6" aria-hidden="true" />
         </span>
         <div>
@@ -77,20 +78,37 @@ export default function ResetPasswordForm() {
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <Field label={t("auth.reset.newPassword")}>
-              <Input
-                id="reset-new"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="reset-new"
+                  type={showPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  className="pr-10"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                  aria-label={
+                    showPw ? t("auth.hidePassword") : t("auth.showPassword")
+                  }
+                >
+                  {showPw ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </Field>
             <Field label={t("auth.reset.confirm")}>
               <Input
                 id="reset-confirm"
-                type="password"
+                type={showPw ? "text" : "password"}
                 autoComplete="new-password"
                 required
                 minLength={8}
