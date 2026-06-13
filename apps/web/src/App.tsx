@@ -160,7 +160,10 @@ export class ErrorBoundary extends Component<
               >
                 Reload
               </button>
-              <a href="/" className="text-sm ui-text-muted hover:ui-title underline">
+              <a
+                href="/"
+                className="text-sm ui-text-muted hover:ui-title underline"
+              >
                 Go to home
               </a>
             </div>

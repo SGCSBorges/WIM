@@ -1025,9 +1025,17 @@ export default function ProfileView() {
                   type="button"
                   onClick={() => setShowEmailPw((v) => !v)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={showEmailPw ? t("auth.hidePassword") : t("auth.showPassword")}
+                  aria-label={
+                    showEmailPw
+                      ? t("auth.hidePassword")
+                      : t("auth.showPassword")
+                  }
                 >
-                  {showEmailPw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                  {showEmailPw ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
                 </button>
               </div>
             </Field>
@@ -1071,9 +1079,17 @@ export default function ProfileView() {
                   type="button"
                   onClick={() => setShowCurrentPw((v) => !v)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={showCurrentPw ? t("auth.hidePassword") : t("auth.showPassword")}
+                  aria-label={
+                    showCurrentPw
+                      ? t("auth.hidePassword")
+                      : t("auth.showPassword")
+                  }
                 >
-                  {showCurrentPw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                  {showCurrentPw ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
                 </button>
               </div>
             </Field>
@@ -1096,9 +1112,15 @@ export default function ProfileView() {
                   type="button"
                   onClick={() => setShowNewPw((v) => !v)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={showNewPw ? t("auth.hidePassword") : t("auth.showPassword")}
+                  aria-label={
+                    showNewPw ? t("auth.hidePassword") : t("auth.showPassword")
+                  }
                 >
-                  {showNewPw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                  {showNewPw ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
                 </button>
               </div>
             </Field>
@@ -1148,9 +1170,17 @@ export default function ProfileView() {
                   type="button"
                   onClick={() => setShowDeletePw((v) => !v)}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={showDeletePw ? t("auth.hidePassword") : t("auth.showPassword")}
+                  aria-label={
+                    showDeletePw
+                      ? t("auth.hidePassword")
+                      : t("auth.showPassword")
+                  }
                 >
-                  {showDeletePw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                  {showDeletePw ? (
+                    <EyeOff className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden="true" />
+                  )}
                 </button>
               </div>
             </Field>

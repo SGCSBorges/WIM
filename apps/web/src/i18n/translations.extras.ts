@@ -1387,7 +1387,8 @@ export const extras = {
     "auth.showPassword": "Afficher le mot de passe",
     "auth.hidePassword": "Masquer le mot de passe",
     "warranties.viewArticle": "Voir l'article",
-    "warranties.emptyFiltered": "Aucune garantie ne correspond au filtre sélectionné.",
+    "warranties.emptyFiltered":
+      "Aucune garantie ne correspond au filtre sélectionné.",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -2085,7 +2086,8 @@ export const extras = {
     "auth.showPassword": "Mostrar senha",
     "auth.hidePassword": "Ocultar senha",
     "warranties.viewArticle": "Ver artigo",
-    "warranties.emptyFiltered": "Nenhuma garantia corresponde ao filtro selecionado.",
+    "warranties.emptyFiltered":
+      "Nenhuma garantia corresponde ao filtro selecionado.",
   },
   es: {
     "auth.hero.tagline": "Todo lo que posees, con garantía, en un solo lugar.",
@@ -2790,7 +2792,8 @@ export const extras = {
     "auth.showPassword": "Mostrar contraseña",
     "auth.hidePassword": "Ocultar contraseña",
     "warranties.viewArticle": "Ver artículo",
-    "warranties.emptyFiltered": "Ninguna garantía coincide con el filtro seleccionado.",
+    "warranties.emptyFiltered":
+      "Ninguna garantía coincide con el filtro seleccionado.",
   },
   nl: {
     "auth.hero.tagline": "Alles wat u bezit, onder garantie, op één plek.",
@@ -3489,7 +3492,8 @@ export const extras = {
     "auth.showPassword": "Wachtwoord tonen",
     "auth.hidePassword": "Wachtwoord verbergen",
     "warranties.viewArticle": "Artikel bekijken",
-    "warranties.emptyFiltered": "Geen garanties overeenkomen met het geselecteerde filter.",
+    "warranties.emptyFiltered":
+      "Geen garanties overeenkomen met het geselecteerde filter.",
   },
 } as const;
 

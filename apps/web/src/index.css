@@ -763,8 +763,13 @@ body {
     --border: #9ca3af;
     --focus-ring: rgba(255, 255, 255, 0.9);
   }
-  .ui-card { border-width: 2px; }
-  .ui-input, .ui-select { border-width: 2px; }
+  .ui-card {
+    border-width: 2px;
+  }
+  .ui-input,
+  .ui-select {
+    border-width: 2px;
+  }
   :where(a, button, [role="button"], summary):focus-visible {
     box-shadow: 0 0 0 4px var(--focus-ring);
   }
@@ -781,7 +786,9 @@ body {
   .ui-drawer,
   .ui-overlay,
   button:not([aria-label]),
-  [role="navigation"] { display: none !important; }
+  [role="navigation"] {
+    display: none !important;
+  }
 
   body {
     background: #fff !important;
@@ -800,11 +807,17 @@ body {
   /* Prevent rows and cards from splitting across page breaks */
   li,
   tr,
-  .ui-card { break-inside: avoid; }
+  .ui-card {
+    break-inside: avoid;
+  }
 
   /* Make section headings start a new page where logical */
-  h1 { break-before: page; }
-  h1:first-child { break-before: auto; }
+  h1 {
+    break-before: page;
+  }
+  h1:first-child {
+    break-before: auto;
+  }
 
   /* Show link URLs so printed copies remain useful */
   a[href]:not([href^="#"]):not([aria-label])::after {

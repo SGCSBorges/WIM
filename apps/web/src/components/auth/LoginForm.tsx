@@ -9,7 +9,14 @@ import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Package, BellRing, Search, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import {
+  Package,
+  BellRing,
+  Search,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
@@ -300,7 +307,9 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                     onClick={() => setShowPassword((v) => !v)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
                     aria-label={
-                      showPassword ? t("auth.hidePassword") : t("auth.showPassword")
+                      showPassword
+                        ? t("auth.hidePassword")
+                        : t("auth.showPassword")
                     }
                   >
                     {showPassword ? (

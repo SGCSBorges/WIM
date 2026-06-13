@@ -52,10 +52,9 @@ describe("<LoginForm />", () => {
           "aria-invalid",
           "true"
         );
-        expect(screen.getByLabelText(/password/i, { selector: "input" })).toHaveAttribute(
-          "aria-invalid",
-          "true"
-        );
+        expect(
+          screen.getByLabelText(/password/i, { selector: "input" })
+        ).toHaveAttribute("aria-invalid", "true");
       },
       { timeout: 3000 }
     );
@@ -67,15 +66,17 @@ describe("<LoginForm />", () => {
     const { submitButton } = renderForm();
 
     await user.type(screen.getByLabelText(/email/i), "alice@example.com");
-    await user.type(screen.getByLabelText(/password/i, { selector: "input" }), "short");
+    await user.type(
+      screen.getByLabelText(/password/i, { selector: "input" }),
+      "short"
+    );
     await user.click(submitButton());
 
     await waitFor(
       () => {
-        expect(screen.getByLabelText(/password/i, { selector: "input" })).toHaveAttribute(
-          "aria-invalid",
-          "true"
-        );
+        expect(
+          screen.getByLabelText(/password/i, { selector: "input" })
+        ).toHaveAttribute("aria-invalid", "true");
       },
       { timeout: 3000 }
     );
@@ -90,7 +91,10 @@ describe("<LoginForm />", () => {
     const { submitButton } = renderForm(onLogin);
 
     await user.type(screen.getByLabelText(/email/i), "alice@example.com");
-    await user.type(screen.getByLabelText(/password/i, { selector: "input" }), "hunter222");
+    await user.type(
+      screen.getByLabelText(/password/i, { selector: "input" }),
+      "hunter222"
+    );
     await user.click(submitButton());
 
     await waitFor(() => {
@@ -109,7 +113,10 @@ describe("<LoginForm />", () => {
     const { submitButton } = renderForm();
 
     await user.type(screen.getByLabelText(/email/i), "alice@example.com");
-    await user.type(screen.getByLabelText(/password/i, { selector: "input" }), "hunter222");
+    await user.type(
+      screen.getByLabelText(/password/i, { selector: "input" }),
+      "hunter222"
+    );
     await user.click(submitButton());
 
     const alert = await screen.findByRole("alert");
@@ -130,7 +137,10 @@ describe("<LoginForm />", () => {
     await user.click(registerTab);
 
     await user.type(screen.getByLabelText(/email/i), "bob@example.com");
-    await user.type(screen.getByLabelText(/password/i, { selector: "input" }), "hunter222");
+    await user.type(
+      screen.getByLabelText(/password/i, { selector: "input" }),
+      "hunter222"
+    );
     await user.click(submitButton());
 
     await waitFor(() => {
