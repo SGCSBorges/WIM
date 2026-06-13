@@ -19,6 +19,7 @@ export const extras = {
     "nav.expand": "Expand",
     "nav.skipToContent": "Skip to content",
     "common.dismiss": "Dismiss",
+    "common.backToTop": "Back to top",
     "articles.filter.clearAll": "Clear filters",
     "common.unsaved.discardConfirm":
       "You have unsaved changes. Discard them and leave?",
@@ -692,6 +693,7 @@ export const extras = {
     "nav.expand": "Agrandir",
     "nav.skipToContent": "Aller au contenu",
     "common.dismiss": "Fermer",
+    "common.backToTop": "Retour en haut",
     "articles.filter.clearAll": "Effacer les filtres",
     "common.unsaved.discardConfirm":
       "Vous avez des modifications non enregistrées. Les abandonner et quitter ?",
@@ -1386,6 +1388,7 @@ export const extras = {
     "nav.expand": "Expandir",
     "nav.skipToContent": "Ir para o conteúdo",
     "common.dismiss": "Dispensar",
+    "common.backToTop": "Voltar ao topo",
     "articles.filter.clearAll": "Limpar filtros",
     "common.unsaved.discardConfirm":
       "Tem alterações não guardadas. Descartá-las e sair?",
@@ -2077,6 +2080,7 @@ export const extras = {
     "nav.expand": "Expandir",
     "nav.skipToContent": "Saltar al contenido",
     "common.dismiss": "Descartar",
+    "common.backToTop": "Volver arriba",
     "articles.filter.clearAll": "Borrar filtros",
     "common.unsaved.discardConfirm":
       "Tienes cambios sin guardar. ¿Descartarlos y salir?",
@@ -2775,6 +2779,7 @@ export const extras = {
     "nav.expand": "Uitklappen",
     "nav.skipToContent": "Ga naar inhoud",
     "common.dismiss": "Sluiten",
+    "common.backToTop": "Terug naar boven",
     "articles.filter.clearAll": "Filters wissen",
     "common.unsaved.discardConfirm":
       "U hebt niet-opgeslagen wijzigingen. Wilt u deze negeren en vertrekken?",

@@ -15,6 +15,7 @@ import { useHotkeys } from "../../hooks/useHotkeys";
 import { articlesAPI } from "../../services/api";
 import { visibleNavItems, type NavItem, type NavKey } from "../../lib/navItems";
 import OfflineBanner from "../common/OfflineBanner";
+import BackToTop from "../common/BackToTop";
 import ShortcutsHelp from "../common/ShortcutsHelp";
 import { CommandPalette, type CommandItem } from "../ui";
 import Sidebar from "./Sidebar";
@@ -199,6 +200,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
         onClose={() => setShortcutsOpen(false)}
         role={role}
       />
+      <BackToTop />
     </div>
   );
 }

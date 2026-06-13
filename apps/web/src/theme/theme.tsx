@@ -57,8 +57,33 @@ function detectInitialTheme(): Theme {
   return "light";
 }
 
+// Keep the mobile browser chrome / installed-PWA status bar in sync with the
+// chosen theme. index.html ships static prefers-color-scheme metas for the
+// pre-hydration first paint; once the theme is known we set a single
+// media-less <meta name="theme-color"> (last-in-document wins) to the active
+// theme's page background, so ocean/cyber/sunset — and a light theme chosen
+// under an OS dark preference — colour the chrome correctly.
+function syncThemeColorMeta() {
+  const bg = getComputedStyle(document.documentElement)
+    .getPropertyValue("--bg")
+    .trim();
+  if (!bg) return;
+  let meta = document.querySelector<HTMLMetaElement>(
+    'meta[name="theme-color"]:not([media])'
+  );
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", bg);
+}
+
 function applyThemeToDom(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme);
+  // Read back the resolved token *after* data-theme is set so the value
+  // always matches index.css without duplicating hex codes here.
+  syncThemeColorMeta();
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

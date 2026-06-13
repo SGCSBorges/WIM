@@ -119,17 +119,40 @@ npm --workspace apps/web run test:e2e
   `background-image` and kills the gradient; (2) `text-primary-contrast` is
   the contrast color *for a primary-filled button* and is near-black in the
   dark/ocean/cyber themes — for text on the brand gradient use `text-white`,
-  which reads on every theme's gradient.
+  which reads on every theme's gradient. `theme.tsx` keeps a single
+  media-less `<meta name="theme-color">` in sync with the active theme's
+  resolved `--bg` (read back from the computed style after `data-theme` is
+  set, so it never duplicates hex codes) — that colors the mobile browser
+  chrome + installed-PWA status bar to match `ocean`/`cyber`/`sunset`, not
+  just the OS light/dark preference. `index.html` still ships the static
+  `prefers-color-scheme` metas for the pre-hydration first paint.
 - **Design system**: primitives live in `apps/web/src/components/ui/`
   (`Button`, `Field/Input/Textarea/Select`, `PageHeader`, `Tabs`,
   `ConfirmDialog`, `Badge`, `Card/Section`, `Stat`, `Pagination`,
   `Breadcrumbs`, `Segmented`, `Popover`, `Dropzone`, `CommandPalette`).
-  Import from the barrel `components/ui`. Icons come from `lucide-react`
+  Import from the barrel `components/ui`. `ConfirmDialog` with
+  `tone="danger"` defaults focus to **Cancel** (not Confirm) so a reflexive
+  Enter/Space can't fire an irreversible action; `Pagination` wraps its
+  "page X / N" status in an `aria-live` region so screen readers hear page
+  changes. Icons come from `lucide-react`
   (never emoji); the central nav-icon map is `src/lib/navItems.ts`.
   Self-hosted Inter Variable via `@fontsource-variable/inter`. Charts
   use `recharts`, lazy-loaded inside the Dashboard chunk only.
 - **App shell**: `components/layout/{AppShell,Sidebar,TopBar,MobileDrawer}`.
   Sidebar collapse state persists in `localStorage["wim.sidebar.collapsed"]`.
+  `AppShell` also renders a `BackToTop` floating button (appears past 600px
+  of scroll; smooth-scrolls up, instant under `prefers-reduced-motion`).
+- **Route chrome**: `components/layout/RouteChrome` is mounted once next to
+  `<App />` in `main.tsx` (inside the Router) and owns the cross-cutting
+  per-navigation behavior: it sets a per-page `<title>` (`WIM · <page>`,
+  from a pathname→i18n-key map), resets scroll to the top and moves focus to
+  the `#main` landmark on forward/`PUSH` navigations, and announces the new
+  page name through a visually-hidden `aria-live` region (an SPA route change
+  is otherwise silent to assistive tech). On `POP` (browser Back/Forward) it
+  deliberately skips the scroll/focus reset so the browser restores the
+  prior scroll position — returning from an article detail to a long list
+  keeps your place. `i18n.tsx` keeps `<html lang>` in sync with the active
+  language for screen-reader pronunciation.
 - **⌘K + shortcuts**: `AppShell` mounts a `CommandPalette` and registers
   global keys via `hooks/useHotkeys` — `mod+k` opens the palette
   (Navigate / Actions / Articles), `c` creates an article
@@ -528,7 +551,8 @@ Key files:
 - Admin: `apps/api/src/modules/admin/admin.routes.ts`
 - Web entry: `apps/web/src/main.tsx`, routes in `apps/web/src/App.tsx`
 - App shell: `apps/web/src/components/layout/{AppShell,Sidebar,TopBar,
-  MobileDrawer,NotificationBell}.tsx`, nav model in `src/lib/navItems.ts`
+  MobileDrawer,NotificationBell,RouteChrome}.tsx`, nav model in
+  `src/lib/navItems.ts`; `BackToTop` in `components/common/`
 - UI primitives: `apps/web/src/components/ui/` (barrel `index.ts`)
 - Hooks: `apps/web/src/hooks/{useHotkeys,useFileDrop,useApiForm,
   useUnsavedChangesGuard}.ts`

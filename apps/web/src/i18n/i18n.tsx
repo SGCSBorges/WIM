@@ -17,7 +17,13 @@
  * called with a templated key (e.g. `t(\`claim.status.${status}\`)`); the
  * lookup returns the raw key when no translation exists.
  */
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Language, translations } from "./translations";
 import { extras, ExtrasKey } from "./translations.extras";
 import { authAPI, profileAPI } from "../services/api";
@@ -90,6 +96,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     _setLanguage(lang);
     localStorage.setItem(STORAGE_KEY, lang);
   };
+
+  // Keep <html lang> in sync with the active language. The document ships
+  // lang="en" for first paint; reflecting the real choice lets screen
+  // readers switch pronunciation and helps browser translation heuristics.
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const value = useMemo<I18nContextValue>(() => {
     // BCP-47 tags so Intl.PluralRules picks the right rule set

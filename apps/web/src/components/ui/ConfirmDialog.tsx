@@ -32,6 +32,16 @@ export function ConfirmDialog({
   loading = false,
 }: ConfirmDialogProps) {
   const titleId = React.useId();
+  // For destructive confirmations, default focus to Cancel so a reflexive
+  // Enter/Space — or the focus Modal otherwise puts on the first button —
+  // can't fire the irreversible action. Runs just after Modal's open-focus.
+  const cancelRef = React.useRef<HTMLButtonElement | null>(null);
+  React.useEffect(() => {
+    if (!open || tone !== "danger") return;
+    const id = window.setTimeout(() => cancelRef.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+  }, [open, tone]);
+
   return (
     <Modal
       open={open}
@@ -56,7 +66,12 @@ export function ConfirmDialog({
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="ghost" onClick={onCancel} disabled={loading}>
+        <Button
+          ref={cancelRef}
+          variant="ghost"
+          onClick={onCancel}
+          disabled={loading}
+        >
           {cancelLabel}
         </Button>
         <Button

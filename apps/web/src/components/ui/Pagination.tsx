@@ -47,7 +47,11 @@ export function Pagination({
         >
           {prevLabel}
         </Button>
-        <span className="text-sm ui-text-muted tabular-nums px-1">
+        <span
+          role="status"
+          aria-live="polite"
+          className="text-sm ui-text-muted tabular-nums px-1"
+        >
           {page} / {pages}
         </span>
         <Button

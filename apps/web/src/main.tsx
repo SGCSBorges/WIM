@@ -13,6 +13,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App, { ErrorBoundary } from "./App";
+import RouteChrome from "./components/layout/RouteChrome";
 // Self-hosted Inter Variable (no network/CDN — PWA/offline-safe). Weights are
 // covered by the single variable axis; we reference it via --font-sans.
 import "@fontsource-variable/inter";
@@ -50,6 +51,7 @@ createRoot(document.getElementById("root")!).render(
           <I18nProvider>
             <PreferencesProvider>
               <ToastProvider>
+                <RouteChrome />
                 <App />
               </ToastProvider>
             </PreferencesProvider>

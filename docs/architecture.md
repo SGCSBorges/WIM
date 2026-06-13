@@ -172,7 +172,10 @@ Live queue depth and recent failures surface in the Admin → Jobs tab
 The web client is built on a tokenized design system with theme-aware CSS
 variables (light / dark / ocean / cyber / sunset) bridged into Tailwind utility
 classes via `apps/web/tailwind.config.js` — so primitives don't hardcode
-colors and every route works across all four themes.
+colors and every route works across all five themes. The active theme also
+drives a single `<meta name="theme-color">` (synced in `theme/theme.tsx`) so
+the mobile browser chrome and installed-PWA status bar match it, and
+`<html lang>` tracks the selected language for screen-reader pronunciation.
 
 - **Primitives** (`apps/web/src/components/ui/`): `Button`, `Field` (+
   `Input`/`Textarea`/`Select`), `PageHeader`, `Tabs`, `ConfirmDialog`,
@@ -183,8 +186,15 @@ colors and every route works across all four themes.
 - **App shell** (`apps/web/src/components/layout/`): persistent
   `Sidebar` (icon-rail collapse persisted in localStorage), sticky
   `TopBar` (search affordance for the command palette, `NotificationBell`,
-  PWA install, language/theme, profile, logout), and `MobileDrawer` on
-  small viewports. Routes/auth stay in `App.tsx`.
+  PWA install, language/theme, profile, logout), `MobileDrawer` on
+  small viewports, and a `BackToTop` button for long lists. Routes/auth
+  stay in `App.tsx`.
+- **Route chrome** (`components/layout/RouteChrome`, mounted once in
+  `main.tsx`): per-page `<title>`, scroll-to-top + focus-to-`#main` on
+  forward navigation (POP/Back preserves the browser's restored scroll so
+  you return to your place in a list), and a polite `aria-live` region that
+  announces each new page — the standard SPA fixes for navigation that's
+  otherwise invisible to assistive tech and bookmarks.
 - **Command palette + shortcuts**: `AppShell` mounts a `CommandPalette`
   and registers global hotkeys via `hooks/useHotkeys`. `mod+k` opens the
   palette anywhere (including from inside fields); `c` opens the
