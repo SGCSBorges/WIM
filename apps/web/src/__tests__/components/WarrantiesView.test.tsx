@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 
 vi.mock("../../services/api", () => ({
   warrantiesAPI: { getAll: vi.fn() },
@@ -14,11 +15,13 @@ const mockedGet = warrantiesAPI.getAll as unknown as ReturnType<typeof vi.fn>;
 
 function renderView() {
   render(
-    <I18nProvider>
-      <ThemeProvider>
-        <WarrantiesView />
-      </ThemeProvider>
-    </I18nProvider>
+    <MemoryRouter>
+      <I18nProvider>
+        <ThemeProvider>
+          <WarrantiesView />
+        </ThemeProvider>
+      </I18nProvider>
+    </MemoryRouter>
   );
 }
 

@@ -124,6 +124,16 @@ export class ErrorBoundary extends Component<
   }
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[ErrorBoundary]", error, info.componentStack);
+    // A ChunkLoadError means a lazy route's JS chunk 404'd — almost always
+    // because a new deploy invalidated the old hashed filename. Auto-reload
+    // once so the user gets the fresh bundle without a manual refresh.
+    if (
+      error.name === "ChunkLoadError" ||
+      error.message.includes("Failed to fetch dynamically imported module") ||
+      error.message.includes("Loading chunk")
+    ) {
+      window.location.reload();
+    }
   }
   render() {
     if (this.state.error) {
@@ -140,15 +150,20 @@ export class ErrorBoundary extends Component<
             <p className="text-sm ui-text-muted mb-5">
               {this.state.error.message}
             </p>
-            <button
-              className="ui-btn-primary inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
-              onClick={() => {
-                this.setState({ error: null });
-                window.location.reload();
-              }}
-            >
-              Reload
-            </button>
+            <div className="flex flex-col items-center gap-3">
+              <button
+                className="ui-btn-primary inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium"
+                onClick={() => {
+                  this.setState({ error: null });
+                  window.location.reload();
+                }}
+              >
+                Reload
+              </button>
+              <a href="/" className="text-sm ui-text-muted hover:ui-title underline">
+                Go to home
+              </a>
+            </div>
           </div>
         </div>
       );

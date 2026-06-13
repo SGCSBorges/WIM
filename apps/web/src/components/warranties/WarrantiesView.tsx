@@ -5,6 +5,7 @@
  * label so the signal isn't color-only.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ShieldCheck,
   RotateCw,
@@ -149,7 +150,11 @@ export default function WarrantiesView() {
         ) : sorted.length === 0 ? (
           <EmptyState
             icon={<ShieldCheck className="h-6 w-6" />}
-            title={t("warranties.none")}
+            title={
+              statusFilter !== "all"
+                ? t("warranties.emptyFiltered")
+                : t("warranties.none")
+            }
           />
         ) : (
           <ul className="divide-y ui-divider">
@@ -188,10 +193,13 @@ export default function WarrantiesView() {
                           {safeFormat(w.garantieFin ?? w.garantieEndDate)}
                         </span>
                       )}
-                      <span className="inline-flex items-center gap-1">
+                      <Link
+                        to={`/articles/${w.garantieArticleId}`}
+                        className="inline-flex items-center gap-1 hover:text-primary"
+                      >
                         <Package className="h-3.5 w-3.5" aria-hidden="true" />
-                        {t("warranties.articleId")}: {w.garantieArticleId}
-                      </span>
+                        {t("warranties.viewArticle")}
+                      </Link>
                     </div>
                   </div>
                   <Button

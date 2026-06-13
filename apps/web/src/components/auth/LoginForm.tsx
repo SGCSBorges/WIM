@@ -9,7 +9,7 @@ import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Package, BellRing, Search, ShieldCheck } from "lucide-react";
+import { Package, BellRing, Search, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
@@ -48,6 +48,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   // `{ totpRequired, challengeToken }` instead of a session cookie. We stash
   // the challenge token and surface the code prompt; submitting it calls
   // /auth/login/verify-totp to mint the real session.
+  const [showPassword, setShowPassword] = useState(false);
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
   const [totpCode, setTotpCode] = useState("");
   const [totpError, setTotpError] = useState<string | null>(null);
@@ -227,9 +228,12 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   pattern="[0-9]*"
+                  maxLength={6}
                   ref={(el: HTMLInputElement | null) => el?.focus()}
                   value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value)}
+                  onChange={(e) =>
+                    setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   placeholder="123456"
                 />
               </Field>
@@ -283,12 +287,29 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                 label={t("auth.password")}
                 error={fieldError(errors.password?.message)}
               >
-                <Input
-                  type="password"
-                  autoComplete={isLogin ? "current-password" : "new-password"}
-                  placeholder="••••••••"
-                  {...register("password")}
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    autoComplete={isLogin ? "current-password" : "new-password"}
+                    placeholder="••••••••"
+                    className="pr-10"
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                    aria-label={
+                      showPassword ? t("auth.hidePassword") : t("auth.showPassword")
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
               </Field>
 
               {submissionError && (

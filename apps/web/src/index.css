@@ -747,3 +747,69 @@ body {
 .ui-text-warn {
   color: var(--text-warn);
 }
+
+/* High-contrast mode: reinforce borders and focus rings for users who need
+   stronger visual separation. Chrome/Edge support prefers-contrast; Firefox
+   maps it from the OS "Increase Contrast" setting. */
+@media (prefers-contrast: more) {
+  :root {
+    --border: #6b7280;
+    --focus-ring: rgba(0, 0, 0, 0.85);
+  }
+  :root[data-theme="dark"],
+  :root[data-theme="ocean"],
+  :root[data-theme="cyber"],
+  :root[data-theme="sunset"] {
+    --border: #9ca3af;
+    --focus-ring: rgba(255, 255, 255, 0.9);
+  }
+  .ui-card { border-width: 2px; }
+  .ui-input, .ui-select { border-width: 2px; }
+  :where(a, button, [role="button"], summary):focus-visible {
+    box-shadow: 0 0 0 4px var(--focus-ring);
+  }
+}
+
+/* Print styles: strip navigation chrome and reset backgrounds so ink isn't
+   wasted on decorative surfaces. Useful for printing warranty certificates,
+   article details, or inventory lists. */
+@media print {
+  /* Hide interactive chrome that makes no sense on paper */
+  aside,
+  header,
+  [aria-label="Primary"],
+  .ui-drawer,
+  .ui-overlay,
+  button:not([aria-label]),
+  [role="navigation"] { display: none !important; }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 12pt;
+  }
+
+  /* Reset card surfaces to plain white with a subtle border */
+  .ui-card,
+  .ui-panel {
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+
+  /* Prevent rows and cards from splitting across page breaks */
+  li,
+  tr,
+  .ui-card { break-inside: avoid; }
+
+  /* Make section headings start a new page where logical */
+  h1 { break-before: page; }
+  h1:first-child { break-before: auto; }
+
+  /* Show link URLs so printed copies remain useful */
+  a[href]:not([href^="#"]):not([aria-label])::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #555;
+  }
+}

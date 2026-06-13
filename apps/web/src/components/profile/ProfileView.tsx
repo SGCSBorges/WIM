@@ -31,6 +31,8 @@ import {
   XCircle,
   LogOut,
   Rows3,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   profileAPI,
@@ -126,6 +128,11 @@ export default function ProfileView() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
+
+  const [showEmailPw, setShowEmailPw] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showDeletePw, setShowDeletePw] = useState(false);
 
   // Sharing-panel state. Both lists load lazily after first paint via the
   // same refresh function so unsharing/revoking can refetch in one place.
@@ -1004,14 +1011,25 @@ export default function ProfileView() {
               label={t("profile.email.currentPassword")}
               htmlFor="profile-email-current-password"
             >
-              <Input
-                id="profile-email-current-password"
-                value={currentPasswordForEmail}
-                onChange={(e) => setCurrentPasswordForEmail(e.target.value)}
-                type="password"
-                autoComplete="current-password"
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="profile-email-current-password"
+                  value={currentPasswordForEmail}
+                  onChange={(e) => setCurrentPasswordForEmail(e.target.value)}
+                  type={showEmailPw ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowEmailPw((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                  aria-label={showEmailPw ? t("auth.hidePassword") : t("auth.showPassword")}
+                >
+                  {showEmailPw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                </button>
+              </div>
             </Field>
           </div>
           <div className="mt-3">
@@ -1039,28 +1057,50 @@ export default function ProfileView() {
               label={t("profile.password.current")}
               htmlFor="profile-password-current"
             >
-              <Input
-                id="profile-password-current"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                type="password"
-                autoComplete="current-password"
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="profile-password-current"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  type={showCurrentPw ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                  aria-label={showCurrentPw ? t("auth.hidePassword") : t("auth.showPassword")}
+                >
+                  {showCurrentPw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                </button>
+              </div>
             </Field>
             <Field
               label={t("profile.password.new")}
               htmlFor="profile-password-new"
             >
-              <Input
-                id="profile-password-new"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                type="password"
-                autoComplete="new-password"
-                minLength={8}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="profile-password-new"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  type={showNewPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  minLength={8}
+                  className="pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                  aria-label={showNewPw ? t("auth.hidePassword") : t("auth.showPassword")}
+                >
+                  {showNewPw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                </button>
+              </div>
             </Field>
           </div>
           <div className="mt-3">
@@ -1095,13 +1135,24 @@ export default function ProfileView() {
               label={t("profile.danger.currentPassword")}
               htmlFor="profile-delete-password"
             >
-              <Input
-                id="profile-delete-password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                type="password"
-                autoComplete="current-password"
-              />
+              <div className="relative">
+                <Input
+                  id="profile-delete-password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  type={showDeletePw ? "text" : "password"}
+                  autoComplete="current-password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDeletePw((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                  aria-label={showDeletePw ? t("auth.hidePassword") : t("auth.showPassword")}
+                >
+                  {showDeletePw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                </button>
+              </div>
             </Field>
           </div>
           <div className="mt-3">

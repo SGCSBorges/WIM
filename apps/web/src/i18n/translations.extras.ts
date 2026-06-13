@@ -682,6 +682,10 @@ export const extras = {
     "transfer.tabIncoming": "Incoming",
     "transfer.tabOutgoing": "Outgoing",
     "transfer.pendingCount": "{count} pending",
+    "auth.showPassword": "Show password",
+    "auth.hidePassword": "Hide password",
+    "warranties.viewArticle": "View article",
+    "warranties.emptyFiltered": "No warranties match the selected filter.",
   },
   fr: {
     "auth.hero.tagline":
@@ -1380,6 +1384,10 @@ export const extras = {
     "transfer.tabIncoming": "Entrants",
     "transfer.tabOutgoing": "Sortants",
     "transfer.pendingCount": "{count} en attente",
+    "auth.showPassword": "Afficher le mot de passe",
+    "auth.hidePassword": "Masquer le mot de passe",
+    "warranties.viewArticle": "Voir l'article",
+    "warranties.emptyFiltered": "Aucune garantie ne correspond au filtre sélectionné.",
   },
   pt: {
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
@@ -2074,6 +2082,10 @@ export const extras = {
     "transfer.tabIncoming": "Recebidos",
     "transfer.tabOutgoing": "Enviados",
     "transfer.pendingCount": "{count} pendente(s)",
+    "auth.showPassword": "Mostrar senha",
+    "auth.hidePassword": "Ocultar senha",
+    "warranties.viewArticle": "Ver artigo",
+    "warranties.emptyFiltered": "Nenhuma garantia corresponde ao filtro selecionado.",
   },
   es: {
     "auth.hero.tagline": "Todo lo que posees, con garantía, en un solo lugar.",
@@ -2775,6 +2787,10 @@ export const extras = {
     "transfer.tabIncoming": "Entrantes",
     "transfer.tabOutgoing": "Salientes",
     "transfer.pendingCount": "{count} pendiente(s)",
+    "auth.showPassword": "Mostrar contraseña",
+    "auth.hidePassword": "Ocultar contraseña",
+    "warranties.viewArticle": "Ver artículo",
+    "warranties.emptyFiltered": "Ninguna garantía coincide con el filtro seleccionado.",
   },
   nl: {
     "auth.hero.tagline": "Alles wat u bezit, onder garantie, op één plek.",
@@ -3470,6 +3486,10 @@ export const extras = {
     "transfer.tabIncoming": "Inkomend",
     "transfer.tabOutgoing": "Uitgaand",
     "transfer.pendingCount": "{count} in behandeling",
+    "auth.showPassword": "Wachtwoord tonen",
+    "auth.hidePassword": "Wachtwoord verbergen",
+    "warranties.viewArticle": "Artikel bekijken",
+    "warranties.emptyFiltered": "Geen garanties overeenkomen met het geselecteerde filter.",
   },
 } as const;
 

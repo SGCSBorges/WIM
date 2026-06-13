@@ -86,6 +86,7 @@ export default function Sidebar({
           type="button"
           onClick={onToggleCollapsed}
           aria-label={collapsed ? t("nav.expand") : t("nav.collapse")}
+          title={collapsed ? t("nav.expand") : t("nav.collapse")}
           className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm ui-btn-ghost ${
             collapsed ? "justify-center" : ""
           }`}
