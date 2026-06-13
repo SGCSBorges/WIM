@@ -196,7 +196,7 @@ function HomeCard({
       onClick={onClick}
       className="group flex flex-col"
     >
-      <span className="mb-3 grid h-11 w-11 place-items-center rounded-xl bg-gradient-brand text-primary-contrast shadow-md">
+      <span className="mb-3 grid h-11 w-11 place-items-center rounded-xl bg-primary bg-gradient-brand text-primary-contrast shadow-md">
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
       <h2 className="mb-1 text-lg font-semibold ui-title">{title}</h2>
@@ -225,7 +225,7 @@ function Home({
   return (
     <div className="animate-fade-in">
       {/* Hero */}
-      <section className="ui-card relative overflow-hidden bg-gradient-brand p-6 sm:p-8 text-white">
+      <section className="ui-card relative overflow-hidden !bg-primary bg-gradient-brand p-6 sm:p-8 text-white">
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-3xl font-bold tracking-tight">

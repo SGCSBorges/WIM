@@ -132,7 +132,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       {/* Brand panel (lg+) */}
       {/* text-white (not text-primary-contrast): the contrast token is
           near-black in dark/ocean/cyber and would vanish on the gradient. */}
-      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-brand p-12 text-white lg:flex">
+      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-primary bg-gradient-brand p-12 text-white lg:flex">
         <div className="flex items-center gap-3">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 backdrop-blur">
             <ShieldCheck className="h-6 w-6" aria-hidden="true" />
