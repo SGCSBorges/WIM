@@ -4,7 +4,7 @@
  * lifecycle (SCHEDULED → SENT/CANCELLED/FAILED). Creating a custom alert
  * launches its own form within the page.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bell,
   Plus,
@@ -60,6 +60,7 @@ export default function AlertsView() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [busyId, setBusyId] = useState<number | null>(null);
   const [customSnoozeId, setCustomSnoozeId] = useState<number | null>(null);
+  const customSnoozeInputRef = useRef<HTMLInputElement | null>(null);
 
   // New-alert form
   const [showCreate, setShowCreate] = useState(false);
@@ -91,6 +92,14 @@ export default function AlertsView() {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+  // Focus the custom-snooze date input when it appears so keyboard users
+  // can type a date without an extra click.
+  useEffect(() => {
+    if (customSnoozeId !== null) {
+      setTimeout(() => customSnoozeInputRef.current?.focus(), 0);
+    }
+  }, [customSnoozeId]);
 
   const sorted = useMemo(() => {
     const arr = [...items];
@@ -465,8 +474,8 @@ export default function AlertsView() {
                           </Button>
                           {customSnoozeId === a.alerteId ? (
                             <Input
+                              ref={customSnoozeInputRef}
                               type="date"
-                              autoFocus
                               aria-label={t("alerts.snooze.customLabel")}
                               min={new Date(Date.now() + 86400_000)
                                 .toISOString()
