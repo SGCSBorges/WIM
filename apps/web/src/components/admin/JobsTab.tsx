@@ -133,7 +133,11 @@ export default function JobsTab() {
         </Button>
       </div>
 
-      {error && <p className="text-sm ui-text-error">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm ui-text-error">
+          {error}
+        </p>
+      )}
 
       {renderQueue(t("admin.jobs.alertQueue"), snap?.alerts ?? null)}
       {renderQueue(t("admin.jobs.maintenanceQueue"), snap?.maintenance ?? null)}
@@ -165,7 +169,9 @@ export default function JobsTab() {
         {showFailed && (
           <>
             {failedError && (
-              <p className="text-sm ui-text-error">{failedError}</p>
+              <p role="alert" className="text-sm ui-text-error">
+                {failedError}
+              </p>
             )}
             {failed === null && !failedError && (
               <p className="text-sm ui-text-muted">{t("common.loading")}</p>
@@ -192,10 +198,18 @@ export default function JobsTab() {
                       }
                     >
                       <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <span className="font-mono ui-text-muted">
+                        <span
+                          className="font-mono ui-text-muted"
+                          title={j.queue}
+                        >
                           {j.queue}
                         </span>
-                        <span className="font-medium ui-title">{j.name}</span>
+                        <span
+                          className="truncate font-medium ui-title"
+                          title={j.name}
+                        >
+                          {j.name}
+                        </span>
                         <span className="ui-text-muted">
                           {t("admin.jobs.attempt")
                             .replace("{n}", String(j.attemptsMade))
@@ -206,25 +220,33 @@ export default function JobsTab() {
                             {formatDateTime(j.finishedOn)}
                           </span>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="ml-auto"
-                          aria-expanded={expandedId === rowKey}
-                          onClick={() =>
-                            setExpandedId((p) => (p === rowKey ? null : rowKey))
-                          }
-                        >
-                          {expandedId === rowKey
-                            ? t("admin.jobs.hideDetails")
-                            : t("admin.jobs.viewDetails")}
-                        </Button>
+                        {j.stacktrace.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-auto"
+                            aria-expanded={expandedId === rowKey}
+                            aria-controls={`job-trace-${rowKey}`}
+                            onClick={() =>
+                              setExpandedId((p) =>
+                                p === rowKey ? null : rowKey
+                              )
+                            }
+                          >
+                            {expandedId === rowKey
+                              ? t("admin.jobs.hideDetails")
+                              : t("admin.jobs.viewDetails")}
+                          </Button>
+                        )}
                       </div>
                       <p className="mt-1 break-words text-xs">
                         {j.failedReason ?? t("admin.jobs.noReason")}
                       </p>
                       {expandedId === rowKey && j.stacktrace.length > 0 && (
-                        <pre className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-md ui-panel p-2 font-mono text-[10px]">
+                        <pre
+                          id={`job-trace-${rowKey}`}
+                          className="mt-1 overflow-x-auto whitespace-pre-wrap rounded-md ui-panel p-2 font-mono text-[10px]"
+                        >
                           {j.stacktrace.join("\n")}
                         </pre>
                       )}

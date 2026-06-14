@@ -72,6 +72,10 @@ export default function CreateUserModal({
             <input
               id="cu-email"
               type="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -88,6 +92,7 @@ export default function CreateUserModal({
             <input
               id="cu-password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -114,7 +119,7 @@ export default function CreateUserModal({
             </select>
           </div>
           {error && (
-            <div className="border ui-alert-error rounded-md p-3">
+            <div role="alert" className="border ui-alert-error rounded-md p-3">
               <p className="text-sm ui-text-error">{error}</p>
             </div>
           )}

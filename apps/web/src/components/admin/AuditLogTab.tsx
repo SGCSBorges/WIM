@@ -140,7 +140,10 @@ export default function AuditLogTab() {
       </div>
 
       {error && (
-        <div className="rounded-xl border ui-alert-error p-3 text-sm ui-text-error">
+        <div
+          role="alert"
+          className="rounded-xl border ui-alert-error p-3 text-sm ui-text-error"
+        >
           {error}
         </div>
       )}
@@ -182,19 +185,19 @@ export default function AuditLogTab() {
           <table className="min-w-full text-sm">
             <thead className="ui-panel">
               <tr className="text-left ui-text-muted">
-                <th className="px-3 py-2 font-medium">
+                <th scope="col" className="px-3 py-2 font-medium">
                   {t("admin.auditLog.col.when")}
                 </th>
-                <th className="px-3 py-2 font-medium">
+                <th scope="col" className="px-3 py-2 font-medium">
                   {t("admin.auditLog.col.user")}
                 </th>
-                <th className="px-3 py-2 font-medium">
+                <th scope="col" className="px-3 py-2 font-medium">
                   {t("admin.auditLog.col.action")}
                 </th>
-                <th className="px-3 py-2 font-medium">
+                <th scope="col" className="px-3 py-2 font-medium">
                   {t("admin.auditLog.col.entity")}
                 </th>
-                <th className="px-3 py-2 font-medium">
+                <th scope="col" className="px-3 py-2 font-medium">
                   {t("admin.auditLog.col.metadata")}
                 </th>
               </tr>
