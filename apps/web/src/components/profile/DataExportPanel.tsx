@@ -6,6 +6,7 @@
  * keep that file scannable.
  */
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { articlesAPI, warrantiesAPI, attachmentsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -212,17 +213,25 @@ export default function DataExportPanel() {
         type="button"
         onClick={() => exportData(target, "csv")}
         disabled={busy !== null}
-        className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+        aria-busy={busy === `${target}:csv`}
+        className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
       >
-        {busy === `${target}:csv` ? t("common.loading") : "CSV"}
+        {busy === `${target}:csv` && (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+        )}
+        CSV
       </button>
       <button
         type="button"
         onClick={() => exportData(target, "json")}
         disabled={busy !== null}
-        className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+        aria-busy={busy === `${target}:json`}
+        className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
       >
-        {busy === `${target}:json` ? t("common.loading") : "JSON"}
+        {busy === `${target}:json` && (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+        )}
+        JSON
       </button>
     </div>
   );

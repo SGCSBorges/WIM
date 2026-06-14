@@ -172,6 +172,12 @@ export default function AdminDbBackup() {
               autoComplete="current-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && confirmPassword && !importing) {
+                  e.preventDefault();
+                  void confirmImport();
+                }
+              }}
               required
             />
           </Field>

@@ -1003,7 +1003,10 @@ export default function ProfileView() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
+                inputMode="email"
                 autoComplete="email"
+                autoCapitalize="none"
+                spellCheck={false}
                 required
               />
             </Field>

@@ -3,6 +3,7 @@
  * (light/dark/ocean/cyber/sunset). Both choices persist to localStorage via
  * their respective providers; no API round-trip.
  */
+import { useId } from "react";
 import { useI18n } from "../../i18n/i18n";
 import { Language } from "../../i18n/translations";
 import { useTheme, Theme } from "../../theme/theme";
@@ -10,11 +11,16 @@ import { useTheme, Theme } from "../../theme/theme";
 export default function LanguageThemeSelector() {
   const { t, language, setLanguage } = useI18n();
   const { theme, setTheme } = useTheme();
+  const langId = useId();
+  const themeId = useId();
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <label className="text-xs ui-text-muted">{t("nav.language")}</label>
+      <label htmlFor={langId} className="text-xs ui-text-muted">
+        {t("nav.language")}
+      </label>
       <select
+        id={langId}
         value={language}
         onChange={(e) => setLanguage(e.target.value as Language)}
         className="ui-select px-2 py-1 rounded-md text-sm"
@@ -26,8 +32,11 @@ export default function LanguageThemeSelector() {
         <option value="nl">Nederlands</option>
       </select>
 
-      <label className="text-xs ui-text-muted">{t("nav.theme")}</label>
+      <label htmlFor={themeId} className="text-xs ui-text-muted">
+        {t("nav.theme")}
+      </label>
       <select
+        id={themeId}
         value={theme}
         onChange={(e) => setTheme(e.target.value as Theme)}
         className="ui-select px-2 py-1 rounded-md text-sm"

@@ -773,6 +773,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   <input
                     type="file"
                     accept="image/*,application/pdf"
+                    aria-label={t("attachments.form.fileUpload")}
                     disabled={warrantyProofUploading}
                     onChange={(e) => {
                       const f = e.target.files?.[0];
@@ -789,7 +790,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   )}
 
                   {warrantyProofError && (
-                    <p className="text-sm ui-text-error">
+                    <p role="alert" className="text-sm ui-text-error">
                       {warrantyProofError}
                     </p>
                   )}
@@ -868,7 +869,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               {t("articleForm.locations.loading")}
             </p>
           ) : locationsError ? (
-            <p className="text-sm ui-text-error">{locationsError}</p>
+            <p role="alert" className="text-sm ui-text-error">
+              {locationsError}
+            </p>
           ) : locations.length === 0 ? (
             <p className="text-sm ui-text-muted">
               {t("articleForm.locations.none")}
@@ -897,6 +900,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               type="text"
               value={newLocationName}
               onChange={(e) => setNewLocationName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (newLocationName.trim()) handleCreateLocation();
+                }
+              }}
               placeholder={t("articleForm.location.new.placeholder")}
               maxLength={120}
               className="flex-1"
@@ -912,7 +921,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             </Button>
           </div>
           {locCreateError && (
-            <p className="mt-1 text-sm ui-text-error">{locCreateError}</p>
+            <p role="alert" className="mt-1 text-sm ui-text-error">
+              {locCreateError}
+            </p>
           )}
         </Field>
 

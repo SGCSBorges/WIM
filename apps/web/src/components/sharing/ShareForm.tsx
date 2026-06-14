@@ -62,6 +62,9 @@ const ShareForm: React.FC<ShareFormProps> = ({
         <Field label={t("shareForm.email")} required error={errors.email}>
           <Input
             type="email"
+            inputMode="email"
+            autoCapitalize="none"
+            spellCheck={false}
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
             placeholder={t("shareForm.email.placeholder")}
