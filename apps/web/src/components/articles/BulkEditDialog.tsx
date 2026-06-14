@@ -180,7 +180,11 @@ export default function BulkEditDialog({
         )}
       </div>
 
-      {error && <p className="text-sm ui-text-error">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm ui-text-error">
+          {error}
+        </p>
+      )}
 
       <div className="flex items-center justify-end gap-2">
         <Button

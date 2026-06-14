@@ -185,6 +185,16 @@ export default function TagsManager({
                     type="text"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        editName.trim() &&
+                        busyId === null
+                      ) {
+                        e.preventDefault();
+                        void saveRename(tag.tagId);
+                      }
+                    }}
                     maxLength={40}
                     className="flex-1"
                     aria-label={t("tags.manage.renameLabel")}
@@ -207,7 +217,7 @@ export default function TagsManager({
                 </>
               ) : mergeFor === tag.tagId ? (
                 <>
-                  <span className="flex-1 truncate text-sm">
+                  <span className="flex-1 truncate text-sm" title={tag.name}>
                     {t("tags.manage.mergeInto").replace("{name}", tag.name)}
                   </span>
                   <Select
@@ -240,7 +250,10 @@ export default function TagsManager({
                 </>
               ) : (
                 <>
-                  <span className="flex-1 truncate text-sm font-medium ui-title">
+                  <span
+                    className="flex-1 truncate text-sm font-medium ui-title"
+                    title={tag.name}
+                  >
                     {tag.name}
                   </span>
                   <Badge tone="neutral">

@@ -5,6 +5,7 @@
  * is handled by `<ShareForm>` / `<AcceptInviteForm>`).
  */
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -67,16 +68,19 @@ export default function ShareArticleButton({
         type="button"
         onClick={() => toggle(true)}
         disabled={disabled || busy}
-        className="ui-btn-ghost px-3 py-1.5 rounded border ui-divider"
+        className="ui-btn-ghost inline-flex items-center gap-1.5 px-3 py-1.5 rounded border ui-divider"
         title={t("articles.share.tooltip")}
       >
-        {busy ? t("common.loading") : t("articles.share.button")}
+        {busy && (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+        )}
+        {t("articles.share.button")}
       </button>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center gap-2" role="status">
       <span
         className="px-2 py-1 rounded text-xs font-medium ui-badge-success"
         title={t("articles.shares.sharedStatus")}
@@ -87,9 +91,13 @@ export default function ShareArticleButton({
         type="button"
         onClick={() => toggle(false)}
         disabled={disabled || busy}
-        className="text-xs ui-action-danger"
+        aria-label={t("articles.share.unshare")}
+        className="inline-flex items-center gap-1 text-xs ui-action-danger"
       >
-        {busy ? t("common.loading") : t("articles.share.unshare")}
+        {busy && (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+        )}
+        {t("articles.share.unshare")}
       </button>
     </span>
   );

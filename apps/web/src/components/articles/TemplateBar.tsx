@@ -130,6 +130,7 @@ export default function TemplateBar({
           onClick={removeTemplate}
           loading={deleting}
           disabled={deleting}
+          aria-label={t("template.deleteLabel")}
         >
           {t("common.delete")}
         </Button>
@@ -163,6 +164,12 @@ export default function TemplateBar({
             type="text"
             value={saveName}
             onChange={(e) => setSaveName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && saveName.trim() && !saving) {
+                e.preventDefault();
+                void saveTemplate();
+              }
+            }}
             placeholder={t("template.namePlaceholder")}
             maxLength={120}
           />

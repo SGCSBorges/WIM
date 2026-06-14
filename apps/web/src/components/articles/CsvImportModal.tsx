@@ -188,14 +188,16 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
               <caption className="sr-only">{t("import.title")}</caption>
               <thead className="ui-panel">
                 <tr>
-                  <th className="px-2 py-1 text-left">{t("import.col.ok")}</th>
-                  <th className="px-2 py-1 text-left">
+                  <th scope="col" className="px-2 py-1 text-left">
+                    {t("import.col.ok")}
+                  </th>
+                  <th scope="col" className="px-2 py-1 text-left">
                     {t("articleForm.name")}
                   </th>
-                  <th className="px-2 py-1 text-left">
+                  <th scope="col" className="px-2 py-1 text-left">
                     {t("articleForm.model")}
                   </th>
-                  <th className="px-2 py-1 text-left">
+                  <th scope="col" className="px-2 py-1 text-left">
                     {t("articleForm.locations")}
                   </th>
                 </tr>
@@ -203,7 +205,12 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
               <tbody className="divide-y ui-divider">
                 {rows.map((r, i) => (
                   <tr key={i} className={r.valid ? "" : "ui-alert-error"}>
-                    <td className="px-2 py-1">{r.valid ? "✓" : "✕"}</td>
+                    <td className="px-2 py-1">
+                      <span aria-hidden="true">{r.valid ? "✓" : "✕"}</span>
+                      <span className="sr-only">
+                        {t(r.valid ? "import.rowValid" : "import.rowInvalid")}
+                      </span>
+                    </td>
                     <td className="px-2 py-1">{r.name || "—"}</td>
                     <td className="px-2 py-1">{r.model || "—"}</td>
                     <td className="px-2 py-1">

@@ -74,7 +74,10 @@ export default function TransferDialog({
         </div>
       </div>
 
-      <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm ui-text-warn">
+      <div
+        role="alert"
+        className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-sm ui-text-warn"
+      >
         {t(
           direction === "push"
             ? "transfer.dialog.pushWarning"
@@ -85,11 +88,18 @@ export default function TransferDialog({
       <form onSubmit={handleSubmit} className="space-y-4">
         {direction === "push" && (
           <div>
-            <label className="mb-1 block text-sm font-medium ui-title">
+            <label
+              htmlFor="transfer-email"
+              className="mb-1 block text-sm font-medium ui-title"
+            >
               {t("transfer.dialog.email")}
             </label>
             <Input
+              id="transfer-email"
               type="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="user@example.com"
@@ -99,10 +109,14 @@ export default function TransferDialog({
         )}
 
         <div>
-          <label className="mb-1 block text-sm font-medium ui-title">
+          <label
+            htmlFor="transfer-message"
+            className="mb-1 block text-sm font-medium ui-title"
+          >
             {t("transfer.dialog.message")}
           </label>
           <textarea
+            id="transfer-message"
             className="w-full resize-none rounded-md border border-line bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             rows={3}
             value={message}
@@ -110,9 +124,16 @@ export default function TransferDialog({
             placeholder={t("transfer.dialog.messagePlaceholder")}
             maxLength={500}
           />
+          <p className="mt-1 text-right text-xs ui-text-muted tabular-nums">
+            {message.length} / 500
+          </p>
         </div>
 
-        {error && <p className="text-sm ui-text-error">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm ui-text-error">
+            {error}
+          </p>
+        )}
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>

@@ -369,6 +369,8 @@ export const extras = {
       "Columns: Name, Model, Description, Price, Locations, Tags. Separate multiple locations or tags with ';'. Name, Model and at least one Location are required.",
     "import.preview": "{file}: {valid} of {total} row(s) ready to import.",
     "import.col.ok": "OK",
+    "import.rowValid": "Valid",
+    "import.rowInvalid": "Invalid — missing required field",
     "import.validate": "Validate {count} row(s)",
     "import.validated": "{count} row(s) ready to import.",
     "import.submit": "Import {count} row(s)",
@@ -638,6 +640,7 @@ export const extras = {
     "template.pickLabel": "Start from template",
     "template.pickPlaceholder": "— none —",
     "template.save": "Save as template",
+    "template.deleteLabel": "Delete selected template",
     "template.saveTitle": "Save as template",
     "template.saveHint":
       "Captures the current form (identity, brand, price, locations, tags). Pick the template later to prefill a new article in one click.",
@@ -1067,6 +1070,8 @@ export const extras = {
     "import.preview":
       "{file} : {valid} ligne(s) sur {total} prêtes à importer.",
     "import.col.ok": "OK",
+    "import.rowValid": "Valide",
+    "import.rowInvalid": "Invalide — champ requis manquant",
     "import.validate": "Valider {count} ligne(s)",
     "import.validated": "{count} ligne(s) prête(s) à importer.",
     "import.submit": "Importer {count} ligne(s)",
@@ -1343,6 +1348,7 @@ export const extras = {
     "template.pickLabel": "Partir d'un modèle",
     "template.pickPlaceholder": "— aucun —",
     "template.save": "Enregistrer comme modèle",
+    "template.deleteLabel": "Supprimer le modèle sélectionné",
     "template.saveTitle": "Enregistrer comme modèle",
     "template.saveHint":
       "Capture le formulaire actuel (identité, marque, prix, lieux, étiquettes). Choisissez le modèle plus tard pour pré-remplir un nouvel article en un clic.",
@@ -1769,6 +1775,8 @@ export const extras = {
     "import.preview":
       "{file}: {valid} de {total} linha(s) prontas para importar.",
     "import.col.ok": "OK",
+    "import.rowValid": "Válido",
+    "import.rowInvalid": "Inválido — campo obrigatório em falta",
     "import.validate": "Validar {count} linha(s)",
     "import.validated": "{count} linha(s) prontas para importar.",
     "import.submit": "Importar {count} linha(s)",
@@ -2044,6 +2052,7 @@ export const extras = {
     "template.pickLabel": "Começar a partir de um modelo",
     "template.pickPlaceholder": "— nenhum —",
     "template.save": "Guardar como modelo",
+    "template.deleteLabel": "Eliminar modelo selecionado",
     "template.saveTitle": "Guardar como modelo",
     "template.saveHint":
       "Captura o formulário actual (identidade, marca, preço, localizações, etiquetas). Escolha o modelo depois para preencher um novo artigo num clique.",
@@ -2477,6 +2486,8 @@ export const extras = {
     "import.preview":
       "{file}: {valid} de {total} fila(s) listas para importar.",
     "import.col.ok": "OK",
+    "import.rowValid": "Válido",
+    "import.rowInvalid": "No válido — falta un campo obligatorio",
     "import.validate": "Validar {count} fila(s)",
     "import.validated": "{count} fila(s) listas para importar.",
     "import.submit": "Importar {count} fila(s)",
@@ -2754,6 +2765,7 @@ export const extras = {
     "template.pickLabel": "Empezar desde una plantilla",
     "template.pickPlaceholder": "— ninguna —",
     "template.save": "Guardar como plantilla",
+    "template.deleteLabel": "Eliminar plantilla seleccionada",
     "template.saveTitle": "Guardar como plantilla",
     "template.saveHint":
       "Captura el formulario actual (identidad, marca, precio, ubicaciones, etiquetas). Elige la plantilla más tarde para rellenar un nuevo artículo con un clic.",
@@ -3180,6 +3192,8 @@ export const extras = {
     "import.preview":
       "{file}: {valid} van {total} rij(en) klaar om te importeren.",
     "import.col.ok": "OK",
+    "import.rowValid": "Geldig",
+    "import.rowInvalid": "Ongeldig — verplicht veld ontbreekt",
     "import.validate": "{count} rij(en) valideren",
     "import.validated": "{count} rij(en) klaar om te importeren.",
     "import.submit": "{count} rij(en) importeren",
@@ -3456,6 +3470,7 @@ export const extras = {
     "template.pickLabel": "Beginnen vanaf sjabloon",
     "template.pickPlaceholder": "— geen —",
     "template.save": "Opslaan als sjabloon",
+    "template.deleteLabel": "Geselecteerd sjabloon verwijderen",
     "template.saveTitle": "Opslaan als sjabloon",
     "template.saveHint":
       "Legt het huidige formulier vast (identiteit, merk, prijs, locaties, labels). Kies het sjabloon later om met één klik een nieuw artikel voor in te vullen.",
