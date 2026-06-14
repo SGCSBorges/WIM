@@ -63,6 +63,7 @@ import {
   Section,
   Button,
   Input,
+  Textarea,
   Select,
   Badge,
   Segmented,
@@ -643,14 +644,19 @@ export default function ArticleDetail() {
               )}
             </div>
             {claimStatus !== "NONE" && (
-              <Input
-                type="text"
-                value={claimNote}
-                onChange={(e) => setClaimNote(e.target.value)}
-                placeholder={t("claim.notePlaceholder")}
-                aria-label={t("claim.notePlaceholder")}
-                maxLength={2000}
-              />
+              <div>
+                <Textarea
+                  rows={3}
+                  value={claimNote}
+                  onChange={(e) => setClaimNote(e.target.value)}
+                  placeholder={t("claim.notePlaceholder")}
+                  aria-label={t("claim.notePlaceholder")}
+                  maxLength={2000}
+                />
+                <p className="text-right text-xs ui-text-muted tabular-nums">
+                  {claimNote.length} / 2000
+                </p>
+              </div>
             )}
             <Button
               variant="outline"

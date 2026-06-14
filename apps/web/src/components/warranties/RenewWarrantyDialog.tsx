@@ -179,6 +179,7 @@ export default function RenewWarrantyDialog({
             <Input
               id="renew-duration"
               type="number"
+              inputMode="numeric"
               min={1}
               max={120}
               value={renewDuration}
@@ -195,6 +196,7 @@ export default function RenewWarrantyDialog({
           <Input
             id="extend-months"
             type="number"
+            inputMode="numeric"
             min={1}
             max={120}
             value={extendMonths}
@@ -212,6 +214,9 @@ export default function RenewWarrantyDialog({
           onChange={(e) => setNote(e.target.value)}
           placeholder={t("warranty.renew.notePlaceholder")}
         />
+        <p className="text-right text-xs ui-text-muted tabular-nums">
+          {note.length} / 500
+        </p>
       </Field>
 
       {previewFin && (
@@ -223,7 +228,11 @@ export default function RenewWarrantyDialog({
         </p>
       )}
 
-      {error && <p className="text-sm ui-text-error">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm ui-text-error">
+          {error}
+        </p>
+      )}
 
       <div className="flex items-center justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={onClose} disabled={busy}>

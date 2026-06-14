@@ -293,7 +293,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
             aria-hidden="true"
           />
           <Input
-            type="text"
+            type="search"
+            inputMode="search"
             placeholder={t("attachments.search.placeholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -429,7 +430,10 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex items-center justify-between gap-2">
-                    <h3 className="truncate text-sm font-medium ui-title">
+                    <h3
+                      className="truncate text-sm font-medium ui-title"
+                      title={attachment.fileName}
+                    >
                       {attachment.fileName}
                     </h3>
                     <Badge tone={typeTone(attachment.type)}>
@@ -444,13 +448,19 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                   {(attachment.article || attachment.garantie) && (
                     <div className="mt-2 text-xs ui-text-muted">
                       {attachment.article && (
-                        <p className="truncate">
+                        <p
+                          className="truncate"
+                          title={attachment.article.articleNom}
+                        >
                           {t("attachments.linked.article")}:{" "}
                           {attachment.article.articleNom}
                         </p>
                       )}
                       {attachment.garantie && (
-                        <p className="truncate">
+                        <p
+                          className="truncate"
+                          title={attachment.garantie.garantieNom}
+                        >
                           {t("attachments.linked.warranty")}:{" "}
                           {attachment.garantie.garantieNom}
                         </p>
