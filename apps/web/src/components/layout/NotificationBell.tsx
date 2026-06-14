@@ -144,11 +144,17 @@ export default function NotificationBell() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium ui-title">
+                        <p
+                          className="truncate font-medium ui-title"
+                          title={item.alerteNom}
+                        >
                           {item.alerteNom}
                         </p>
                         {item.article && (
-                          <p className="truncate text-xs ui-text-muted">
+                          <p
+                            className="truncate text-xs ui-text-muted"
+                            title={item.article.articleNom}
+                          >
                             {item.article.articleNom}
                           </p>
                         )}
@@ -164,7 +170,8 @@ export default function NotificationBell() {
                           key={opt.key}
                           variant="ghost"
                           size="sm"
-                          disabled={busyId === item.alerteId}
+                          loading={busyId === item.alerteId}
+                          disabled={busyId !== null && busyId !== item.alerteId}
                           onClick={() => snooze(item.alerteId, opt.days)}
                         >
                           {t(`notifications.snooze.${opt.key}`)}

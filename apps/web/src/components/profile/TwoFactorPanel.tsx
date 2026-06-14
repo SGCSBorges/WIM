@@ -142,6 +142,12 @@ export default function TwoFactorPanel({
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && password && !busy) {
+                  e.preventDefault();
+                  void beginSetup();
+                }
+              }}
             />
           </Field>
           {error && <p className="text-sm ui-text-error">{error}</p>}
@@ -193,18 +199,47 @@ export default function TwoFactorPanel({
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
+              autoComplete="one-time-code"
               maxLength={6}
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) =>
+                setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && code.length === 6 && !busy) {
+                  e.preventDefault();
+                  void confirmSetup();
+                }
+              }}
               placeholder="123456"
             />
           </Field>
           {backupCodes.length > 0 && (
             <div className="rounded-md bg-surface-muted p-3">
-              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium ui-title">
-                <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                {t("twoFactor.backupTitle")}
-              </p>
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-sm font-medium ui-title">
+                  <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                  {t("twoFactor.backupTitle")}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    void navigator.clipboard
+                      .writeText(backupCodes.join("\n"))
+                      .then(() =>
+                        toast.show(t("alerts.copied"), { kind: "success" })
+                      )
+                      .catch(() =>
+                        toast.show(t("twoFactor.urlCopyFailed"), {
+                          kind: "error",
+                        })
+                      );
+                  }}
+                >
+                  {t("common.copy")}
+                </Button>
+              </div>
               <p className="mb-2 text-xs ui-text-muted">
                 {t("twoFactor.backupHint")}
               </p>

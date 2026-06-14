@@ -44,6 +44,7 @@ export default function BulkActionBar({
     <div
       role="region"
       aria-label={t("articles.bulk.selectionLabel")}
+      aria-busy={busy}
       className="ui-card rounded-lg shadow p-3 flex flex-wrap items-center gap-3 sticky top-2 z-10"
     >
       <span className="font-medium text-sm">

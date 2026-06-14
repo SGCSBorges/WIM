@@ -167,6 +167,7 @@ export function CommandPalette({
           type="text"
           role="combobox"
           aria-expanded="true"
+          aria-autocomplete="list"
           aria-controls="command-palette-list"
           aria-activedescendant={
             results[active] ? `cmd-${results[active].id}` : undefined
@@ -187,7 +188,10 @@ export function CommandPalette({
         className="max-h-[60vh] overflow-y-auto p-2"
       >
         {results.length === 0 && (
-          <li className="px-3 py-6 text-center text-sm ui-text-muted">
+          <li
+            role="presentation"
+            className="px-3 py-6 text-center text-sm ui-text-muted"
+          >
             {emptyLabel}
           </li>
         )}
@@ -199,8 +203,11 @@ export function CommandPalette({
             .slice(0, groupIdx)
             .reduce((sum, g) => sum + g.items.length, 0);
           return (
-            <li key={group}>
-              <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide ui-text-muted">
+            <li key={group} role="presentation">
+              <p
+                className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide ui-text-muted"
+                role="presentation"
+              >
                 {group}
               </p>
               <ul>

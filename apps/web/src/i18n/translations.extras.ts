@@ -20,6 +20,7 @@ export const extras = {
     "nav.skipToContent": "Skip to content",
     "common.dismiss": "Dismiss",
     "common.clear": "Clear",
+    "common.copy": "Copy",
     "common.backToTop": "Back to top",
     "articles.filter.clearAll": "Clear filters",
     "common.unsaved.discardConfirm":
@@ -702,6 +703,7 @@ export const extras = {
     "nav.skipToContent": "Aller au contenu",
     "common.dismiss": "Fermer",
     "common.clear": "Effacer",
+    "common.copy": "Copier",
     "common.backToTop": "Retour en haut",
     "articles.filter.clearAll": "Effacer les filtres",
     "common.unsaved.discardConfirm":
@@ -1406,6 +1408,7 @@ export const extras = {
     "nav.skipToContent": "Ir para o conteúdo",
     "common.dismiss": "Dispensar",
     "common.clear": "Limpar",
+    "common.copy": "Copiar",
     "common.backToTop": "Voltar ao topo",
     "articles.filter.clearAll": "Limpar filtros",
     "common.unsaved.discardConfirm":
@@ -2107,6 +2110,7 @@ export const extras = {
     "nav.skipToContent": "Saltar al contenido",
     "common.dismiss": "Descartar",
     "common.clear": "Borrar",
+    "common.copy": "Copiar",
     "common.backToTop": "Volver arriba",
     "articles.filter.clearAll": "Borrar filtros",
     "common.unsaved.discardConfirm":
@@ -2815,6 +2819,7 @@ export const extras = {
     "nav.skipToContent": "Ga naar inhoud",
     "common.dismiss": "Sluiten",
     "common.clear": "Wissen",
+    "common.copy": "Kopiëren",
     "common.backToTop": "Terug naar boven",
     "articles.filter.clearAll": "Filters wissen",
     "common.unsaved.discardConfirm":

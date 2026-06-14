@@ -37,7 +37,7 @@ import ResetPasswordModal from "./ResetPasswordModal";
 import AuditLogTab from "./AuditLogTab";
 import JobsTab from "./JobsTab";
 import AdminDbBackup from "./AdminDbBackup";
-import { DashboardStatsSkeleton } from "../common/Skeleton";
+import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import {
   PageHeader,
   Section,
@@ -315,7 +315,16 @@ export default function AdminUsers() {
                   ? loadingStats
                   : true
             }
-            leftIcon={<RotateCw className="h-4 w-4" />}
+            leftIcon={
+              <RotateCw
+                className={`h-4 w-4 ${
+                  (activeTab === "users" && loadingUsers) ||
+                  (activeTab === "dashboard" && loadingStats)
+                    ? "animate-spin"
+                    : ""
+                }`}
+              />
+            }
           >
             {t("common.refresh")}
           </Button>
@@ -472,9 +481,11 @@ export default function AdminUsers() {
               </Select>
             </div>
             {loadingUsers && (
-              <p className="mb-2 text-xs ui-text-muted">
-                {t("common.loading")}
-              </p>
+              <div className="mb-2 space-y-2">
+                {[0, 1, 2].map((i) => (
+                  <Skeleton key={i} height={44} />
+                ))}
+              </div>
             )}
             <ul className="divide-y ui-divider">
               {users.map((u) => (

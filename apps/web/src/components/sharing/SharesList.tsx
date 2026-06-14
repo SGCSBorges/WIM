@@ -230,6 +230,9 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                 <Input
                   type="email"
                   required
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder={t("shareForm.email.placeholder")}
@@ -238,22 +241,33 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                   autoComplete="email"
                   className="flex-1"
                 />
-                <Select
-                  value={invitePermission}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "READ" || val === "WRITE")
-                      setInvitePermission(val);
-                  }}
-                  aria-label={t("shareForm.permission")}
-                  disabled={inviteBusy}
-                  className="w-auto"
-                >
-                  <option value="READ">{t("shareForm.permission.read")}</option>
-                  <option value="WRITE">
-                    {t("shareForm.permission.write")}
-                  </option>
-                </Select>
+                <div className="flex flex-col gap-1">
+                  <Select
+                    value={invitePermission}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "READ" || val === "WRITE")
+                        setInvitePermission(val);
+                    }}
+                    aria-label={t("shareForm.permission")}
+                    disabled={inviteBusy}
+                    className="w-auto"
+                  >
+                    <option value="READ">
+                      {t("shareForm.permission.read")}
+                    </option>
+                    <option value="WRITE">
+                      {t("shareForm.permission.write")}
+                    </option>
+                  </Select>
+                  <p className="text-xs ui-text-muted">
+                    {t(
+                      invitePermission === "READ"
+                        ? "shareForm.permission.read.help"
+                        : "shareForm.permission.write.help"
+                    )}
+                  </p>
+                </div>
                 <Button
                   type="submit"
                   loading={inviteBusy}
