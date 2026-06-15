@@ -26,16 +26,16 @@ import { getErrorMessage } from "../../utils/error";
 import { Section, Button, Select, Badge } from "../ui";
 import { Skeleton } from "../common/Skeleton";
 
-const ROLE_OPTION_VALUES: { value: RoleName; labelKey: string }[] = [
+const ROLE_OPTION_VALUES = [
   { value: "USER", labelKey: "admin.features.roleEveryone" },
   { value: "POWER_USER", labelKey: "admin.features.rolePowerUser" },
   { value: "ADMIN", labelKey: "admin.features.roleAdminOnly" },
-];
+] as const;
 
-function roleBadgeTone(role: RoleName): "default" | "warning" | "danger" {
+function roleBadgeTone(role: RoleName): "neutral" | "warning" | "danger" {
   if (role === "ADMIN") return "danger";
   if (role === "POWER_USER") return "warning";
-  return "default";
+  return "neutral";
 }
 
 export default function AdminFeaturesTab() {
@@ -205,14 +205,12 @@ export default function AdminFeaturesTab() {
                     {t(`features.${flag.featureKey}`)}
                   </span>
                   {flag.requiredRole !== flag.defaultRole && (
-                    <Badge tone="warning" size="sm">
-                      {t("admin.features.modified")}
-                    </Badge>
+                    <Badge tone="warning">{t("admin.features.modified")}</Badge>
                   )}
                 </div>
                 <p className="text-xs ui-text-muted">
                   {t("admin.features.defaultLabel")}:{" "}
-                  <Badge tone={roleBadgeTone(flag.defaultRole)} size="sm">
+                  <Badge tone={roleBadgeTone(flag.defaultRole)}>
                     {flag.defaultRole}
                   </Badge>
                 </p>
@@ -252,9 +250,9 @@ export default function AdminFeaturesTab() {
 
       <Section
         title={t("admin.features.grants.title")}
-        headerRight={
+        actions={
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setShowGrantForm((v) => !v)}
@@ -393,9 +391,10 @@ export default function AdminFeaturesTab() {
                   loading={deletingId === grant.id}
                   className="shrink-0 text-danger"
                   leftIcon={<Trash2 className="h-4 w-4" />}
-                  aria-label={t("admin.features.grants.deleteLabel", {
-                    feature: t(`features.${grant.featureKey}`),
-                  })}
+                  aria-label={t("admin.features.grants.deleteLabel").replace(
+                    "{feature}",
+                    t(`features.${grant.featureKey}`)
+                  )}
                 >
                   {t("common.delete")}
                 </Button>
