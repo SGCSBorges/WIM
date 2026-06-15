@@ -169,6 +169,20 @@ describe("ArticleService.bulkAssign", () => {
     expect(mockPrisma.articleTag.createMany).not.toHaveBeenCalled();
   });
 
+  it("scopes the owned-article lookup to live rows (skips trash)", async () => {
+    mockPrisma.location.count.mockResolvedValue(1);
+    mockPrisma.article.findMany.mockResolvedValue([{ articleId: 5 }]);
+    mockPrisma.articleLocation.createMany.mockResolvedValue({ count: 1 });
+
+    await ArticleService.bulkAssign([5], 1, [10], []);
+
+    // A trashed article must not receive a bulk location/tag assignment —
+    // the live-list action only touches deletedAt: null rows, matching the
+    // other bulk operations (bulkRemove / bulkUpdate / bulkSetShared).
+    const where = mockPrisma.article.findMany.mock.calls[0][0].where;
+    expect(where).toMatchObject({ ownerUserId: 1, deletedAt: null });
+  });
+
   it("is a no-op when nothing to add", async () => {
     const result = await ArticleService.bulkAssign([5, 6], 1, [], []);
     expect(result).toEqual({ count: 0 });

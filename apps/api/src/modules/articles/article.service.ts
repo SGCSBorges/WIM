@@ -825,7 +825,7 @@ export const ArticleService = {
 
     return prisma.$transaction(async (tx) => {
       const owned = await tx.article.findMany({
-        where: { articleId: { in: ids }, ownerUserId },
+        where: { articleId: { in: ids }, ownerUserId, deletedAt: null },
         select: { articleId: true },
       });
       if (owned.length === 0) return { count: 0 };
