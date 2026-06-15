@@ -359,6 +359,23 @@ mode when the `"` character appears at the very start of a field
 a literal character and must not swallow the delimiter that follows it.
 Preserve this invariant if the parser is ever modified.
 
+### Manual `validateForm()` ⇒ the `<form>` needs `noValidate`
+
+Any form that does its own validation (a hand-rolled `validateForm()` that
+sets field-level `errors` and renders `role="alert"` messages) MUST put
+`noValidate` on the `<form>`. Otherwise the browser's native HTML5
+constraint validation (`required`, `type="email"`/`type="url"`, `min`/`max`,
+`minLength`) runs **first** and silently blocks submit on an invalid field —
+so `handleSubmit` never fires, `validateForm()` never runs, and the app's
+own localized, styled error never renders. The user instead gets a native
+browser bubble (wrong language, off-theme). This bit `WarrantyForm`
+(duration `min`/`max`) and `ShareForm` (`type="email"` + the `Field
+required` prop, which threads `required` onto the control) — both fixed by
+adding `noValidate`. `LoginForm` already does this for its Zod path. Forms
+that intentionally rely on native validation with **no** custom field
+messages (e.g. `TransferDialog`, `ForgotPasswordForm`) are fine as-is —
+don't add `noValidate` there, or you'd drop their only validation.
+
 ## Warranty lifecycle (renew / extend / history)
 
 - `Garantie` enforces 1:1 with an article (`garantieArticleId` unique).
