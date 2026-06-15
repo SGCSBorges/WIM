@@ -106,14 +106,20 @@ export default function MySharedArticlesView() {
               />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate font-medium ui-title">
+                  <span
+                    className="truncate font-medium ui-title"
+                    title={a.articleNom}
+                  >
                     {a.articleNom}
                   </span>
                   <Badge tone="info" icon={<Globe className="h-3 w-3" />}>
                     {t("articles.share.state.publicLabel")}
                   </Badge>
                 </div>
-                <div className="truncate text-xs ui-text-muted">
+                <div
+                  className="truncate text-xs ui-text-muted"
+                  title={a.articleModele ?? undefined}
+                >
                   {a.articleModele}
                 </div>
               </div>

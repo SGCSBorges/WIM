@@ -166,7 +166,10 @@ export default function NeedsAttention() {
                 : t("dashboard.expiringSoon")}
             </Badge>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium ui-title">
+              <p
+                className="truncate text-sm font-medium ui-title"
+                title={article.articleNom}
+              >
                 {article.articleNom}
               </p>
               {end && (

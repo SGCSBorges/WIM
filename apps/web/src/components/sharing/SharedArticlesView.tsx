@@ -148,7 +148,10 @@ export default function SharedArticlesView() {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="truncate font-medium ui-title">
+                        <span
+                          className="truncate font-medium ui-title"
+                          title={`${r.article.articleNom}${r.article.articleModele ? ` — ${r.article.articleModele}` : ""}`}
+                        >
                           {r.article.articleNom} — {r.article.articleModele}
                         </span>
                         <Badge

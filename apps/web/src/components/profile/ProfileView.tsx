@@ -833,10 +833,16 @@ export default function ProfileView() {
                       size={40}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium ui-title">
+                      <div
+                        className="truncate font-medium ui-title"
+                        title={a.articleNom}
+                      >
                         {a.articleNom}
                       </div>
-                      <div className="truncate text-xs ui-text-muted">
+                      <div
+                        className="truncate text-xs ui-text-muted"
+                        title={a.articleModele ?? undefined}
+                      >
                         {a.articleModele}
                       </div>
                     </div>
@@ -923,7 +929,10 @@ export default function ProfileView() {
                           key={s.inventoryShareId}
                           className="flex items-center gap-3 py-2"
                         >
-                          <div className="min-w-0 flex-1 truncate font-medium ui-title">
+                          <div
+                            className="min-w-0 flex-1 truncate font-medium ui-title"
+                            title={s.target.email}
+                          >
                             {s.target.email}
                           </div>
                           <Badge
@@ -962,7 +971,10 @@ export default function ProfileView() {
                             key={i.shareInviteId}
                             className="flex items-center gap-3 py-2"
                           >
-                            <div className="min-w-0 flex-1 truncate font-medium ui-title">
+                            <div
+                              className="min-w-0 flex-1 truncate font-medium ui-title"
+                              title={i.email}
+                            >
                               {i.email}
                             </div>
                             <Badge
