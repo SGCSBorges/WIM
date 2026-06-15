@@ -74,14 +74,22 @@ export const ReminderProcessor = {
         return;
       }
 
-      // Mirror handleCustom: if the alert row is gone or no longer SCHEDULED
-      // (cancelled by a trash/renew while the job stayed queued — e.g. a
-      // Redis blip during job removal), don't deliver against a dead row.
+      // Mirror handleCustom: skip rows that are gone or terminal. CANCELLED
+      // (trash/renew/user) and SENT (already delivered) are terminal. A FAILED
+      // row, however, means a *prior attempt of this same job* threw and BullMQ
+      // is now retrying — we MUST redeliver, so FAILED is actionable alongside
+      // SCHEDULED. Skipping FAILED here would let the markFailed in the catch
+      // below poison every retry: the 2nd/3rd attempts would short-circuit and
+      // a single transient push error would drop the notification, defeating
+      // the `attempts: 3` policy this ordering was designed around.
       const alerte = await prisma.alerte.findUnique({
         where: { alerteId: data.alerteId },
         select: { status: true },
       });
-      if (!alerte || alerte.status !== "SCHEDULED") {
+      if (
+        !alerte ||
+        (alerte.status !== "SCHEDULED" && alerte.status !== "FAILED")
+      ) {
         logger.warn(
           { jobId: job.id, alerteId: data.alerteId, status: alerte?.status },
           "[alerts] warranty alert not actionable — skipping"
@@ -142,9 +150,16 @@ export const ReminderProcessor = {
   async handleCustom(job: Job<AlertJobPayload>, alerteId: number) {
     try {
       const alerte = await prisma.alerte.findUnique({ where: { alerteId } });
-      // Gone (article/account deleted) or no longer scheduled (cancelled,
-      // already sent, or superseded by a snooze that re-keyed the job).
-      if (!alerte || alerte.status !== "SCHEDULED") {
+      // Gone (article/account deleted), or terminal: CANCELLED (user/trash) or
+      // SENT (already delivered). A FAILED row is a BullMQ retry of this same
+      // job after a transient delivery error, so redeliver it (see the warranty
+      // branch for why skipping FAILED would defeat the retry policy). A snooze
+      // re-keys to a fresh job id and keeps the row SCHEDULED, so a superseded
+      // row never reaches here as FAILED.
+      if (
+        !alerte ||
+        (alerte.status !== "SCHEDULED" && alerte.status !== "FAILED")
+      ) {
         logger.warn(
           { jobId: job.id, alerteId, status: alerte?.status },
           "[alerts] custom alert not actionable — skipping"

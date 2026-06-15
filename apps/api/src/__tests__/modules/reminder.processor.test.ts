@@ -203,6 +203,53 @@ describe("ReminderProcessor", () => {
     expect(svc.markSent).not.toHaveBeenCalled();
   });
 
+  it("redelivers a warranty reminder whose row is FAILED (a BullMQ retry)", async () => {
+    // A prior attempt threw and markFailed flipped the row to FAILED; the
+    // retry must still deliver, otherwise the `attempts: 3` policy is dead and
+    // a single transient push error drops the notification forever.
+    mockPrisma.garantie.findUnique.mockResolvedValue({
+      garantieId: 5,
+      garantieNom: "W",
+      garantieFin: new Date(),
+    });
+    mockPrisma.alerte.findUnique.mockResolvedValue({ status: "FAILED" });
+    await ReminderProcessor.handle(
+      job({
+        type: "warranty_reminder",
+        ownerUserId: 1,
+        garantieId: 5,
+        reminderKind: "J30",
+        executeAt: new Date().toISOString(),
+        alerteId: 9,
+      })
+    );
+    expect(push.sendToUser).toHaveBeenCalledWith(1, expect.any(Object));
+    expect(svc.markSent).toHaveBeenCalledWith(9);
+  });
+
+  it("redelivers a custom alert whose row is FAILED (a BullMQ retry)", async () => {
+    mockPrisma.alerte.findUnique.mockResolvedValue({
+      alerteId: 22,
+      status: "FAILED",
+      kind: "CUSTOM",
+      ownerUserId: 1,
+      alerteNom: "x",
+      alerteDescription: null,
+      alerteArticleId: null,
+      recurrenceMonths: null,
+    });
+    await ReminderProcessor.handle(
+      job({
+        type: "custom_alert",
+        ownerUserId: 1,
+        alerteId: 22,
+        executeAt: new Date().toISOString(),
+      })
+    );
+    expect(push.sendToUser).toHaveBeenCalledWith(1, expect.any(Object));
+    expect(svc.markSent).toHaveBeenCalledWith(22);
+  });
+
   it("skips a custom alert that is no longer scheduled", async () => {
     mockPrisma.alerte.findUnique.mockResolvedValue({
       alerteId: 14,
