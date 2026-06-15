@@ -214,7 +214,14 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           </div>
 
           {challengeToken ? (
+            // Distinct key from the credential form below: both render a
+            // <form> at the same position, so without it React reconciles the
+            // two and reuses the first <input> DOM node across the swap —
+            // turning the uncontrolled password field into the controlled
+            // TOTP-code field (a controlled/uncontrolled warning + potential
+            // value bleed). Keying forces a clean unmount/mount.
             <form
+              key="totp-challenge"
               className="space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -274,6 +281,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             </form>
           ) : (
             <form
+              key="credentials"
               onSubmit={handleApiSubmit(onSubmit)}
               className="space-y-4"
               noValidate
