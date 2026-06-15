@@ -148,6 +148,7 @@ export default function ProfileView() {
   // Tracks mount state so the fire-and-forget billing fetch in loadMe doesn't
   // call setState after the component unmounts (user navigates away mid-load).
   const canShare = useFeature("sharing");
+  const canCalendarFeed = useFeature("calendar_feed");
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -575,57 +576,60 @@ export default function ProfileView() {
           </div>
         </Section>
 
-        {/* Calendar feed */}
-        <Section
-          icon={<Calendar className="h-5 w-5" />}
-          title={t("calendar.title")}
-          description={t("calendar.subtitle")}
-        >
-          {calendarUrl ? (
-            <div className="space-y-2">
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Input
-                  readOnly
-                  value={calendarUrl}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="flex-1 font-mono text-xs"
-                  aria-label={t("calendar.url")}
-                />
+        {/* Calendar feed — hidden when the feature is off, but kept visible
+            while a feed is still active so the user can always disable it. */}
+        {(canCalendarFeed || calendarUrl) && (
+          <Section
+            icon={<Calendar className="h-5 w-5" />}
+            title={t("calendar.title")}
+            description={t("calendar.subtitle")}
+          >
+            {calendarUrl ? (
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    readOnly
+                    value={calendarUrl}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="flex-1 font-mono text-xs"
+                    aria-label={t("calendar.url")}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard
+                        ?.writeText(calendarUrl)
+                        .then(() => showSuccess(t("calendar.copied")))
+                        .catch(() =>
+                          toast.show(t("alerts.copyFailed"), { kind: "error" })
+                        );
+                    }}
+                    leftIcon={<Copy className="h-4 w-4" />}
+                  >
+                    {t("calendar.copy")}
+                  </Button>
+                </div>
                 <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    navigator.clipboard
-                      ?.writeText(calendarUrl)
-                      .then(() => showSuccess(t("calendar.copied")))
-                      .catch(() =>
-                        toast.show(t("alerts.copyFailed"), { kind: "error" })
-                      );
-                  }}
-                  leftIcon={<Copy className="h-4 w-4" />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={disableCalendar}
+                  className="text-danger"
+                  leftIcon={<XCircle className="h-4 w-4" />}
                 >
-                  {t("calendar.copy")}
+                  {t("calendar.disable")}
                 </Button>
               </div>
+            ) : (
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={disableCalendar}
-                className="text-danger"
-                leftIcon={<XCircle className="h-4 w-4" />}
+                onClick={enableCalendar}
+                leftIcon={<Calendar className="h-4 w-4" />}
               >
-                {t("calendar.disable")}
+                {t("calendar.enable")}
               </Button>
-            </div>
-          ) : (
-            <Button
-              onClick={enableCalendar}
-              leftIcon={<Calendar className="h-4 w-4" />}
-            >
-              {t("calendar.enable")}
-            </Button>
-          )}
-        </Section>
+            )}
+          </Section>
+        )}
 
         {/* Push notifications */}
         {pushSupported() && (

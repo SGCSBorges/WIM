@@ -10,6 +10,7 @@ import type { Location, Tag } from "../../types";
 interface BulkActionBarProps {
   selectedCount: number;
   canShare: boolean;
+  canEditFields: boolean;
   busy: boolean;
   locations: Location[];
   tags: Tag[];
@@ -25,6 +26,7 @@ interface BulkActionBarProps {
 export default function BulkActionBar({
   selectedCount,
   canShare,
+  canEditFields,
   busy,
   locations,
   tags,
@@ -116,14 +118,16 @@ export default function BulkActionBar({
           </>
         )}
 
-        <button
-          type="button"
-          onClick={onEditFields}
-          disabled={busy}
-          className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
-        >
-          {t("articles.bulk.editFields")}
-        </button>
+        {canEditFields && (
+          <button
+            type="button"
+            onClick={onEditFields}
+            disabled={busy}
+            className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+          >
+            {t("articles.bulk.editFields")}
+          </button>
+        )}
 
         <button
           type="button"

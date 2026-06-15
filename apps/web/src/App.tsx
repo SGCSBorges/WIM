@@ -350,6 +350,7 @@ export default function App() {
   const [role, setRole] = useState<string | null>(null);
   const canShare = useFeature("sharing");
   const canTransfer = useFeature("transfers");
+  const canReports = useFeature("reports");
   const { refresh: refreshFeatures } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
@@ -373,6 +374,8 @@ export default function App() {
     register401Handler(() => {
       setAuthStatus("unauthed");
       setRole(null);
+      // Clear any granted feature access so a re-login starts from a clean map.
+      void refreshFeatures();
     });
     return () => unregister401Handler();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -388,6 +391,9 @@ export default function App() {
         setRole(user.role);
         setAuthStatus("authed");
         applyServerPrefs(user);
+        // Explicit fetch now that the session is confirmed, rather than
+        // leaning on the provider's parallel mount fetch winning the race.
+        void refreshFeatures();
 
         if (stripeResult === "success") {
           const previousRole = user.role;
@@ -539,7 +545,10 @@ export default function App() {
           <Route path="/attachments" element={<AttachmentsList />} />
           <Route path="/locations" element={<LocationsView />} />
           <Route path="/alerts" element={<AlertsView />} />
-          <Route path="/reports" element={<ReportsView />} />
+          <Route
+            path="/reports"
+            element={canReports ? <ReportsView /> : <Navigate to="/" replace />}
+          />
           <Route path="/profile" element={<ProfileView />} />
           <Route path="/sharing" element={sharingRoute} />
           <Route path="/sharing/accept" element={sharingRoute} />

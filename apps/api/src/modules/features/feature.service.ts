@@ -51,10 +51,14 @@ export { DEFAULTS as FEATURE_DEFAULTS };
 
 // --------------------------------------------------------------------------
 // Snapshot cache — two DB queries shared across all requests for 60 seconds.
+// Grant expiries are kept as ms timestamps (not a pre-filtered Set) so a
+// grant that lapses mid-window stops granting access the instant it passes
+// `expiresAt`, rather than lingering until the cached snapshot ages out.
 // --------------------------------------------------------------------------
 interface Snapshot {
   flags: Map<string, RoleName>;
-  grants: Set<string>;
+  /** featureKey → latest grant expiry (ms since epoch). */
+  grantExpiries: Map<string, number>;
   ts: number;
 }
 
@@ -69,14 +73,20 @@ async function getSnapshot(): Promise<Snapshot> {
     }),
     prisma.featureTempGrant.findMany({
       where: { expiresAt: { gt: now } },
-      select: { featureKey: true },
+      select: { featureKey: true, expiresAt: true },
     }),
   ]);
+  const grantExpiries = new Map<string, number>();
+  for (const g of grants) {
+    const ms = g.expiresAt.getTime();
+    const prev = grantExpiries.get(g.featureKey);
+    if (prev === undefined || ms > prev) grantExpiries.set(g.featureKey, ms);
+  }
   _snapshot = {
     flags: new Map(
       flags.map((f) => [f.featureKey, f.requiredRole as RoleName])
     ),
-    grants: new Set(grants.map((g) => g.featureKey)),
+    grantExpiries,
     ts: Date.now(),
   };
   return _snapshot;
@@ -87,24 +97,33 @@ export function invalidateCache(): void {
   _snapshot = null;
 }
 
+/**
+ * The single source of truth for "can this role use this feature?" — shared
+ * by `getAccessMap` and `requireFeature` so the API and the client map can
+ * never disagree. A temp grant only ever lifts a USER to a POWER_USER-gated
+ * feature: ADMIN-gated features stay admin-only regardless of any grant, and
+ * the grant must still be unexpired *at call time*.
+ */
+function isAllowed(role: RoleName, key: FeatureKey, snap: Snapshot): boolean {
+  const required = snap.flags.get(key) ?? DEFAULTS[key];
+  if (roleAtLeast(role, required)) return true;
+  if (role === "USER" && required === "POWER_USER") {
+    const expiry = snap.grantExpiries.get(key);
+    if (expiry !== undefined && expiry > Date.now()) return true;
+  }
+  return false;
+}
+
 // --------------------------------------------------------------------------
 // Service
 // --------------------------------------------------------------------------
 export const FeatureService = {
   /** Returns a { featureKey: boolean } map for the given role. */
   async getAccessMap(role: RoleName): Promise<Record<FeatureKey, boolean>> {
-    const { flags, grants } = await getSnapshot();
+    const snap = await getSnapshot();
     const result = {} as Record<FeatureKey, boolean>;
     for (const key of FEATURE_KEYS) {
-      const required = flags.get(key) ?? DEFAULTS[key];
-      if (roleAtLeast(role, required)) {
-        result[key] = true;
-      } else if (role === "USER" && grants.has(key)) {
-        // Active temp grant: let USER-role access this POWER_USER feature.
-        result[key] = true;
-      } else {
-        result[key] = false;
-      }
+      result[key] = isAllowed(role, key, snap);
     }
     return result;
   },
@@ -129,6 +148,12 @@ export const FeatureService = {
       defaultRole: DEFAULTS[key],
       updatedAt: flagMap.get(key)?.updatedAt ?? null,
     }));
+  },
+
+  /** The effective required role for a feature (DB override or coded default). */
+  async getRequiredRole(featureKey: FeatureKey): Promise<RoleName> {
+    const { flags } = await getSnapshot();
+    return flags.get(featureKey) ?? DEFAULTS[featureKey];
   },
 
   async setFlag(featureKey: FeatureKey, requiredRole: RoleName): Promise<void> {
@@ -168,19 +193,16 @@ interface UserReq extends Request {
 
 /**
  * Express middleware that gates a route behind a feature flag.
- * Replaces `requireRole("POWER_USER")` on share/transfer routes so that:
+ * Replaces `requireRole("POWER_USER")` on feature routes so that:
  *   - role changes (e.g. POWER_USER → ADMIN-only) are enforced immediately
- *   - active temp grants let USER-role accounts through
+ *   - active temp grants let USER-role accounts through (POWER_USER gates only)
  */
 export function requireFeature(key: FeatureKey) {
   return async (req: UserReq, _res: Response, next: NextFunction) => {
     try {
       const role = (req.user?.role ?? "USER") as RoleName;
-      const { flags, grants } = await getSnapshot();
-      const required = flags.get(key) ?? DEFAULTS[key];
-      const allowed =
-        roleAtLeast(role, required) || (role === "USER" && grants.has(key));
-      if (!allowed) {
+      const snap = await getSnapshot();
+      if (!isAllowed(role, key, snap)) {
         next(
           createHttpError(
             403,

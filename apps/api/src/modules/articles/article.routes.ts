@@ -404,6 +404,7 @@ router.post(
 router.post(
   "/bulk-update",
   authGuard,
+  requireFeature("bulk_edit"),
   asyncHandler(async (req: AuthRequest, res) => {
     const schema = BulkIdsSchema.extend({
       fields: z
@@ -445,6 +446,7 @@ router.post(
 router.post(
   "/import",
   authGuard,
+  requireFeature("csv_import"),
   asyncHandler(async (req: AuthRequest, res) => {
     const { rows } = ImportSchema.parse(req.body);
     const dryRun = ["1", "true"].includes(
@@ -481,6 +483,7 @@ async function userCurrency(userId: number): Promise<string> {
 router.get(
   "/export/inventory.csv",
   authGuard,
+  requireFeature("csv_export"),
   security.destructiveRateLimiter,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const q = ArticleListQuerySchema.parse(req.query);

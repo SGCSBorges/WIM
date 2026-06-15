@@ -7,14 +7,19 @@
 import { Router } from "express";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { CalendarService } from "./calendar.service";
 
 const router = Router();
 
-// Generate (or rotate) the caller's calendar feed token.
+// Generate (or rotate) the caller's calendar feed token. Gated on
+// `calendar_feed`; the DELETE (disable) and the public ICS feed stay open so
+// a user can always turn off — and external clients keep reading — an
+// already-issued feed even if access is later restricted.
 router.post(
   "/token",
   authGuard,
+  requireFeature("calendar_feed"),
   asyncHandler(async (req: AuthRequest, res) => {
     const token = await CalendarService.generateToken(req.user!.sub);
     res.json({ token, path: `/api/calendar/feed/${token}.ics` });

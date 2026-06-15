@@ -35,6 +35,10 @@ export interface NavItem {
   path: string;
   icon: LucideIcon;
   requires?: "share" | "admin";
+  /** When set, the item is hidden unless this feature flag is enabled for
+   *  the user (only honored when a feature map is passed to
+   *  `visibleNavItems`; falls back to always-visible without one). */
+  feature?: string;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -45,7 +49,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "attachments", path: "/attachments", icon: Paperclip },
   { key: "locations", path: "/locations", icon: MapPin },
   { key: "alerts", path: "/alerts", icon: Bell },
-  { key: "reports", path: "/reports", icon: FileText },
+  { key: "reports", path: "/reports", icon: FileText, feature: "reports" },
   { key: "sharing", path: "/sharing", icon: Share2, requires: "share" },
   {
     key: "transfers",
@@ -69,6 +73,9 @@ export function visibleNavItems(
       return role === "POWER_USER" || role === "ADMIN";
     }
     if (item.requires === "admin") return role === "ADMIN";
+    // Feature-gated items (e.g. reports) hide when the flag is off; without a
+    // feature map (pre-load) they stay visible to avoid a flash of empty nav.
+    if (item.feature && features) return features[item.feature] === true;
     return true;
   });
 }

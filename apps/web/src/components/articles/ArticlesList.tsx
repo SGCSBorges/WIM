@@ -66,6 +66,10 @@ const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
   const toast = useToast();
   const isPowerUser = useFeature("sharing");
+  const canBulkEdit = useFeature("bulk_edit");
+  const canSavedViews = useFeature("saved_views");
+  const canCsvImport = useFeature("csv_import");
+  const canCsvExport = useFeature("csv_export");
   const [currency, setCurrency] = useState("USD");
 
   const getDaysUntilExpiry = (
@@ -504,7 +508,7 @@ const ArticlesList: React.FC = () => {
   useEffect(() => {
     fetchLocations();
     loadTags();
-    loadSavedViews();
+    if (canSavedViews) loadSavedViews();
     // Load the user's display currency for the value column (best-effort).
     profileAPI
       .getMe()
@@ -806,16 +810,18 @@ const ArticlesList: React.FC = () => {
 
         {/* Secondary actions */}
         <div className="flex flex-wrap items-center gap-2 border-t ui-divider pt-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void runExport("csv", exportToCsv)}
-            loading={exporting === "csv"}
-            disabled={articles.length === 0 || exporting !== null}
-            leftIcon={<FileDown className="h-4 w-4" />}
-          >
-            {t("articles.export.csv")}
-          </Button>
+          {canCsvExport && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void runExport("csv", exportToCsv)}
+              loading={exporting === "csv"}
+              disabled={articles.length === 0 || exporting !== null}
+              leftIcon={<FileDown className="h-4 w-4" />}
+            >
+              {t("articles.export.csv")}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -850,14 +856,16 @@ const ArticlesList: React.FC = () => {
           >
             {t("articles.export.labels")}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowImport(true)}
-            leftIcon={<Upload className="h-4 w-4" />}
-          >
-            {t("articles.import.csv")}
-          </Button>
+          {canCsvImport && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowImport(true)}
+              leftIcon={<Upload className="h-4 w-4" />}
+            >
+              {t("articles.import.csv")}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -879,91 +887,93 @@ const ArticlesList: React.FC = () => {
       </div>
 
       {/* Saved filter views */}
-      <div
-        className="mb-4 flex flex-wrap items-center gap-2"
-        role="group"
-        aria-label={t("savedViews.title")}
-      >
-        {savedViews.map((v) => (
-          <span
-            key={v.id}
-            className="inline-flex items-center gap-1 rounded-full ui-badge px-2.5 py-1 text-xs"
-          >
-            <button
-              type="button"
-              onClick={() =>
-                setSearchParams(new URLSearchParams(v.query), {
-                  replace: true,
-                })
-              }
-              className="hover:underline"
+      {canSavedViews && (
+        <div
+          className="mb-4 flex flex-wrap items-center gap-2"
+          role="group"
+          aria-label={t("savedViews.title")}
+        >
+          {savedViews.map((v) => (
+            <span
+              key={v.id}
+              className="inline-flex items-center gap-1 rounded-full ui-badge px-2.5 py-1 text-xs"
             >
-              {v.name}
-            </button>
-            <button
-              type="button"
-              onClick={() => deleteView(v)}
-              aria-label={t("savedViews.delete")}
-              className="text-danger leading-none"
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchParams(new URLSearchParams(v.query), {
+                    replace: true,
+                  })
+                }
+                className="hover:underline"
+              >
+                {v.name}
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteView(v)}
+                aria-label={t("savedViews.delete")}
+                className="text-danger leading-none"
+              >
+                <X className="h-3 w-3" aria-hidden="true" />
+              </button>
+            </span>
+          ))}
+          {namingView ? (
+            <form
+              className="inline-flex items-center gap-1"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void saveCurrentView();
+              }}
             >
-              <X className="h-3 w-3" aria-hidden="true" />
-            </button>
-          </span>
-        ))}
-        {namingView ? (
-          <form
-            className="inline-flex items-center gap-1"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void saveCurrentView();
-            }}
-          >
-            {/* Callback ref focuses on mount: the user's explicit "save
+              {/* Callback ref focuses on mount: the user's explicit "save
                 view" click moves focus into the form's only input. */}
-            <Input
-              ref={(el: HTMLInputElement | null) => el?.focus()}
-              value={viewName}
-              onChange={(e) => setViewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
+              <Input
+                ref={(el: HTMLInputElement | null) => el?.focus()}
+                value={viewName}
+                onChange={(e) => setViewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setNamingView(false);
+                    setViewName("");
+                  }
+                }}
+                placeholder={t("savedViews.namePrompt")}
+                className="h-7 w-44 rounded-full px-2.5 text-xs"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                loading={savingView}
+                disabled={!viewName.trim()}
+              >
+                {t("common.save")}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
                   setNamingView(false);
                   setViewName("");
-                }
-              }}
-              placeholder={t("savedViews.namePrompt")}
-              className="h-7 w-44 rounded-full px-2.5 text-xs"
-            />
-            <Button
-              type="submit"
-              size="sm"
-              loading={savingView}
-              disabled={!viewName.trim()}
-            >
-              {t("common.save")}
-            </Button>
-            <Button
+                }}
+              >
+                {t("common.cancel")}
+              </Button>
+            </form>
+          ) : (
+            <button
               type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setNamingView(false);
-                setViewName("");
-              }}
+              onClick={() => setNamingView(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs ui-text-muted hover:bg-surface-muted"
             >
-              {t("common.cancel")}
-            </Button>
-          </form>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setNamingView(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs ui-text-muted hover:bg-surface-muted"
-          >
-            <Plus className="h-3 w-3" aria-hidden="true" />
-            {t("savedViews.save")}
-          </button>
-        )}
-      </div>
+              <Plus className="h-3 w-3" aria-hidden="true" />
+              {t("savedViews.save")}
+            </button>
+          )}
+        </div>
+      )}
 
       {error && (
         <ErrorBanner
@@ -977,6 +987,7 @@ const ArticlesList: React.FC = () => {
       <BulkActionBar
         selectedCount={selectedIds.size}
         canShare={isPowerUser}
+        canEditFields={canBulkEdit}
         busy={bulkBusy}
         locations={locations}
         tags={tags}

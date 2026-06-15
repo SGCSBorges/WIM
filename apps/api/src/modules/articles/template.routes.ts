@@ -8,6 +8,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
 import { ArticleTemplateService } from "./template.service";
@@ -44,6 +45,7 @@ const router = Router();
 router.get(
   "/",
   authGuard,
+  requireFeature("templates"),
   asyncHandler(async (req: AuthRequest, res) => {
     res.json(await ArticleTemplateService.list(req.user!.sub));
   })
@@ -52,6 +54,7 @@ router.get(
 router.get(
   "/:id",
   authGuard,
+  requireFeature("templates"),
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     res.json(await ArticleTemplateService.get(id, req.user!.sub));
@@ -61,6 +64,7 @@ router.get(
 router.post(
   "/",
   authGuard,
+  requireFeature("templates"),
   asyncHandler(async (req: AuthRequest, res) => {
     const data = CreateSchema.parse(req.body);
     const created = await ArticleTemplateService.create(
@@ -81,6 +85,7 @@ router.post(
 router.put(
   "/:id",
   authGuard,
+  requireFeature("templates"),
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     const data = UpdateSchema.parse(req.body);
@@ -102,6 +107,7 @@ router.put(
 router.delete(
   "/:id",
   authGuard,
+  requireFeature("templates"),
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     await ArticleTemplateService.remove(id, req.user!.sub);

@@ -9,6 +9,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { auditAction } from "../common/audit";
 import { security } from "../../config/security";
 import { prisma } from "../../libs/prisma";
@@ -27,6 +28,7 @@ const router = Router();
 router.get(
   "/portfolio.pdf",
   authGuard,
+  requireFeature("reports"),
   security.destructiveRateLimiter,
   asyncHandler(async (req: AuthRequest, res) => {
     const filters = PortfolioFiltersSchema.parse(req.query);

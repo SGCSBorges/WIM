@@ -622,19 +622,36 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   process-level snapshot cache** (`getSnapshot`) holds both tables so gated
   requests don't hit the DB each time; admin writes call `invalidateCache()`
   so changes land within one request cycle, not after the TTL.
-- **Access rule** (identical in `getAccessMap` and `requireFeature`): allow
-  if `roleAtLeast(role, required)` **or** (`role === "USER"` and an active
-  temp grant exists for the key). Temp grants are the "let a free user try a
-  paid feature until date X" lever — they only ever lift USER-role accounts.
-- **`requireFeature(key)` middleware** replaces `requireRole("POWER_USER")`
-  on all sharing + transfer routes (`shares/`, `shared/`,
-  `articles/article.share.routes.ts`, `articles/transfer.routes.ts`,
-  `articles/article.routes.ts` bulk-share). Runs **after** `authGuard`
-  (reads `req.user.role`).
+- **Access rule** — the single `isAllowed(role, key, snapshot)` helper backs
+  both `getAccessMap` and `requireFeature`, so the API and the client map can
+  never disagree. Allow if `roleAtLeast(role, required)` **or** (`role ===
+  "USER"` **and** `required === "POWER_USER"` **and** an unexpired temp grant
+  exists). Temp grants are the "let a free user try a paid feature until date
+  X" lever — they only ever lift a USER to a **POWER_USER**-gated feature
+  (ADMIN-gated features stay admin-only regardless of any grant; the grant
+  endpoint rejects a key whose effective role isn't POWER_USER). Grant
+  expiries are stored as ms timestamps and re-checked against `Date.now()` at
+  read time, so a grant that lapses mid-cache-window stops working at
+  `expiresAt`, not 60s later.
+- **`requireFeature(key)` middleware** gates every toggleable feature's
+  backend route(s), runs **after** `authGuard` (reads `req.user.role`):
+  `sharing` (`shares/`, `shared/`, `article.share.routes.ts`,
+  `article.routes.ts` bulk-share), `transfers` (`transfer.routes.ts`),
+  `reports` (`reports/report.routes.ts`), `templates`
+  (`articles/template.routes.ts`), `bulk_edit` (`/articles/bulk-update`),
+  `saved_views` (`saved-views/`), `notifications` (`/alerts/notifications` +
+  `/alerts/mark-seen` — the bell feed, **not** the core alert list/CRUD),
+  `calendar_feed` (`POST /calendar/token` only — DELETE + the public ICS
+  feed stay open), `csv_import` (`/articles/import`), `csv_export`
+  (`/articles/export/inventory.csv`). `cmd_palette` is frontend-only (it
+  reuses the shared article-search endpoint, so there's no dedicated route to
+  gate). All defaults except `cmd_palette`/`sharing`/`transfers` are USER, so
+  the gates are no-ops until an admin raises a bar.
 - **Admin endpoints** (`admin.routes.ts`): `GET /api/admin/features`
   (flags + active grants), `PUT /api/admin/features/:key` (set required
-  role), `POST /api/admin/features/grants`, `DELETE
-  /api/admin/features/grants/:id`. Each write calls `invalidateCache()`.
+  role), `POST /api/admin/features/grants` (rejects non-POWER_USER keys),
+  `DELETE /api/admin/features/grants/:id`. Each write calls
+  `invalidateCache()`.
 - **`GET /api/features`** returns the caller's `{ key: boolean }` access map.
 - **Web**: `FeatureProvider` (`apps/web/src/features/features.tsx`) is
   mounted in `main.tsx` **above `<App />`** so `App` itself can call
@@ -643,9 +660,14 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   fires while still logged out on a fresh login, so without the refresh the
   map would stay all-false until reload). `useFeature(key)` returns a bool;
   `useFeatures()` exposes the full map + `refresh`. Route guards, nav
-  visibility (`visibleNavItems(role, features)`), and component gates all
-  read from it. `AdminFeaturesTab` calls `refresh()` after each save so the
-  admin's own session reflects the change immediately.
+  visibility (`visibleNavItems(role, features)` — gates `reports` via the
+  `NavItem.feature` field), and component gates read from it: the Reports
+  route, the notification bell (`TopBar`), the CSV import/export + saved-views
+  + bulk-edit affordances (`ArticlesList`/`BulkActionBar`), and the
+  Profile calendar-feed section all hide when their flag is off. The provider
+  resets to all-false on a failed fetch so a logout clears granted access.
+  `AdminFeaturesTab` calls `refresh()` after each save so the admin's own
+  session reflects the change immediately.
 
 ## PWA
 

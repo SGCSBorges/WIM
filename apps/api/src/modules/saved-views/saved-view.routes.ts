@@ -4,6 +4,7 @@ import { z } from "zod";
 import { asyncHandler } from "../common/http";
 import { security } from "../../config/security";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
 import { SavedViewService } from "./saved-view.service";
@@ -19,6 +20,7 @@ const CreateSchema = z.object({
 router.get(
   "/",
   authGuard,
+  requireFeature("saved_views"),
   asyncHandler(async (req: AuthRequest, res) => {
     res.json(await SavedViewService.list(req.user!.sub));
   })
@@ -27,6 +29,7 @@ router.get(
 router.post(
   "/",
   authGuard,
+  requireFeature("saved_views"),
   // Same creation limiter tags + locations apply — names are unique per
   // owner, so a loop with random names could insert unbounded rows.
   security.createRateLimiter,
@@ -46,6 +49,7 @@ router.post(
 router.delete(
   "/:id",
   authGuard,
+  requireFeature("saved_views"),
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     await SavedViewService.remove(id, req.user!.sub);

@@ -9,6 +9,7 @@ function renderBar(
   const props: React.ComponentProps<typeof BulkActionBar> = {
     selectedCount: 3,
     canShare: true,
+    canEditFields: true,
     busy: false,
     locations: [{ locationId: 1, name: "Home" }],
     tags: [{ tagId: 5, name: "tools" }],

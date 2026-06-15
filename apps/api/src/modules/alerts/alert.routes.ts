@@ -10,6 +10,7 @@ import { Router } from "express";
 import { AlerteKind, AlerteStatus } from "@prisma/client";
 import { asyncHandler } from "../common/http";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { auditAction } from "../common/audit";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
@@ -56,9 +57,13 @@ router.get(
 );
 
 // Notification bell feed: overdue / due-soon scheduled alerts + unseen count.
+// Gated on `notifications` — the bell hides itself when this endpoint errors,
+// so a 403 degrades cleanly to "no bell" rather than a broken widget. The
+// core alert list + create/snooze/cancel stay open (they're not the bell).
 router.get(
   "/notifications",
   authGuard,
+  requireFeature("notifications"),
   asyncHandler(async (req: AuthRequest, res) => {
     res.json(await AlertService.notifications(req.user!.sub));
   })
@@ -68,6 +73,7 @@ router.get(
 router.post(
   "/mark-seen",
   authGuard,
+  requireFeature("notifications"),
   asyncHandler(async (req: AuthRequest, res) => {
     await AlertService.markSeen(req.user!.sub);
     res.status(204).end();

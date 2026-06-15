@@ -8,6 +8,7 @@ import { forwardRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, User, LogOut, Search } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
+import { useFeature } from "../../features/features";
 import { isActivePath } from "../../lib/navItems";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import InstallPwaButton from "../common/InstallPwaButton";
@@ -40,6 +41,7 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const profileActive = isActivePath("/profile", pathname);
+  const showNotifications = useFeature("notifications");
 
   return (
     <header className="sticky top-0 z-30 ui-nav border-b ui-divider backdrop-blur supports-[backdrop-filter]:bg-surface/80">
@@ -98,7 +100,7 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
           <LanguageThemeSelector />
         </div>
 
-        <NotificationBell />
+        {showNotifications && <NotificationBell />}
 
         <button
           type="button"

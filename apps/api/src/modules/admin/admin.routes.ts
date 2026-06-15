@@ -785,6 +785,17 @@ router.post(
     if (expiresAt <= new Date()) {
       throw createHttpError(400, "expiresAt must be in the future");
     }
+    // Temp grants only ever lift a USER to a POWER_USER-gated feature.
+    // A grant for a USER-default feature is a no-op; one for an ADMIN-gated
+    // feature is silently ignored by the access check — reject both so the
+    // admin gets clear feedback instead of a grant that does nothing.
+    const required = await FeatureService.getRequiredRole(featureKey);
+    if (required !== "POWER_USER") {
+      throw createHttpError(
+        400,
+        `Temp grants apply only to POWER_USER features; '${featureKey}' requires ${required}`
+      );
+    }
     const grant = await FeatureService.createGrant(featureKey, expiresAt, note);
     invalidateFeatureCache();
     res.status(201).json(grant);
