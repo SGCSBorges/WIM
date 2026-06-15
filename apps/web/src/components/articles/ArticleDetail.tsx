@@ -62,7 +62,6 @@ import {
   PageHeader,
   Section,
   Button,
-  Input,
   Textarea,
   Select,
   Badge,
@@ -929,7 +928,7 @@ export default function ArticleDetail() {
         icon={<StickyNote className="h-5 w-5" />}
         title={t("notes.title")}
       >
-        <div className="flex flex-wrap gap-2">
+        <div className="space-y-2">
           <Select
             value={noteKind}
             onChange={(e) => setNoteKind(e.target.value as ArticleNoteKind)}
@@ -942,28 +941,26 @@ export default function ArticleDetail() {
               </option>
             ))}
           </Select>
-          <Input
-            type="text"
+          <Textarea
+            rows={2}
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addNote();
-              }
-            }}
             placeholder={t("notes.placeholder")}
             maxLength={2000}
-            className="min-w-0 flex-1"
           />
-          <Button
-            onClick={addNote}
-            loading={savingNote}
-            disabled={!noteInput.trim()}
-            leftIcon={<Send className="h-4 w-4" />}
-          >
-            {t("notes.add")}
-          </Button>
+          <div className="flex items-center justify-between">
+            <p className="text-xs tabular-nums ui-text-muted">
+              {noteInput.length} / 2000
+            </p>
+            <Button
+              onClick={addNote}
+              loading={savingNote}
+              disabled={!noteInput.trim()}
+              leftIcon={<Send className="h-4 w-4" />}
+            >
+              {t("notes.add")}
+            </Button>
+          </div>
         </div>
 
         {notes.length > 0 && (
@@ -999,7 +996,7 @@ export default function ArticleDetail() {
                 return (
                   <li key={n.noteId} className="space-y-1 py-2">
                     {isEditing ? (
-                      <div className="flex flex-wrap items-start gap-2">
+                      <div className="space-y-2">
                         <Select
                           value={editingKind}
                           onChange={(e) =>
@@ -1014,28 +1011,34 @@ export default function ArticleDetail() {
                             </option>
                           ))}
                         </Select>
-                        <Input
-                          type="text"
+                        <Textarea
+                          rows={3}
                           value={editingContent}
                           onChange={(e) => setEditingContent(e.target.value)}
                           maxLength={2000}
-                          className="min-w-0 flex-1"
                         />
-                        <Button
-                          size="sm"
-                          onClick={saveEditNote}
-                          disabled={!editingContent.trim()}
-                          leftIcon={<Check className="h-4 w-4" />}
-                        >
-                          {t("common.save")}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingNoteId(null)}
-                        >
-                          {t("common.cancel")}
-                        </Button>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs tabular-nums ui-text-muted">
+                            {editingContent.length} / 2000
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={saveEditNote}
+                              disabled={!editingContent.trim()}
+                              leftIcon={<Check className="h-4 w-4" />}
+                            >
+                              {t("common.save")}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingNoteId(null)}
+                            >
+                              {t("common.cancel")}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <div className="flex items-start justify-between gap-3">
