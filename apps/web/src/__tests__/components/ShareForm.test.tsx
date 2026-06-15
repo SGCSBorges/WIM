@@ -65,6 +65,24 @@ describe("<ShareForm />", () => {
     );
   });
 
+  it("trims surrounding whitespace from the email before submitting", async () => {
+    const user = userEvent.setup();
+    const { onSubmit } = renderForm();
+
+    await user.type(
+      screen.getByLabelText(/email address/i),
+      "  friend@example.com  "
+    );
+    await user.click(submit());
+
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith({
+        email: "friend@example.com",
+        permission: "READ",
+      })
+    );
+  });
+
   it("submits WRITE permission when selected", async () => {
     const user = userEvent.setup();
     const { onSubmit } = renderForm();

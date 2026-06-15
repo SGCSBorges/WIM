@@ -44,7 +44,12 @@ const ShareForm: React.FC<ShareFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) onSubmit(formData);
+    // Trim the email before sending: validateForm already trims for the
+    // checks, but the raw value would otherwise reach the API. The invite
+    // lookup is an exact match and its errors are masked for anti-enumeration,
+    // so a stray leading/trailing space turns a valid colleague's address into
+    // a confusing "that email isn't a Power User".
+    if (validateForm()) onSubmit({ ...formData, email: formData.email.trim() });
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
