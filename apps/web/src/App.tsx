@@ -53,7 +53,7 @@ import { usePreferences } from "./preferences/preferences";
 import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
-import { useFeature } from "./features/features";
+import { useFeature, useFeatures } from "./features/features";
 
 const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
 function isStripeUrl(url: string): boolean {
@@ -350,6 +350,7 @@ export default function App() {
   const [role, setRole] = useState<string | null>(null);
   const canShare = useFeature("sharing");
   const canTransfer = useFeature("transfers");
+  const { refresh: refreshFeatures } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
 
@@ -395,6 +396,11 @@ export default function App() {
             .then((newRole) => {
               if (newRole) {
                 setRole(newRole);
+                if (previousRole !== newRole) {
+                  // Role change shifts feature access (e.g. sharing/transfers
+                  // unlock at POWER_USER) — repopulate the gate map.
+                  void refreshFeatures();
+                }
                 if (previousRole === "USER" && newRole === "POWER_USER") {
                   setUpgradeSuccess(t("billing.upgradeSuccess"));
                 }
@@ -430,6 +436,10 @@ export default function App() {
         setRole(user.role);
         applyServerPrefs(user);
         setAuthStatus("authed");
+        // The feature map was fetched at mount while still logged out (all
+        // false). Re-fetch now that we have a session so gated nav/routes
+        // appear without a manual reload.
+        void refreshFeatures();
         navigate("/");
       })
       .catch(() => {
@@ -441,6 +451,8 @@ export default function App() {
     await authAPI.logout();
     setAuthStatus("unauthed");
     setRole(null);
+    // Drop any granted feature access immediately (the next fetch 401s).
+    void refreshFeatures();
     navigate("/");
   };
 
@@ -533,7 +545,9 @@ export default function App() {
           <Route path="/sharing/accept" element={sharingRoute} />
           <Route
             path="/transfers"
-            element={canTransfer ? <TransfersView /> : <Navigate to="/" replace />}
+            element={
+              canTransfer ? <TransfersView /> : <Navigate to="/" replace />
+            }
           />
           <Route
             path="/admin"

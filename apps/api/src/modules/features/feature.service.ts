@@ -64,14 +64,18 @@ async function getSnapshot(): Promise<Snapshot> {
   if (_snapshot && Date.now() - _snapshot.ts < 60_000) return _snapshot;
   const now = new Date();
   const [flags, grants] = await Promise.all([
-    prisma.featureFlag.findMany({ select: { featureKey: true, requiredRole: true } }),
+    prisma.featureFlag.findMany({
+      select: { featureKey: true, requiredRole: true },
+    }),
     prisma.featureTempGrant.findMany({
       where: { expiresAt: { gt: now } },
       select: { featureKey: true },
     }),
   ]);
   _snapshot = {
-    flags: new Map(flags.map((f) => [f.featureKey, f.requiredRole as RoleName])),
+    flags: new Map(
+      flags.map((f) => [f.featureKey, f.requiredRole as RoleName])
+    ),
     grants: new Set(grants.map((g) => g.featureKey)),
     ts: Date.now(),
   };
@@ -120,7 +124,8 @@ export const FeatureService = {
     const flagMap = new Map(dbFlags.map((f) => [f.featureKey, f]));
     return FEATURE_KEYS.map((key) => ({
       featureKey: key,
-      requiredRole: (flagMap.get(key)?.requiredRole ?? DEFAULTS[key]) as RoleName,
+      requiredRole: (flagMap.get(key)?.requiredRole ??
+        DEFAULTS[key]) as RoleName,
       defaultRole: DEFAULTS[key],
       updatedAt: flagMap.get(key)?.updatedAt ?? null,
     }));
@@ -176,7 +181,12 @@ export function requireFeature(key: FeatureKey) {
       const allowed =
         roleAtLeast(role, required) || (role === "USER" && grants.has(key));
       if (!allowed) {
-        next(createHttpError(403, `Feature '${key}' is not available for your role`));
+        next(
+          createHttpError(
+            403,
+            `Feature '${key}' is not available for your role`
+          )
+        );
         return;
       }
       next();

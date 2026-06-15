@@ -29,7 +29,7 @@ import {
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
-import { authGuard, AuthRequest, requireRole } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
 import { idParam } from "../common/schemas";
 import { security } from "../../config/security";

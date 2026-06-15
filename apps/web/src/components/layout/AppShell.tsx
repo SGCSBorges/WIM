@@ -57,7 +57,10 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
       return !c;
     });
 
-  const navItems = useMemo(() => visibleNavItems(role, features), [role, features]);
+  const navItems = useMemo(
+    () => visibleNavItems(role, features),
+    [role, features]
+  );
 
   // First-letter prefix → nav target. We resolve at hotkey time so two-key
   // sequences (`g a`, `g d`…) jump to whichever item matches the second key.
@@ -82,7 +85,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
       map[`g ${item.key[0]}`] = () => goByLetter(item.key[0]);
     }
     return map;
-  }, [navItems, navigate, goByLetter]);
+  }, [navItems, navigate, goByLetter, canUsePalette]);
 
   useHotkeys(hotkeys);
 

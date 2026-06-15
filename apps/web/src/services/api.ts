@@ -2333,7 +2333,9 @@ export const adminFeaturesAPI = {
       headers: getHeaders(),
     });
     if (!response.ok)
-      throw new Error(await extractError(response, "Failed to fetch feature flags"));
+      throw new Error(
+        await extractError(response, "Failed to fetch feature flags")
+      );
     return response.json();
   },
 
@@ -2347,7 +2349,9 @@ export const adminFeaturesAPI = {
       }
     );
     if (!response.ok)
-      throw new Error(await extractError(response, "Failed to update feature flag"));
+      throw new Error(
+        await extractError(response, "Failed to update feature flag")
+      );
   },
 
   async createGrant(input: {

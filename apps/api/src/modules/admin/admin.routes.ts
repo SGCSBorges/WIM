@@ -779,7 +779,9 @@ router.post(
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
-    const { featureKey, expiresAt, note } = FeatureTempGrantBodySchema.parse(req.body);
+    const { featureKey, expiresAt, note } = FeatureTempGrantBodySchema.parse(
+      req.body
+    );
     if (expiresAt <= new Date()) {
       throw createHttpError(400, "expiresAt must be in the future");
     }

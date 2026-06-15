@@ -62,7 +62,10 @@ export function FeatureProvider({ children }: { children: React.ReactNode }) {
       const map = await featuresAPI.getAccessMap();
       setFeatures({ ...EMPTY, ...map });
     } catch {
-      // On 401 (not logged in yet) or network failure, keep the all-false map.
+      // On 401 (logged out) or network failure, fall back to all-false so a
+      // logout clears any previously-granted access. Callers re-invoke
+      // refresh() after a successful login to repopulate.
+      setFeatures(EMPTY);
     }
   }, []);
 

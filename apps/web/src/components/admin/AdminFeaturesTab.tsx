@@ -74,7 +74,14 @@ export default function AdminFeaturesTab() {
 
   useEffect(() => {
     if (showGrantForm) {
-      setTimeout(() => grantFormRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+      setTimeout(
+        () =>
+          grantFormRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          }),
+        50
+      );
     }
   }, [showGrantForm]);
 
@@ -191,7 +198,10 @@ export default function AdminFeaturesTab() {
                 <Select
                   value={flag.requiredRole}
                   onChange={(e) =>
-                    handleFlagChange(flag.featureKey, e.target.value as RoleName)
+                    handleFlagChange(
+                      flag.featureKey,
+                      e.target.value as RoleName
+                    )
                   }
                   disabled={savingKey === flag.featureKey}
                   aria-label={`${t("admin.features.requiredRole")} — ${t(`features.${flag.featureKey}`)}`}
@@ -206,7 +216,10 @@ export default function AdminFeaturesTab() {
                 {savedKey === flag.featureKey ? (
                   <Check className="h-4 w-4 text-success" aria-hidden="true" />
                 ) : savingKey === flag.featureKey ? (
-                  <RotateCw className="h-4 w-4 animate-spin ui-text-muted" aria-hidden="true" />
+                  <RotateCw
+                    className="h-4 w-4 animate-spin ui-text-muted"
+                    aria-hidden="true"
+                  />
                 ) : null}
               </div>
             </div>
@@ -247,7 +260,9 @@ export default function AdminFeaturesTab() {
                 <Select
                   id={grantFeatureId}
                   value={grantFeature}
-                  onChange={(e) => setGrantFeature(e.target.value as FeatureKey)}
+                  onChange={(e) =>
+                    setGrantFeature(e.target.value as FeatureKey)
+                  }
                 >
                   {grantableFeatures.length === 0 ? (
                     <option disabled value="">
@@ -320,7 +335,9 @@ export default function AdminFeaturesTab() {
         )}
 
         {grants.length === 0 ? (
-          <p className="text-sm ui-text-muted">{t("admin.features.grants.empty")}</p>
+          <p className="text-sm ui-text-muted">
+            {t("admin.features.grants.empty")}
+          </p>
         ) : (
           <div className="divide-y ui-divider">
             {grants.map((grant) => (
@@ -330,7 +347,10 @@ export default function AdminFeaturesTab() {
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <Shield className="h-3.5 w-3.5 ui-text-muted" aria-hidden="true" />
+                    <Shield
+                      className="h-3.5 w-3.5 ui-text-muted"
+                      aria-hidden="true"
+                    />
                     <span className="font-medium ui-title text-sm">
                       {t(`features.${grant.featureKey}`)}
                     </span>

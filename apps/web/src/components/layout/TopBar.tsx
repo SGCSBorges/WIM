@@ -27,7 +27,13 @@ function modKey(): string {
 }
 
 const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
-  { mobileNavOpen, onToggleMobileNav, onLogout, onOpenSearch, showSearch = true },
+  {
+    mobileNavOpen,
+    onToggleMobileNav,
+    onLogout,
+    onOpenSearch,
+    showSearch = true,
+  },
   toggleRef
 ) {
   const { t } = useI18n();
