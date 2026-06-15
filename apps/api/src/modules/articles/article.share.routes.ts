@@ -12,7 +12,8 @@
  */
 import { Router } from "express";
 import { prisma } from "../../libs/prisma";
-import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { idParam, paginationQuery } from "../common/schemas";
@@ -30,7 +31,7 @@ const router = Router();
 router.get(
   "/shared-public",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const ownerUserId = req.user!.sub;
     const { page, limit } = paginationQuery.parse(req.query);
@@ -60,7 +61,7 @@ router.post(
   "/unshare-all",
   security.destructiveRateLimiter,
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const ownerUserId = req.user!.sub;
     const result = await prisma.article.updateMany({
@@ -84,7 +85,7 @@ router.post(
 router.post(
   "/:articleId/share",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const articleId = idParam.parse(req.params.articleId);
     const ownerUserId = req.user!.sub;
@@ -120,7 +121,7 @@ router.post(
 router.get(
   "/:articleId/shares",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const articleId = idParam.parse(req.params.articleId);
     const ownerUserId = req.user!.sub;
@@ -140,7 +141,7 @@ router.get(
 router.delete(
   "/:articleId/share",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const articleId = idParam.parse(req.params.articleId);
     const ownerUserId = req.user!.sub;

@@ -39,7 +39,6 @@ import {
   articlesAPI,
   attachmentsAPI,
   locationsAPI,
-  authAPI,
   profileAPI,
   tagsAPI,
   savedViewsAPI,
@@ -59,15 +58,14 @@ import CsvImportModal from "./CsvImportModal";
 import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
 import { consumeSharedDraft } from "../../utils/shareTarget";
-import { isPowerUserOrAdmin } from "../../utils/roles";
+import { useFeature } from "../../features/features";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import { PageHeader, Button, Input, Select, Badge } from "../ui";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
   const toast = useToast();
-  const role = authAPI.getRole();
-  const isPowerUser = isPowerUserOrAdmin(role);
+  const isPowerUser = useFeature("sharing");
   const [currency, setCurrency] = useState("USD");
 
   const getDaysUntilExpiry = (

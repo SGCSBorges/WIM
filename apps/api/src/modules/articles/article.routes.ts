@@ -30,6 +30,7 @@ import { prisma } from "../../libs/prisma";
 import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest, requireRole } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { idParam } from "../common/schemas";
 import { security } from "../../config/security";
 
@@ -335,7 +336,7 @@ router.post(
 router.post(
   "/bulk-share",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const schema = BulkIdsSchema.extend({ shared: z.boolean() });
     const { ids, shared } = schema.parse(req.body);

@@ -15,7 +15,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { Prisma, SharePermission } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
-import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { paginationQuery, idParam } from "../common/schemas";
 import { auditAction } from "../common/audit";
@@ -72,7 +73,7 @@ type SharedArticleInclude = Prisma.ArticleGetPayload<{
 router.get(
   "/articles",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const viewerUserId = req.user!.sub;
     const { page, limit } = paginationQuery.parse(req.query);
@@ -146,7 +147,7 @@ router.get(
 router.put(
   "/articles/:id",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     const data = SharedArticleEditSchema.parse(req.body);

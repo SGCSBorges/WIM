@@ -17,8 +17,6 @@ import {
   ArrowRightLeft,
   type LucideIcon,
 } from "lucide-react";
-import { isPowerUserOrAdmin } from "../utils/roles";
-
 export type NavKey =
   | "home"
   | "dashboard"
@@ -58,9 +56,18 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "admin", path: "/admin", icon: Settings, requires: "admin" },
 ];
 
-export function visibleNavItems(role: string | null): NavItem[] {
+export function visibleNavItems(
+  role: string | null,
+  features?: Record<string, boolean>
+): NavItem[] {
   return NAV_ITEMS.filter((item) => {
-    if (item.requires === "share") return isPowerUserOrAdmin(role);
+    if (item.requires === "share") {
+      if (features) {
+        const featureKey = item.key === "transfers" ? "transfers" : "sharing";
+        return features[featureKey] === true;
+      }
+      return role === "POWER_USER" || role === "ADMIN";
+    }
     if (item.requires === "admin") return role === "ADMIN";
     return true;
   });

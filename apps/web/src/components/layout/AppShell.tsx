@@ -12,7 +12,7 @@ import { useI18n } from "../../i18n/i18n";
 import { useTheme, type Theme } from "../../theme/theme";
 import { usePreferences } from "../../preferences/preferences";
 import { useHotkeys } from "../../hooks/useHotkeys";
-import { useFeature } from "../../features/features";
+import { useFeature, useFeatures } from "../../features/features";
 import { articlesAPI } from "../../services/api";
 import { visibleNavItems, type NavItem, type NavKey } from "../../lib/navItems";
 import OfflineBanner from "../common/OfflineBanner";
@@ -39,6 +39,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
   const { theme, setTheme } = useTheme();
   const { density, setDensity } = usePreferences();
   const canUsePalette = useFeature("cmd_palette");
+  const { features } = useFeatures();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(
     () => localStorage.getItem(COLLAPSE_KEY) === "1"
@@ -56,7 +57,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
       return !c;
     });
 
-  const navItems = useMemo(() => visibleNavItems(role), [role]);
+  const navItems = useMemo(() => visibleNavItems(role, features), [role, features]);
 
   // First-letter prefix → nav target. We resolve at hotkey time so two-key
   // sequences (`g a`, `g d`…) jump to whichever item matches the second key.

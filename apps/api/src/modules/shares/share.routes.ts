@@ -1,7 +1,7 @@
 /**
  * Per-user inventory sharing — invite create/accept/revoke flows + the
  * owner's view of their outgoing shares. Every route here requires
- * POWER_USER on both ends; the `requireRole("POWER_USER")` guard pairs
+ * POWER_USER on both ends; the `requireFeature("sharing")` guard pairs
  * with `ShareService.createInvite` which double-checks the invitee
  * actually exists as a POWER_USER (so a downgrade-then-re-upgrade race
  * can't accept a stale invite). Invite mutations are rate-limited per
@@ -9,7 +9,8 @@
  */
 import { Router } from "express";
 import { z } from "zod";
-import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import {
   ShareInviteAcceptSchema,
@@ -30,7 +31,7 @@ router.post(
   // to spam invite emails (and phishing links) to a wide audience.
   security.destructiveRateLimiter,
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = ShareInviteCreateSchema.omit({ ownerUserId: true }).parse(
       req.body
@@ -54,7 +55,7 @@ router.post(
 router.post(
   "/invites/accept",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const { token } = ShareInviteAcceptSchema.parse(req.body);
     const result = await ShareService.acceptInvite(token, req.user!.sub);
@@ -127,7 +128,7 @@ router.get(
 router.put(
   "/:targetUserId",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const { permission } = ShareUpdateSchema.parse(req.body);
     const targetUserId = z.coerce
@@ -154,7 +155,7 @@ router.put(
 router.delete(
   "/:targetUserId",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("sharing"),
   asyncHandler(async (req: AuthRequest, res) => {
     const targetUserId = z.coerce
       .number()

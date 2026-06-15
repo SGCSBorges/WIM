@@ -57,7 +57,7 @@ function isStripeUrl(url: string): boolean {
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
-import { isPowerUserOrAdmin } from "../../utils/roles";
+import { useFeature } from "../../features/features";
 import {
   pushSupported,
   isPushSubscribed,
@@ -147,6 +147,7 @@ export default function ProfileView() {
 
   // Tracks mount state so the fire-and-forget billing fetch in loadMe doesn't
   // call setState after the component unmounts (user navigates away mid-load).
+  const canShare = useFeature("sharing");
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -396,8 +397,8 @@ export default function ProfileView() {
   }, []);
 
   useEffect(() => {
-    if (isPowerUserOrAdmin(me?.role)) loadSharing();
-  }, [me?.role, loadSharing]);
+    if (canShare) loadSharing();
+  }, [canShare, loadSharing]);
 
   const unshareOne = async (articleId: number) => {
     setSharingBusy(`article:${articleId}`);
@@ -803,7 +804,7 @@ export default function ProfileView() {
         )}
 
         {/* "Articles you've shared publicly" */}
-        {isPowerUserOrAdmin(me?.role) && (
+        {canShare && (
           <Section
             icon={<Globe2 className="h-5 w-5" />}
             title={t("profile.share.public.title")}
@@ -888,7 +889,7 @@ export default function ProfileView() {
         )}
 
         {/* "People you've invited" */}
-        {isPowerUserOrAdmin(me?.role) && (
+        {canShare && (
           <Section
             icon={<Users className="h-5 w-5" />}
             title={t("profile.share.invited.title")}

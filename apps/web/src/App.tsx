@@ -22,7 +22,6 @@ import React, {
   useState,
 } from "react";
 import { getErrorMessage } from "./utils/error";
-import { isPowerUserOrAdmin } from "./utils/roles";
 import {
   Routes,
   Route,
@@ -54,7 +53,7 @@ import { usePreferences } from "./preferences/preferences";
 import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
-import { FeatureProvider } from "./features/features";
+import { useFeature } from "./features/features";
 
 const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
 function isStripeUrl(url: string): boolean {
@@ -221,6 +220,7 @@ function Home({
 }) {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const canShare = useFeature("sharing");
   const iconFor = (key: string) => NAV_ITEMS.find((n) => n.key === key)!.icon;
 
   return (
@@ -322,7 +322,7 @@ function Home({
           subtitle={t("home.card.attachments.subtitle")}
           cta={t("home.card.attachments.cta")}
         />
-        {isPowerUserOrAdmin(role) && (
+        {canShare && (
           <HomeCard
             onClick={() => navigate("/sharing")}
             icon={iconFor("sharing")}
@@ -348,6 +348,8 @@ export default function App() {
     "loading" | "authed" | "unauthed"
   >("loading");
   const [role, setRole] = useState<string | null>(null);
+  const canShare = useFeature("sharing");
+  const canTransfer = useFeature("transfers");
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
 
@@ -472,7 +474,7 @@ export default function App() {
     }
   };
 
-  const sharingRoute = isPowerUserOrAdmin(role) ? (
+  const sharingRoute = canShare ? (
     <div className="space-y-6">
       <MySharedArticlesView />
       <AcceptInviteForm />
@@ -484,7 +486,6 @@ export default function App() {
   );
 
   return (
-    <FeatureProvider>
     <AppShell role={role} onLogout={handleLogout}>
       {upgradeSuccess && (
         <div
@@ -532,13 +533,7 @@ export default function App() {
           <Route path="/sharing/accept" element={sharingRoute} />
           <Route
             path="/transfers"
-            element={
-              isPowerUserOrAdmin(role) ? (
-                <TransfersView />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
+            element={canTransfer ? <TransfersView /> : <Navigate to="/" replace />}
           />
           <Route
             path="/admin"
@@ -550,6 +545,5 @@ export default function App() {
         </Routes>
       </Suspense>
     </AppShell>
-    </FeatureProvider>
   );
 }

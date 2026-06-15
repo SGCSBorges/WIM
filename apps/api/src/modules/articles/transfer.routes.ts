@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
-import { authGuard, requireRole, AuthRequest } from "../auth/auth.middleware";
+import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { TransferService } from "./transfer.service";
 import { auditAction } from "../common/audit";
 import { EmailService } from "../email/email.service";
@@ -22,7 +23,7 @@ const PullSchema = z.object({
 router.post(
   "/:id/transfer/push",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const articleId = idParam.parse(req.params.id);
@@ -65,7 +66,7 @@ router.post(
 router.post(
   "/:id/transfer/pull",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const articleId = idParam.parse(req.params.id);
@@ -119,7 +120,7 @@ router.post(
 router.post(
   "/transfers/:token/accept",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const { token } = req.params;
@@ -150,7 +151,7 @@ router.post(
 router.post(
   "/transfers/:token/reject",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const { token } = req.params;
@@ -181,7 +182,7 @@ router.post(
 router.delete(
   "/transfers/:id",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const id = idParam.parse(req.params.id);
@@ -206,7 +207,7 @@ router.delete(
 router.get(
   "/transfers/incoming",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const items = await TransferService.listIncoming(req.user!.sub);
@@ -221,7 +222,7 @@ router.get(
 router.get(
   "/transfers/outgoing",
   authGuard,
-  requireRole("POWER_USER"),
+  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const items = await TransferService.listOutgoing(req.user!.sub);

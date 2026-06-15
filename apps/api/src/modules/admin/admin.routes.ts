@@ -31,6 +31,7 @@ import {
   FeatureService,
   FEATURE_KEYS,
   type FeatureKey,
+  invalidateCache as invalidateFeatureCache,
 } from "../features/feature.service";
 
 const router = Router();
@@ -767,6 +768,7 @@ router.put(
     }
     const { requiredRole } = FeatureFlagBodySchema.parse(req.body);
     await FeatureService.setFlag(key as FeatureKey, requiredRole);
+    invalidateFeatureCache();
     res.json({ featureKey: key, requiredRole });
   })
 );
@@ -782,6 +784,7 @@ router.post(
       throw createHttpError(400, "expiresAt must be in the future");
     }
     const grant = await FeatureService.createGrant(featureKey, expiresAt, note);
+    invalidateFeatureCache();
     res.status(201).json(grant);
   })
 );
@@ -799,6 +802,7 @@ router.delete(
     await FeatureService.deleteGrant(id).catch(() => {
       throw createHttpError(404, "Grant not found");
     });
+    invalidateFeatureCache();
     res.status(204).end();
   })
 );
