@@ -284,7 +284,10 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               >
                 <Input
                   type="email"
+                  inputMode="email"
                   autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   placeholder="your@email.com"
                   {...register("email")}
                 />
