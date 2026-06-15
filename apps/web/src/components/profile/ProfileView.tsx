@@ -503,7 +503,10 @@ export default function ProfileView() {
         >
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-base font-semibold ui-title">
+              <p
+                className="truncate text-base font-semibold ui-title"
+                title={me?.email}
+              >
                 {me?.email}
               </p>
               <p className="mt-0.5 text-xs ui-text-muted">
