@@ -187,25 +187,52 @@ export async function getDashboardStatistics(
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
     const twelveMonthsAhead = new Date(currentDate);
     twelveMonthsAhead.setMonth(twelveMonthsAhead.getMonth() + 12);
-    const [upcomingWarrantyExpirations, recentArticleCreations] =
-      await Promise.all([
-        prisma.garantie.findMany({
-          where: {
-            ownerUserId,
-            garantieFin: { gte: currentDate, lte: twelveMonthsAhead },
-            ...liveWarrantyScope,
-          },
-          select: { garantieFin: true },
-        }),
-        prisma.article.findMany({
-          where: {
-            ownerUserId,
-            deletedAt: null,
-            createdAt: { gte: twelveMonthsAgo },
-          },
-          select: { createdAt: true },
-        }),
-      ]);
+    // Second (and final) parallel batch. None of these depend on the
+    // in-memory aggregation below, so they run together rather than as
+    // separate sequential round-trips — `unassigned` and `totalSharedArticles`
+    // used to each cost their own trip after this batch. `totalSharedArticles`
+    // is only meaningful for share-capable roles; resolve to 0 otherwise
+    // instead of issuing the query.
+    const [
+      upcomingWarrantyExpirations,
+      recentArticleCreations,
+      unassigned,
+      totalSharedArticles,
+    ] = await Promise.all([
+      prisma.garantie.findMany({
+        where: {
+          ownerUserId,
+          garantieFin: { gte: currentDate, lte: twelveMonthsAhead },
+          ...liveWarrantyScope,
+        },
+        select: { garantieFin: true },
+      }),
+      prisma.article.findMany({
+        where: {
+          ownerUserId,
+          deletedAt: null,
+          createdAt: { gte: twelveMonthsAgo },
+        },
+        select: { createdAt: true },
+      }),
+      // Count articles with NO location directly — summing junction rows
+      // counts a multi-location article N times, and the subtraction then
+      // hides genuinely unassigned articles.
+      prisma.article.count({
+        where: { ownerUserId, deletedAt: null, locations: { none: {} } },
+      }),
+      // Total shared articles of all OTHER users (only meaningful for a
+      // share-capable viewer).
+      role === "POWER_USER" || role === "ADMIN"
+        ? prisma.article.count({
+            where: {
+              sharedWithPowerUsers: true,
+              ownerUserId: { not: ownerUserId },
+              deletedAt: null,
+            },
+          })
+        : Promise.resolve(0),
+    ]);
 
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
 
@@ -273,25 +300,6 @@ export async function getDashboardStatistics(
         articlesCount: countMap.get(l.locationId) ?? 0,
       })
     );
-
-    // Count articles with NO location directly — summing junction rows
-    // counts a multi-location article N times, and the subtraction then
-    // hides genuinely unassigned articles.
-    const unassigned = await prisma.article.count({
-      where: { ownerUserId, deletedAt: null, locations: { none: {} } },
-    });
-
-    // Total shared articles of all users (only meaningful for POWER_USER)
-    const totalSharedArticles =
-      role === "POWER_USER" || role === "ADMIN"
-        ? await prisma.article.count({
-            where: {
-              sharedWithPowerUsers: true,
-              ownerUserId: { not: ownerUserId },
-              deletedAt: null,
-            },
-          })
-        : 0;
 
     // Bucket dates into YYYY-MM keys; pre-seed each rolling window so months
     // with zero events still appear (the bar chart needs a contiguous axis).
