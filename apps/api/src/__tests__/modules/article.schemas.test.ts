@@ -117,4 +117,17 @@ describe("ArticleUpdateSchema", () => {
       false
     );
   });
+
+  it("strips client-supplied ownerUserId when omitted (mass-assignment guard)", () => {
+    // The PUT /articles/:id route parses with `.omit({ ownerUserId: true })`
+    // so a body can never influence ownership — the owner is always the
+    // authenticated caller. Parsing the omitted schema must drop the field
+    // even if a client sends it.
+    const parsed = ArticleUpdateSchema.omit({ ownerUserId: true }).parse({
+      articleNom: "New name",
+      ownerUserId: 999,
+    });
+    expect(parsed).not.toHaveProperty("ownerUserId");
+    expect(parsed).toMatchObject({ articleNom: "New name" });
+  });
 });

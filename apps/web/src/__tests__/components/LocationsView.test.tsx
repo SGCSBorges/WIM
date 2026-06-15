@@ -30,6 +30,7 @@ import { ToastProvider } from "../../components/common/Toast";
 
 const mocked = locationsAPI as unknown as {
   getAll: ReturnType<typeof vi.fn>;
+  listArticles: ReturnType<typeof vi.fn>;
   create: ReturnType<typeof vi.fn>;
 };
 
@@ -56,6 +57,25 @@ describe("<LocationsView />", () => {
     ]);
     renderView();
     expect(await screen.findByText("Garage")).toBeInTheDocument();
+  });
+
+  it("renders the article count from the list `_count` without a per-location request", async () => {
+    mocked.getAll.mockResolvedValueOnce([
+      {
+        locationId: 1,
+        name: "Garage",
+        description: null,
+        totalValue: 0,
+        _count: { articles: 3 },
+      },
+    ]);
+    renderView();
+
+    // Count badge comes straight from the list row's `_count.articles`.
+    expect(await screen.findByText("3 article(s)")).toBeInTheDocument();
+    // Regression guard: the old code fired listArticles({page:1,limit:1}) per
+    // location just to read this number — it must not be called anymore.
+    expect(mocked.listArticles).not.toHaveBeenCalled();
   });
 
   it("creates a location from the form", async () => {

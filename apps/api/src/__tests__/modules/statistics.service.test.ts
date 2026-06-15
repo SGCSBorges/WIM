@@ -163,6 +163,10 @@ describe("getDashboardStatistics", () => {
     const result = await getDashboardStatistics({ userId: 1, role: "USER" });
 
     expect(result.sharing.totalSharedArticles).toBe(0);
+    // A USER must not pay for the cross-user shared-articles query — it
+    // resolves to 0 without hitting the DB. article.count fires exactly 4x
+    // (total, withWarranty, ownedShared, unassigned), not 5.
+    expect(mockPrisma.article.count).toHaveBeenCalledTimes(4);
   });
 
   it("fetches totalSharedArticles for POWER_USER role", async () => {
@@ -195,6 +199,9 @@ describe("getDashboardStatistics", () => {
     });
 
     expect(result.sharing.totalSharedArticles).toBe(5);
+    // A share-capable role DOES issue the 5th article.count for the
+    // cross-user shared total.
+    expect(mockPrisma.article.count).toHaveBeenCalledTimes(5);
   });
 
   it("aggregates inventory value (total, at-risk, by location)", async () => {
