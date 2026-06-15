@@ -591,8 +591,8 @@ Key files:
 ## Admin
 
 - `requireRole("ADMIN")` everywhere under `/api/admin/*`.
-- Admin UI in `apps/web/src/components/admin/AdminUsers.tsx`. Three
-  tabs: Dashboard / Users / Audit log.
+- Admin UI in `apps/web/src/components/admin/AdminUsers.tsx`. Five
+  tabs: Dashboard / Users / Features / Audit log / Jobs.
 - User row actions: inline role edit (last-admin protection in a
   serializable tx), reset password (bumps tokenVersion), force-logout
   (also bumps tokenVersion), delete user. The last-admin guards re-read
@@ -601,6 +601,51 @@ Key files:
 - Cursor-paginated audit log under `/api/admin/audit-log`. Action union
   is in `apps/api/src/modules/audit/audit.service.ts` — add new strings
   there before logging them.
+
+## Feature gating (admin-controlled, role-based + temp grants)
+
+Admins control which role each named feature requires, overriding the
+hardcoded defaults. **POWER_USER role IS the paywall** — there is no
+separate paywall flag; gating a feature at POWER_USER means "paid". ADMIN
+inherits everything via the role hierarchy (`roleAtLeast`).
+
+- **Models** (`apps/api/prisma/schema.prisma`): `FeatureFlag` (one row per
+  overridden feature, `featureKey` unique + `requiredRole`) and
+  `FeatureTempGrant` (time-bounded `expiresAt`, optional `note`). An absent
+  `FeatureFlag` row means "use the coded default" — rows only exist for
+  overrides.
+- **Service** (`apps/api/src/modules/features/feature.service.ts`):
+  `FEATURE_KEYS` + `DEFAULTS` are the source of truth. Defaults:
+  `cmd_palette=ADMIN`, `sharing`/`transfers=POWER_USER`, everything else
+  (`reports`, `templates`, `bulk_edit`, `saved_views`, `notifications`,
+  `calendar_feed`, `csv_import`, `csv_export`) `=USER`. A **60-second
+  process-level snapshot cache** (`getSnapshot`) holds both tables so gated
+  requests don't hit the DB each time; admin writes call `invalidateCache()`
+  so changes land within one request cycle, not after the TTL.
+- **Access rule** (identical in `getAccessMap` and `requireFeature`): allow
+  if `roleAtLeast(role, required)` **or** (`role === "USER"` and an active
+  temp grant exists for the key). Temp grants are the "let a free user try a
+  paid feature until date X" lever — they only ever lift USER-role accounts.
+- **`requireFeature(key)` middleware** replaces `requireRole("POWER_USER")`
+  on all sharing + transfer routes (`shares/`, `shared/`,
+  `articles/article.share.routes.ts`, `articles/transfer.routes.ts`,
+  `articles/article.routes.ts` bulk-share). Runs **after** `authGuard`
+  (reads `req.user.role`).
+- **Admin endpoints** (`admin.routes.ts`): `GET /api/admin/features`
+  (flags + active grants), `PUT /api/admin/features/:key` (set required
+  role), `POST /api/admin/features/grants`, `DELETE
+  /api/admin/features/grants/:id`. Each write calls `invalidateCache()`.
+- **`GET /api/features`** returns the caller's `{ key: boolean }` access map.
+- **Web**: `FeatureProvider` (`apps/web/src/features/features.tsx`) is
+  mounted in `main.tsx` **above `<App />`** so `App` itself can call
+  `useFeature()`. It fetches the map once on mount; `App` calls its
+  `refresh()` after login, logout, and Stripe role changes (the mount fetch
+  fires while still logged out on a fresh login, so without the refresh the
+  map would stay all-false until reload). `useFeature(key)` returns a bool;
+  `useFeatures()` exposes the full map + `refresh`. Route guards, nav
+  visibility (`visibleNavItems(role, features)`), and component gates all
+  read from it. `AdminFeaturesTab` calls `refresh()` after each save so the
+  admin's own session reflects the change immediately.
 
 ## PWA
 
@@ -698,6 +743,9 @@ Key files:
   template.routes}.ts`
 - Billing: `apps/api/src/modules/billing/{billing,billing.me,billing.webhook}.routes.ts`
 - Admin: `apps/api/src/modules/admin/admin.routes.ts`
+- Feature gating: `apps/api/src/modules/features/{feature.service,
+  feature.routes}.ts`, web `apps/web/src/features/features.tsx`,
+  admin UI `apps/web/src/components/admin/AdminFeaturesTab.tsx`
 - Web entry: `apps/web/src/main.tsx`, routes in `apps/web/src/App.tsx`
 - App shell: `apps/web/src/components/layout/{AppShell,Sidebar,TopBar,
   MobileDrawer,NotificationBell,RouteChrome}.tsx`, nav model in
