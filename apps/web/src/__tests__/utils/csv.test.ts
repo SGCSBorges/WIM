@@ -34,6 +34,16 @@ describe("parseCSV", () => {
     expect(rows).toEqual([{ name: "X" }]);
   });
 
+  it("treats a stray quote mid-field as a literal (no column shift)", () => {
+    // An unquoted field containing an inch-mark quote must not flip the
+    // parser into quote mode and swallow the following comma delimiter.
+    const rows = parseCSV('name,color\nSony 50",Black\nDrill,Red');
+    expect(rows).toEqual([
+      { name: 'Sony 50"', color: "Black" },
+      { name: "Drill", color: "Red" },
+    ]);
+  });
+
   it("round-trips with toCSV", () => {
     const csv = toCSV(
       [{ name: "A, B", model: "x" }],

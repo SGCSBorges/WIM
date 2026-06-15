@@ -101,7 +101,11 @@ export function parseCSV(text: string): Array<Record<string, string>> {
       } else {
         field += c;
       }
-    } else if (c === '"') {
+    } else if (c === '"' && field === "") {
+      // A quote only opens a quoted field at the field start. A stray quote
+      // mid-field (e.g. an inch mark in `Sony 50"`) is a literal — falling
+      // through to the default branch — so we don't swallow the delimiters
+      // that follow it and shift every subsequent column.
       inQuotes = true;
     } else if (c === ",") {
       pushField();
