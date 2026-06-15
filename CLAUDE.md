@@ -220,6 +220,145 @@ npm --workspace apps/web run test:e2e
 - **Always edit existing files** rather than creating new ones unless
   the new file is genuinely needed.
 
+## Accessibility & UX conventions
+
+These patterns are established throughout the codebase. Apply them
+consistently when adding or editing any frontend component.
+
+### ARIA roles on dynamic messages
+
+- `role="alert"` on **every** `<p>`/`<div>` that shows an API or
+  validation error. Screen readers announce it immediately on mount
+  without focus movement.
+- `role="status"` on success/confirmation messages (e.g. "Shared",
+  "Copied"). Lower urgency than `alert` — screen reader announces on
+  idle.
+- `aria-atomic="true"` on `aria-live` regions whose entire text content
+  changes at once (e.g. the "Page 2 / 5" counter in `Pagination`).
+- `aria-busy={loading}` on `<button>` elements while their async
+  operation is in flight. Pair with a `Loader2` spinner (from
+  `lucide-react`) replacing or joining the icon.
+
+### Input attributes
+
+Always set these on every text `<input>` / `<Input>`:
+
+| Context | `inputMode` | `autoComplete` | `autoCapitalize` | `spellCheck` |
+|---|---|---|---|---|
+| Email field | `"email"` | `"email"` | `"none"` | `false` |
+| New password | — | `"new-password"` | — | — |
+| Current password | — | `"current-password"` | — | — |
+| TOTP / OTP code | `"numeric"` | `"one-time-code"` | — | — |
+| Price / duration / count | `"numeric"` | — | — | — |
+| Search box | `"search"` | — | — | — |
+
+File inputs used for uploads should carry an `aria-label` describing
+what will be uploaded (e.g. `"Warranty proof document"`).
+
+### Tooltips on truncated text
+
+Any element with a `truncate` (or `line-clamp-*`) class that displays
+**user-provided text** must also carry `title={value}` so the full
+string is readable on hover and by AT. Applies to article names, tag
+names, file names, job names, alert subjects, etc.
+
+### Table headers
+
+Every `<th>` in a data table must have `scope="col"` (column header) or
+`scope="row"` (row header). The `scope` attribute is what makes a `<th>`
+more than a bold `<td>` for screen readers.
+
+### Icon-only status cells
+
+When a table or list cell uses an icon or symbol (✓/✕, coloured dot,
+etc.) to convey status, wrap it as:
+
+```tsx
+<span aria-hidden="true">{icon}</span>
+<span className="sr-only">{t("accessibleLabel")}</span>
+```
+
+Add the `sr-only` translation key to `translations.extras.ts` for all
+five languages.
+
+### Character counters on textareas
+
+Every `<Textarea>` (or `<textarea>`) that has a `maxLength` must show a
+live counter directly below it:
+
+```tsx
+<p className="text-right text-xs ui-text-muted tabular-nums">
+  {value.length} / {maxLength}
+</p>
+```
+
+Use `tabular-nums` so the counter doesn't shift layout as digits change.
+
+### No `autoFocus` prop — use a ref instead
+
+`jsx-a11y/no-autofocus` is active in the ESLint config. Use
+`useRef` + `useEffect` with `setTimeout(0)` to focus after mount:
+
+```tsx
+const ref = useRef<HTMLInputElement>(null);
+useEffect(() => {
+  if (condition) setTimeout(() => ref.current?.focus(), 0);
+}, [condition]);
+<input ref={ref} ... />
+```
+
+### `useId()` for label/control association
+
+Components that render in **more than one place** (e.g.
+`LanguageThemeSelector` appears in TopBar, MobileDrawer, and LoginForm)
+must use `useId()` from React for their label `htmlFor`/`id` pairs
+instead of static strings — otherwise the DOM contains duplicate ids.
+
+### Skeleton during loading, not null
+
+When a section fetches data before it can render, show a skeleton
+placeholder (`animate-pulse` rows or boxes) rather than returning
+`null` or nothing. This prevents layout shift and tells users content
+is loading. See `SecuritySection` and `NeedsAttention` for reference.
+
+### Download-success feedback
+
+After a successful file download, briefly swap the download icon for a
+`Check` icon (import both from `lucide-react`) for ~2 seconds using a
+`downloaded` boolean state and `setTimeout`. This confirms to the user
+that the action completed.
+
+```tsx
+const [downloaded, setDownloaded] = useState(false);
+// after success:
+setDownloaded(true);
+setTimeout(() => setDownloaded(false), 2000);
+// in JSX:
+{downloaded ? <Check ... /> : <Download ... />}
+```
+
+### Textarea for multi-line content, not Input
+
+Any field that can hold more than one line of user text (notes, claim
+descriptions, template descriptions) must use `<Textarea rows={N}>`
+from the design system, never `<Input type="text">`. A single-line
+input becomes unusable at 500–2000 characters.
+
+### Segmented for mutually-exclusive view toggles
+
+Use the `<Segmented>` component (which implements `role="radiogroup"` +
+`role="radio"` with roving tabindex and Arrow/Home/End keyboard nav)
+for any filter that switches between a fixed set of mutually-exclusive
+views. Don't reach for plain `<button>` groups for this pattern.
+
+### CSV parser — quote-open only at field start
+
+The `parseCSV` helper in `apps/web/src/utils/csv.ts` only enters quoted
+mode when the `"` character appears at the very start of a field
+(`field === ""`). A `"` mid-field (e.g. an inch mark in `Sony 50"`) is
+a literal character and must not swallow the delimiter that follows it.
+Preserve this invariant if the parser is ever modified.
+
 ## Warranty lifecycle (renew / extend / history)
 
 - `Garantie` enforces 1:1 with an article (`garantieArticleId` unique).
