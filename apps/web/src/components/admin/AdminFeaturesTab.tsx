@@ -26,10 +26,10 @@ import { getErrorMessage } from "../../utils/error";
 import { Section, Button, Select, Badge } from "../ui";
 import { Skeleton } from "../common/Skeleton";
 
-const ROLE_OPTIONS: { value: RoleName; label: string }[] = [
-  { value: "USER", label: "Everyone (USER+)" },
-  { value: "POWER_USER", label: "Power User+" },
-  { value: "ADMIN", label: "Admin only" },
+const ROLE_OPTION_VALUES: { value: RoleName; labelKey: string }[] = [
+  { value: "USER", labelKey: "admin.features.roleEveryone" },
+  { value: "POWER_USER", labelKey: "admin.features.rolePowerUser" },
+  { value: "ADMIN", labelKey: "admin.features.roleAdminOnly" },
 ];
 
 function roleBadgeTone(role: RoleName): "default" | "warning" | "danger" {
@@ -40,6 +40,10 @@ function roleBadgeTone(role: RoleName): "default" | "warning" | "danger" {
 
 export default function AdminFeaturesTab() {
   const { t } = useI18n();
+  const roleOptions = ROLE_OPTION_VALUES.map((o) => ({
+    value: o.value,
+    label: t(o.labelKey),
+  }));
   const toast = useToast();
   const { refresh: refreshFeatures } = useFeatures();
 
@@ -226,7 +230,7 @@ export default function AdminFeaturesTab() {
                   aria-label={`${t("admin.features.requiredRole")} — ${t(`features.${flag.featureKey}`)}`}
                   className="w-44"
                 >
-                  {ROLE_OPTIONS.map((o) => (
+                  {roleOptions.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
