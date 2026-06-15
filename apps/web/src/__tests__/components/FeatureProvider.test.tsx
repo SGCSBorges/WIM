@@ -23,41 +23,47 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-/** Probe component that surfaces a single flag + a refresh trigger. */
+/** Probe component that surfaces a single flag, the loaded flag + a refresh. */
 function Probe() {
   const canShare = useFeature("sharing");
-  const { refresh } = useFeatures();
+  const { loaded, refresh } = useFeatures();
   return (
     <div>
       <span data-testid="sharing">{canShare ? "yes" : "no"}</span>
+      <span data-testid="loaded">{loaded ? "yes" : "no"}</span>
       <button onClick={() => void refresh()}>refresh</button>
     </div>
   );
 }
 
 describe("FeatureProvider / useFeature", () => {
-  it("starts all-false then reflects the fetched map", async () => {
+  it("starts all-false + not-loaded, then reflects the fetched map", async () => {
     getAccessMap.mockResolvedValue({ sharing: true });
     render(
       <FeatureProvider>
         <Probe />
       </FeatureProvider>
     );
-    // First paint is the all-false default, before the fetch resolves.
+    // First paint is the all-false default + loaded=false, before the fetch.
     expect(screen.getByTestId("sharing").textContent).toBe("no");
+    expect(screen.getByTestId("loaded").textContent).toBe("no");
     await waitFor(() =>
       expect(screen.getByTestId("sharing").textContent).toBe("yes")
     );
+    expect(screen.getByTestId("loaded").textContent).toBe("yes");
   });
 
-  it("falls back to all-false when the fetch rejects (logged out)", async () => {
+  it("marks loaded even when the fetch rejects (logged out)", async () => {
     getAccessMap.mockRejectedValue(new Error("401"));
     render(
       <FeatureProvider>
         <Probe />
       </FeatureProvider>
     );
-    await waitFor(() => expect(getAccessMap).toHaveBeenCalled());
+    // loaded must flip true on the error path too, or route guards hang.
+    await waitFor(() =>
+      expect(screen.getByTestId("loaded").textContent).toBe("yes")
+    );
     expect(screen.getByTestId("sharing").textContent).toBe("no");
   });
 

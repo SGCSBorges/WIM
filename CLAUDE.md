@@ -636,7 +636,10 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 - **`requireFeature(key)` middleware** gates every toggleable feature's
   backend route(s), runs **after** `authGuard` (reads `req.user.role`):
   `sharing` (`shares/`, `shared/`, `article.share.routes.ts`,
-  `article.routes.ts` bulk-share), `transfers` (`transfer.routes.ts`),
+  `article.routes.ts` bulk-share), `transfers` (`transfer.routes.ts` —
+  push/pull/accept + the list endpoints; **reject and revoke stay on
+  `authGuard` only** so a pending transfer can always be declined/canceled
+  even if the feature is later restricted, mirroring the calendar DELETE),
   `reports` (`reports/report.routes.ts`), `templates`
   (`articles/template.routes.ts`), `bulk_edit` (`/articles/bulk-update`),
   `saved_views` (`saved-views/`), `notifications` (`/alerts/notifications` +
@@ -659,15 +662,25 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   `refresh()` after login, logout, and Stripe role changes (the mount fetch
   fires while still logged out on a fresh login, so without the refresh the
   map would stay all-false until reload). `useFeature(key)` returns a bool;
-  `useFeatures()` exposes the full map + `refresh`. Route guards, nav
-  visibility (`visibleNavItems(role, features)` — gates `reports` via the
-  `NavItem.feature` field), and component gates read from it: the Reports
-  route, the notification bell (`TopBar`), the CSV import/export + saved-views
-  + bulk-edit affordances (`ArticlesList`/`BulkActionBar`), and the
-  Profile calendar-feed section all hide when their flag is off. The provider
-  resets to all-false on a failed fetch so a logout clears granted access.
-  `AdminFeaturesTab` calls `refresh()` after each save so the admin's own
-  session reflects the change immediately.
+  `useFeatures()` exposes the full map + a **`loaded`** flag + `refresh`. The
+  `loaded` flag is load-bearing: the all-false default is in effect until
+  `/api/features` resolves, so a feature-gated **route** must NOT redirect on
+  it — `App`'s `gatedRoute()` renders the route skeleton until `loaded`, then
+  allows or `<Navigate>`s. Without this, an entitled user opening
+  `/reports`/`/transfers`/`/sharing` directly would be bounced to `/` by the
+  load-time all-false map (a `replace` that can't be undone). `loaded` flips
+  true on **both** the success and error paths (a persistent 401 must release
+  the guard to the redirect, not hang on the skeleton). Likewise data fetches
+  keyed on a flag (e.g. `loadSavedViews`) live in an effect that depends on the
+  flag, not a mount-only effect, so they fire once the flag resolves. Nav
+  visibility falls back to role-based (`visibleNavItems(role, undefined)`)
+  until `loaded` to avoid share/reports items flickering. Component gates: the
+  Reports route + nav item (via `NavItem.feature`), the notification bell
+  (`TopBar`), the CSV import/export + saved-views + bulk-edit affordances
+  (`ArticlesList`/`BulkActionBar`), and the Profile calendar-feed section all
+  hide when their flag is off. The provider resets to all-false on a failed
+  fetch so a logout clears granted access. `AdminFeaturesTab` calls `refresh()`
+  after each save so the admin's own session reflects the change immediately.
 
 ## PWA
 

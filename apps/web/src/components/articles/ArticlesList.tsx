@@ -508,7 +508,6 @@ const ArticlesList: React.FC = () => {
   useEffect(() => {
     fetchLocations();
     loadTags();
-    if (canSavedViews) loadSavedViews();
     // Load the user's display currency for the value column (best-effort).
     profileAPI
       .getMe()
@@ -518,6 +517,14 @@ const ArticlesList: React.FC = () => {
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Saved views load in their own effect keyed on the feature flag: it
+  // resolves asynchronously after mount, so a mount-only fetch would skip an
+  // entitled user (flag still false at mount) and leave the list empty.
+  useEffect(() => {
+    if (canSavedViews) loadSavedViews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSavedViews]);
 
   useEffect(() => {
     fetchArticles();

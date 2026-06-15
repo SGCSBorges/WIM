@@ -39,7 +39,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
   const { theme, setTheme } = useTheme();
   const { density, setDensity } = usePreferences();
   const canUsePalette = useFeature("cmd_palette");
-  const { features } = useFeatures();
+  const { features, loaded: featuresLoaded } = useFeatures();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(
     () => localStorage.getItem(COLLAPSE_KEY) === "1"
@@ -57,9 +57,12 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
       return !c;
     });
 
+  // Until the feature map loads, fall back to role-based visibility (passing
+  // undefined) so a POWER_USER/ADMIN doesn't see share/reports nav items
+  // flicker out and back in. Once loaded, the live map is authoritative.
   const navItems = useMemo(
-    () => visibleNavItems(role, features),
-    [role, features]
+    () => visibleNavItems(role, featuresLoaded ? features : undefined),
+    [role, features, featuresLoaded]
   );
 
   // First-letter prefix → nav target. We resolve at hotkey time so two-key

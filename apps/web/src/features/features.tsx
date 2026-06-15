@@ -44,18 +44,24 @@ const EMPTY: FeatureMap = {
 
 interface FeatureContextValue {
   features: FeatureMap;
+  /** False until the first /api/features fetch settles (success OR failure).
+   *  Consumers that would otherwise redirect on a denied flag must wait for
+   *  this so the all-false default during load isn't mistaken for "denied". */
+  loaded: boolean;
   canAccess: (key: FeatureKey) => boolean;
   refresh: () => Promise<void>;
 }
 
 const FeatureContext = createContext<FeatureContextValue>({
   features: EMPTY,
+  loaded: false,
   canAccess: () => false,
   refresh: async () => {},
 });
 
 export function FeatureProvider({ children }: { children: React.ReactNode }) {
   const [features, setFeatures] = useState<FeatureMap>(EMPTY);
+  const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -66,6 +72,10 @@ export function FeatureProvider({ children }: { children: React.ReactNode }) {
       // logout clears any previously-granted access. Callers re-invoke
       // refresh() after a successful login to repopulate.
       setFeatures(EMPTY);
+    } finally {
+      // Mark loaded on both paths — a persistent 401 must still release the
+      // route guards (to the redirect) rather than hang on the skeleton.
+      setLoaded(true);
     }
   }, []);
 
@@ -79,7 +89,9 @@ export function FeatureProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <FeatureContext.Provider value={{ features, canAccess, refresh: load }}>
+    <FeatureContext.Provider
+      value={{ features, loaded, canAccess, refresh: load }}
+    >
       {children}
     </FeatureContext.Provider>
   );

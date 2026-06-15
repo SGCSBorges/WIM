@@ -351,7 +351,7 @@ export default function App() {
   const canShare = useFeature("sharing");
   const canTransfer = useFeature("transfers");
   const canReports = useFeature("reports");
-  const { refresh: refreshFeatures } = useFeatures();
+  const { loaded: featuresLoaded, refresh: refreshFeatures } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
 
@@ -492,15 +492,27 @@ export default function App() {
     }
   };
 
-  const sharingRoute = canShare ? (
+  // Feature-gated routes must not redirect on the all-false default that's in
+  // effect until /api/features resolves — an entitled user landing directly on
+  // the URL would be bounced to "/" (a `replace` that can't be undone). Hold on
+  // the route skeleton until the map is loaded, then allow or redirect.
+  const gatedRoute = (allowed: boolean, element: React.ReactNode) =>
+    !featuresLoaded ? (
+      <RouteFallbackSkeleton />
+    ) : allowed ? (
+      element
+    ) : (
+      <Navigate to="/" replace />
+    );
+
+  const sharingRoute = gatedRoute(
+    canShare,
     <div className="space-y-6">
       <MySharedArticlesView />
       <AcceptInviteForm />
       <SharesList />
       <SharedArticlesView />
     </div>
-  ) : (
-    <Navigate to="/" replace />
   );
 
   return (
@@ -547,16 +559,14 @@ export default function App() {
           <Route path="/alerts" element={<AlertsView />} />
           <Route
             path="/reports"
-            element={canReports ? <ReportsView /> : <Navigate to="/" replace />}
+            element={gatedRoute(canReports, <ReportsView />)}
           />
           <Route path="/profile" element={<ProfileView />} />
           <Route path="/sharing" element={sharingRoute} />
           <Route path="/sharing/accept" element={sharingRoute} />
           <Route
             path="/transfers"
-            element={
-              canTransfer ? <TransfersView /> : <Navigate to="/" replace />
-            }
+            element={gatedRoute(canTransfer, <TransfersView />)}
           />
           <Route
             path="/admin"

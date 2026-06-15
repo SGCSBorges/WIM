@@ -148,10 +148,14 @@ router.post(
 );
 
 // POST /api/articles/transfers/:token/reject
+// Declining a transfer addressed to you is a cleanup action — left on
+// authGuard only (like the calendar feed DELETE) so a pending request can't
+// get stuck un-declinable if an admin restricts the `transfers` feature after
+// it was created. The service still enforces that the caller is the right
+// party for this token.
 router.post(
   "/transfers/:token/reject",
   authGuard,
-  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const { token } = req.params;
@@ -179,10 +183,12 @@ router.post(
 );
 
 // DELETE /api/articles/transfers/:id — revoke (initiator cancels)
+// Canceling your own pending transfer is also a cleanup action — authGuard
+// only, so the initiator can always withdraw it even if the feature was
+// restricted in the meantime. Ownership is enforced in revokeTransfer.
 router.delete(
   "/transfers/:id",
   authGuard,
-  requireFeature("transfers"),
   async (req: AuthRequest, res, next) => {
     try {
       const id = idParam.parse(req.params.id);
