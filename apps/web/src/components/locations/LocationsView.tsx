@@ -20,6 +20,10 @@ type LocationRow = {
   name: string;
   description?: string | null;
   totalValue?: number;
+  // Live article count, returned by GET /api/locations via Prisma `_count`.
+  // Reading it from the list response avoids an N+1 (one extra request per
+  // location just to fetch this number).
+  _count?: { articles: number };
 };
 
 export default function LocationsView() {
@@ -27,7 +31,6 @@ export default function LocationsView() {
   const toast = useToast();
 
   const [items, setItems] = useState<LocationRow[]>([]);
-  const [counts, setCounts] = useState<Record<number, number>>({});
   const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,36 +45,18 @@ export default function LocationsView() {
   const [busy, setBusy] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
-  const refreshCounts = useCallback(async (rows: LocationRow[]) => {
-    const entries = await Promise.all(
-      rows.map(async (r) => {
-        try {
-          const res = await locationsAPI.listArticles(r.locationId, {
-            page: 1,
-            limit: 1,
-          });
-          return [r.locationId, res.total ?? 0] as const;
-        } catch {
-          return [r.locationId, -1] as const;
-        }
-      })
-    );
-    setCounts(Object.fromEntries(entries));
-  }, []);
-
   const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = (await locationsAPI.getAll()) as LocationRow[];
       setItems(data);
-      void refreshCounts(data);
     } catch (e) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
       setLoading(false);
     }
-  }, [t, refreshCounts]);
+  }, [t]);
 
   useEffect(() => {
     fetchAll();
@@ -257,7 +242,7 @@ export default function LocationsView() {
             <ul className="divide-y ui-divider">
               {items.map((l) => {
                 const isEditing = editingId === l.locationId;
-                const articleCount = counts[l.locationId];
+                const articleCount = l._count?.articles;
                 return (
                   <li key={l.locationId} className="py-3 first:pt-0 last:pb-0">
                     {!isEditing ? (
