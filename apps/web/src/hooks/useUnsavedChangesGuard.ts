@@ -28,7 +28,11 @@ export function useUnsavedChangesGuard(dirty: boolean): void {
     // Intercept same-origin link clicks (covers React Router <Link> which
     // renders as <a href="...">). Capture phase so it runs before the router.
     const onLinkClick = (e: MouseEvent) => {
-      const target = (e.target as Element).closest("a");
+      // This is a capture-phase listener on `document`, so it fires for every
+      // click while dirty — including ones whose target isn't an Element
+      // (e.g. a text node). Guard before calling `.closest`, or it throws.
+      if (!(e.target instanceof Element)) return;
+      const target = e.target.closest("a");
       if (!target) return;
       const href = target.getAttribute("href");
       if (!href) return;
