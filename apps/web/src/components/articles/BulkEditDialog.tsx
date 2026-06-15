@@ -69,6 +69,18 @@ export default function BulkEditDialog({
     setBusy(true);
     setError(null);
     try {
+      // Guard the empty "Set to…" footgun: Number("") is 0, so a blank
+      // numeric field set to "set" would silently write 0 across the whole
+      // selection (zeroing prices → corrupting depreciation/portfolio totals);
+      // a blank string field would write "". Make the user enter a value or
+      // pick Skip/Clear instead.
+      const emptySet = [price, depreciation, brand, serial].some(
+        (s) => s.op === "set" && s.value.trim() === ""
+      );
+      if (emptySet) {
+        setError(t("bulkEdit.errorEmptySet"));
+        return;
+      }
       const fields: Record<string, number | string | null> = {};
       const p = numericField(price);
       if (p !== undefined) fields.purchasePrice = p;

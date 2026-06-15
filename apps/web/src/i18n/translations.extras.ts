@@ -637,6 +637,8 @@ export const extras = {
     "bulkEdit.apply": "Apply changes",
     "bulkEdit.success": "Updated {count} article(s).",
     "bulkEdit.errorNoFields": "Pick at least one field to change.",
+    "bulkEdit.errorEmptySet":
+      "Enter a value for every field you set, or switch it to Skip or Clear.",
     "template.pickLabel": "Start from template",
     "template.pickPlaceholder": "— none —",
     "template.save": "Save as template",
@@ -1387,6 +1389,8 @@ export const extras = {
     "bulkEdit.apply": "Appliquer",
     "bulkEdit.success": "{count} article(s) mis à jour.",
     "bulkEdit.errorNoFields": "Choisissez au moins un champ à modifier.",
+    "bulkEdit.errorEmptySet":
+      "Saisissez une valeur pour chaque champ défini, ou passez-le sur Ignorer ou Effacer.",
     "template.pickLabel": "Partir d'un modèle",
     "template.pickPlaceholder": "— aucun —",
     "template.save": "Enregistrer comme modèle",
@@ -2133,6 +2137,8 @@ export const extras = {
     "bulkEdit.apply": "Aplicar",
     "bulkEdit.success": "{count} artigo(s) actualizado(s).",
     "bulkEdit.errorNoFields": "Escolha pelo menos um campo a alterar.",
+    "bulkEdit.errorEmptySet":
+      "Introduza um valor em cada campo definido, ou mude-o para Ignorar ou Limpar.",
     "template.pickLabel": "Começar a partir de um modelo",
     "template.pickPlaceholder": "— nenhum —",
     "template.save": "Guardar como modelo",
@@ -2888,6 +2894,8 @@ export const extras = {
     "bulkEdit.apply": "Aplicar cambios",
     "bulkEdit.success": "Actualizado(s) {count} artículo(s).",
     "bulkEdit.errorNoFields": "Elige al menos un campo para cambiar.",
+    "bulkEdit.errorEmptySet":
+      "Introduce un valor en cada campo que configures, o cámbialo a Omitir o Borrar.",
     "template.pickLabel": "Empezar desde una plantilla",
     "template.pickPlaceholder": "— ninguna —",
     "template.save": "Guardar como plantilla",
@@ -3635,6 +3643,8 @@ export const extras = {
     "bulkEdit.apply": "Wijzigingen toepassen",
     "bulkEdit.success": "{count} artikel(en) bijgewerkt.",
     "bulkEdit.errorNoFields": "Kies ten minste één veld om te wijzigen.",
+    "bulkEdit.errorEmptySet":
+      "Voer een waarde in voor elk veld dat je instelt, of zet het op Overslaan of Wissen.",
     "template.pickLabel": "Beginnen vanaf sjabloon",
     "template.pickPlaceholder": "— geen —",
     "template.save": "Opslaan als sjabloon",
