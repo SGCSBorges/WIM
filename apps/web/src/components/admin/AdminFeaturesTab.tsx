@@ -3,7 +3,14 @@
  * feature, and create time-bounded access grants so USER-role accounts can
  * temporarily access POWER_USER-gated features.
  */
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Shield, Plus, Trash2, RotateCw, Check } from "lucide-react";
 import {
   adminFeaturesAPI,
@@ -85,6 +92,25 @@ export default function AdminFeaturesTab() {
     }
   }, [showGrantForm]);
 
+  // Only POWER_USER-gated features can receive a temp grant (granting USER
+  // access to an already-USER feature is pointless; ADMIN-only features stay
+  // admin-only regardless — the API rejects both).
+  const grantableFeatures = useMemo(
+    () => flags.filter((f) => f.requiredRole === "POWER_USER"),
+    [flags]
+  );
+
+  // Keep the form's selected feature pointing at a real grantable option.
+  // Without this, changing a feature's role out of POWER_USER would leave the
+  // controlled <Select> showing the first option while state held a stale key
+  // — submitting then POSTs a key the backend rejects with a 400.
+  useEffect(() => {
+    if (grantableFeatures.length === 0) return;
+    if (!grantableFeatures.some((f) => f.featureKey === grantFeature)) {
+      setGrantFeature(grantableFeatures[0].featureKey);
+    }
+  }, [grantableFeatures, grantFeature]);
+
   const handleFlagChange = async (key: FeatureKey, requiredRole: RoleName) => {
     setSavingKey(key);
     try {
@@ -156,13 +182,6 @@ export default function AdminFeaturesTab() {
       </Section>
     );
   }
-
-  // Only show POWER_USER-gated features in the temp grants form (granting
-  // USER access to already-USER features is pointless, ADMIN-only features
-  // stay admin-only regardless of grants).
-  const grantableFeatures = flags.filter(
-    (f) => f.requiredRole === "POWER_USER"
-  );
 
   return (
     <div className="space-y-6">
