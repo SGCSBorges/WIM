@@ -133,6 +133,13 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
         onSubmit={handleSubmit}
         onChange={() => setDirty(true)}
         className="space-y-6"
+        // Let validateForm() own all validation. Without this, the number
+        // input's min/max constraints trigger native HTML5 validation that
+        // silently blocks submit for out-of-range durations — so our own
+        // localized, styled role="alert" messages (e.g. "Duration cannot
+        // exceed 120 months") never render and the user gets an un-localized
+        // native browser bubble instead.
+        noValidate
       >
         {/* Warranty Name */}
         <div>
