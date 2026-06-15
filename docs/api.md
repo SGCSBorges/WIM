@@ -11,15 +11,18 @@ deployment quirks, and a triage section for the common confusions.
 
 ## Authentication
 
-The API uses **JWT in an `httpOnly` cookie**, not `Authorization: Bearer`.
-That's important to understand because it dictates how a client must call
-the API:
+The API authenticates with a **JWT**, accepted either as an `httpOnly`
+`wim_token` cookie (the web app) **or** an `Authorization: Bearer <jwt>`
+header (API clients). The auth middleware reads the cookie first and falls
+back to the header, so both work:
 
 - **Browsers (the web app)**: just `fetch(..., { credentials: "include" })`
   — the cookie rides every request automatically. No client-side token
   handling. The web app's `services/api.ts` does this for you.
-- **External tools (curl, Postman)**: log in, capture the `Set-Cookie`,
-  replay it on subsequent requests. There is **no** Bearer-token mode.
+- **External tools (curl, Postman)**: log in, then either replay the
+  captured `Set-Cookie` on subsequent requests, **or** lift the JWT value
+  from that cookie and send it as `Authorization: Bearer <jwt>`. Login is
+  the only way to mint a token; there is no separate API-key flow.
 
 The cookie carries a JWT with `sub` (userId), `role`, `jti` (unique id for
 the Redis denylist), and `v` (per-user `tokenVersion`). On every protected
@@ -34,9 +37,13 @@ request the API:
 
 ### CSRF
 
-Mutating requests (POST/PUT/PATCH/DELETE) also require an `Origin` or
-`Referer` header matching an allowed origin (`CORS_ORIGIN` env). Browsers
-attach both automatically; cross-origin scripts can't forge them.
+Mutating requests (POST/PUT/PATCH/DELETE) **that carry the `wim_token`
+cookie** also require an `Origin` or `Referer` header matching an allowed
+origin (`CORS_ORIGIN` env). Browsers attach both automatically; cross-origin
+scripts can't forge them. This check is **skipped for pure Bearer-token
+clients** (no cookie present) — an attacker page can't forge an
+`Authorization` header, so those requests bear no CSRF risk and don't need
+an `Origin` header.
 
 ### Quick smoke (curl)
 
@@ -215,6 +222,34 @@ same response. An admin changing a user's email via
   by **name**, not by id, so a template survives a rename or a live row
   delete; the form resolves names → ids at apply time.
 
+## Feature gating
+
+Admins control which **role** each named feature requires, overriding the
+hardcoded defaults. POWER_USER is the paywall — gating a feature at
+POWER_USER means "paid"; ADMIN inherits everything via the role hierarchy.
+
+- `GET /api/features` — the caller's `{ [featureKey]: boolean }` access map.
+  The web app fetches this once and re-fetches after login / logout / a
+  Stripe role change. Keys: `cmd_palette`, `sharing`, `transfers`,
+  `reports`, `templates`, `bulk_edit`, `saved_views`, `notifications`,
+  `calendar_feed`, `csv_import`, `csv_export`.
+- `GET /api/admin/features` — current flag overrides + active temp grants.
+- `PUT /api/admin/features/:key` — `{ requiredRole }` sets the minimum role
+  for a feature (absent row = coded default).
+- `POST /api/admin/features/grants` — `{ featureKey, expiresAt, note? }`
+  time-bounds a USER's access to a **POWER_USER**-gated feature (rejected
+  for any key whose effective role isn't POWER_USER). `DELETE
+  /api/admin/features/grants/:id` revokes one.
+
+Server-side, `requireFeature(key)` gates each toggleable feature's route(s)
+after `authGuard`; a denied call returns **403**. A 60-second snapshot cache
+backs both `GET /api/features` and the middleware via one shared `isAllowed`
+helper, so the client map and the server gate can never disagree. Admin
+writes invalidate the cache immediately. The cleanup actions that must stay
+reachable when a feature is later restricted — transfer **reject/revoke**
+and the calendar feed **DELETE** + public ICS read — deliberately stay on
+`authGuard` only.
+
 ## Background jobs
 
 The API runs BullMQ workers in the same process. Three repeatable schedules
@@ -247,9 +282,12 @@ repo root has the canonical setup notes.
 
 ### "Unauthorized" when calling from curl/Postman
 
-You're probably sending `Authorization: Bearer …`. This API doesn't read
-that header. Log in to get the `Set-Cookie`, then send the cookie on
-subsequent requests — see the smoke example above.
+Both `Authorization: Bearer <jwt>` and the `wim_token` cookie are accepted,
+so check the token itself: it must be a JWT minted by `POST /api/auth/login`
+(not expired, not revoked) and sent verbatim. A common slip is sending the
+literal cookie string (`wim_token=…`) as the Bearer value instead of just
+the JWT. If you'd rather use the cookie, capture the `Set-Cookie` from login
+and replay it — see the smoke example above.
 
 ### "Token manquant" / 401 opening an attachment URL
 
