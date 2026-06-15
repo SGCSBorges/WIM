@@ -19,6 +19,7 @@ import {
   formatDate as fmtDate,
   formatDateTime as fmtDateTime,
 } from "../utils/date";
+import { safeGetItem, safeSetItem } from "../utils/safeStorage";
 
 export type Density = "comfortable" | "compact";
 
@@ -37,14 +38,12 @@ function isDateFormat(v: unknown): v is DateFormatPref {
 }
 
 function detectDateFormat(): DateFormatPref {
-  const saved = localStorage.getItem(DATE_KEY);
+  const saved = safeGetItem(DATE_KEY);
   return isDateFormat(saved) ? saved : "system";
 }
 
 function detectDensity(): Density {
-  return localStorage.getItem(DENSITY_KEY) === "compact"
-    ? "compact"
-    : "comfortable";
+  return safeGetItem(DENSITY_KEY) === "compact" ? "compact" : "comfortable";
 }
 
 type PreferencesContextValue = {
@@ -72,7 +71,7 @@ export function PreferencesProvider({
 
   const setDateFormat = (f: DateFormatPref) => {
     _setDateFormat(f);
-    localStorage.setItem(DATE_KEY, f);
+    safeSetItem(DATE_KEY, f);
     if (authAPI.getRole()) {
       void profileAPI.updatePreferences({ dateFormat: f }).catch(() => {});
     }
@@ -81,12 +80,12 @@ export function PreferencesProvider({
   const hydrateDateFormat = (f: string) => {
     if (!isDateFormat(f)) return;
     _setDateFormat(f);
-    localStorage.setItem(DATE_KEY, f);
+    safeSetItem(DATE_KEY, f);
   };
 
   const setDensity = (d: Density) => {
     _setDensity(d);
-    localStorage.setItem(DENSITY_KEY, d);
+    safeSetItem(DENSITY_KEY, d);
   };
 
   useEffect(() => {

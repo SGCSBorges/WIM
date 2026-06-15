@@ -14,6 +14,7 @@ import React, {
   useState,
 } from "react";
 import { authAPI, profileAPI } from "../services/api";
+import { safeGetItem, safeSetItem } from "../utils/safeStorage";
 
 export type Theme = "light" | "dark" | "ocean" | "cyber" | "sunset";
 
@@ -42,7 +43,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "wim.theme";
 
 function detectInitialTheme(): Theme {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = safeGetItem(STORAGE_KEY);
   if (isTheme(saved)) {
     return saved;
   }
@@ -91,7 +92,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (t: Theme) => {
     _setTheme(t);
-    localStorage.setItem(STORAGE_KEY, t);
+    safeSetItem(STORAGE_KEY, t);
     // Persist to the account so the choice follows across devices. Gated on
     // an in-memory role (only set once authenticated) so logged-out toggles
     // stay local; best-effort — a failed sync never blocks the UI.
@@ -103,7 +104,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const hydrateTheme = (t: string) => {
     if (!isTheme(t)) return;
     _setTheme(t);
-    localStorage.setItem(STORAGE_KEY, t);
+    safeSetItem(STORAGE_KEY, t);
   };
 
   useEffect(() => {

@@ -27,6 +27,7 @@ import React, {
 import { Language, translations } from "./translations";
 import { extras, ExtrasKey } from "./translations.extras";
 import { authAPI, profileAPI } from "../services/api";
+import { safeGetItem, safeSetItem } from "../utils/safeStorage";
 
 // Derived from the English dict so it stays a single source of truth.
 // Re-exported for components that build keys via template strings — they
@@ -67,7 +68,7 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 const STORAGE_KEY = "wim.language";
 
 function detectInitialLanguage(): Language {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = safeGetItem(STORAGE_KEY);
   if (isLanguage(saved)) return saved;
 
   const nav = (navigator.language || "en").toLowerCase();
@@ -85,7 +86,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     _setLanguage(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
+    safeSetItem(STORAGE_KEY, lang);
     if (authAPI.getRole()) {
       void profileAPI.updatePreferences({ language: lang }).catch(() => {});
     }
@@ -94,7 +95,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const hydrateLanguage = (lang: string) => {
     if (!isLanguage(lang)) return;
     _setLanguage(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
+    safeSetItem(STORAGE_KEY, lang);
   };
 
   // Keep <html lang> in sync with the active language. The document ships
