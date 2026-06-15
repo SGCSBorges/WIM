@@ -639,3 +639,29 @@ model UserSession {
   @@index([userId, revokedAt])
   @@index([userId, lastActiveAt(sort: Desc)])
 }
+
+// Admin-configurable feature flags. One row per feature key; when a row is
+// absent the service falls back to a hardcoded default. The requiredRole sets
+// the minimum role: USER = everyone, POWER_USER = subscription paywall,
+// ADMIN = admin-only.
+model FeatureFlag {
+  id           Int      @id @default(autoincrement())
+  featureKey   String   @unique @db.VarChar(60)
+  requiredRole Role     @default(USER)
+  updatedAt    DateTime @updatedAt
+}
+
+// A time-bounded window where USER-role accounts can access a feature that is
+// normally POWER_USER-gated. If ANY active grant covers the feature, USER-role
+// users get access until expiresAt. Multiple grants can coexist (e.g. when the
+// admin extends the window). Expired rows are retained for audit but ignored
+// by the access check.
+model FeatureTempGrant {
+  id         Int      @id @default(autoincrement())
+  featureKey String   @db.VarChar(60)
+  expiresAt  DateTime
+  note       String?  @db.VarChar(255)
+  createdAt  DateTime @default(now())
+
+  @@index([featureKey, expiresAt])
+}

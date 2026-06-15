@@ -10,6 +10,15 @@ vi.mock("../../services/api", () => ({
     updateUser: vi.fn(),
     forceLogout: vi.fn(),
   },
+  adminFeaturesAPI: {
+    getAll: vi.fn().mockResolvedValue({ flags: [], grants: [] }),
+    setFlag: vi.fn(),
+    createGrant: vi.fn(),
+    deleteGrant: vi.fn(),
+  },
+  featuresAPI: {
+    getAccessMap: vi.fn().mockResolvedValue({}),
+  },
   authAPI: { getRole: vi.fn().mockReturnValue("ADMIN") },
   statisticsAPI: { getAdmin: vi.fn() },
 }));
@@ -59,13 +68,13 @@ function renderAdmin() {
 }
 
 describe("<AdminUsers /> tab semantics", () => {
-  it("renders the four tabs as a WAI-ARIA tablist with aria-selected on the active one", async () => {
+  it("renders the five tabs as a WAI-ARIA tablist with aria-selected on the active one", async () => {
     renderAdmin();
     await waitFor(() => expect(getAdmin).toHaveBeenCalled());
     const tablist = screen.getByRole("tablist");
     expect(tablist).toBeInTheDocument();
     const tabs = screen.getAllByRole("tab");
-    expect(tabs).toHaveLength(4);
+    expect(tabs).toHaveLength(5);
     // Dashboard is the default active tab.
     const dashboard = tabs.find((t) => t.id === "admin-tab-dashboard");
     expect(dashboard?.getAttribute("aria-selected")).toBe("true");

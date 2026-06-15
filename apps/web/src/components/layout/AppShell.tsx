@@ -12,6 +12,7 @@ import { useI18n } from "../../i18n/i18n";
 import { useTheme, type Theme } from "../../theme/theme";
 import { usePreferences } from "../../preferences/preferences";
 import { useHotkeys } from "../../hooks/useHotkeys";
+import { useFeature } from "../../features/features";
 import { articlesAPI } from "../../services/api";
 import { visibleNavItems, type NavItem, type NavKey } from "../../lib/navItems";
 import OfflineBanner from "../common/OfflineBanner";
@@ -37,6 +38,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { density, setDensity } = usePreferences();
+  const canUsePalette = useFeature("cmd_palette");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(
     () => localStorage.getItem(COLLAPSE_KEY) === "1"
@@ -71,7 +73,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
   // available but `c`/`g d`/etc. stay out of the way.
   const hotkeys = useMemo<Record<string, () => void>>(() => {
     const map: Record<string, () => void> = {
-      "mod+k": () => setPaletteOpen(true),
+      ...(canUsePalette ? { "mod+k": () => setPaletteOpen(true) } : {}),
       c: () => navigate("/articles?new=1"),
       "?": () => setShortcutsOpen(true),
     };
@@ -170,6 +172,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
             onToggleMobileNav={() => setMobileNavOpen((o) => !o)}
             onLogout={onLogout}
             onOpenSearch={() => setPaletteOpen(true)}
+            showSearch={canUsePalette}
           />
           <main id="main" className="flex-1">
             <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -187,14 +190,16 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
         toggleRef={toggleRef}
       />
 
-      <CommandPalette
-        open={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-        commands={[...navCommands, ...actionCommands]}
-        search={searchArticles}
-        placeholder={t("cmdk.placeholder")}
-        emptyLabel={t("cmdk.empty")}
-      />
+      {canUsePalette && (
+        <CommandPalette
+          open={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+          commands={[...navCommands, ...actionCommands]}
+          search={searchArticles}
+          placeholder={t("cmdk.placeholder")}
+          emptyLabel={t("cmdk.empty")}
+        />
+      )}
       <ShortcutsHelp
         open={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}

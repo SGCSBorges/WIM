@@ -19,6 +19,7 @@ export interface TopBarProps {
   onToggleMobileNav: () => void;
   onLogout: () => void;
   onOpenSearch: () => void;
+  showSearch?: boolean;
 }
 
 function modKey(): string {
@@ -26,7 +27,7 @@ function modKey(): string {
 }
 
 const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
-  { mobileNavOpen, onToggleMobileNav, onLogout, onOpenSearch },
+  { mobileNavOpen, onToggleMobileNav, onLogout, onOpenSearch, showSearch = true },
   toggleRef
 ) {
   const { t } = useI18n();
@@ -66,21 +67,23 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
 
         <div className="flex-1" />
 
-        <button
-          type="button"
-          onClick={onOpenSearch}
-          aria-label={t("cmdk.open")}
-          className="hidden h-10 items-center gap-2 rounded-lg border border-line bg-surface-muted px-3 text-sm ui-text-muted hover:ui-title sm:inline-flex"
-        >
-          <Search className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden md:inline">{t("cmdk.open")}</span>
-          <span
-            aria-hidden="true"
-            className="ml-2 hidden rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[10px] ui-title md:inline"
+        {showSearch && (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            aria-label={t("cmdk.open")}
+            className="hidden h-10 items-center gap-2 rounded-lg border border-line bg-surface-muted px-3 text-sm ui-text-muted hover:ui-title sm:inline-flex"
           >
-            {modKey()}K
-          </span>
-        </button>
+            <Search className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden md:inline">{t("cmdk.open")}</span>
+            <span
+              aria-hidden="true"
+              className="ml-2 hidden rounded border border-line bg-surface px-1.5 py-0.5 font-mono text-[10px] ui-title md:inline"
+            >
+              {modKey()}K
+            </span>
+          </button>
+        )}
 
         <div className="hidden sm:block">
           <InstallPwaButton />

@@ -27,6 +27,11 @@ import {
 import { passwordSchema } from "../auth/auth.schemas";
 import { ShareService } from "../shares/share.service";
 import { AdminDbService, ImportPayloadSchema } from "./admin.db.service";
+import {
+  FeatureService,
+  FEATURE_KEYS,
+  type FeatureKey,
+} from "../features/feature.service";
 
 const router = Router();
 
@@ -719,6 +724,82 @@ router.get(
   asyncHandler(async (_req, res) => {
     const items = await listFailedJobs(50);
     res.json({ items });
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Feature flags
+// ---------------------------------------------------------------------------
+
+const FeatureFlagBodySchema = z.object({
+  requiredRole: z.enum(["USER", "POWER_USER", "ADMIN"]),
+});
+
+const FeatureTempGrantBodySchema = z.object({
+  featureKey: z.enum([...FEATURE_KEYS] as [FeatureKey, ...FeatureKey[]]),
+  expiresAt: z.coerce.date(),
+  note: z.string().max(255).optional(),
+});
+
+/** GET /api/admin/features — current state of all feature flags + active grants. */
+router.get(
+  "/features",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (_req, res) => {
+    const [flags, grants] = await Promise.all([
+      FeatureService.getAllFlags(),
+      FeatureService.getActiveGrants(),
+    ]);
+    res.json({ flags, grants });
+  })
+);
+
+/** PUT /api/admin/features/:key — update the required role for a feature. */
+router.put(
+  "/features/:key",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    const key = req.params.key;
+    if (!(FEATURE_KEYS as readonly string[]).includes(key)) {
+      throw createHttpError(400, `Unknown feature key: ${key}`);
+    }
+    const { requiredRole } = FeatureFlagBodySchema.parse(req.body);
+    await FeatureService.setFlag(key as FeatureKey, requiredRole);
+    res.json({ featureKey: key, requiredRole });
+  })
+);
+
+/** POST /api/admin/features/grants — create a temporary access grant. */
+router.post(
+  "/features/grants",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    const { featureKey, expiresAt, note } = FeatureTempGrantBodySchema.parse(req.body);
+    if (expiresAt <= new Date()) {
+      throw createHttpError(400, "expiresAt must be in the future");
+    }
+    const grant = await FeatureService.createGrant(featureKey, expiresAt, note);
+    res.status(201).json(grant);
+  })
+);
+
+/** DELETE /api/admin/features/grants/:id — revoke a temporary grant. */
+router.delete(
+  "/features/grants/:id",
+  authGuard,
+  requireRole("ADMIN"),
+  asyncHandler(async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id) || id <= 0) {
+      throw createHttpError(400, "Invalid grant id");
+    }
+    await FeatureService.deleteGrant(id).catch(() => {
+      throw createHttpError(404, "Grant not found");
+    });
+    res.status(204).end();
   })
 );
 

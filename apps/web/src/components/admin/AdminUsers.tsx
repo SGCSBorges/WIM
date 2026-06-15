@@ -1,7 +1,7 @@
 /**
- * Admin panel — four tabs (Dashboard / Users / Audit log / Jobs) wired up
- * as a WAI-ARIA tablist. The Users tab fetches once per activation and
- * supports inline role edit (with last-admin protection), reset password,
+ * Admin panel — five tabs (Dashboard / Users / Features / Audit log / Jobs)
+ * wired up as a WAI-ARIA tablist. The Users tab fetches once per activation
+ * and supports inline role edit (with last-admin protection), reset password,
  * force-logout, delete user, and inventory inspection. ADMIN-only via the
  * route layer (`requireRole("ADMIN")`).
  */
@@ -37,6 +37,7 @@ import ResetPasswordModal from "./ResetPasswordModal";
 import AuditLogTab from "./AuditLogTab";
 import JobsTab from "./JobsTab";
 import AdminDbBackup from "./AdminDbBackup";
+import AdminFeaturesTab from "./AdminFeaturesTab";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import {
   PageHeader,
@@ -125,7 +126,7 @@ export default function AdminUsers() {
   const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<
-    "dashboard" | "users" | "auditLog" | "jobs"
+    "dashboard" | "users" | "features" | "auditLog" | "jobs"
   >("dashboard");
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -336,7 +337,9 @@ export default function AdminUsers() {
         aria-label={t("admin.title")}
         value={activeTab}
         onChange={(id) =>
-          setActiveTab(id as "dashboard" | "users" | "auditLog" | "jobs")
+          setActiveTab(
+            id as "dashboard" | "users" | "features" | "auditLog" | "jobs"
+          )
         }
         tabs={[
           {
@@ -348,6 +351,11 @@ export default function AdminUsers() {
             id: "users",
             label: t("admin.users"),
             icon: <UsersIcon className="h-4 w-4" />,
+          },
+          {
+            id: "features",
+            label: t("admin.features.tab"),
+            icon: <ShieldCheck className="h-4 w-4" />,
           },
           {
             id: "auditLog",
@@ -796,6 +804,15 @@ export default function AdminUsers() {
         </div>
       )}
 
+      {activeTab === "features" && (
+        <div
+          role="tabpanel"
+          id="admin-tab-panel-features"
+          aria-labelledby="admin-tab-features"
+        >
+          <AdminFeaturesTab />
+        </div>
+      )}
       {activeTab === "auditLog" && (
         <div
           role="tabpanel"

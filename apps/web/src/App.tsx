@@ -54,6 +54,7 @@ import { usePreferences } from "./preferences/preferences";
 import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
+import { FeatureProvider } from "./features/features";
 
 const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
 function isStripeUrl(url: string): boolean {
@@ -483,6 +484,7 @@ export default function App() {
   );
 
   return (
+    <FeatureProvider>
     <AppShell role={role} onLogout={handleLogout}>
       {upgradeSuccess && (
         <div
@@ -548,5 +550,6 @@ export default function App() {
         </Routes>
       </Suspense>
     </AppShell>
+    </FeatureProvider>
   );
 }

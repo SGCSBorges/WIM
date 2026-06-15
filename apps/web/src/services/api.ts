@@ -2281,3 +2281,99 @@ export const billingAPI = {
     }
   },
 };
+
+// Feature flags
+export type FeatureKey =
+  | "cmd_palette"
+  | "sharing"
+  | "transfers"
+  | "reports"
+  | "templates"
+  | "bulk_edit"
+  | "saved_views"
+  | "notifications"
+  | "calendar_feed"
+  | "csv_import"
+  | "csv_export";
+
+export const featuresAPI = {
+  async getAccessMap(): Promise<Record<FeatureKey, boolean>> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/features`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch features"));
+    return response.json();
+  },
+};
+
+export type RoleName = "USER" | "POWER_USER" | "ADMIN";
+
+export interface AdminFeatureFlag {
+  featureKey: FeatureKey;
+  requiredRole: RoleName;
+  defaultRole: RoleName;
+  updatedAt: string | null;
+}
+
+export interface AdminFeatureTempGrant {
+  id: number;
+  featureKey: FeatureKey;
+  expiresAt: string;
+  note: string | null;
+  createdAt: string;
+}
+
+export const adminFeaturesAPI = {
+  async getAll(): Promise<{
+    flags: AdminFeatureFlag[];
+    grants: AdminFeatureTempGrant[];
+  }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/features`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch feature flags"));
+    return response.json();
+  },
+
+  async setFlag(featureKey: FeatureKey, requiredRole: RoleName): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/features/${featureKey}`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ requiredRole }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update feature flag"));
+  },
+
+  async createGrant(input: {
+    featureKey: FeatureKey;
+    expiresAt: string;
+    note?: string;
+  }): Promise<AdminFeatureTempGrant> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/features/grants`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(input),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to create grant"));
+    return response.json();
+  },
+
+  async deleteGrant(id: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/admin/features/grants/${id}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to delete grant"));
+  },
+};
