@@ -250,7 +250,14 @@ router.put(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
-    const data = ArticleUpdateSchema.parse(req.body);
+    // Omit ownerUserId from the parsed body (mirror the create path): the
+    // owner is always the authenticated caller, never client-supplied. Without
+    // this, a client `ownerUserId` rides along in the patch and the service is
+    // only saved from re-owning the row by object-key ordering — too fragile
+    // to rely on.
+    const data = ArticleUpdateSchema.omit({ ownerUserId: true }).parse(
+      req.body
+    );
     const updated = await ArticleService.update(id, req.user!.sub, data);
     // Log the *shape* of the change (which fields the caller touched),
     // not the values. Free-text payloads bloat the audit log and may
