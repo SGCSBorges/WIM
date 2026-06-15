@@ -58,7 +58,7 @@ const ShareForm: React.FC<ShareFormProps> = ({
         {t("shareForm.title")}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <Field label={t("shareForm.email")} required error={errors.email}>
           <Input
             type="email"
