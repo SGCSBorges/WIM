@@ -241,7 +241,9 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
             </div>
 
             {errors.file && (
-              <p className="mt-1 text-sm ui-text-error">{errors.file}</p>
+              <p role="alert" className="mt-1 text-sm ui-text-error">
+                {errors.file}
+              </p>
             )}
           </div>
         )}

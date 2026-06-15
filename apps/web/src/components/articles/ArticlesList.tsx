@@ -1026,7 +1026,10 @@ const ArticlesList: React.FC = () => {
       )}
 
       {showBulkDeleteConfirm && (
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border ui-alert-error p-4">
+        <div
+          role="alert"
+          className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border ui-alert-error p-4"
+        >
           <p className="flex-1 text-sm ui-text-error">
             {t("articles.bulk.deleteConfirm").replace(
               "{count}",

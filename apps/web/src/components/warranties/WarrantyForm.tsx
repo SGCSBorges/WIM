@@ -153,7 +153,9 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             disabled={isLoading}
           />
           {errors.garantieNom && (
-            <p className="mt-1 text-sm ui-text-error">{errors.garantieNom}</p>
+            <p role="alert" className="mt-1 text-sm ui-text-error">
+              {errors.garantieNom}
+            </p>
           )}
         </div>
 
@@ -176,7 +178,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             disabled={isLoading}
           />
           {errors.garantieDateAchat && (
-            <p className="mt-1 text-sm ui-text-error">
+            <p role="alert" className="mt-1 text-sm ui-text-error">
               {errors.garantieDateAchat}
             </p>
           )}
@@ -207,7 +209,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             disabled={isLoading}
           />
           {errors.garantieDuration && (
-            <p className="mt-1 text-sm ui-text-error">
+            <p role="alert" className="mt-1 text-sm ui-text-error">
               {errors.garantieDuration}
             </p>
           )}

@@ -1203,7 +1203,10 @@ export default function ProfileView() {
                 {t("profile.danger.deleteButton")}
               </Button>
             ) : (
-              <div className="space-y-2 rounded-lg border ui-alert-error p-3">
+              <div
+                role="alert"
+                className="space-y-2 rounded-lg border ui-alert-error p-3"
+              >
                 <p className="text-sm ui-text-error">
                   {t("profile.danger.confirm")}
                 </p>

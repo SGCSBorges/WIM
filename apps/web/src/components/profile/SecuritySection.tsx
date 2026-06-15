@@ -225,7 +225,7 @@ export default function SecuritySection() {
             {t("security.activity.title")}
           </p>
           {historyFailed && (
-            <p className="text-sm ui-text-error">
+            <p role="alert" className="text-sm ui-text-error">
               {t("security.activity.fetchError")}
             </p>
           )}
@@ -260,7 +260,10 @@ export default function SecuritySection() {
                     </span>
                   )}
                   {e.userAgent && (
-                    <span className="ml-auto truncate text-xs ui-text-muted">
+                    <span
+                      className="ml-auto truncate text-xs ui-text-muted"
+                      title={e.userAgent}
+                    >
                       {e.userAgent}
                     </span>
                   )}

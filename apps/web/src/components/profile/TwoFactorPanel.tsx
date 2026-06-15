@@ -150,7 +150,11 @@ export default function TwoFactorPanel({
               }}
             />
           </Field>
-          {error && <p className="text-sm ui-text-error">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm ui-text-error">
+              {error}
+            </p>
+          )}
           <div className="flex items-center justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={reset} disabled={busy}>
               {t("common.cancel")}
@@ -250,7 +254,11 @@ export default function TwoFactorPanel({
               </ul>
             </div>
           )}
-          {error && <p className="text-sm ui-text-error">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm ui-text-error">
+              {error}
+            </p>
+          )}
           <div className="flex items-center justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={reset} disabled={busy}>
               {t("common.cancel")}
@@ -282,7 +290,11 @@ export default function TwoFactorPanel({
               onChange={(e) => setPassword(e.target.value)}
             />
           </Field>
-          {error && <p className="text-sm ui-text-error">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm ui-text-error">
+              {error}
+            </p>
+          )}
           <div className="flex items-center justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={reset} disabled={busy}>
               {t("common.cancel")}

@@ -750,7 +750,7 @@ export default function AdminUsers() {
                         </div>
 
                         {confirmDeleteArticleId === a.articleId && (
-                          <p className="text-xs ui-text-error">
+                          <p role="alert" className="text-xs ui-text-error">
                             {t("admin.confirmDeleteArticle")}
                           </p>
                         )}
