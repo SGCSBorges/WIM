@@ -264,7 +264,10 @@ export default function LocationsView() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="truncate font-medium ui-title">
+                            <span
+                              className="truncate font-medium ui-title"
+                              title={l.name}
+                            >
                               {l.name}
                             </span>
                             {l.totalValue !== undefined && l.totalValue > 0 && (

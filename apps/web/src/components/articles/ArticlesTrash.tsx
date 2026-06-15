@@ -235,8 +235,16 @@ export default function ArticlesTrash() {
                 className="h-4 w-4 accent-[var(--primary)]"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium ui-title">{a.articleNom}</p>
-                <p className="truncate text-xs ui-text-muted">
+                <p
+                  className="truncate font-medium ui-title"
+                  title={a.articleNom}
+                >
+                  {a.articleNom}
+                </p>
+                <p
+                  className="truncate text-xs ui-text-muted"
+                  title={a.articleModele ?? undefined}
+                >
                   {a.articleModele}
                   {a.updatedAt ? ` · ${formatDate(a.updatedAt)}` : ""}
                 </p>
