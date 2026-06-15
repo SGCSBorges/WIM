@@ -784,7 +784,10 @@ export default function ArticleDetail() {
                       >
                         {t(`timeline.kind.${e.kind}`)}
                       </Badge>
-                      <span className="truncate font-medium ui-title">
+                      <span
+                        className="truncate font-medium ui-title"
+                        title={e.title}
+                      >
                         {e.title}
                       </span>
                     </span>

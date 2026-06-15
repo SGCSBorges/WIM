@@ -1211,10 +1211,14 @@ const ArticlesList: React.FC = () => {
                       <Link
                         to={`/articles/${article.articleId}`}
                         className="block truncate font-medium ui-action-primary"
+                        title={article.articleNom}
                       >
                         {article.articleNom}
                       </Link>
-                      <p className="truncate text-xs ui-text-muted">
+                      <p
+                        className="truncate text-xs ui-text-muted"
+                        title={article.articleModele ?? undefined}
+                      >
                         {article.articleModele}
                       </p>
                       <div className="flex flex-wrap items-center gap-1 text-xs">
