@@ -182,6 +182,7 @@ export default function TwoFactorPanel({
           {otpauthUrl && (
             <button
               type="button"
+              aria-label={t("twoFactor.copyUrlLabel")}
               className="block w-full break-all rounded-md bg-surface-muted px-2 py-1 text-left font-mono text-[10px] ui-text-muted hover:ui-title"
               onClick={() => {
                 void navigator.clipboard
@@ -288,6 +289,12 @@ export default function TwoFactorPanel({
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && password && !busy) {
+                  e.preventDefault();
+                  void disable();
+                }
+              }}
             />
           </Field>
           {error && (
