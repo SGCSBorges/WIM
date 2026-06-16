@@ -64,7 +64,7 @@ describe("ArticleService.bulkUpdate", () => {
       select: { articleId: true },
     });
     expect(p.__tx.article.updateMany).toHaveBeenCalledWith({
-      where: { articleId: { in: [1, 2] } },
+      where: { articleId: { in: [1, 2] }, ownerUserId: 7 },
       data: { brand: "Bosch", purchasePrice: 199.99 },
     });
     expect(result.count).toBe(2);
@@ -75,7 +75,7 @@ describe("ArticleService.bulkUpdate", () => {
     p.__tx.article.updateMany.mockResolvedValue({ count: 1 });
     await ArticleService.bulkUpdate([1], 7, { serialNumber: null });
     expect(p.__tx.article.updateMany).toHaveBeenCalledWith({
-      where: { articleId: { in: [1] } },
+      where: { articleId: { in: [1] }, ownerUserId: 7 },
       data: { serialNumber: null },
     });
   });

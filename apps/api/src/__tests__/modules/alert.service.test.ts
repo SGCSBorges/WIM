@@ -229,12 +229,15 @@ describe("AlertService.cancel", () => {
 });
 
 describe("AlertService.markSent", () => {
-  it("updates the alert to SENT with a sentAt timestamp", async () => {
-    mockPrisma.alerte.update.mockResolvedValue({ alerteId: 7, status: "SENT" });
+  it("updates the alert to SENT only when currently SCHEDULED or FAILED", async () => {
+    mockPrisma.alerte.updateMany.mockResolvedValue({ count: 1 });
     await AlertService.markSent(7);
-    expect(mockPrisma.alerte.update).toHaveBeenCalledWith(
+    expect(mockPrisma.alerte.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { alerteId: 7 },
+        where: expect.objectContaining({
+          alerteId: 7,
+          status: expect.objectContaining({ in: expect.arrayContaining([AlerteStatus.SCHEDULED, AlerteStatus.FAILED]) }),
+        }),
         data: expect.objectContaining({ status: AlerteStatus.SENT }),
       })
     );
