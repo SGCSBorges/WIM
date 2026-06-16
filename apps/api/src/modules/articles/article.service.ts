@@ -473,6 +473,19 @@ export const ArticleService = {
         }
       }
 
+      // Re-verify ownership inside the tx (closes the TOCTOU window vs. a concurrent transfer accept).
+      const stillOwned = await tx.article.findUnique({
+        where: { articleId: id },
+        select: { ownerUserId: true, deletedAt: true },
+      });
+      if (
+        !stillOwned ||
+        stillOwned.ownerUserId !== ownerUserId ||
+        stillOwned.deletedAt !== null
+      ) {
+        throw createHttpError(404, "Article not found");
+      }
+
       const article = await tx.article.update({
         where: { articleId: id },
         data: {
@@ -803,7 +816,7 @@ export const ArticleService = {
       });
       if (owned.length === 0) return { count: 0 };
       const res = await tx.article.updateMany({
-        where: { articleId: { in: owned.map((a) => a.articleId) } },
+        where: { articleId: { in: owned.map((a) => a.articleId) }, ownerUserId },
         data,
       });
       return { count: res.count };
