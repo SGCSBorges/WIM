@@ -220,9 +220,14 @@ export function createApp() {
       res.setHeader("X-Content-Type-Options", "nosniff");
       // Inline display for images and PDFs (the only allowed types); browsers
       // can render these safely with the explicit MIME type above.
+      // Strip control characters (including \r\n) to prevent header injection;
+      // then strip double-quotes so the filename value stays syntactically valid.
+      const safeFileName = attachment.fileName
+        .replace(/[\x00-\x1F\x7F]/g, "")
+        .replace(/"/g, "");
       res.setHeader(
         "Content-Disposition",
-        `inline; filename="${attachment.fileName.replace(/"/g, "")}"`
+        `inline; filename="${safeFileName}"`
       );
       return res.sendFile(fullPath);
     }

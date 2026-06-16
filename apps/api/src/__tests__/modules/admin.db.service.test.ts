@@ -10,15 +10,25 @@ vi.mock("../../libs/prisma", () => ({
     $transaction: vi.fn(),
     user: { findMany: vi.fn().mockResolvedValue([]) },
     location: { findMany: vi.fn().mockResolvedValue([]) },
+    tag: { findMany: vi.fn().mockResolvedValue([]) },
     article: { findMany: vi.fn().mockResolvedValue([]) },
+    articleTag: { findMany: vi.fn().mockResolvedValue([]) },
     articleLocation: { findMany: vi.fn().mockResolvedValue([]) },
+    articleNote: { findMany: vi.fn().mockResolvedValue([]) },
+    articleTemplate: { findMany: vi.fn().mockResolvedValue([]) },
     garantie: { findMany: vi.fn().mockResolvedValue([]) },
+    warrantyHistory: { findMany: vi.fn().mockResolvedValue([]) },
     attachment: { findMany: vi.fn().mockResolvedValue([]) },
     alerte: { findMany: vi.fn().mockResolvedValue([]) },
+    totpSecret: { findMany: vi.fn().mockResolvedValue([]) },
+    savedView: { findMany: vi.fn().mockResolvedValue([]) },
     inventoryShare: { findMany: vi.fn().mockResolvedValue([]) },
     shareInvite: { findMany: vi.fn().mockResolvedValue([]) },
+    articleTransferRequest: { findMany: vi.fn().mockResolvedValue([]) },
     auditLog: { findMany: vi.fn().mockResolvedValue([]) },
     processedStripeEvent: { findMany: vi.fn().mockResolvedValue([]) },
+    featureFlag: { findMany: vi.fn().mockResolvedValue([]) },
+    featureTempGrant: { findMany: vi.fn().mockResolvedValue([]) },
   },
 }));
 
@@ -34,46 +44,98 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-const emptyTables = {
+const emptyTables: ImportPayload["tables"] = {
   users: [],
   locations: [],
+  tags: [],
   articles: [],
+  articleTags: [],
   articleLocations: [],
+  articleNotes: [],
+  articleTemplates: [],
   garanties: [],
+  warrantyHistory: [],
   attachments: [],
   alertes: [],
+  totpSecrets: [],
+  savedViews: [],
   inventoryShares: [],
   shareInvites: [],
+  articleTransferRequests: [],
   auditLogs: [],
   processedStripeEvents: [],
+  featureFlags: [],
+  featureTempGrants: [],
 };
+
+const adminUser: ImportPayload["tables"]["users"][number] = {
+  userId: 1,
+  email: "admin@x.com",
+  password: "hash",
+  role: "ADMIN",
+  tokenVersion: 0,
+  currency: "USD",
+  emailReminders: true,
+  weeklyDigest: false,
+  totpEnabled: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
+/** Minimal tx stub that satisfies all createMany calls in importAll. */
+function makeTxStub(overrides: Record<string, unknown> = {}) {
+  return {
+    $executeRawUnsafe: vi.fn().mockResolvedValue(undefined),
+    user: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    location: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    tag: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    article: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    articleTemplate: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    totpSecret: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    savedView: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    garantie: {
+      createMany: vi.fn().mockResolvedValue({ count: 0 }),
+      update: vi.fn(),
+    },
+    attachment: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    articleLocation: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    articleTag: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    articleNote: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    warrantyHistory: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    alerte: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    inventoryShare: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    shareInvite: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    articleTransferRequest: {
+      createMany: vi.fn().mockResolvedValue({ count: 0 }),
+    },
+    auditLog: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    processedStripeEvent: {
+      createMany: vi.fn().mockResolvedValue({ count: 0 }),
+    },
+    featureFlag: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    featureTempGrant: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
+    ...overrides,
+  };
+}
 
 describe("AdminDbService.exportAll", () => {
   it("returns the canonical version + counts shape", async () => {
     const dump = await AdminDbService.exportAll();
-    expect(dump.version).toBe(1);
+    expect(dump.version).toBe(2);
     expect(dump.app).toBe("wim");
     expect(typeof dump.exportedAt).toBe("string");
-    expect(dump.counts).toEqual({
-      users: 0,
-      locations: 0,
-      articles: 0,
-      articleLocations: 0,
-      garanties: 0,
-      attachments: 0,
-      alertes: 0,
-      inventoryShares: 0,
-      shareInvites: 0,
-      auditLogs: 0,
-      processedStripeEvents: 0,
-    });
+    // All tables are mocked empty — just assert the shape.
+    expect(dump.counts.users).toBe(0);
+    expect(dump.counts.tags).toBe(0);
+    expect(dump.counts.warrantyHistory).toBe(0);
+    expect(dump.counts.featureFlags).toBe(0);
   });
 });
 
 describe("AdminDbService.importAll — input validation", () => {
   it("refuses dumps whose version doesn't match this server", async () => {
     const payload = {
-      version: 99 as unknown as 1,
+      version: 99 as unknown as 2,
       tables: emptyTables,
     } as unknown as ImportPayload;
     await expect(AdminDbService.importAll(payload)).rejects.toMatchObject({
@@ -85,18 +147,15 @@ describe("AdminDbService.importAll — input validation", () => {
 
   it("refuses dumps that contain no ADMIN user (lockout protection)", async () => {
     const payload: ImportPayload = {
-      version: 1,
+      version: 2,
       tables: {
         ...emptyTables,
         users: [
           {
-            userId: 1,
-            email: "u@x.com",
-            password: "hash",
+            ...adminUser,
             role: "USER",
-            tokenVersion: 0,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            email: "u@x.com",
+            userId: 2,
           },
         ],
       },
@@ -109,128 +168,77 @@ describe("AdminDbService.importAll — input validation", () => {
   });
 
   it("strips stripeCustomerId and stripeSubscriptionId by default", async () => {
-    // Capture the transaction callback so we can inspect what it asks the
-    // tx client to insert into User.
     let capturedCreateData: unknown = null;
-    mockPrisma.$transaction.mockImplementation(async (cb: unknown) => {
-      if (typeof cb !== "function") return;
-      const tx = {
-        $executeRawUnsafe: vi.fn().mockResolvedValue(undefined),
-        user: {
-          createMany: vi.fn((args: { data: unknown }) => {
-            capturedCreateData = args.data;
-            return Promise.resolve({ count: 1 });
-          }),
-        },
-        location: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        article: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        garantie: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-          update: vi.fn(),
-        },
-        attachment: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        articleLocation: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-        alerte: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        inventoryShare: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-        shareInvite: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-        auditLog: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        processedStripeEvent: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-      };
-      return (cb as (tx: unknown) => Promise<unknown>)(tx);
+    const tx = makeTxStub({
+      user: {
+        createMany: vi.fn((args: { data: unknown }) => {
+          capturedCreateData = args.data;
+          return Promise.resolve({ count: 1 });
+        }),
+      },
     });
+    mockPrisma.$transaction.mockImplementation(
+      async (cb: (tx: unknown) => Promise<unknown>) => cb(tx)
+    );
 
     const payload: ImportPayload = {
-      version: 1,
+      version: 2,
       tables: {
         ...emptyTables,
         users: [
           {
-            userId: 1,
-            email: "admin@x.com",
-            password: "hash",
-            role: "ADMIN",
-            tokenVersion: 0,
+            ...adminUser,
             stripeCustomerId: "cus_old",
             stripeSubscriptionId: "sub_old",
-            createdAt: new Date(),
-            updatedAt: new Date(),
           },
         ],
       },
     };
     await AdminDbService.importAll(payload);
-    expect(Array.isArray(capturedCreateData)).toBe(true);
-    const row = (capturedCreateData as Array<{ stripeCustomerId: string | null; stripeSubscriptionId: string | null }>)[0];
+    const row = (
+      capturedCreateData as Array<{
+        stripeCustomerId: string | null;
+        stripeSubscriptionId: string | null;
+      }>
+    )[0];
     expect(row.stripeCustomerId).toBeNull();
     expect(row.stripeSubscriptionId).toBeNull();
   });
 
   it("keeps Stripe ids when keepStripeIds=true", async () => {
     let capturedCreateData: unknown = null;
-    mockPrisma.$transaction.mockImplementation(async (cb: unknown) => {
-      if (typeof cb !== "function") return;
-      const tx = {
-        $executeRawUnsafe: vi.fn().mockResolvedValue(undefined),
-        user: {
-          createMany: vi.fn((args: { data: unknown }) => {
-            capturedCreateData = args.data;
-            return Promise.resolve({ count: 1 });
-          }),
-        },
-        location: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        article: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        garantie: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-          update: vi.fn(),
-        },
-        attachment: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        articleLocation: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-        alerte: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        inventoryShare: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-        shareInvite: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-        auditLog: { createMany: vi.fn().mockResolvedValue({ count: 0 }) },
-        processedStripeEvent: {
-          createMany: vi.fn().mockResolvedValue({ count: 0 }),
-        },
-      };
-      return (cb as (tx: unknown) => Promise<unknown>)(tx);
+    const tx = makeTxStub({
+      user: {
+        createMany: vi.fn((args: { data: unknown }) => {
+          capturedCreateData = args.data;
+          return Promise.resolve({ count: 1 });
+        }),
+      },
     });
+    mockPrisma.$transaction.mockImplementation(
+      async (cb: (tx: unknown) => Promise<unknown>) => cb(tx)
+    );
 
     const payload: ImportPayload = {
-      version: 1,
+      version: 2,
       tables: {
         ...emptyTables,
         users: [
           {
-            userId: 1,
-            email: "admin@x.com",
-            password: "hash",
-            role: "ADMIN",
-            tokenVersion: 0,
+            ...adminUser,
             stripeCustomerId: "cus_old",
             stripeSubscriptionId: "sub_old",
-            createdAt: new Date(),
-            updatedAt: new Date(),
           },
         ],
       },
     };
     await AdminDbService.importAll(payload, { keepStripeIds: true });
-    const row = (capturedCreateData as Array<{ stripeCustomerId: string | null; stripeSubscriptionId: string | null }>)[0];
+    const row = (
+      capturedCreateData as Array<{
+        stripeCustomerId: string | null;
+        stripeSubscriptionId: string | null;
+      }>
+    )[0];
     expect(row.stripeCustomerId).toBe("cus_old");
     expect(row.stripeSubscriptionId).toBe("sub_old");
   });
