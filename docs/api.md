@@ -48,148 +48,116 @@ an `Origin` header.
 ### Quick smoke (curl)
 
 ```bash
-# Log in — captures the wim_token cookie into a jar.
-curl -i -c jar.txt -b jar.txt -X POST https://wimapi.onrender.com/api/auth/login \
+# 1. Log in — save the JWT from the Set-Cookie header
+TOKEN=$(curl -si -X POST https://wimapi.onrender.com/api/auth/login \
   -H 'Content-Type: application/json' \
-  -H 'Origin: https://wim-web.onrender.com' \
-  -d '{"email":"you@example.com","password":"yourpass"}'
+  -d '{"email":"you@example.com","password":"secret"}' \
+  | grep -i set-cookie | sed 's/.*wim_token=//;s/;.*//')
 
-# Use the cookie jar on subsequent calls.
-curl -b jar.txt https://wimapi.onrender.com/api/auth/me
+# 2. Use it as a Bearer token on subsequent requests
+curl https://wimapi.onrender.com/api/articles \
+  -H "Authorization: Bearer $TOKEN"
 ```
+
+## Pagination
+
+Paginated list endpoints accept `page` (1-based) and `limit` (capped per
+endpoint) query parameters and return `{ items, total, page, limit }`. The
+`total` is always the total count for the current filter, not just the page.
+
+The admin audit-log uses cursor pagination instead: pass `cursor=<lastId>` to
+get the next page of `limit` entries (default 100, max 200) newest-first.
 
 ## Conventions
 
-- All IDs are positive integers.
-- Endpoints return JSON unless noted (PDFs and the CSV export return their
-  native content-type with `Content-Disposition: attachment`).
 - Date / datetime fields are ISO strings.
 - **Paginated list endpoints** return `{ items, total, page, limit }` —
-  e.g. `GET /api/articles`, `GET /api/locations/:id/articles`. Notable
+  e.g. `GET /api/articles`, `GET /api/locations:id/articles`. Notable
   exception: `GET /api/admin/users` accepts `page`/`limit` (max 500) but
   returns a **raw array** without a total count — it's behind ADMIN and
   the user list is expected to stay small.
 - Errors come back as `{ "error": "human message" }` with a numeric status
-  code. 5xx responses also include `requestId` so support can quote it.
+  code. Zod validation errors also include an `issues` array (path + code;
+  messages are stripped in production so schema shape isn't leaked).
+- `purchasePrice` and `depreciationRate` on articles, and `Decimal` fields
+  elsewhere, are serialised as **strings** in JSON (Prisma Decimal →
+  string). Parse with `Number()` or your language's decimal library before
+  doing arithmetic.
 
-## Attachments and `/uploads/*`
+## Attachment download
 
-This is the most-asked-about gotcha:
+Attachments are **not** served by `express.static`. Instead:
 
-- `/api/attachments/*` → JSON metadata. **Cookie required.**
-- `/uploads/<filename>` → the raw file, served as static content.
-  **Public** — anyone with the URL can download it.
+- `GET /uploads/:storedName` — requires auth (the same JWT cookie / Bearer
+  token). Applies share-aware access rules: the owner, or any viewer who
+  has an active `InventoryShare` or can see a publicly-shared article.
+  Returns the file inline with the stored MIME type; thumbnails (`.webp`)
+  return `image/webp` regardless of the source format.
+- `GET /api/attachments` / `GET /api/attachments/:id` — JSON metadata only
+  (no bytes). The `fileUrl` in the response is the `/uploads/:storedName`
+  path to fetch above.
 
-The UI uses `attachment.fileUrl` (which points at `/uploads/…`) to render
-images or trigger downloads — never `/api/attachments/:id`, because
-navigating that in a tab doesn't send the cookie and you'll see a 401.
+Sharing an article (public or per-user) automatically extends download
+access to the article's attachments. There is no separate attachment-level
+ACL.
 
-## User preferences
+## Warranties
 
-The `User` row carries display preferences so they follow the user across
-devices:
+A warranty (`Garantie`) is 1:1 with an article (unique constraint on
+`garantieArticleId`). Key non-obvious rules:
 
-| Field        | Type / values                                              | Endpoint                                                          |
-| ------------ | ---------------------------------------------------------- | ----------------------------------------------------------------- |
-| `currency`   | ISO 4217 alpha-3 (default `USD`)                           | `PUT /api/profile/me/currency` — `{ "currency": "EUR" }`          |
-| `theme`      | `light \| dark \| ocean \| cyber \| sunset` (nullable)     | `PUT /api/profile/me/preferences` — `{ "theme": "ocean" }`        |
-| `language`   | `en \| fr \| pt \| es \| nl` (nullable)                    | `PUT /api/profile/me/preferences` — `{ "language": "fr" }`        |
-| `dateFormat` | `system \| dd/MM/yyyy \| MM/dd/yyyy \| yyyy-MM-dd` (nullable) | `PUT /api/profile/me/preferences` — `{ "dateFormat": "yyyy-MM-dd" }` |
+- **Renewal** (`POST /api/warranties/:id/renew`) replaces the live row
+  in place (same `garantieId`) and snapshots the prior dates/duration into
+  `WarrantyHistory`. The article link, attachments, and alerts stay.
+- **Extend** (`POST /api/warranties/:id/extend`) rolls `garantieFin` forward
+  by N months without changing the purchase date. `garantieDuration` is
+  bumped to keep `garantieFin = addMonths(garantieDateAchat, duration)`.
+- Both renew + extend reschedule the J-30/J-7/J-1 reminder alerts.
+- `GET /api/warranties/:id/history` returns the change chain newest-first.
 
-`/api/profile/me/preferences` accepts a partial body — any combination of
-the three fields, plus `null` to clear one back to "follow the device
-default". Empty bodies are rejected. Both `/api/auth/me` and
-`/api/profile/me` return these fields on read, so the SPA can hydrate the
-right theme/language/date format before the first render.
+Claim workflow: `claimStatus` starts at `NONE` and progresses through
+`OPEN → APPROVED | REJECTED → RESOLVED`. Patching back to `NONE` resets
+`claimNote` and `claimUpdatedAt`. A warranty with an open claim can still be
+renewed or extended.
 
-UI density (`comfortable \| compact`) is intentionally **not** persisted
-server-side — it's a cosmetic per-device choice and lives in
-`localStorage["wim.density"]` only.
+## Sharing
 
-## Notifications
+Sharing requires `POWER_USER` or `ADMIN` role on **both** parties.
 
-Two endpoints back the TopBar bell:
+- **Public share** (`POST /api/articles/:id/share-public`): flips
+  `Article.sharedWithPowerUsers = true`. Visible read-only to all
+  share-capable users at `GET /api/shared/articles`.
+- **Per-user share**: owner sends invite to a recipient's email via
+  `POST /api/shares` (creates `ShareInvite`). Recipient accepts via
+  `POST /api/shares/accept` (creates `InventoryShare`). Grants READ or
+  WRITE access to the owner's entire inventory.
+- Downgrading a user from share-capable to USER (Stripe cancel, admin
+  demote) automatically revokes all outgoing shares, pending invites, and
+  pending transfer requests in the same transaction as the role change.
 
-- `GET /api/alerts/notifications` →
-  `{ items: AlertItem[], unseen: number }`. `items` is the caller's
-  scheduled alerts (warranty + custom) that are overdue or due within the
-  next 30 days, soonest first, capped at 20. `unseen` counts those created
-  after `User.alertsSeenAt`; null means everything is unseen.
-- `POST /api/alerts/mark-seen` → 204. Stamps `User.alertsSeenAt = now()`
-  to clear the unseen badge. Not audit-logged (it's per-device noise).
+## Transfers
 
-Snooze and cancel are unchanged: `POST /api/alerts/:id/snooze` with
-`{ days }` and `POST /api/alerts/:id/cancel`.
+Article ownership transfer between two POWER_USER / ADMIN accounts:
 
-## Warranty lifecycle
-
-`Garantie` keeps a 1:1 unique with the article, so renewal rolls the live
-row forward (same `garantieId`) and snapshots the prior state into
-`WarrantyHistory`. There is **never** a second warranty per article.
-
-| Method | Path                              | Body                                                                | Effect                                                                                       |
-| ------ | --------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| POST   | `/api/warranties/:id/renew`       | `{ garantieDateAchat, garantieDuration, provider*?, note? }`        | Snapshot `RENEWED`, swap purchase date + duration, recompute `garantieFin`, reschedule alerts |
-| POST   | `/api/warranties/:id/extend`      | `{ months, note? }`                                                  | Snapshot `EXTENDED`, bump `garantieDuration`, roll `garantieFin` forward, reschedule alerts   |
-| GET    | `/api/warranties/:id/history`     | —                                                                    | Owner-scoped chronological audit (`event`, `priorDateAchat/Duration/Fin`, `note`)             |
-
-`Garantie.renewedAt` is stamped on the first renewal/extension (null =
-never renewed). Both `renew` and `extend` reuse
-`AlertService.rescheduleForWarranty` so the J-30/J-7/J-1 reminders
-re-fire against the new end date. Audit actions `WARRANTY_RENEW` /
-`WARRANTY_EXTEND` are in the `AUDIT_ACTIONS` union.
-
-## Reports
-
-- `GET /api/reports/portfolio.pdf` — insurance-ready portfolio PDF.
-  Query params honor the article-list filters (`locationId`, `tagId`,
-  `warrantyStatus`) so a user can scope the report to one room or one
-  tag. Three sections: cover totals (purchase vs depreciated current
-  value, items covered vs at-risk), per-location manifest with
-  serials + warranty end, and an at-risk list ranked by purchase
-  value desc. Auth-gated + destructive-rate-limited; audited as
-  `DB_EXPORT` with `metadata.report="portfolio"`.
-
-The inventory CSV (`/api/articles/export/inventory.csv`) gains a
-`currentValue` column at export time (computed via the same
-`currentValue` helper the dashboard + claim PDF use). The importer
-ignores unknown columns so a round-trip preserves data.
-
-## Article ownership transfer
-
-Permanent, atomic transfer of an article and all related data between two share-capable accounts. Requires POWER_USER (or ADMIN, which inherits). See `CLAUDE.md` for the full lifecycle.
-
-**Initiation** (mounted on `/api/articles`):
-
-| Method | Path | Body | Description |
-| ------ | ---- | ---- | ----------- |
-| POST   | `/:id/transfer/push` | `{ email, message? }` | Offer article to the recipient; fires an email with the token |
-| POST   | `/:id/transfer/pull` | `{ message? }` | Request ownership of a visible article; fires an email to the owner |
-
-**Management** (also mounted on `/api/articles`):
-
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET    | `/transfers/incoming` | Pending transfers waiting on the caller to act |
-| GET    | `/transfers/outgoing` | Transfers the caller initiated (full history) |
-| POST   | `/transfers/:token/accept` | Accept — PUSH: recipient; PULL: owner |
-| POST   | `/transfers/:token/reject` | Reject — PULL: owner rejects |
-| DELETE | `/transfers/:id` | Revoke — PUSH: owner cancels; PULL: requester cancels |
-
-On **accept**, a single transaction re-owns the article, its warranty + warranty history, alerts, attachments, and notes. `ArticleLocation` + `ArticleTag` rows are deleted (owner-scoped; new owner re-assigns from their own lists). All other PENDING transfers for the same article are REVOKED atomically.
-
-Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day window). Concurrent accepts are race-safe: `updateMany` with `status:"PENDING"` in both the transfer row and the expiry check means only one commit can win; the loser gets 409.
+- **PUSH**: owner initiates (`POST /api/articles/:id/transfer/push`) —
+  recipient must accept from their `/transfers` page.
+- **PULL**: requester who can see the article initiates
+  (`POST /api/articles/:id/transfer/pull`) — owner must accept or reject.
+- Acceptance is fully atomic (Prisma tx): `ownerUserId` updated;
+  `sharedWithPowerUsers` reset; `Garantie`, `Attachment`, `Alerte`,
+  `ArticleNote` re-owned; `ArticleLocation` + `ArticleTag` junctions deleted
+  (owner-scoped; new owner reassigns). All other PENDING requests for the
+  same article are revoked.
+- Token TTL: 7 days. Status lifecycle:
+  `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED`.
 
 ## Account security
 
-Three slices in `apps/api/src/modules/{auth,profile}/`. The password-only
-login path is byte-for-byte unchanged when `User.totpEnabled` is false.
-
-| Method | Path                                          | Notes                                                                                                                  |
-| ------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Method | Path | Description |
+|--------|------|-------------|
 | GET    | `/api/profile/me/login-history`               | Caller's last 50 `LOGIN/LOGOUT` rows from `AuditLog`. No schema; uses the existing `(userId, createdAt DESC)` index.    |
 | GET    | `/api/profile/me/sessions`                    | `{ items, currentJti }` — current device marked client-side from `currentJti`.                                         |
-| DELETE | `/api/profile/me/sessions/:id`                | Revoke a single session: `denyToken(jti, ttl)` + stamp `revokedAt`.                                                    |
+| DELETE | `/api/profile/me/sessions:id`                | Revoke a single session: `denyToken(jti, ttl)` + stamp `revokedAt`.                                                    |
 | POST   | `/api/profile/me/sessions/revoke-others`      | Revokes every active session except the caller's own jti.                                                              |
 | POST   | `/api/profile/me/totp/setup`                  | Password-gated. Returns `{ otpauthUrl, qrDataUrl, backupCodes }` — backup codes plaintext **once**, never stored.       |
 | POST   | `/api/profile/me/totp/verify`                 | Password + code; flips `TotpSecret.verified` + `User.totpEnabled` in one transaction.                                  |
@@ -250,6 +218,64 @@ reachable when a feature is later restricted — transfer **reject/revoke**
 and the calendar feed **DELETE** + public ICS read — deliberately stay on
 `authGuard` only.
 
+## Database backup / restore (ADMIN)
+
+Two destructive-rate-limited, ADMIN-only endpoints for full-DB migration
+between environments.
+
+### `GET /api/admin/db/export`
+
+Downloads the entire database as a single JSON document (`wim-backup-<timestamp>.json`).
+The dump includes all user data tables (users, articles, warranties, tags,
+notes, templates, locations, attachments, alerts, saved views, shares,
+transfers, TOTP secrets, feature flags, audit logs, and processed Stripe
+events). Intentionally excluded: `UserSession` (device-specific — fresh login
+on the target deployment is safer), `PasswordResetToken` (ephemeral), and
+`PushSubscription` (device-registered endpoint URLs don't survive a server
+origin change).
+
+Audited as `DB_EXPORT`. The dump's `version` field gates compatibility on
+import.
+
+### `POST /api/admin/db/import`
+
+**Irreversible**. Truncates every table and restores from the JSON dump in a
+single transaction. Required body:
+
+```json
+{
+  "confirm": "REPLACE",
+  "currentPassword": "<admin password>",
+  "payload": { /* dump from /api/admin/db/export */ },
+  "keepStripeIds": false
+}
+```
+
+- `confirm: "REPLACE"` — required literal, defence against accidental overwrite.
+- `currentPassword` — re-prompts for the admin's password so a stolen (but
+  still-valid) session cookie can't trigger a full-DB rewrite.
+- `keepStripeIds` — defaults `false`. Set `true` only when migrating within
+  the **same** Stripe environment; importing a production dump into a staging
+  environment with `keepStripeIds=true` would misdirect future webhooks to the
+  wrong Stripe customer.
+- The `payload.version` must match the server's current export format
+  (currently **v2**); a version mismatch is refused before touching the DB.
+  If you have a v1 dump (from before this format version was introduced), you
+  cannot import it directly — re-export from a v1 deployment first.
+- Dumps that contain no ADMIN user are refused (lockout prevention).
+- The response includes `sessionInvalidated: true` — the calling admin's
+  cookie is no longer valid after import because the User table was replaced.
+  Log back in.
+- Body size limit: 100 MB (the per-endpoint parser overrides the global 1 MB
+  cap).
+
+Audited as `DB_IMPORT` twice: once immediately before the truncate (forensic
+trail if the import crashes mid-write) and once after successful restore.
+
+> **Use with extreme caution in production.** There is no roll-back after a
+> successful import — if your dump is corrupt or from the wrong environment,
+> you must restore from a Render Postgres backup.
+
 ## Background jobs
 
 The API runs BullMQ workers in the same process. Three repeatable schedules
@@ -276,7 +302,7 @@ Admin Jobs tab (`/admin/jobs`) surfaces live queue depth + recent failures.
   `apps/web/dist`. SPA-rewrite lives in the repo's `render.yaml`.
 
 The full env catalog lives in `apps/api/.env.example`; CLAUDE.md at the
-repo root has the canonical setup notes.
+root has the canonical setup notes.
 
 ## Triage
 
