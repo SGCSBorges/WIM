@@ -153,9 +153,16 @@ export const WarrantyService = {
       patch.garantieFin = addMonths(dateAchat, duration);
     }
 
-    const updated = await prisma.garantie.update({
-      where: { garantieId: id },
-      data: patch,
+    const updated = await prisma.$transaction(async (tx) => {
+      // Re-verify ownership inside the tx (closes the TOCTOU window vs. a
+      // concurrent transfer accept that re-assigns ownerUserId mid-flight).
+      const stillOwned = await tx.garantie.findUnique({
+        where: { garantieId: id },
+        select: { ownerUserId: true },
+      });
+      if (!stillOwned || stillOwned.ownerUserId !== ownerUserId)
+        throw createHttpError(404, "Warranty not found");
+      return tx.garantie.update({ where: { garantieId: id }, data: patch });
     });
 
     // Reschedule when fin changed OR when the article changed — a re-link
@@ -190,13 +197,23 @@ export const WarrantyService = {
     if (!current) throw createHttpError(404, "Warranty not found");
 
     const isNone = data.status === "NONE";
-    return prisma.garantie.update({
-      where: { garantieId: id },
-      data: {
-        claimStatus: data.status,
-        claimNote: isNone ? null : (data.note ?? null),
-        claimUpdatedAt: isNone ? null : new Date(),
-      },
+    return prisma.$transaction(async (tx) => {
+      // Re-verify ownership inside the tx to close the TOCTOU window vs. a
+      // concurrent transfer accept.
+      const stillOwned = await tx.garantie.findUnique({
+        where: { garantieId: id },
+        select: { ownerUserId: true },
+      });
+      if (!stillOwned || stillOwned.ownerUserId !== ownerUserId)
+        throw createHttpError(404, "Warranty not found");
+      return tx.garantie.update({
+        where: { garantieId: id },
+        data: {
+          claimStatus: data.status,
+          claimNote: isNone ? null : (data.note ?? null),
+          claimUpdatedAt: isNone ? null : new Date(),
+        },
+      });
     });
   },
 
@@ -215,6 +232,13 @@ export const WarrantyService = {
     const newFin = addMonths(newDateAchat, data.garantieDuration);
 
     const updated = await prisma.$transaction(async (tx) => {
+      // Re-verify ownership inside the tx (closes TOCTOU vs. concurrent transfer).
+      const stillOwned = await tx.garantie.findUnique({
+        where: { garantieId: id },
+        select: { ownerUserId: true },
+      });
+      if (!stillOwned || stillOwned.ownerUserId !== ownerUserId)
+        throw createHttpError(404, "Warranty not found");
       await tx.warrantyHistory.create({
         data: {
           garantieId: current.garantieId,
@@ -276,6 +300,13 @@ export const WarrantyService = {
     const newFin = addMonths(new Date(current.garantieDateAchat), newDuration);
 
     const updated = await prisma.$transaction(async (tx) => {
+      // Re-verify ownership inside the tx (closes TOCTOU vs. concurrent transfer).
+      const stillOwned = await tx.garantie.findUnique({
+        where: { garantieId: id },
+        select: { ownerUserId: true },
+      });
+      if (!stillOwned || stillOwned.ownerUserId !== ownerUserId)
+        throw createHttpError(404, "Warranty not found");
       await tx.warrantyHistory.create({
         data: {
           garantieId: current.garantieId,
