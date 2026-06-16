@@ -1,6 +1,6 @@
 /**
- * Alerts view — lists the user's warranty + custom alerts with filtering
- * (kind + status), snooze, and cancel. Status mirrors the API's `Alerte`
+ * Alerts view — lists the user’s warranty + custom alerts with filtering
+ * (kind + status), snooze, and cancel. Status mirrors the API’s `Alerte`
  * lifecycle (SCHEDULED → SENT/CANCELLED/FAILED). Creating a custom alert
  * launches its own form within the page.
  */
@@ -433,7 +433,10 @@ export default function AlertsView() {
                       ) : null}
 
                       {a.status === "FAILED" && a.errorMessage && (
-                        <div className="mt-2 text-xs ui-text-error">
+                        <div
+                          role="alert"
+                          className="mt-2 text-xs ui-text-error"
+                        >
                           {t("alerts.error")}: {a.errorMessage}
                         </div>
                       )}

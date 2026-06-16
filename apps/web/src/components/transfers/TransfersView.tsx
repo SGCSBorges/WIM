@@ -137,8 +137,14 @@ export default function TransfersView() {
               <span className="inline-flex items-center gap-2">
                 {t("transfer.tabIncoming")}
                 {pendingIncoming.length > 0 && (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-primary-contrast">
-                    {pendingIncoming.length}
+                  <span
+                    className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-primary-contrast"
+                    aria-label={t("transfer.pendingCount").replace(
+                      "{count}",
+                      String(pendingIncoming.length)
+                    )}
+                  >
+                    <span aria-hidden="true">{pendingIncoming.length}</span>
                   </span>
                 )}
               </span>
@@ -270,7 +276,7 @@ function TransferRow({
             <span>
               {t("transfer.from")} <strong>{transfer.owner.email}</strong>
             </span>
-            <span>→</span>
+            <span aria-hidden="true">→</span>
             <span>
               {t("transfer.to")} <strong>{transfer.requester.email}</strong>
             </span>
