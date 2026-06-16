@@ -159,7 +159,10 @@ export default function TagsManager({
             <li key={tag.tagId} className="flex items-center gap-2 py-2">
               {deleteFor?.tagId === tag.tagId ? (
                 <>
-                  <span className="flex-1 truncate text-sm ui-text-error">
+                  <span
+                    role="alert"
+                    className="flex-1 truncate text-sm ui-text-error"
+                  >
                     {t("tags.manage.deleteConfirm")}
                   </span>
                   <Button
