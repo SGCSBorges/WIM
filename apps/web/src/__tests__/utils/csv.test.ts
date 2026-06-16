@@ -29,6 +29,21 @@ describe("parseCSV", () => {
     ]);
   });
 
+  it("parses bare-CR (classic Mac) line endings instead of collapsing to one row", () => {
+    // No \n anywhere — a \r-only file must still split into records, or the
+    // whole file becomes a single record and the import yields zero data rows.
+    const rows = parseCSV("a,b\r1,2\r3,4");
+    expect(rows).toEqual([
+      { a: "1", b: "2" },
+      { a: "3", b: "4" },
+    ]);
+  });
+
+  it("preserves a CR embedded inside a quoted field", () => {
+    const rows = parseCSV('name,note\r\n"X","line1\r\nline2"');
+    expect(rows[0].note).toBe("line1\r\nline2");
+  });
+
   it("skips fully-blank lines", () => {
     const rows = parseCSV("name\n\nX\n");
     expect(rows).toEqual([{ name: "X" }]);

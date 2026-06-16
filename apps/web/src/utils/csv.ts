@@ -69,7 +69,8 @@ export function downloadBlob(filename: string, blob: Blob) {
 
 /**
  * Parse CSV text into an array of row objects keyed by the header row.
- * RFC-4180-ish: handles quoted fields, escaped quotes ("") and CRLF/LF.
+ * RFC-4180-ish: handles quoted fields, escaped quotes ("") and CRLF/LF/CR
+ * (bare-CR/classic-Mac) line endings.
  * Header keys are lower-cased and trimmed so lookups are case-insensitive.
  */
 export function parseCSV(text: string): Array<Record<string, string>> {
@@ -112,7 +113,12 @@ export function parseCSV(text: string): Array<Record<string, string>> {
     } else if (c === "\n") {
       pushRecord();
     } else if (c === "\r") {
-      // swallow; the following \n (if any) triggers the record
+      // CRLF: swallow the \r and let the following \n end the record.
+      // Bare CR (classic Mac / some Excel-for-Mac exports, no \n anywhere):
+      // treat the \r itself as the record terminator, otherwise the entire
+      // file collapses into a single record and the import silently yields
+      // zero data rows.
+      if (text[i + 1] !== "\n") pushRecord();
     } else {
       field += c;
     }
