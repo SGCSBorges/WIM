@@ -78,7 +78,8 @@ router.post(
     // remains cryptographically valid; bound how stale we'll accept. Ack with
     // 200 so Stripe doesn't retry an event we won't process. Configurable to
     // allow a wider window in laggy test environments.
-    const maxAgeSec = Number(process.env.STRIPE_WEBHOOK_MAX_AGE_SEC ?? 5 * 60);
+    const rawMaxAge = Number(process.env.STRIPE_WEBHOOK_MAX_AGE_SEC);
+    const maxAgeSec = Number.isFinite(rawMaxAge) ? rawMaxAge : 5 * 60;
     const ageSec = Math.floor(Date.now() / 1000) - event.created;
     if (ageSec > maxAgeSec) {
       logger.warn(
@@ -130,12 +131,13 @@ router.post(
             session.metadata?.targetRole
           );
           if (!targetRoleParsed.success) {
-            logger.info(
+            logger.error(
               {
                 eventId: event.id,
+                userId: userIdRaw,
                 received: session.metadata?.targetRole,
               },
-              "[stripe-webhook] unknown targetRole — skipping promotion"
+              "[stripe-webhook] unrecognized targetRole in checkout metadata — promotion skipped, manual intervention required"
             );
           }
           const targetRole = targetRoleParsed.success
@@ -205,39 +207,48 @@ router.post(
             // updateMany for a role change. Find the one owner explicitly,
             // then update by primary key.
             const owner = await tx.user.findFirst({
-              where: {
-                stripeSubscriptionId: subscriptionId,
-                role: "POWER_USER",
-              },
-              select: { userId: true, email: true },
+              where: { stripeSubscriptionId: subscriptionId },
+              select: { userId: true, email: true, role: true },
             });
             if (owner) {
+              const willDowngrade = owner.role === "POWER_USER";
               await tx.user.update({
                 where: { userId: owner.userId },
-                data: { role: "USER" },
-              });
-              const counts = await ShareService.cleanupSharingForUser(
-                owner.userId,
-                tx
-              );
-              logger.info(
-                { userId: owner.userId, ...counts, reason: "stripe-cancel" },
-                "[stripe-webhook] downgrade cleanup"
-              );
-              pendingAudit.push({
-                userId: owner.userId,
-                action: "BILLING_DOWNGRADE",
-                entity: "User",
-                entityId: owner.userId,
-                metadata: {
-                  eventId: event.id,
-                  eventType: event.type,
-                  subscriptionId,
-                  status,
-                  email: owner.email,
-                  shareCleanup: counts,
+                data: {
+                  stripeSubscriptionId: null,
+                  ...(willDowngrade ? { role: "USER" } : {}),
                 },
               });
+              if (willDowngrade) {
+                const counts = await ShareService.cleanupSharingForUser(
+                  owner.userId,
+                  tx
+                );
+                logger.info(
+                  { userId: owner.userId, ...counts, reason: "stripe-cancel" },
+                  "[stripe-webhook] downgrade cleanup"
+                );
+                pendingAudit.push({
+                  userId: owner.userId,
+                  action: "BILLING_DOWNGRADE",
+                  entity: "User",
+                  entityId: owner.userId,
+                  metadata: {
+                    eventId: event.id,
+                    eventType: event.type,
+                    subscriptionId,
+                    status,
+                    email: owner.email,
+                    shareCleanup: counts,
+                  },
+                });
+              } else {
+                // ADMIN held a subscription — clear the id but leave the role intact.
+                logger.info(
+                  { userId: owner.userId, role: owner.role, subscriptionId },
+                  "[stripe-webhook] cleared stripeSubscriptionId for non-POWER_USER (no role change)"
+                );
+              }
             }
           }
         }
