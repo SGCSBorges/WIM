@@ -257,6 +257,12 @@ export const AlertService = {
       const generic = await alertQueue.getJob(customJobId(a.alerteId));
       if (generic) await generic.remove();
     }
+    // Flip all remaining SCHEDULED rows to CANCELLED so a job that fires
+    // after Redis removal (or after a Redis flush + replay) finds no live row.
+    await prisma.alerte.updateMany({
+      where: { ownerUserId, status: AlerteStatus.SCHEDULED },
+      data: { status: AlerteStatus.CANCELLED },
+    });
   },
 
   rescheduleForWarranty: async (input: {
@@ -515,8 +521,8 @@ export const AlertService = {
     }),
 
   markSent: (alerteId: number) =>
-    prisma.alerte.update({
-      where: { alerteId },
+    prisma.alerte.updateMany({
+      where: { alerteId, status: { in: [AlerteStatus.SCHEDULED, AlerteStatus.FAILED] } },
       data: { status: AlerteStatus.SENT, sentAt: new Date() },
     }),
 
