@@ -11,6 +11,7 @@ import {
   Plus,
   Search,
   Download,
+  Check,
   Eye,
   Pencil,
   Trash2,
@@ -80,6 +81,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [downloadedId, setDownloadedId] = useState<number | null>(null);
 
   const toggleSelected = (id: number) => {
     setSelectedIds((prev) => {
@@ -186,6 +188,8 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      setDownloadedId(attachment.attachmentId);
+      setTimeout(() => setDownloadedId(null), 2000);
     } catch {
       // browser-level download errors; nothing to surface
     }
@@ -345,9 +349,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
           <div className="ml-auto flex items-center gap-2">
             {showBulkDeleteConfirm ? (
               <>
-                <span className="text-xs ui-text-error">
+                <p role="alert" className="text-xs ui-text-error">
                   {t("attachments.bulk.confirm")}
-                </span>
+                </p>
                 <Button
                   variant="danger"
                   size="sm"
@@ -478,7 +482,13 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                     onClick={() => handleDownload(attachment)}
                     aria-label={t("attachments.action.download")}
                     title={t("attachments.action.download")}
-                    leftIcon={<Download className="h-4 w-4" />}
+                    leftIcon={
+                      downloadedId === attachment.attachmentId ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )
+                    }
                   />
                   <Button
                     variant="ghost"
