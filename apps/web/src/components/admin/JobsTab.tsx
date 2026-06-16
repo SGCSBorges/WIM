@@ -174,7 +174,9 @@ export default function JobsTab() {
               </p>
             )}
             {failed === null && !failedError && (
-              <p className="text-sm ui-text-muted">{t("common.loading")}</p>
+              <p role="status" className="text-sm ui-text-muted">
+                {t("common.loading")}
+              </p>
             )}
             {failed && failed.length === 0 && (
               <p className="text-sm ui-text-muted">

@@ -98,6 +98,7 @@ export default function TransferDialog({
               id="transfer-email"
               type="email"
               inputMode="email"
+              autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
               value={email}
