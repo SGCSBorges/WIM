@@ -1,6 +1,6 @@
 /**
- * Alerts view — lists the user’s warranty + custom alerts with filtering
- * (kind + status), snooze, and cancel. Status mirrors the API’s `Alerte`
+ * Alerts view — lists the user's warranty + custom alerts with filtering
+ * (kind + status), snooze, and cancel. Status mirrors the API's `Alerte`
  * lifecycle (SCHEDULED → SENT/CANCELLED/FAILED). Creating a custom alert
  * launches its own form within the page.
  */
