@@ -513,7 +513,10 @@ export default function AdminUsers() {
                       }}
                       className="min-w-0 flex-1 text-left"
                     >
-                      <div className="truncate font-medium ui-title">
+                      <div
+                        className="truncate font-medium ui-title"
+                        title={u.email}
+                      >
                         {u.email}
                       </div>
                       <div className="text-xs ui-text-muted">

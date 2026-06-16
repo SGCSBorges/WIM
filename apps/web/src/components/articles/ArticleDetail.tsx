@@ -118,6 +118,7 @@ export default function ArticleDetail() {
   const toast = useToast();
   const navigate = useNavigate();
   const [duplicating, setDuplicating] = useState(false);
+  const [pdfDownloaded, setPdfDownloaded] = useState(false);
   const { id } = useParams<{ id: string }>();
   const articleId = Number(id);
 
@@ -427,13 +428,21 @@ export default function ArticleDetail() {
                     `article-${articleId}-claim.pdf`,
                     await articlesAPI.claimPdf(articleId)
                   );
+                  setPdfDownloaded(true);
+                  setTimeout(() => setPdfDownloaded(false), 2000);
                 } catch (e) {
                   toast.show(getErrorMessage(e, t("common.errorOccurred")), {
                     kind: "error",
                   });
                 }
               }}
-              leftIcon={<Download className="h-4 w-4" />}
+              leftIcon={
+                pdfDownloaded ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )
+              }
             >
               {t("articleDetail.downloadPdf")}
             </Button>
