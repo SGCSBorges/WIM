@@ -636,6 +636,9 @@ export const extras = {
     "bulkEdit.op.clear": "Clear",
     "bulkEdit.apply": "Apply changes",
     "bulkEdit.success": "Updated {count} article(s).",
+    "articleForm.price.invalid": "Purchase price must be 0 or more.",
+    "articleForm.depreciation.invalid":
+      "Depreciation rate must be between 0 and 100.",
     "bulkEdit.errorNoFields": "Pick at least one field to change.",
     "bulkEdit.errorEmptySet":
       "Enter a value for every field you set, or switch it to Skip or Clear.",
@@ -1388,6 +1391,10 @@ export const extras = {
     "bulkEdit.op.clear": "Vider",
     "bulkEdit.apply": "Appliquer",
     "bulkEdit.success": "{count} article(s) mis à jour.",
+    "articleForm.price.invalid":
+      "Le prix d'achat doit être supérieur ou égal à 0.",
+    "articleForm.depreciation.invalid":
+      "Le taux d'amortissement doit être compris entre 0 et 100.",
     "bulkEdit.errorNoFields": "Choisissez au moins un champ à modifier.",
     "bulkEdit.errorEmptySet":
       "Saisissez une valeur pour chaque champ défini, ou passez-le sur Ignorer ou Effacer.",
@@ -2136,6 +2143,10 @@ export const extras = {
     "bulkEdit.op.clear": "Limpar",
     "bulkEdit.apply": "Aplicar",
     "bulkEdit.success": "{count} artigo(s) actualizado(s).",
+    "articleForm.price.invalid":
+      "O preço de compra deve ser igual ou superior a 0.",
+    "articleForm.depreciation.invalid":
+      "A taxa de depreciação deve estar entre 0 e 100.",
     "bulkEdit.errorNoFields": "Escolha pelo menos um campo a alterar.",
     "bulkEdit.errorEmptySet":
       "Introduza um valor em cada campo definido, ou mude-o para Ignorar ou Limpar.",
@@ -2893,6 +2904,10 @@ export const extras = {
     "bulkEdit.op.clear": "Borrar",
     "bulkEdit.apply": "Aplicar cambios",
     "bulkEdit.success": "Actualizado(s) {count} artículo(s).",
+    "articleForm.price.invalid":
+      "El precio de compra debe ser igual o mayor que 0.",
+    "articleForm.depreciation.invalid":
+      "La tasa de depreciación debe estar entre 0 y 100.",
     "bulkEdit.errorNoFields": "Elige al menos un campo para cambiar.",
     "bulkEdit.errorEmptySet":
       "Introduce un valor en cada campo que configures, o cámbialo a Omitir o Borrar.",
@@ -3642,6 +3657,9 @@ export const extras = {
     "bulkEdit.op.clear": "Wissen",
     "bulkEdit.apply": "Wijzigingen toepassen",
     "bulkEdit.success": "{count} artikel(en) bijgewerkt.",
+    "articleForm.price.invalid": "De aankoopprijs moet 0 of meer zijn.",
+    "articleForm.depreciation.invalid":
+      "Het afschrijvingspercentage moet tussen 0 en 100 liggen.",
     "bulkEdit.errorNoFields": "Kies ten minste één veld om te wijzigen.",
     "bulkEdit.errorEmptySet":
       "Voer een waarde in voor elk veld dat je instelt, of zet het op Overslaan of Wissen.",

@@ -375,10 +375,28 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         setFormError(t("articleForm.warranty.requiredDate"));
         return;
       }
-      if (!warrantyDuration || warrantyDuration < 1) {
+      if (!warrantyDuration || warrantyDuration < 1 || warrantyDuration > 120) {
         setFormError(t("articleForm.warranty.requiredDuration"));
         return;
       }
+    }
+
+    // Range-check the optional numerics here (not just via the inputs' native
+    // min/max) since the form is noValidate. Server schema enforces the same
+    // bounds, but a localized inline message beats a generic API error.
+    const priceVal = purchasePrice.trim() === "" ? null : Number(purchasePrice);
+    if (priceVal !== null && (!Number.isFinite(priceVal) || priceVal < 0)) {
+      setFormError(t("articleForm.price.invalid"));
+      return;
+    }
+    const depVal =
+      depreciationRate.trim() === "" ? null : Number(depreciationRate);
+    if (
+      depVal !== null &&
+      (!Number.isFinite(depVal) || depVal < 0 || depVal > 100)
+    ) {
+      setFormError(t("articleForm.depreciation.invalid"));
+      return;
     }
 
     const submitData: Omit<Article, "articleId"> = {
@@ -387,9 +405,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       brand: formData.brand?.toString().trim() || null,
       serialNumber: formData.serialNumber?.toString().trim() || null,
       productImageUrl: formData.productImageUrl?.trim() || null,
-      purchasePrice: purchasePrice.trim() === "" ? null : Number(purchasePrice),
-      depreciationRate:
-        depreciationRate.trim() === "" ? null : Number(depreciationRate),
+      purchasePrice: priceVal,
+      depreciationRate: depVal,
       locationIds: selectedLocationIds,
       tagIds: selectedTagIds,
       ...(warrantyEnabled
@@ -547,6 +564,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         onSubmit={handleSubmit}
         onChange={() => setDirty(true)}
         className="space-y-5"
+        // handleSubmit owns all validation; without noValidate the inputs'
+        // native HTML5 constraints (required name/model, type="url" image,
+        // min/max price/depreciation/duration) fire first and block submit
+        // with an un-localized native bubble, preempting our own formError
+        // messages. See CLAUDE.md "Manual validateForm() ⇒ noValidate".
+        noValidate
       >
         <Field label={t("articleForm.name")} htmlFor="articleNom" required>
           <Input
