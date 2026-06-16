@@ -6,7 +6,7 @@
  * so we hard-logout + reload the page.
  */
 import { useRef, useState } from "react";
-import { Database, Download, Upload, TriangleAlert } from "lucide-react";
+import { Database, Download, Check, Upload, TriangleAlert } from "lucide-react";
 import { adminAPI, authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
@@ -19,6 +19,7 @@ export default function AdminDbBackup() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [exporting, setExporting] = useState(false);
+  const [exported, setExported] = useState(false);
   const [importing, setImporting] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
@@ -39,6 +40,8 @@ export default function AdminDbBackup() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      setExported(true);
+      setTimeout(() => setExported(false), 2000);
       toast.show(t("admin.db.exportSuccess"), { kind: "success" });
     } catch (e) {
       const msg = getErrorMessage(e, t("common.errorOccurred"));
@@ -112,7 +115,10 @@ export default function AdminDbBackup() {
       )}
 
       {counts && (
-        <div className="mb-3 rounded-lg border ui-alert-success p-3">
+        <div
+          role="status"
+          className="mb-3 rounded-lg border ui-alert-success p-3"
+        >
           <p className="text-sm font-medium ui-text-success">
             {t("admin.db.importSuccess")}
           </p>
@@ -131,7 +137,13 @@ export default function AdminDbBackup() {
           onClick={handleExport}
           loading={exporting}
           disabled={importing}
-          leftIcon={<Download className="h-4 w-4" />}
+          leftIcon={
+            exported ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )
+          }
         >
           {t("admin.db.exportButton")}
         </Button>
