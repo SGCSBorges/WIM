@@ -821,7 +821,13 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                   {warrantyProofAttachment && (
                     <div className="flex items-center justify-between gap-3 rounded-lg border ui-divider px-3 py-2 text-sm">
                       <div className="min-w-0">
-                        <p className="truncate font-medium ui-title">
+                        <p
+                          className="truncate font-medium ui-title"
+                          title={
+                            warrantyProofAttachment.fileName ||
+                            `#${warrantyProofAttachment.attachmentId}`
+                          }
+                        >
                           {warrantyProofAttachment.fileName ||
                             `#${warrantyProofAttachment.attachmentId}`}
                         </p>

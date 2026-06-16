@@ -1269,7 +1269,7 @@ const ArticlesList: React.FC = () => {
               <table className="w-full">
                 <thead className="ui-panel">
                   <tr>
-                    <th className="w-10 px-3 py-3">
+                    <th scope="col" className="w-10 px-3 py-3">
                       <input
                         ref={selectAllRef}
                         type="checkbox"
@@ -1292,12 +1292,16 @@ const ArticlesList: React.FC = () => {
                     ].map((h) => (
                       <th
                         key={h}
+                        scope="col"
                         className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ui-text-muted"
                       >
                         {h}
                       </th>
                     ))}
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ui-text-muted">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ui-text-muted"
+                    >
                       {t("articles.table.actions")}
                     </th>
                   </tr>
