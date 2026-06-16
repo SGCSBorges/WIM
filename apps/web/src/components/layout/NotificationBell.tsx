@@ -102,7 +102,10 @@ export default function NotificationBell() {
         <>
           <Bell className="h-5 w-5" aria-hidden="true" />
           {unseen > 0 && (
-            <span className="absolute right-1.5 top-1.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-primary-contrast">
+            <span
+              aria-hidden="true"
+              className="absolute right-1.5 top-1.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-primary-contrast"
+            >
               {unseen > 9 ? "9+" : unseen}
             </span>
           )}
