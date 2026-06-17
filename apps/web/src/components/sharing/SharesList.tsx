@@ -220,7 +220,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
             title={t("shareForm.title")}
             description={t("shareForm.email.note")}
           >
-            <form onSubmit={handleSendInvite} className="space-y-3">
+            <form onSubmit={handleSendInvite} className="space-y-3" noValidate>
               {inviteError && (
                 <p role="alert" className="text-sm ui-text-error">
                   {inviteError}

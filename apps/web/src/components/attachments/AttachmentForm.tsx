@@ -148,7 +148,7 @@ const AttachmentForm: React.FC<AttachmentFormProps> = ({
           : t("attachments.form.addTitle")}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* File Upload */}
         {!attachment && (
           <div>

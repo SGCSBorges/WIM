@@ -173,7 +173,10 @@ export default function NeedsAttention() {
                 {article.articleNom}
               </p>
               {end && (
-                <p className="truncate text-xs ui-text-muted">
+                <p
+                  className="truncate text-xs ui-text-muted"
+                  title={`${tone === "danger" ? t("needsAttention.expiredOn") : t("needsAttention.expiresOn")} ${formatDate(end)}`}
+                >
                   {tone === "danger"
                     ? t("needsAttention.expiredOn")
                     : t("needsAttention.expiresOn")}{" "}
