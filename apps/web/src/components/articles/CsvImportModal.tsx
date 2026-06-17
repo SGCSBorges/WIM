@@ -12,6 +12,7 @@ import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
 import { parseCSV } from "../../utils/csv";
 import { articlesAPI } from "../../services/api";
+import { Button } from "../ui";
 
 interface Props {
   open: boolean;
@@ -275,42 +276,32 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
 
       <div className="flex justify-end gap-2 pt-2 border-t ui-divider">
         {!result && !validation && (
-          <button
-            type="button"
+          <Button
             onClick={doValidate}
-            disabled={importing || validCount === 0}
-            className="ui-btn-primary px-4 py-2 rounded-md text-sm"
+            loading={importing}
+            disabled={validCount === 0}
           >
-            {importing
-              ? t("common.loading")
-              : t("import.validate").replace("{count}", String(validCount))}
-          </button>
+            {t("import.validate").replace("{count}", String(validCount))}
+          </Button>
         )}
         {!result && validation && (
-          <button
-            type="button"
+          <Button
             onClick={doImport}
-            disabled={importing || validation.created === 0}
-            className="ui-btn-primary px-4 py-2 rounded-md text-sm"
+            loading={importing}
+            disabled={validation.created === 0}
           >
-            {importing
-              ? t("common.loading")
-              : t("import.submit").replace(
-                  "{count}",
-                  String(validation.created)
-                )}
-          </button>
+            {t("import.submit").replace("{count}", String(validation.created))}
+          </Button>
         )}
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => {
             reset();
             onClose();
           }}
-          className="ui-btn-ghost px-4 py-2 rounded-md text-sm border ui-divider"
         >
           {result ? t("common.close") : t("common.cancel")}
-        </button>
+        </Button>
       </div>
     </Modal>
   );

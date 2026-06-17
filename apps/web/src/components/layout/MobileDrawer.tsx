@@ -13,6 +13,17 @@ import { visibleNavItems, isActivePath } from "../../lib/navItems";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import { Button } from "../ui";
 
+// Same focusable selector Modal.tsx uses for its Tab trap — kept local since
+// the drawer's slide-in layout doesn't fit Modal's centered-panel shell.
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "textarea:not([disabled])",
+  'input:not([disabled]):not([type="hidden"])',
+  "select:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
 export interface MobileDrawerProps {
   open: boolean;
   onClose: () => void;
@@ -33,6 +44,7 @@ export default function MobileDrawer({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const firstLinkRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
   const items = visibleNavItems(role);
 
   useEffect(() => {
@@ -40,7 +52,25 @@ export default function MobileDrawer({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !panelRef.current) return;
+      const focusables = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+      ).filter((el) => el.offsetParent !== null);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKey);
     // Defer focus to the next frame so the drawer is painted and its first
@@ -68,6 +98,7 @@ export default function MobileDrawer({
         className={`ui-drawer-backdrop absolute inset-0 h-full w-full ${open ? "open" : ""}`}
       />
       <aside
+        ref={panelRef}
         id="mobile-nav"
         role="dialog"
         aria-modal="true"

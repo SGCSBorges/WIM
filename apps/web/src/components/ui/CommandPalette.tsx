@@ -235,7 +235,9 @@ export function CommandPalette({
                             {item.icon}
                           </span>
                         )}
-                        <span className="flex-1 truncate">{item.label}</span>
+                        <span className="flex-1 truncate" title={item.label}>
+                          {item.label}
+                        </span>
                         {item.hint && (
                           <span
                             className={`shrink-0 text-xs ${

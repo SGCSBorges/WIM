@@ -310,6 +310,15 @@ export default function ProfileView() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    calendarAPI
+      .status()
+      .then(({ enabled, path }) => {
+        setCalendarUrl(enabled && path ? calendarAPI.feedUrl(path) : null);
+      })
+      .catch(() => {});
+  }, []);
+
   const togglePush = async () => {
     setPushBusy(true);
     try {

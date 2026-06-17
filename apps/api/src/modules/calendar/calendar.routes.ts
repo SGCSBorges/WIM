@@ -12,6 +12,18 @@ import { CalendarService } from "./calendar.service";
 
 const router = Router();
 
+// Current feed status. Open to any authenticated caller (not gated on
+// `calendar_feed`) so a user whose access was later restricted can still see
+// — and disable — an already-issued feed, mirroring the DELETE below.
+router.get(
+  "/token",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const path = await CalendarService.getStatus(req.user!.sub);
+    res.json({ enabled: path !== null, path });
+  })
+);
+
 // Generate (or rotate) the caller's calendar feed token. Gated on
 // `calendar_feed`; the DELETE (disable) and the public ICS feed stay open so
 // a user can always turn off — and external clients keep reading — an

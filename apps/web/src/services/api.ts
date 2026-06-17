@@ -1127,6 +1127,17 @@ export const pushAPI = {
 
 // Calendar feed
 export const calendarAPI = {
+  async status(): Promise<{ enabled: boolean; path: string | null }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/calendar/token`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to load calendar feed status")
+      );
+    return response.json();
+  },
+
   async enable(): Promise<{ token: string; path: string }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/calendar/token`, {
       method: "POST",

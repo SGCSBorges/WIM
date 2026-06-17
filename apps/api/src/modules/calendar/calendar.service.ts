@@ -90,6 +90,17 @@ export function buildCalendar(events: CalEvent[]): string {
 }
 
 export const CalendarService = {
+  // Returns the feed path if the caller already has an active token, else null.
+  async getStatus(userId: number): Promise<string | null> {
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: { calendarToken: true },
+    });
+    return user?.calendarToken
+      ? `/api/calendar/feed/${user.calendarToken}.ics`
+      : null;
+  },
+
   async generateToken(userId: number): Promise<string> {
     const token = crypto.randomBytes(32).toString("hex");
     await prisma.user.update({
