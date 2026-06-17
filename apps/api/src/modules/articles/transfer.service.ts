@@ -172,6 +172,24 @@ export const TransferService = {
 
     await prisma.$transaction(async (tx) => {
       const now = new Date();
+
+      // Re-verify the receiving account is still share-capable, inside the tx.
+      // The route's requireFeature("transfers") gate only checks the *acceptor*
+      // — on a PULL that's the giver, not the requester who becomes the new
+      // owner — so without this a transfer could land an article on a freshly
+      // downgraded USER. cleanupSharingForUser revokes pending transfers on
+      // demote, but that's a non-local guarantee; this enforces the invariant
+      // where the ownership actually changes.
+      const newOwner = await tx.user.findUnique({
+        where: { userId: newOwnerId },
+        select: { role: true },
+      });
+      if (!newOwner || !roleAtLeast(newOwner.role, "POWER_USER"))
+        throw createHttpError(
+          409,
+          "Transfer recipient is no longer a Power User"
+        );
+
       const updated = await tx.articleTransferRequest.updateMany({
         where: { id: req.id, status: "PENDING" },
         data: { status: "ACCEPTED", usedAt: now },

@@ -540,6 +540,14 @@ ID-enumeration and owner spam. The article owner receives an email with the
 token and must accept or reject.
 
 On acceptance the transfer is fully atomic (Prisma transaction):
+  - The receiving account's role is **re-verified share-capable inside the
+    tx** before anything moves. The route's `requireFeature("transfers")`
+    gate only checks the *acceptor* — on a PULL that's the giver, not the
+    requester who becomes the new owner — so the service re-reads
+    `newOwner.role` and 409s if it's no longer ≥ POWER_USER. (Downgrade also
+    revokes pending transfers via `cleanupSharingForUser`, but that's a
+    non-local guarantee; the in-tx check enforces the invariant where
+    ownership actually changes, per the "re-read inside the tx" rule.)
   - `Article.ownerUserId` updated; `sharedWithPowerUsers` reset to false
   - `Garantie`, `WarrantyHistory`, `Alerte`, `Attachment`, `ArticleNote`
     rows all re-owned to the new owner

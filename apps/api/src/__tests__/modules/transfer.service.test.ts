@@ -312,6 +312,9 @@ describe("TransferService.acceptTransfer", () => {
     mockPrisma.$transaction.mockImplementation(
       async (fn: (tx: unknown) => Promise<unknown>) => {
         const tx = {
+          user: {
+            findUnique: vi.fn().mockResolvedValue({ role: "POWER_USER" }),
+          },
           articleTransferRequest: {
             updateMany: transferRequestUpdateMany,
             update: vi.fn(),
@@ -352,6 +355,9 @@ describe("TransferService.acceptTransfer", () => {
     mockPrisma.$transaction.mockImplementation(
       async (fn: (tx: unknown) => Promise<unknown>) => {
         const tx = {
+          user: {
+            findUnique: vi.fn().mockResolvedValue({ role: "POWER_USER" }),
+          },
           articleTransferRequest: {
             updateMany: vi.fn().mockResolvedValue({ count: 0 }),
             update: vi.fn(),
@@ -370,6 +376,38 @@ describe("TransferService.acceptTransfer", () => {
     await expect(
       TransferService.acceptTransfer("tok", 2)
     ).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("throws 409 when the receiving account is no longer a Power User", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    const transferUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+    mockPrisma.$transaction.mockImplementation(
+      async (fn: (tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          user: {
+            // requester was downgraded after creating the transfer
+            findUnique: vi.fn().mockResolvedValue({ role: "USER" }),
+          },
+          articleTransferRequest: {
+            updateMany: transferUpdateMany,
+            update: vi.fn(),
+          },
+          article: { update: vi.fn() },
+          garantie: { findFirst: vi.fn().mockResolvedValue(null) },
+          alerte: { updateMany: vi.fn() },
+          attachment: { updateMany: vi.fn() },
+          articleNote: { updateMany: vi.fn() },
+          articleLocation: { deleteMany: vi.fn() },
+          articleTag: { deleteMany: vi.fn() },
+        };
+        return fn(tx);
+      }
+    );
+    await expect(
+      TransferService.acceptTransfer("tok", 2)
+    ).rejects.toMatchObject({ status: 409 });
+    // The ownership change must not run once the role check fails.
+    expect(transferUpdateMany).not.toHaveBeenCalled();
   });
 });
 
