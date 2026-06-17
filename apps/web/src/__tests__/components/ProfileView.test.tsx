@@ -25,6 +25,12 @@ vi.mock("../../services/api", () => ({
   warrantiesAPI: { getAll: vi.fn() },
   attachmentsAPI: { getAll: vi.fn() },
   sharesAPI: { getOwned: vi.fn(), getSentInvites: vi.fn() },
+  calendarAPI: {
+    status: vi.fn().mockResolvedValue({ enabled: false, path: null }),
+    enable: vi.fn(),
+    disable: vi.fn(),
+    feedUrl: (path: string) => path,
+  },
 }));
 
 import ProfileView from "../../components/profile/ProfileView";
