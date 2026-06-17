@@ -618,6 +618,7 @@ export const extras = {
     "twoFactor.disableWarn":
       "Disabling two-factor makes your account easier to take over. Re-enable it as soon as you can.",
     "twoFactor.disableConfirm": "Yes, disable two-factor",
+    "twoFactor.copyUrlLabel": "Click to copy authenticator setup URL",
     "auth.totp.codeLabel": "Two-factor code",
     "auth.totp.hint":
       "Enter the 6-digit code from your authenticator app, or a backup code.",
@@ -1373,6 +1374,8 @@ export const extras = {
     "twoFactor.disableWarn":
       "Désactiver le 2FA rend votre compte plus vulnérable. Réactivez-le dès que possible.",
     "twoFactor.disableConfirm": "Oui, désactiver le 2FA",
+    "twoFactor.copyUrlLabel":
+      "Cliquez pour copier l'URL de configuration de l'authentificateur",
     "auth.totp.codeLabel": "Code à deux facteurs",
     "auth.totp.hint":
       "Entrez le code à 6 chiffres de votre application, ou un code de secours.",
@@ -2125,6 +2128,8 @@ export const extras = {
     "twoFactor.disableWarn":
       "Desactivar 2FA torna a sua conta mais fácil de comprometer. Reactive assim que possível.",
     "twoFactor.disableConfirm": "Sim, desactivar 2FA",
+    "twoFactor.copyUrlLabel":
+      "Clique para copiar o URL de configuração do autenticador",
     "auth.totp.codeLabel": "Código em dois passos",
     "auth.totp.hint":
       "Introduza o código de 6 dígitos da app de autenticação, ou um código de recuperação.",
@@ -2886,6 +2891,8 @@ export const extras = {
     "twoFactor.disableWarn":
       "Desactivar el doble factor facilita que tu cuenta sea comprometida. Vuelve a activarlo lo antes posible.",
     "twoFactor.disableConfirm": "Sí, desactivar el doble factor",
+    "twoFactor.copyUrlLabel":
+      "Haga clic para copiar la URL de configuración del autenticador",
     "auth.totp.codeLabel": "Código de doble factor",
     "auth.totp.hint":
       "Introduce el código de 6 dígitos de tu app de autenticación, o un código de recuperación.",
@@ -3639,6 +3646,8 @@ export const extras = {
     "twoFactor.disableWarn":
       "Het uitschakelen van tweefactor maakt uw account makkelijker over te nemen. Schakel het zo snel mogelijk weer in.",
     "twoFactor.disableConfirm": "Ja, tweefactor uitschakelen",
+    "twoFactor.copyUrlLabel":
+      "Klik om de instell-URL van de authenticator te kopiëren",
     "auth.totp.codeLabel": "Tweefactorcode",
     "auth.totp.hint":
       "Voer de 6-cijferige code uit uw authenticator-app in, of een back-upcode.",
