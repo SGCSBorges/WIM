@@ -522,7 +522,10 @@ export const AlertService = {
 
   markSent: (alerteId: number) =>
     prisma.alerte.updateMany({
-      where: { alerteId, status: { in: [AlerteStatus.SCHEDULED, AlerteStatus.FAILED] } },
+      where: {
+        alerteId,
+        status: { in: [AlerteStatus.SCHEDULED, AlerteStatus.FAILED] },
+      },
       data: { status: AlerteStatus.SENT, sentAt: new Date() },
     }),
 

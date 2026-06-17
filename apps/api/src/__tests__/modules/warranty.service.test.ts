@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../../libs/prisma", () => ({
-  prisma: {
+vi.mock("../../libs/prisma", () => {
+  const mockClient = {
     garantie: {
       findFirst: vi.fn(),
       findUnique: vi.fn(),
@@ -11,8 +11,12 @@ vi.mock("../../libs/prisma", () => ({
     article: {
       findFirst: vi.fn(),
     },
-  },
-}));
+    // The service re-verifies ownership inside an interactive transaction;
+    // the tx client shares the same garantie mocks as the outer one.
+    $transaction: vi.fn((cb: (tx: unknown) => unknown) => cb(mockClient)),
+  };
+  return { prisma: mockClient };
+});
 
 vi.mock("../../modules/alerts/alert.service", () => ({
   AlertService: {
@@ -152,6 +156,7 @@ describe("WarrantyService.update", () => {
       garantieFin: new Date("2027-01-01"),
     };
     mockPrisma.garantie.findFirst.mockResolvedValue(current);
+    mockPrisma.garantie.findUnique.mockResolvedValue({ ownerUserId: 1 });
     mockPrisma.garantie.update.mockResolvedValue(updated);
 
     await WarrantyService.update(1, 1, { garantieDuration: 36 });
@@ -163,6 +168,7 @@ describe("WarrantyService.update", () => {
 
   it("does not reschedule alerts when only the name changes", async () => {
     mockPrisma.garantie.findFirst.mockResolvedValue(current);
+    mockPrisma.garantie.findUnique.mockResolvedValue({ ownerUserId: 1 });
     mockPrisma.garantie.update.mockResolvedValue({
       ...current,
       garantieNom: "Renamed",
@@ -185,6 +191,7 @@ describe("WarrantyService.updateClaim", () => {
 
   it("sets status + note and stamps claimUpdatedAt when opening a claim", async () => {
     mockPrisma.garantie.findFirst.mockResolvedValue({ garantieId: 5 });
+    mockPrisma.garantie.findUnique.mockResolvedValue({ ownerUserId: 1 });
     mockPrisma.garantie.update.mockResolvedValue({});
     await WarrantyService.updateClaim(5, 1, { status: "OPEN", note: "ref-42" });
     const arg = mockPrisma.garantie.update.mock.calls[0][0];
@@ -196,6 +203,7 @@ describe("WarrantyService.updateClaim", () => {
 
   it("clears note + timestamp when resetting to NONE", async () => {
     mockPrisma.garantie.findFirst.mockResolvedValue({ garantieId: 5 });
+    mockPrisma.garantie.findUnique.mockResolvedValue({ ownerUserId: 1 });
     mockPrisma.garantie.update.mockResolvedValue({});
     await WarrantyService.updateClaim(5, 1, { status: "NONE", note: "ignored" });
     const arg = mockPrisma.garantie.update.mock.calls[0][0];

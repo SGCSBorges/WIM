@@ -223,6 +223,7 @@ export function createApp() {
       // Strip control characters (including \r\n) to prevent header injection;
       // then strip double-quotes so the filename value stays syntactically valid.
       const safeFileName = attachment.fileName
+        // eslint-disable-next-line no-control-regex
         .replace(/[\x00-\x1F\x7F]/g, "")
         .replace(/"/g, "");
       res.setHeader(

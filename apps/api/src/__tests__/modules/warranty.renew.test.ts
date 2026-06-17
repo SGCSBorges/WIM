@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../../libs/prisma", () => {
   const tx = {
     warrantyHistory: { create: vi.fn() },
-    garantie: { update: vi.fn() },
+    garantie: { findUnique: vi.fn(), update: vi.fn() },
   };
   return {
     prisma: {
@@ -44,7 +44,10 @@ const p = prisma as unknown as {
   $transaction: ReturnType<typeof vi.fn>;
   __tx: {
     warrantyHistory: { create: ReturnType<typeof vi.fn> };
-    garantie: { update: ReturnType<typeof vi.fn> };
+    garantie: {
+      findUnique: ReturnType<typeof vi.fn>;
+      update: ReturnType<typeof vi.fn>;
+    };
   };
 };
 
@@ -71,6 +74,7 @@ beforeEach(() => {
 describe("WarrantyService.renew", () => {
   it("snapshots the prior state then rolls the live row forward", async () => {
     p.garantie.findFirst.mockResolvedValue(baseWarranty);
+    p.__tx.garantie.findUnique.mockResolvedValue({ ownerUserId: 7 });
     p.__tx.garantie.update.mockResolvedValue({
       ...baseWarranty,
       garantieDateAchat: new Date("2026-01-01"),
@@ -105,6 +109,7 @@ describe("WarrantyService.renew", () => {
 
   it("reschedules the J-30/J-7/J-1 alerts against the new end date", async () => {
     p.garantie.findFirst.mockResolvedValue(baseWarranty);
+    p.__tx.garantie.findUnique.mockResolvedValue({ ownerUserId: 7 });
     p.__tx.garantie.update.mockResolvedValue({
       ...baseWarranty,
       garantieFin: new Date("2027-01-01"),
@@ -138,6 +143,7 @@ describe("WarrantyService.renew", () => {
 describe("WarrantyService.extend", () => {
   it("rolls garantieFin forward by N months and snapshots EXTENDED", async () => {
     p.garantie.findFirst.mockResolvedValue(baseWarranty);
+    p.__tx.garantie.findUnique.mockResolvedValue({ ownerUserId: 7 });
     p.__tx.garantie.update.mockResolvedValue({
       ...baseWarranty,
       garantieDuration: 36,

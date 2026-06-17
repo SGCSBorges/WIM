@@ -140,7 +140,12 @@ const GarantieSchema = z
     garantieDuration: z.number().int(),
     garantieFin: DateLike,
     garantieIsValide: z.boolean().default(true),
-    garantieImageAttachmentId: z.number().int().positive().nullable().optional(),
+    garantieImageAttachmentId: z
+      .number()
+      .int()
+      .positive()
+      .nullable()
+      .optional(),
     claimStatus: z
       .enum(["NONE", "OPEN", "APPROVED", "REJECTED", "RESOLVED"])
       .default("NONE"),

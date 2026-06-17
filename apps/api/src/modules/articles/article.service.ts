@@ -816,7 +816,10 @@ export const ArticleService = {
       });
       if (owned.length === 0) return { count: 0 };
       const res = await tx.article.updateMany({
-        where: { articleId: { in: owned.map((a) => a.articleId) }, ownerUserId },
+        where: {
+          articleId: { in: owned.map((a) => a.articleId) },
+          ownerUserId,
+        },
         data,
       });
       return { count: res.count };
