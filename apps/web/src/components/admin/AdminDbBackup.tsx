@@ -10,11 +10,12 @@ import { Database, Download, Check, Upload, TriangleAlert } from "lucide-react";
 import { adminAPI, authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { formatCount } from "../../utils/number";
 import { useToast } from "../common/Toast";
 import { Button, Section, Field, Input } from "../ui";
 
 export default function AdminDbBackup() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -125,7 +126,8 @@ export default function AdminDbBackup() {
           <ul className="mt-1 grid grid-cols-2 gap-x-3 text-xs ui-text-success">
             {Object.entries(counts).map(([table, n]) => (
               <li key={table}>
-                <code className="font-mono">{table}</code>: {n}
+                <code className="font-mono">{table}</code>:{" "}
+                {formatCount(n, language)}
               </li>
             ))}
           </ul>
@@ -184,12 +186,6 @@ export default function AdminDbBackup() {
               autoComplete="current-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && confirmPassword && !importing) {
-                  e.preventDefault();
-                  void confirmImport();
-                }
-              }}
               required
             />
           </Field>

@@ -73,6 +73,27 @@ describe("<AdminDbBackup />", () => {
     expect(importDb).not.toHaveBeenCalled();
   });
 
+  it("does NOT fire the irreversible replace when Enter is pressed in the password field", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    const file = new File(['{"users":[]}'], "dump.json", {
+      type: "application/json",
+    });
+    await user.upload(fileInput, file);
+
+    const pw = await screen.findByLabelText(/re-enter your password/i);
+    await user.type(pw, "hunter2{Enter}");
+
+    // A reflexive Enter after typing the password must not wipe the DB —
+    // the danger button has to be clicked deliberately (see ConfirmDialog
+    // danger-tone convention in CLAUDE.md).
+    expect(importDb).not.toHaveBeenCalled();
+  });
+
   it("toggles the keep-Stripe-IDs checkbox and surfaces the confirm UI after a file is staged", async () => {
     const user = userEvent.setup();
     renderPanel();
