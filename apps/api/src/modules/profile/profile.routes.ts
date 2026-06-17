@@ -138,7 +138,7 @@ router.post(
     });
     if (!user) throw createHttpError(404, "User not found");
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Invalid password");
+    if (!valid) throw createHttpError(403, "Invalid password");
 
     const { otpauthUrl, backupCodes } = await TotpService.setup(
       user.userId,
@@ -160,7 +160,7 @@ router.post(
     });
     if (!user) throw createHttpError(404, "User not found");
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Invalid password");
+    if (!valid) throw createHttpError(403, "Invalid password");
     await TotpService.verify(user.userId, code);
     await auditAction(req, {
       action: "UPDATE",
@@ -182,7 +182,7 @@ router.delete(
     });
     if (!user) throw createHttpError(404, "User not found");
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Invalid password");
+    if (!valid) throw createHttpError(403, "Invalid password");
     await TotpService.disable(user.userId);
     await auditAction(req, {
       action: "UPDATE",

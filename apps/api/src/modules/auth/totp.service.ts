@@ -101,7 +101,7 @@ export const TotpService = {
     const row = await prisma.totpSecret.findUnique({ where: { userId } });
     if (!row) throw createHttpError(400, "Run setup first");
     const ok = check(code, row.secret);
-    if (!ok) throw createHttpError(401, "Invalid code");
+    if (!ok) throw createHttpError(400, "Invalid code");
     if (row.verified) return { ok: true };
     await prisma.$transaction([
       prisma.totpSecret.update({

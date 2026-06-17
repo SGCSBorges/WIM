@@ -101,12 +101,12 @@ describe("ProfileService.updateEmail", () => {
     ).rejects.toMatchObject({ status: 404 });
   });
 
-  it("rejects with 401 when current password is wrong", async () => {
+  it("rejects with 403 when current password is wrong", async () => {
     const hash = await bcryptRef.realHash!("correct-pw", 1);
     mockPrisma.user.findUnique.mockResolvedValue({ userId: 1, password: hash });
     await expect(
       ProfileService.updateEmail(1, "new@x.com", "wrong-pw")
-    ).rejects.toMatchObject({ status: 401 });
+    ).rejects.toMatchObject({ status: 403 });
   });
 
   it("rejects with 409 when target email is taken by someone else", async () => {
@@ -161,12 +161,12 @@ describe("ProfileService.updateEmail", () => {
 // ---------------------------------------------------------------------------
 
 describe("ProfileService.updatePassword", () => {
-  it("rejects with 401 when current password is wrong", async () => {
+  it("rejects with 403 when current password is wrong", async () => {
     const hash = await bcryptRef.realHash!("correct-pw", 1);
     mockPrisma.user.findUnique.mockResolvedValue({ userId: 2, password: hash });
     await expect(
       ProfileService.updatePassword(2, "wrong-pw", "NewPass1!")
-    ).rejects.toMatchObject({ status: 401 });
+    ).rejects.toMatchObject({ status: 403 });
   });
 
   it("hashes new password and updates user on success", async () => {
@@ -216,12 +216,12 @@ const makeTx = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe("ProfileService.deleteAccount", () => {
-  it("rejects with 401 when current password is wrong", async () => {
+  it("rejects with 403 when current password is wrong", async () => {
     const hash = await bcryptRef.realHash!("right-pw", 1);
     mockPrisma.user.findUnique.mockResolvedValue({ userId: 3, password: hash });
     await expect(
       ProfileService.deleteAccount(3, "wrong-pw")
-    ).rejects.toMatchObject({ status: 401 });
+    ).rejects.toMatchObject({ status: 403 });
   });
 
   it("refuses to delete the last admin", async () => {

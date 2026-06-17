@@ -120,7 +120,7 @@ export const ProfileService = {
     if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Invalid password");
+    if (!valid) throw createHttpError(403, "Invalid password");
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing && existing.userId !== userId)
@@ -146,7 +146,7 @@ export const ProfileService = {
     if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Invalid password");
+    if (!valid) throw createHttpError(403, "Invalid password");
 
     const hashed = await bcrypt.hash(newPassword, 10);
 
@@ -172,7 +172,7 @@ export const ProfileService = {
     if (!user) throw createHttpError(404, "User not found");
 
     const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) throw createHttpError(401, "Invalid password");
+    if (!valid) throw createHttpError(403, "Invalid password");
 
     // Cancel active Stripe subscription before deleting so the user is not
     // charged again after account removal.

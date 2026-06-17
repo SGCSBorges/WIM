@@ -71,6 +71,13 @@ curl -b jar.txt https://wimapi.onrender.com/api/auth/me
   the user list is expected to stay small.
 - Errors come back as `{ "error": "human message" }` with a numeric status
   code. 5xx responses also include `requestId` so support can quote it.
+- **`401` means the session is invalid** (missing/expired/revoked token) and
+  is the only status the web client treats as "log out and bounce to the
+  login screen." A failed step-up check on an *already-authenticated* request
+  — e.g. a wrong current password when changing email/password, deleting the
+  account, or managing 2FA — returns **`403`** (and a bad TOTP code returns
+  `400`), so a mistyped confirmation surfaces inline instead of silently
+  ending the session.
 
 ## Attachments and `/uploads/*`
 
