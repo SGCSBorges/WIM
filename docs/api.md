@@ -234,6 +234,9 @@ same response. An admin changing a user's email via
 Admins control which **role** each named feature requires, overriding the
 hardcoded defaults. POWER_USER is the paywall — gating a feature at
 POWER_USER means "paid"; ADMIN inherits everything via the role hierarchy.
+By default every feature except `cmd_palette` (ADMIN) requires POWER_USER,
+so the full feature set is paid out of the box; an admin can lower a
+specific bar to USER to make that one feature free.
 
 - `GET /api/features` — the caller's `{ [featureKey]: boolean }` access map.
   The web app fetches this once and re-fetches after login / logout / a

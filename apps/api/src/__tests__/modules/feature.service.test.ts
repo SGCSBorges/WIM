@@ -47,13 +47,14 @@ beforeEach(() => {
 });
 
 describe("FeatureService.getAccessMap — defaults", () => {
-  it("USER gets the USER-default features but not the paid/admin ones", async () => {
+  it("USER clears no feature gates by default (all are POWER_USER or ADMIN)", async () => {
     seed([]);
     const map = await FeatureService.getAccessMap("USER");
-    // USER defaults
-    expect(map.reports).toBe(true);
-    expect(map.csv_export).toBe(true);
-    expect(map.bulk_edit).toBe(true);
+    // Every former-USER feature now defaults to POWER_USER.
+    expect(map.reports).toBe(false);
+    expect(map.csv_export).toBe(false);
+    expect(map.bulk_edit).toBe(false);
+    expect(map.notifications).toBe(false);
     // POWER_USER defaults
     expect(map.sharing).toBe(false);
     expect(map.transfers).toBe(false);
@@ -61,11 +62,15 @@ describe("FeatureService.getAccessMap — defaults", () => {
     expect(map.cmd_palette).toBe(false);
   });
 
-  it("POWER_USER clears the POWER_USER gates but not cmd_palette", async () => {
+  it("POWER_USER clears every POWER_USER gate but not cmd_palette", async () => {
     seed([]);
     const map = await FeatureService.getAccessMap("POWER_USER");
     expect(map.sharing).toBe(true);
     expect(map.transfers).toBe(true);
+    // The former-USER features are now POWER_USER-gated, so POWER_USER clears them.
+    expect(map.reports).toBe(true);
+    expect(map.csv_export).toBe(true);
+    expect(map.bulk_edit).toBe(true);
     expect(map.cmd_palette).toBe(false);
   });
 
@@ -80,11 +85,13 @@ describe("FeatureService.getAccessMap — defaults", () => {
 
 describe("FeatureService.getAccessMap — overrides", () => {
   it("a DB row raises the required role above the default", async () => {
-    seed([{ featureKey: "reports", requiredRole: "POWER_USER" }]);
-    const userMap = await FeatureService.getAccessMap("USER");
+    // reports now defaults to POWER_USER; raising it to ADMIN must lock out
+    // even a POWER_USER, proving the override (not just the default) applies.
+    seed([{ featureKey: "reports", requiredRole: "ADMIN" }]);
     const powerMap = await FeatureService.getAccessMap("POWER_USER");
-    expect(userMap.reports).toBe(false);
-    expect(powerMap.reports).toBe(true);
+    const adminMap = await FeatureService.getAccessMap("ADMIN");
+    expect(powerMap.reports).toBe(false);
+    expect(adminMap.reports).toBe(true);
   });
 
   it("a DB row can also lower a default (cmd_palette → USER)", async () => {
@@ -149,7 +156,7 @@ describe("FeatureService.getRequiredRole", () => {
   it("returns the coded default when no row exists", async () => {
     seed([]);
     expect(await FeatureService.getRequiredRole("sharing")).toBe("POWER_USER");
-    expect(await FeatureService.getRequiredRole("reports")).toBe("USER");
+    expect(await FeatureService.getRequiredRole("reports")).toBe("POWER_USER");
   });
 
   it("returns the DB override when present", async () => {

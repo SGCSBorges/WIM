@@ -37,14 +37,14 @@ const DEFAULTS: Record<FeatureKey, RoleName> = {
   cmd_palette: "ADMIN",
   sharing: "POWER_USER",
   transfers: "POWER_USER",
-  reports: "USER",
-  templates: "USER",
-  bulk_edit: "USER",
-  saved_views: "USER",
-  notifications: "USER",
-  calendar_feed: "USER",
-  csv_import: "USER",
-  csv_export: "USER",
+  reports: "POWER_USER",
+  templates: "POWER_USER",
+  bulk_edit: "POWER_USER",
+  saved_views: "POWER_USER",
+  notifications: "POWER_USER",
+  calendar_feed: "POWER_USER",
+  csv_import: "POWER_USER",
+  csv_export: "POWER_USER",
 };
 
 export { DEFAULTS as FEATURE_DEFAULTS };

@@ -239,6 +239,11 @@ suite("API integration (real Postgres)", () => {
 
   it("enables a calendar feed and serves it by token without a cookie", async () => {
     const agent = await register("carol@example.com");
+    // calendar_feed defaults to POWER_USER; authGuard re-reads role per request.
+    await prisma.user.update({
+      where: { email: "carol@example.com" },
+      data: { role: "POWER_USER" },
+    });
     const enable = await agent.post("/api/calendar/token").set("Origin", ORIGIN);
     expect(enable.status).toBe(200);
     const { token } = enable.body as { token: string };
@@ -847,6 +852,11 @@ suite("API integration (real Postgres)", () => {
 
   it("streams an article CSV export with header + row for a created article", async () => {
     const agent = await register("eve@example.com");
+    // csv_export defaults to POWER_USER; authGuard re-reads role per request.
+    await prisma.user.update({
+      where: { email: "eve@example.com" },
+      data: { role: "POWER_USER" },
+    });
     const loc = await agent
       .post("/api/locations")
       .set("Origin", ORIGIN)

@@ -650,9 +650,11 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   overrides.
 - **Service** (`apps/api/src/modules/features/feature.service.ts`):
   `FEATURE_KEYS` + `DEFAULTS` are the source of truth. Defaults:
-  `cmd_palette=ADMIN`, `sharing`/`transfers=POWER_USER`, everything else
-  (`reports`, `templates`, `bulk_edit`, `saved_views`, `notifications`,
-  `calendar_feed`, `csv_import`, `csv_export`) `=USER`. A **60-second
+  `cmd_palette=ADMIN`; **every other feature (`sharing`, `transfers`,
+  `reports`, `templates`, `bulk_edit`, `saved_views`, `notifications`,
+  `calendar_feed`, `csv_import`, `csv_export`) defaults to `POWER_USER`** —
+  i.e. they are all paid features by default, and an admin can lower a bar
+  (e.g. to USER) per feature when desired. A **60-second
   process-level snapshot cache** (`getSnapshot`) holds both tables so gated
   requests don't hit the DB each time; admin writes call `invalidateCache()`
   so changes land within one request cycle, not after the TTL.
@@ -682,8 +684,9 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   feed stay open), `csv_import` (`/articles/import`), `csv_export`
   (`/articles/export/inventory.csv`). `cmd_palette` is frontend-only (it
   reuses the shared article-search endpoint, so there's no dedicated route to
-  gate). All defaults except `cmd_palette`/`sharing`/`transfers` are USER, so
-  the gates are no-ops until an admin raises a bar.
+  gate). Every gate except `cmd_palette` (ADMIN) defaults to POWER_USER, so
+  by default these are all paid features; an admin can lower a bar to USER
+  per feature to make one free.
 - **Admin endpoints** (`admin.routes.ts`): `GET /api/admin/features`
   (flags + active grants), `PUT /api/admin/features/:key` (set required
   role), `POST /api/admin/features/grants` (rejects non-POWER_USER keys),
