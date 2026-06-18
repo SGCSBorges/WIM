@@ -2045,7 +2045,7 @@ export const translations = {
     "home.card.sharing.subtitle": "Deel je inventaris (Power User).",
     "home.card.sharing.cta": "Delen beheren",
 
-    "auth.subtitle": "Warranty & Inventory Manager",
+    "auth.subtitle": "Garantie- & inventarisbeheer",
     "auth.error.default": "Authenticatie mislukt",
     "auth.error.emailInvalid": "Voer een geldig e-mailadres in",
     "auth.error.passwordTooShort":
