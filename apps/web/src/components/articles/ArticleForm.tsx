@@ -40,6 +40,7 @@ import { useToast } from "../common/Toast";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
 import BarcodeScanner, { barcodeSupported } from "./BarcodeScanner";
 import TemplateBar from "./TemplateBar";
+import { useFeature } from "../../features/features";
 import {
   barcodeLookupEnabled,
   lookupProduct,
@@ -59,6 +60,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
 }) => {
   const { t } = useI18n();
   const toast = useToast();
+  const canUseTemplates = useFeature("templates");
   const formErrorRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(true);
   useEffect(
@@ -496,7 +498,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         {article ? t("articleForm.editTitle") : t("articleForm.createTitle")}
       </h2>
 
-      {!article && (
+      {!article && canUseTemplates && (
         <TemplateBar
           getCurrentPayload={() => ({
             articleNom: formData.articleNom || undefined,

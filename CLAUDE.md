@@ -485,7 +485,10 @@ unchanged when `User.totpEnabled = false`.
   live ids at apply time. Endpoints under
   `/api/article-templates` (CRUD). Web: `TemplateBar` at the top of
   `ArticleForm` in create mode hosts the picker + "Save as template…"
-  dialog; hides itself silently if the endpoint isn't available.
+  dialog. It's gated on `useFeature("templates")` (so it doesn't render —
+  or fire a doomed list fetch — for a USER once templates is POWER_USER by
+  default), and still self-hides via its internal `failed` flag if the
+  endpoint errors for an entitled user (older backend).
 
 ## Sharing model (two flavors; share-capable = POWER_USER or ADMIN)
 
@@ -714,7 +717,8 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   until `loaded` to avoid share/reports items flickering. Component gates: the
   Reports route + nav item (via `NavItem.feature`), the notification bell
   (`TopBar`), the CSV import/export + saved-views + bulk-edit affordances
-  (`ArticlesList`/`BulkActionBar`), and the Profile calendar-feed section all
+  (`ArticlesList`/`BulkActionBar`), the `TemplateBar` in `ArticleForm`
+  (`useFeature("templates")`), and the Profile calendar-feed section all
   hide when their flag is off. The provider resets to all-false on a failed
   fetch so a logout clears granted access. `AdminFeaturesTab` calls `refresh()`
   after each save so the admin's own session reflects the change immediately.
