@@ -722,6 +722,21 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   hide when their flag is off. The provider resets to all-false on a failed
   fetch so a logout clears granted access. `AdminFeaturesTab` calls `refresh()`
   after each save so the admin's own session reflects the change immediately.
+- **Upgrade teasers** (`features/upgrade.tsx`): `UpgradeProvider` (mounted in
+  `main.tsx` just inside `FeatureProvider`) owns a single app-level
+  upgrade dialog and the shared Stripe-checkout starter; `useUpgrade()`
+  exposes `promptUpgrade()` (open the dialog) + `startCheckout(plan)`. So a
+  USER can *discover* paid features rather than just not see them, locked
+  affordances render in place of a hard hide: the gated `/reports`,
+  `/sharing`, `/transfers` routes render `components/common/UpgradeTeaser`
+  (naming the feature) instead of redirecting home; Sidebar/MobileDrawer
+  badge feature-locked nav items with a lock (`navItemFeatureKey` maps an
+  item → its flag); and the ArticlesList CSV import/export buttons + the
+  Profile calendar section render a `Lock`-icon button that calls
+  `promptUpgrade()`. "Locked" is simply `loaded && !features[key]` — no role
+  check needed, since POWER_USER/ADMIN/granted users all have the flag true.
+  The dialog/teaser reuse `home.upgrade.buyMonthly`/`buyYearly` for the plan
+  buttons; the existing Home upgrade banner is unchanged.
 
 ## PWA
 

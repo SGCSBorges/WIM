@@ -7,9 +7,14 @@
  */
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { X, LogOut } from "lucide-react";
+import { X, LogOut, Lock } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
-import { visibleNavItems, isActivePath } from "../../lib/navItems";
+import {
+  visibleNavItems,
+  isActivePath,
+  navItemFeatureKey,
+} from "../../lib/navItems";
+import { useFeatures } from "../../features/features";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import { Button } from "../ui";
 
@@ -45,7 +50,13 @@ export default function MobileDrawer({
   const { pathname } = useLocation();
   const firstLinkRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
+  const { features, loaded } = useFeatures();
   const items = visibleNavItems(role);
+  const lockedFor = (item: (typeof items)[number]): boolean => {
+    if (!loaded) return false;
+    const key = navItemFeatureKey(item);
+    return key ? features[key as keyof typeof features] === false : false;
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -123,6 +134,7 @@ export default function MobileDrawer({
           {items.map((item, i) => {
             const active = isActivePath(item.path, pathname);
             const Icon = item.icon;
+            const locked = lockedFor(item);
             return (
               <button
                 key={item.path}
@@ -130,12 +142,19 @@ export default function MobileDrawer({
                 type="button"
                 onClick={() => navigate(item.path)}
                 aria-current={active ? "page" : undefined}
+                title={locked ? t("upgrade.lockedHint") : undefined}
                 className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
                   active ? "ui-nav-item-active" : "ui-btn-ghost"
                 }`}
               >
                 <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
                 {t(`nav.${item.key}`)}
+                {locked && (
+                  <Lock
+                    className="ml-auto h-4 w-4 shrink-0 ui-text-muted"
+                    aria-label={t("upgrade.lockedHint")}
+                  />
+                )}
               </button>
             );
           })}

@@ -32,6 +32,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Lock,
 } from "lucide-react";
 import ArticleForm from "./ArticleForm";
 import ShareArticleButton from "./ShareArticleButton";
@@ -58,7 +59,8 @@ import CsvImportModal from "./CsvImportModal";
 import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
 import { consumeSharedDraft } from "../../utils/shareTarget";
-import { useFeature } from "../../features/features";
+import { useFeature, useFeatures } from "../../features/features";
+import { useUpgrade } from "../../features/upgrade";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import { PageHeader, Button, Input, Select, Badge } from "../ui";
 
@@ -70,6 +72,8 @@ const ArticlesList: React.FC = () => {
   const canSavedViews = useFeature("saved_views");
   const canCsvImport = useFeature("csv_import");
   const canCsvExport = useFeature("csv_export");
+  const { loaded: featuresLoaded } = useFeatures();
+  const { promptUpgrade } = useUpgrade();
   const [currency, setCurrency] = useState("USD");
 
   const getDaysUntilExpiry = (
@@ -817,7 +821,7 @@ const ArticlesList: React.FC = () => {
 
         {/* Secondary actions */}
         <div className="flex flex-wrap items-center gap-2 border-t ui-divider pt-3">
-          {canCsvExport && (
+          {canCsvExport ? (
             <Button
               variant="outline"
               size="sm"
@@ -828,6 +832,18 @@ const ArticlesList: React.FC = () => {
             >
               {t("articles.export.csv")}
             </Button>
+          ) : (
+            featuresLoaded && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={promptUpgrade}
+                title={t("upgrade.lockedHint")}
+                leftIcon={<Lock className="h-4 w-4" />}
+              >
+                {t("articles.export.csv")}
+              </Button>
+            )
           )}
           <Button
             variant="outline"
@@ -863,7 +879,7 @@ const ArticlesList: React.FC = () => {
           >
             {t("articles.export.labels")}
           </Button>
-          {canCsvImport && (
+          {canCsvImport ? (
             <Button
               variant="outline"
               size="sm"
@@ -872,6 +888,18 @@ const ArticlesList: React.FC = () => {
             >
               {t("articles.import.csv")}
             </Button>
+          ) : (
+            featuresLoaded && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={promptUpgrade}
+                title={t("upgrade.lockedHint")}
+                leftIcon={<Lock className="h-4 w-4" />}
+              >
+                {t("articles.import.csv")}
+              </Button>
+            )
           )}
           <Button
             variant="outline"

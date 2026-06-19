@@ -65,7 +65,8 @@ function isStripeUrl(url: string): boolean {
 }
 import OnboardingChecklist from "./components/onboarding/OnboardingChecklist";
 import { Button, Card } from "./components/ui";
-import { NAV_ITEMS } from "./lib/navItems";
+import { NAV_ITEMS, type NavKey } from "./lib/navItems";
+import UpgradeTeaser from "./components/common/UpgradeTeaser";
 
 // Route-level code splitting: each lazy import becomes its own chunk so the
 // initial JS bundle only ships the login flow + shell. The rest is fetched
@@ -496,13 +497,20 @@ export default function App() {
   // effect until /api/features resolves — an entitled user landing directly on
   // the URL would be bounced to "/" (a `replace` that can't be undone). Hold on
   // the route skeleton until the map is loaded, then allow or redirect.
-  const gatedRoute = (allowed: boolean, element: React.ReactNode) =>
+  // When the feature is denied, show an upgrade teaser naming the feature the
+  // user tried to open (rather than silently redirecting home), so a USER can
+  // discover the paid feature and the path to unlock it.
+  const gatedRoute = (
+    allowed: boolean,
+    element: React.ReactNode,
+    feature: NavKey
+  ) =>
     !featuresLoaded ? (
       <RouteFallbackSkeleton />
     ) : allowed ? (
       element
     ) : (
-      <Navigate to="/" replace />
+      <UpgradeTeaser feature={feature} />
     );
 
   const sharingRoute = gatedRoute(
@@ -512,7 +520,8 @@ export default function App() {
       <AcceptInviteForm />
       <SharesList />
       <SharedArticlesView />
-    </div>
+    </div>,
+    "sharing"
   );
 
   return (
@@ -559,14 +568,14 @@ export default function App() {
           <Route path="/alerts" element={<AlertsView />} />
           <Route
             path="/reports"
-            element={gatedRoute(canReports, <ReportsView />)}
+            element={gatedRoute(canReports, <ReportsView />, "reports")}
           />
           <Route path="/profile" element={<ProfileView />} />
           <Route path="/sharing" element={sharingRoute} />
           <Route path="/sharing/accept" element={sharingRoute} />
           <Route
             path="/transfers"
-            element={gatedRoute(canTransfer, <TransfersView />)}
+            element={gatedRoute(canTransfer, <TransfersView />, "transfers")}
           />
           <Route
             path="/admin"

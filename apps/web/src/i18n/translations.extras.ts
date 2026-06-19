@@ -9,6 +9,20 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "upgrade.title": "Unlock with Power User",
+    "upgrade.subtitle":
+      "This is a Power User feature. Upgrade to unlock it — plus everything else:",
+    "upgrade.benefit.reports": "Insurance-ready portfolio PDF reports",
+    "upgrade.benefit.csv": "CSV import & export of your inventory",
+    "upgrade.benefit.calendar":
+      "Subscribe to warranty dates as a calendar feed",
+    "upgrade.benefit.sharing":
+      "Share your inventory & transfer items to others",
+    "upgrade.benefit.power":
+      "Bulk editing, saved views, templates & alert notifications",
+    "upgrade.later": "Maybe later",
+    "upgrade.locked": "Power User",
+    "upgrade.lockedHint": "Upgrade to Power User to unlock",
     "auth.hero.tagline": "Everything you own, under warranty, in one place.",
     "auth.hero.f1": "Track every device, receipt and warranty",
     "auth.hero.f2": "Get reminded before a warranty expires",
@@ -742,6 +756,21 @@ export const extras = {
     "features.csv_export": "CSV export",
   },
   fr: {
+    "upgrade.title": "Débloquer avec Power User",
+    "upgrade.subtitle":
+      "Ceci est une fonctionnalité Power User. Passez à Power User pour la débloquer — ainsi que tout le reste :",
+    "upgrade.benefit.reports":
+      "Rapports PDF de portefeuille prêts pour l'assurance",
+    "upgrade.benefit.csv": "Import & export CSV de votre inventaire",
+    "upgrade.benefit.calendar":
+      "Abonnez-vous aux dates de garantie via un flux de calendrier",
+    "upgrade.benefit.sharing":
+      "Partagez votre inventaire & transférez des articles",
+    "upgrade.benefit.power":
+      "Édition en masse, vues enregistrées, modèles & notifications d'alerte",
+    "upgrade.later": "Plus tard",
+    "upgrade.locked": "Power User",
+    "upgrade.lockedHint": "Passez à Power User pour débloquer",
     "auth.hero.tagline":
       "Tout ce que vous possédez, sous garantie, au même endroit.",
     "auth.hero.f1": "Suivez chaque appareil, facture et garantie",
@@ -1501,6 +1530,20 @@ export const extras = {
     "features.csv_export": "Export CSV",
   },
   pt: {
+    "upgrade.title": "Desbloquear com Power User",
+    "upgrade.subtitle":
+      "Esta é uma funcionalidade Power User. Faça upgrade para desbloqueá-la — e tudo o resto:",
+    "upgrade.benefit.reports":
+      "Relatórios PDF de portfólio prontos para seguro",
+    "upgrade.benefit.csv": "Importação & exportação CSV do seu inventário",
+    "upgrade.benefit.calendar":
+      "Subscreva as datas de garantia como um feed de calendário",
+    "upgrade.benefit.sharing": "Partilhe o seu inventário & transfira artigos",
+    "upgrade.benefit.power":
+      "Edição em massa, vistas guardadas, modelos & notificações de alerta",
+    "upgrade.later": "Mais tarde",
+    "upgrade.locked": "Power User",
+    "upgrade.lockedHint": "Faça upgrade para Power User para desbloquear",
     "auth.hero.tagline": "Tudo o que você tem, na garantia, num só lugar.",
     "auth.hero.f1": "Acompanhe cada aparelho, recibo e garantia",
     "auth.hero.f2": "Seja avisado antes de uma garantia expirar",
@@ -2256,6 +2299,19 @@ export const extras = {
     "features.csv_export": "Exportação CSV",
   },
   es: {
+    "upgrade.title": "Desbloquear con Power User",
+    "upgrade.subtitle":
+      "Esta es una función Power User. Mejora a Power User para desbloquearla, y todo lo demás:",
+    "upgrade.benefit.reports": "Informes PDF de cartera listos para el seguro",
+    "upgrade.benefit.csv": "Importación y exportación CSV de tu inventario",
+    "upgrade.benefit.calendar":
+      "Suscríbete a las fechas de garantía como un feed de calendario",
+    "upgrade.benefit.sharing": "Comparte tu inventario y transfiere artículos",
+    "upgrade.benefit.power":
+      "Edición masiva, vistas guardadas, plantillas y notificaciones de alerta",
+    "upgrade.later": "Quizás más tarde",
+    "upgrade.locked": "Power User",
+    "upgrade.lockedHint": "Mejora a Power User para desbloquear",
     "auth.hero.tagline": "Todo lo que posees, con garantía, en un solo lugar.",
     "auth.hero.f1": "Controla cada dispositivo, factura y garantía",
     "auth.hero.f2": "Recibe un aviso antes de que caduque una garantía",
@@ -3018,6 +3074,18 @@ export const extras = {
     "features.csv_export": "Exportación CSV",
   },
   nl: {
+    "upgrade.title": "Ontgrendelen met Power User",
+    "upgrade.subtitle":
+      "Dit is een Power User-functie. Upgrade naar Power User om deze te ontgrendelen — plus al het andere:",
+    "upgrade.benefit.reports": "Verzekeringsklare portfolio-PDF-rapporten",
+    "upgrade.benefit.csv": "CSV-import & -export van je inventaris",
+    "upgrade.benefit.calendar": "Abonneer op garantiedatums als een agendafeed",
+    "upgrade.benefit.sharing": "Deel je inventaris & draag artikelen over",
+    "upgrade.benefit.power":
+      "Bulkbewerking, opgeslagen weergaven, sjablonen & meldingen",
+    "upgrade.later": "Misschien later",
+    "upgrade.locked": "Power User",
+    "upgrade.lockedHint": "Upgrade naar Power User om te ontgrendelen",
     "auth.hero.tagline": "Alles wat u bezit, onder garantie, op één plek.",
     "auth.hero.f1": "Volg elk apparaat, elke bon en garantie",
     "auth.hero.f2": "Word herinnerd voordat een garantie verloopt",

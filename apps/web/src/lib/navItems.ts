@@ -80,6 +80,15 @@ export function visibleNavItems(
   });
 }
 
+/** The feature flag a nav item maps to (for the locked-teaser indicator), or
+ *  undefined for ungated / role-only items (home, articles, admin, …). */
+export function navItemFeatureKey(item: NavItem): string | undefined {
+  if (item.feature) return item.feature;
+  if (item.requires === "share")
+    return item.key === "transfers" ? "transfers" : "sharing";
+  return undefined;
+}
+
 /** True when `path` is the active section for the current location. The home
  *  route matches exactly; section roots also match their nested routes
  *  (e.g. /articles is active on /articles/123). */

@@ -4,9 +4,14 @@
  * localStorage). Active section is derived from the current route.
  */
 import { useNavigate, useLocation } from "react-router-dom";
-import { PanelLeftClose, PanelLeft } from "lucide-react";
+import { PanelLeftClose, PanelLeft, Lock } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
-import { visibleNavItems, isActivePath } from "../../lib/navItems";
+import {
+  visibleNavItems,
+  isActivePath,
+  navItemFeatureKey,
+} from "../../lib/navItems";
+import { useFeatures } from "../../features/features";
 import { Badge } from "../ui";
 
 export interface SidebarProps {
@@ -23,7 +28,16 @@ export default function Sidebar({
   const { t } = useI18n();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { features, loaded } = useFeatures();
   const items = visibleNavItems(role);
+  // A visible nav item is "locked" when its feature flag has loaded false —
+  // the user can still open it (the route shows an upgrade teaser), so we just
+  // badge it rather than hide it, surfacing the paid feature for discovery.
+  const lockedFor = (item: (typeof items)[number]): boolean => {
+    if (!loaded) return false;
+    const key = navItemFeatureKey(item);
+    return key ? features[key as keyof typeof features] === false : false;
+  };
 
   return (
     <aside
@@ -62,12 +76,20 @@ export default function Sidebar({
           const active = isActivePath(item.path, pathname);
           const Icon = item.icon;
           const label = t(`nav.${item.key}`);
+          const locked = lockedFor(item);
+          const title = collapsed
+            ? locked
+              ? `${label} — ${t("upgrade.lockedHint")}`
+              : label
+            : locked
+              ? t("upgrade.lockedHint")
+              : undefined;
           return (
             <button
               key={item.path}
               type="button"
               onClick={() => navigate(item.path)}
-              title={collapsed ? label : undefined}
+              title={title}
               aria-current={active ? "page" : undefined}
               className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 collapsed ? "justify-center" : ""
@@ -75,6 +97,12 @@ export default function Sidebar({
             >
               <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
               {!collapsed && <span className="truncate">{label}</span>}
+              {!collapsed && locked && (
+                <Lock
+                  className="ml-auto h-3.5 w-3.5 shrink-0 ui-text-muted"
+                  aria-label={t("upgrade.lockedHint")}
+                />
+              )}
             </button>
           );
         })}

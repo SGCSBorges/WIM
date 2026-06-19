@@ -23,6 +23,7 @@ import { ThemeProvider } from "./theme/theme";
 import { PreferencesProvider } from "./preferences/preferences";
 import { ToastProvider } from "./components/common/Toast";
 import { FeatureProvider } from "./features/features";
+import { UpgradeProvider } from "./features/upgrade";
 
 // Surface promise rejections that escape try/catch (most network errors that
 // aren't awaited end up here). Without this listener they die silently in
@@ -53,8 +54,10 @@ createRoot(document.getElementById("root")!).render(
             <PreferencesProvider>
               <ToastProvider>
                 <FeatureProvider>
-                  <RouteChrome />
-                  <App />
+                  <UpgradeProvider>
+                    <RouteChrome />
+                    <App />
+                  </UpgradeProvider>
                 </FeatureProvider>
               </ToastProvider>
             </PreferencesProvider>

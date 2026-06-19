@@ -57,7 +57,8 @@ function isStripeUrl(url: string): boolean {
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
-import { useFeature } from "../../features/features";
+import { useFeature, useFeatures } from "../../features/features";
+import { useUpgrade } from "../../features/upgrade";
 import {
   pushSupported,
   isPushSubscribed,
@@ -149,6 +150,8 @@ export default function ProfileView() {
   // call setState after the component unmounts (user navigates away mid-load).
   const canShare = useFeature("sharing");
   const canCalendarFeed = useFeature("calendar_feed");
+  const { loaded: featuresLoaded } = useFeatures();
+  const { promptUpgrade } = useUpgrade();
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -640,6 +643,23 @@ export default function ProfileView() {
                 {t("calendar.enable")}
               </Button>
             )}
+          </Section>
+        )}
+
+        {/* Locked teaser when calendar feed is a paid feature the user lacks. */}
+        {!canCalendarFeed && !calendarUrl && featuresLoaded && (
+          <Section
+            icon={<Calendar className="h-5 w-5" />}
+            title={t("calendar.title")}
+            description={t("calendar.subtitle")}
+          >
+            <Button
+              variant="outline"
+              onClick={promptUpgrade}
+              leftIcon={<Lock className="h-4 w-4" />}
+            >
+              {t("calendar.enable")}
+            </Button>
           </Section>
         )}
 
