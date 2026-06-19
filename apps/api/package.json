@@ -54,7 +54,7 @@
     "helmet": "^8.1.0",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^2.0.2",
+    "multer": "^2.2.0",
     "otplib": "^12.0.1",
     "pdfkit": "^0.18.0",
     "pg": "^8.16.3",
