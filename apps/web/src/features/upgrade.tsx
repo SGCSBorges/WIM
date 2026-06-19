@@ -57,7 +57,7 @@ export function UpgradeBenefits() {
     "upgrade.benefit.calendar",
     "upgrade.benefit.sharing",
     "upgrade.benefit.power",
-  ];
+  ] as const;
   return (
     <ul className="space-y-2">
       {keys.map((k) => (
