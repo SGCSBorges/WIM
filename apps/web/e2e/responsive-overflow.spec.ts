@@ -56,8 +56,10 @@ for (const vp of VIEWPORTS) {
       test(`no horizontal overflow on ${path}`, async ({ page }) => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(path, { waitUntil: "networkidle" });
-        // Wait for the React tree to paint something interactive.
-        await page.locator("#root :is(input, button, h1)").first().waitFor();
+        // Wait for a *visible* form control to confirm the React tree painted.
+        // (`:visible` matters: the auth hero's <h1> is `hidden` below lg, so a
+        // generic first-match would wait forever on it at phone/tablet widths.)
+        await page.locator("input:visible").first().waitFor();
         await expectNoHorizontalOverflow(page);
       });
     }
