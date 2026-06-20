@@ -1,12 +1,5 @@
 import { execSync } from "node:child_process";
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-} from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { Express } from "express";
 import type { PrismaClient } from "@prisma/client";
 import type supertestType from "supertest";
@@ -60,13 +53,10 @@ suite("API integration (real Postgres)", () => {
     // DB is in — in CI it reuses the Postgres service that the drift check
     // leaves with a schema but no migration history, which `migrate deploy`
     // refuses (P3005). `reset` drops everything and reapplies migrations.
-    execSync(
-      "npx prisma migrate reset --force --skip-seed --skip-generate",
-      {
-        env: { ...process.env, DATABASE_URL: INTEGRATION_URL },
-        stdio: "inherit",
-      }
-    );
+    execSync("npx prisma migrate reset --force --skip-seed --skip-generate", {
+      env: { ...process.env, DATABASE_URL: INTEGRATION_URL },
+      stdio: "inherit",
+    });
 
     const appMod = await import("../../app");
     const prismaMod = await import("../../libs/prisma");
@@ -211,9 +201,9 @@ suite("API integration (real Postgres)", () => {
     }
 
     const asc = await agent.get("/api/articles?sort=articleNom&dir=asc");
-    expect(asc.body.items.map((a: { articleNom: string }) => a.articleNom)).toEqual(
-      ["Alpha", "Mu", "Zeta"]
-    );
+    expect(
+      asc.body.items.map((a: { articleNom: string }) => a.articleNom)
+    ).toEqual(["Alpha", "Mu", "Zeta"]);
     const desc = await agent.get("/api/articles?sort=articleNom&dir=desc");
     expect(
       desc.body.items.map((a: { articleNom: string }) => a.articleNom)
@@ -244,7 +234,9 @@ suite("API integration (real Postgres)", () => {
       where: { email: "carol@example.com" },
       data: { role: "POWER_USER" },
     });
-    const enable = await agent.post("/api/calendar/token").set("Origin", ORIGIN);
+    const enable = await agent
+      .post("/api/calendar/token")
+      .set("Origin", ORIGIN);
     expect(enable.status).toBe(200);
     const { token } = enable.body as { token: string };
     expect(token).toMatch(/^[a-f0-9]{64}$/);
@@ -304,9 +296,7 @@ suite("API integration (real Postgres)", () => {
       });
     const id = created.body.articleId as number;
 
-    const del = await agent
-      .delete(`/api/articles/${id}`)
-      .set("Origin", ORIGIN);
+    const del = await agent.delete(`/api/articles/${id}`).set("Origin", ORIGIN);
     expect(del.status).toBe(204);
 
     const re = await agent.get(`/api/articles/${id}`);
@@ -352,9 +342,7 @@ suite("API integration (real Postgres)", () => {
 
     // Remove from second; first link stays.
     const remove = await agent
-      .delete(
-        `/api/locations/${locB.body.locationId}/articles/${articleId}`
-      )
+      .delete(`/api/locations/${locB.body.locationId}/articles/${articleId}`)
       .set("Origin", ORIGIN);
     expect(remove.status).toBe(204);
 
@@ -706,8 +694,9 @@ suite("API integration (real Postgres)", () => {
     expect(dup.body.articleNom).toBe("Drill (copy)");
     expect(dup.body.brand).toBe("DeWalt");
     expect(dup.body.serialNumber).toBe("DW-001");
-    expect(dup.body.locations.map((l: { locationId: number }) => l.locationId))
-      .toEqual([loc.body.locationId]);
+    expect(
+      dup.body.locations.map((l: { locationId: number }) => l.locationId)
+    ).toEqual([loc.body.locationId]);
     expect(dup.body.tags.map((tg: { tagId: number }) => tg.tagId)).toEqual([
       tag.body.tagId,
     ]);
@@ -822,16 +811,16 @@ suite("API integration (real Postgres)", () => {
     const id = create.body.articleId as number;
 
     // Soft-delete via DELETE /:id.
-    const del = await agent
-      .delete(`/api/articles/${id}`)
-      .set("Origin", ORIGIN);
+    const del = await agent.delete(`/api/articles/${id}`).set("Origin", ORIGIN);
     expect(del.status).toBe(204);
 
     // Live get returns 404; live list excludes it.
     const liveGet = await agent.get(`/api/articles/${id}`);
     expect(liveGet.status).toBe(404);
     const list = await agent.get("/api/articles");
-    expect(list.body.items.find((a: { articleId: number }) => a.articleId === id)).toBeUndefined();
+    expect(
+      list.body.items.find((a: { articleId: number }) => a.articleId === id)
+    ).toBeUndefined();
 
     // Trash lists it.
     const trash = await agent.get("/api/articles/trash");
@@ -930,5 +919,106 @@ suite("API integration (real Postgres)", () => {
     );
     expect(past.status).toBe(200);
     expect(past.body.entries.length).toBe(0);
+  });
+
+  // Secure messaging — exercises the paywall gate, article-visibility check,
+  // participant scoping, and the unread/read lifecycle end-to-end.
+  it("walks the messaging flow: paywall, open thread, reply, participant scoping", async () => {
+    const makePower = async (email: string) => {
+      const agent = await register(email);
+      await prisma.user.update({
+        where: { email },
+        data: { role: "POWER_USER" },
+      });
+      return agent;
+    };
+
+    // Owner (POWER_USER) creates an article and shares it publicly.
+    const owner = await makePower("msg-owner@example.com");
+    const loc = await owner
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Garage" });
+    const created = await owner
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Drone",
+        articleModele: "Mavic",
+        locationIds: [loc.body.locationId],
+      });
+    const articleId = created.body.articleId as number;
+    expect(
+      (
+        await owner
+          .post(`/api/articles/${articleId}/share`)
+          .set("Origin", ORIGIN)
+      ).status
+    ).toBe(200);
+
+    // A plain USER is blocked by the messaging paywall (feature gate, 403).
+    const freeUser = await register("msg-free@example.com");
+    const blocked = await freeUser
+      .post("/api/messages/threads")
+      .set("Origin", ORIGIN)
+      .send({ articleId, body: "can I have it?" });
+    expect(blocked.status).toBe(403);
+
+    // The interested Power User opens a thread on the shared item.
+    const buyer = await makePower("msg-buyer@example.com");
+    const open = await buyer
+      .post("/api/messages/threads")
+      .set("Origin", ORIGIN)
+      .send({ articleId, body: "Interested — would you transfer this?" });
+    expect(open.status).toBe(201);
+    const threadId = open.body.threadId as number;
+
+    // Re-messaging the same item continues the SAME thread (unique constraint).
+    const again = await buyer
+      .post("/api/messages/threads")
+      .set("Origin", ORIGIN)
+      .send({ articleId, body: "still keen!" });
+    expect(again.body.threadId).toBe(threadId);
+
+    // The owner sees one unread thread and the buyer none.
+    expect((await owner.get("/api/messages/unread-count")).body.count).toBe(1);
+    expect((await buyer.get("/api/messages/unread-count")).body.count).toBe(0);
+
+    // The owner reads it (clearing unread) and replies.
+    const read = await owner.get(`/api/messages/threads/${threadId}`);
+    expect(read.status).toBe(200);
+    expect(read.body.messages.length).toBe(2);
+    expect(read.body.role).toBe("owner");
+    expect((await owner.get("/api/messages/unread-count")).body.count).toBe(0);
+
+    const reply = await owner
+      .post(`/api/messages/threads/${threadId}/messages`)
+      .set("Origin", ORIGIN)
+      .send({ body: "Sure, make an offer." });
+    expect(reply.status).toBe(201);
+    // The reply now makes the thread unread for the buyer.
+    expect((await buyer.get("/api/messages/unread-count")).body.count).toBe(1);
+
+    // A non-participant Power User cannot read or post to the thread (404,
+    // not 403 — the thread's existence is not leaked).
+    const stranger = await makePower("msg-stranger@example.com");
+    expect(
+      (await stranger.get(`/api/messages/threads/${threadId}`)).status
+    ).toBe(404);
+    expect(
+      (
+        await stranger
+          .post(`/api/messages/threads/${threadId}/messages`)
+          .set("Origin", ORIGIN)
+          .send({ body: "butting in" })
+      ).status
+    ).toBe(404);
+
+    // The buyer's inbox lists the thread, pinned to the article.
+    const inbox = await buyer.get("/api/messages/threads");
+    expect(inbox.status).toBe(200);
+    expect(inbox.body.items.length).toBe(1);
+    expect(inbox.body.items[0].article.articleId).toBe(articleId);
+    expect(inbox.body.items[0].unread).toBe(true);
   });
 });
