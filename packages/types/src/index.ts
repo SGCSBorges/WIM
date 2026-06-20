@@ -336,11 +336,16 @@ export interface SharedArticleRow {
     articleModele: string;
     articleDescription?: string | null;
     productImageUrl?: string | null;
+    // Identity fields the shared list already returns (the API serializes the
+    // full article row); surfaced in the read-only "view item" hero card.
+    serialNumber?: string | null;
+    brand?: string | null;
     createdAt: string;
     updatedAt: string;
     garantie?: {
       garantieId: number;
       garantieNom: string;
+      garantieDateAchat?: string;
       garantieFin: string;
       garantieIsValide: boolean;
     } | null;

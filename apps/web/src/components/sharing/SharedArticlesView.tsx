@@ -13,6 +13,7 @@ import {
   Check,
   ArrowRightLeft,
   MessagesSquare,
+  Eye,
 } from "lucide-react";
 import { sharedAPI, SharedArticleRow } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
@@ -24,6 +25,7 @@ import { Skeleton } from "../common/Skeleton";
 import { Section, Button, Input, Textarea, Badge } from "../ui";
 import TransferDialog from "../articles/TransferDialog";
 import MessageComposeDialog from "../messages/MessageComposeDialog";
+import SharedArticleHeroDialog from "./SharedArticleHeroDialog";
 import { useToast } from "../common/Toast";
 
 type EditDraft = {
@@ -54,6 +56,7 @@ export default function SharedArticlesView() {
   const [pullTransferRow, setPullTransferRow] =
     useState<SharedArticleRow | null>(null);
   const [messageRow, setMessageRow] = useState<SharedArticleRow | null>(null);
+  const [viewRow, setViewRow] = useState<SharedArticleRow | null>(null);
 
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EditDraft | null>(null);
@@ -207,7 +210,15 @@ export default function SharedArticlesView() {
                         </div>
                       )}
                     </div>
-                    <div className="flex shrink-0 gap-2">
+                    <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setViewRow(r)}
+                        leftIcon={<Eye className="h-4 w-4" />}
+                      >
+                        {t("shared.view")}
+                      </Button>
                       {canEdit && (
                         <Button
                           variant="outline"
@@ -347,6 +358,13 @@ export default function SharedArticlesView() {
             toast.show(t("messages.sent"), { kind: "success" });
             navigate(`/messages?thread=${threadId}`);
           }}
+        />
+      )}
+
+      {viewRow && (
+        <SharedArticleHeroDialog
+          row={viewRow}
+          onClose={() => setViewRow(null)}
         />
       )}
     </Section>

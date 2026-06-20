@@ -691,6 +691,7 @@ export const extras = {
     "messages.compose.placeholder":
       "Hi! I'm interested in this item — would you consider transferring it?",
     "messages.compose.send": "Send message",
+    "shared.view": "View",
     "transfer.push": "Send article",
     "transfer.pull": "Request ownership",
     "transfer.dialog.pushTitle": "Send article to another user",
@@ -1488,6 +1489,7 @@ export const extras = {
     "messages.compose.placeholder":
       "Bonjour ! Cet objet m'intéresse — accepteriez-vous de le transférer ?",
     "messages.compose.send": "Envoyer le message",
+    "shared.view": "Voir",
     "transfer.push": "Envoyer l'article",
     "transfer.pull": "Demander la propriété",
     "transfer.dialog.pushTitle": "Envoyer l'article à un autre utilisateur",
@@ -2279,6 +2281,7 @@ export const extras = {
     "messages.compose.placeholder":
       "Olá! Tenho interesse neste item — consideraria transferi-lo?",
     "messages.compose.send": "Enviar mensagem",
+    "shared.view": "Ver",
     "transfer.push": "Enviar artigo",
     "transfer.pull": "Solicitar propriedade",
     "transfer.dialog.pushTitle": "Enviar artigo para outro utilizador",
@@ -3078,6 +3081,7 @@ export const extras = {
     "messages.compose.placeholder":
       "¡Hola! Me interesa este artículo, ¿considerarías transferirlo?",
     "messages.compose.send": "Enviar mensaje",
+    "shared.view": "Ver",
     "transfer.push": "Enviar artículo",
     "transfer.pull": "Solicitar propiedad",
     "transfer.dialog.pushTitle": "Enviar artículo a otro usuario",
@@ -3867,6 +3871,7 @@ export const extras = {
     "messages.compose.placeholder":
       "Hoi! Ik ben geïnteresseerd in dit item — zou je het willen overdragen?",
     "messages.compose.send": "Bericht verzenden",
+    "shared.view": "Bekijken",
     "transfer.push": "Artikel verzenden",
     "transfer.pull": "Eigendom aanvragen",
     "transfer.dialog.pushTitle": "Artikel naar een andere gebruiker sturen",
