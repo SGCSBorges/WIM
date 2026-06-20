@@ -18,6 +18,8 @@ export const extras = {
       "Subscribe to warranty dates as a calendar feed",
     "upgrade.benefit.sharing":
       "Share your inventory & transfer items to others",
+    "upgrade.benefit.messaging":
+      "Message other Power Users to negotiate item transfers",
     "upgrade.benefit.power":
       "Bulk editing, saved views, templates & alert notifications",
     "upgrade.later": "Maybe later",
@@ -765,6 +767,7 @@ export const extras = {
     "features.cmd_palette": "Command palette (⌘K)",
     "features.sharing": "Inventory sharing",
     "features.transfers": "Article transfers",
+    "features.messaging": "Secure messaging",
     "features.reports": "Portfolio reports",
     "features.templates": "Article templates",
     "features.bulk_edit": "Bulk field edit",
@@ -785,6 +788,8 @@ export const extras = {
       "Abonnez-vous aux dates de garantie via un flux de calendrier",
     "upgrade.benefit.sharing":
       "Partagez votre inventaire & transférez des articles",
+    "upgrade.benefit.messaging":
+      "Échangez avec d'autres utilisateurs Power pour négocier des transferts",
     "upgrade.benefit.power":
       "Édition en masse, vues enregistrées, modèles & notifications d'alerte",
     "upgrade.later": "Plus tard",
@@ -1560,6 +1565,7 @@ export const extras = {
     "features.cmd_palette": "Palette de commandes (⌘K)",
     "features.sharing": "Partage d'inventaire",
     "features.transfers": "Transferts d'articles",
+    "features.messaging": "Messagerie sécurisée",
     "features.reports": "Rapports de portefeuille",
     "features.templates": "Modèles d'articles",
     "features.bulk_edit": "Édition en masse",
@@ -1579,6 +1585,8 @@ export const extras = {
     "upgrade.benefit.calendar":
       "Subscreva as datas de garantia como um feed de calendário",
     "upgrade.benefit.sharing": "Partilhe o seu inventário & transfira artigos",
+    "upgrade.benefit.messaging":
+      "Converse com outros utilizadores Power para negociar transferências",
     "upgrade.benefit.power":
       "Edição em massa, vistas guardadas, modelos & notificações de alerta",
     "upgrade.later": "Mais tarde",
@@ -2349,6 +2357,7 @@ export const extras = {
     "features.cmd_palette": "Paleta de comandos (⌘K)",
     "features.sharing": "Partilha de inventário",
     "features.transfers": "Transferências de artigos",
+    "features.messaging": "Mensagens seguras",
     "features.reports": "Relatórios de portfólio",
     "features.templates": "Modelos de artigos",
     "features.bulk_edit": "Edição em massa",
@@ -2367,6 +2376,8 @@ export const extras = {
     "upgrade.benefit.calendar":
       "Suscríbete a las fechas de garantía como un feed de calendario",
     "upgrade.benefit.sharing": "Comparte tu inventario y transfiere artículos",
+    "upgrade.benefit.messaging":
+      "Habla con otros usuarios Power para negociar transferencias",
     "upgrade.benefit.power":
       "Edición masiva, vistas guardadas, plantillas y notificaciones de alerta",
     "upgrade.later": "Quizás más tarde",
@@ -3144,6 +3155,7 @@ export const extras = {
     "features.cmd_palette": "Paleta de comandos (⌘K)",
     "features.sharing": "Compartir inventario",
     "features.transfers": "Transferencias de artículos",
+    "features.messaging": "Mensajería segura",
     "features.reports": "Informes de cartera",
     "features.templates": "Plantillas de artículos",
     "features.bulk_edit": "Edición masiva",
@@ -3161,6 +3173,8 @@ export const extras = {
     "upgrade.benefit.csv": "CSV-import & -export van je inventaris",
     "upgrade.benefit.calendar": "Abonneer op garantiedatums als een agendafeed",
     "upgrade.benefit.sharing": "Deel je inventaris & draag artikelen over",
+    "upgrade.benefit.messaging":
+      "Bericht andere Power-gebruikers om overdrachten te onderhandelen",
     "upgrade.benefit.power":
       "Bulkbewerking, opgeslagen weergaven, sjablonen & meldingen",
     "upgrade.later": "Misschien later",
@@ -3931,6 +3945,7 @@ export const extras = {
     "features.cmd_palette": "Opdrachtenpalet (⌘K)",
     "features.sharing": "Inventaris delen",
     "features.transfers": "Artikeloverdrachten",
+    "features.messaging": "Beveiligde berichten",
     "features.reports": "Portefeuillerapporten",
     "features.templates": "Artikelsjablonen",
     "features.bulk_edit": "Bulkbewerking",

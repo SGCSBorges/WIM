@@ -56,6 +56,7 @@ export function UpgradeBenefits() {
     "upgrade.benefit.csv",
     "upgrade.benefit.calendar",
     "upgrade.benefit.sharing",
+    "upgrade.benefit.messaging",
     "upgrade.benefit.power",
   ] as const;
   return (
