@@ -21,7 +21,6 @@ function row(
       articleNom: "OLED TV",
       articleModele: "C3",
       brand: "LG",
-      serialNumber: "SN-12345",
       articleDescription: "Lightly used, boxed.",
       productImageUrl: null,
       createdAt: "2026-01-01T00:00:00.000Z",
@@ -59,19 +58,22 @@ describe("<SharedArticleHeroDialog />", () => {
     expect(
       screen.getByRole("heading", { name: "OLED TV" })
     ).toBeInTheDocument();
-    expect(screen.getByText("SN-12345")).toBeInTheDocument();
     expect(screen.getByText("Living room")).toBeInTheDocument();
     expect(screen.getByText("owner@example.com")).toBeInTheDocument();
     expect(screen.getByText(/Lightly used/)).toBeInTheDocument();
   });
 
-  it("never discloses the owner's purchase price", () => {
-    // The row type doesn't even carry a price, but guard against a regression
-    // that pipes one through: nothing currency-like should render.
+  it("never discloses private fields (serial number, purchase price)", () => {
+    // These never cross the sharing boundary server-side, but guard against a
+    // regression that pipes them into the row from rendering them.
     const r = row();
+    (
+      r.article as unknown as { serialNumber: string; purchasePrice: string }
+    ).serialNumber = "SN-12345";
     (r.article as unknown as { purchasePrice: string }).purchasePrice =
       "999.99";
     renderDialog(r);
+    expect(screen.queryByText("SN-12345")).not.toBeInTheDocument();
     expect(screen.queryByText(/999\.99/)).not.toBeInTheDocument();
   });
 });

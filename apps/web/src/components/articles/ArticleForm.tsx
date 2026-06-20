@@ -24,6 +24,7 @@ import {
   Trash2,
   ExternalLink,
   UploadCloud,
+  Lock,
 } from "lucide-react";
 import { useFileDrop } from "../../hooks/useFileDrop";
 import { usePreferences } from "../../preferences/preferences";
@@ -46,6 +47,27 @@ import {
   lookupProduct,
 } from "../../services/barcodeLookup";
 import { Button, Field, Input, Textarea } from "../ui";
+
+/**
+ * A field label carrying a small "Private" chip — used to mark properties that
+ * stay on the owner's account and are never exposed when an item is shared or
+ * transferred (serial number, purchase price, depreciation). The chip's
+ * `title` and the field `hint` both spell it out for sighted + AT users.
+ */
+function PrivateLabel({ text, label }: { text: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {text}
+      <span
+        className="inline-flex items-center gap-1 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ui-text-muted"
+        title={label}
+      >
+        <Lock className="h-2.5 w-2.5" aria-hidden="true" />
+        {label}
+      </span>
+    </span>
+  );
+}
 
 interface ArticleFormProps {
   article?: Article;
@@ -652,7 +674,16 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               placeholder={t("articleForm.placeholder.brand")}
             />
           </Field>
-          <Field label={t("articleForm.serialNumber")} htmlFor="serialNumber">
+          <Field
+            label={
+              <PrivateLabel
+                text={t("articleForm.serialNumber")}
+                label={t("articleForm.private.badge")}
+              />
+            }
+            htmlFor="serialNumber"
+            hint={t("articleForm.private.hint")}
+          >
             <Input
               type="text"
               id="serialNumber"
@@ -667,7 +698,16 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label={t("articleForm.purchasePrice")} htmlFor="purchasePrice">
+          <Field
+            label={
+              <PrivateLabel
+                text={t("articleForm.purchasePrice")}
+                label={t("articleForm.private.badge")}
+              />
+            }
+            htmlFor="purchasePrice"
+            hint={t("articleForm.private.hint")}
+          >
             <Input
               type="number"
               id="purchasePrice"
@@ -681,9 +721,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             />
           </Field>
           <Field
-            label={t("articleForm.depreciationRate")}
+            label={
+              <PrivateLabel
+                text={t("articleForm.depreciationRate")}
+                label={t("articleForm.private.badge")}
+              />
+            }
             htmlFor="depreciationRate"
-            hint={t("articleForm.depreciationRateHint")}
+            hint={`${t("articleForm.depreciationRateHint")} · ${t("articleForm.private.hint")}`}
           >
             <Input
               type="number"

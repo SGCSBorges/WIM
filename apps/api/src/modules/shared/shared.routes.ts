@@ -45,14 +45,42 @@ const SharedArticleEditSchema = z.object({
     .optional(),
 });
 
-type SharedArticleInclude = Prisma.ArticleGetPayload<{
-  include: {
-    owner: { select: { userId: true; email: true } };
-    garantie: true;
-    locations: {
-      select: { locationId: true; location: { select: { name: true } } };
-    };
-  };
+// Public projection of an article for the cross-owner shared view. Private
+// fields — `serialNumber`, `purchasePrice`, `depreciationRate`, and the
+// warranty's provider/claim details — are deliberately NOT selected, so they
+// never cross the sharing boundary (not just hidden in the UI). Keep this in
+// lock-step with `SharedArticleRow` in @wim/types and the article-create form's
+// "private" markers.
+const sharedArticleSelect = {
+  articleId: true,
+  articleNom: true,
+  articleModele: true,
+  articleDescription: true,
+  productImageUrl: true,
+  brand: true,
+  createdAt: true,
+  updatedAt: true,
+  ownerUserId: true,
+  owner: { select: { userId: true, email: true } },
+  garantie: {
+    select: {
+      garantieId: true,
+      garantieNom: true,
+      garantieDateAchat: true,
+      garantieFin: true,
+      garantieIsValide: true,
+    },
+  },
+  locations: {
+    select: {
+      locationId: true,
+      location: { select: { name: true } },
+    },
+  },
+} satisfies Prisma.ArticleSelect;
+
+type SharedArticleRowData = Prisma.ArticleGetPayload<{
+  select: typeof sharedArticleSelect;
 }>;
 
 /**
@@ -88,17 +116,6 @@ router.get(
     );
     const sharerIds = Array.from(sharerPermission.keys());
 
-    const articleInclude = {
-      owner: { select: { userId: true, email: true } },
-      garantie: true,
-      locations: {
-        select: {
-          locationId: true,
-          location: { select: { name: true } },
-        },
-      },
-    } satisfies Prisma.ArticleInclude;
-
     // OR query: globally-shared articles + articles owned by users who
     // have shared their inventory with the viewer. Excludes the viewer's
     // own articles either way.
@@ -108,7 +125,7 @@ router.get(
     if (sharerIds.length > 0)
       orClauses.push({ ownerUserId: { in: sharerIds } });
 
-    const articles: SharedArticleInclude[] = await prisma.article.findMany({
+    const articles: SharedArticleRowData[] = await prisma.article.findMany({
       where: {
         ownerUserId: { not: viewerUserId },
         deletedAt: null,
@@ -117,7 +134,7 @@ router.get(
       take: limit,
       skip: (page - 1) * limit,
       orderBy: { updatedAt: "desc" },
-      include: articleInclude,
+      select: sharedArticleSelect,
     });
 
     // Annotate each row with how it became visible. Per-user permission

@@ -289,6 +289,9 @@ export const extras = {
     "articleForm.placeholder.depreciationRate": "e.g. 10",
     "articleForm.depreciationRateHint":
       "Annual straight-line depreciation. Leave blank if the item holds its value.",
+    "articleForm.private.badge": "Private",
+    "articleForm.private.hint":
+      "Only visible to you — never shown when you share or transfer this item.",
     "dashboard.inventoryValue": "Inventory value",
     "dashboard.valueByLocation": "Value by location",
     "dashboard.valueAtRisk": "at risk (expired)",
@@ -1071,6 +1074,9 @@ export const extras = {
     "articleForm.placeholder.depreciationRate": "ex. 10",
     "articleForm.depreciationRateHint":
       "Amortissement linéaire annuel. Laissez vide si l'objet garde sa valeur.",
+    "articleForm.private.badge": "Privé",
+    "articleForm.private.hint":
+      "Visible par vous seul — jamais affiché lors du partage ou du transfert de cet objet.",
     "dashboard.inventoryValue": "Valeur de l'inventaire",
     "dashboard.valueByLocation": "Valeur par emplacement",
     "dashboard.valueAtRisk": "à risque (expirée)",
@@ -1865,6 +1871,9 @@ export const extras = {
     "articleForm.placeholder.depreciationRate": "ex. 10",
     "articleForm.depreciationRateHint":
       "Depreciação linear anual. Deixe em branco se o item mantém o valor.",
+    "articleForm.private.badge": "Privado",
+    "articleForm.private.hint":
+      "Visível apenas para si — nunca mostrado ao partilhar ou transferir este item.",
     "dashboard.inventoryValue": "Valor do inventário",
     "dashboard.valueByLocation": "Valor por localização",
     "dashboard.valueAtRisk": "em risco (expirada)",
@@ -2662,6 +2671,9 @@ export const extras = {
     "articleForm.placeholder.depreciationRate": "p. ej. 10",
     "articleForm.depreciationRateHint":
       "Depreciación lineal anual. Déjalo en blanco si el artículo conserva su valor.",
+    "articleForm.private.badge": "Privado",
+    "articleForm.private.hint":
+      "Solo visible para ti — nunca se muestra al compartir o transferir este artículo.",
     "dashboard.inventoryValue": "Valor del inventario",
     "dashboard.valueByLocation": "Valor por ubicación",
     "dashboard.valueAtRisk": "en riesgo (caducada)",
@@ -3455,6 +3467,9 @@ export const extras = {
     "articleForm.placeholder.depreciationRate": "bijv. 10",
     "articleForm.depreciationRateHint":
       "Jaarlijkse lineaire afschrijving. Laat leeg als het item zijn waarde behoudt.",
+    "articleForm.private.badge": "Privé",
+    "articleForm.private.hint":
+      "Alleen voor jou zichtbaar — nooit getoond bij delen of overdragen van dit item.",
     "dashboard.inventoryValue": "Inventariswaarde",
     "dashboard.valueByLocation": "Waarde per locatie",
     "dashboard.valueAtRisk": "risico (verlopen)",

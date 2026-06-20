@@ -127,11 +127,6 @@ export default function SharedArticleHeroDialog({
             {a.articleModele || "—"}
           </Detail>
           {a.brand && <Detail label={t("articleForm.brand")}>{a.brand}</Detail>}
-          {a.serialNumber && (
-            <Detail label={t("articleDetail.serialNumber")}>
-              <span className="break-words">{a.serialNumber}</span>
-            </Detail>
-          )}
           <Detail label={t("articleDetail.locations")}>
             {locations.length > 0 ? locations.join(", ") : "—"}
           </Detail>
