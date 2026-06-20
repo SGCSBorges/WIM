@@ -156,61 +156,63 @@ export default function SharedArticlesView() {
             return (
               <li key={r.rowId} className="py-3 first:pt-0 last:pb-0">
                 {!isEditing ? (
-                  <div className="flex items-start gap-4">
-                    <ArticleThumb
-                      src={r.article.productImageUrl}
-                      alt={r.article.articleNom}
-                      size={56}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className="truncate font-medium ui-title"
-                          title={`${r.article.articleNom}${r.article.articleModele ? ` — ${r.article.articleModele}` : ""}`}
-                        >
-                          {r.article.articleNom} — {r.article.articleModele}
-                        </span>
-                        <Badge
-                          tone={
-                            r.permission === "WRITE" ? "warning" : "success"
-                          }
-                          title={t(
-                            r.permission === "WRITE"
-                              ? "shared.permission.write.tooltip"
-                              : "shared.permission.read.tooltip"
-                          )}
-                        >
-                          {t(
-                            r.permission === "WRITE"
-                              ? "shared.permission.write"
-                              : "shared.permission.read"
-                          )}
-                        </Badge>
-                        <Badge
-                          tone="neutral"
-                          title={t(
-                            r.source === "user"
-                              ? "shared.source.user.tooltip"
-                              : "shared.source.global.tooltip"
-                          )}
-                        >
-                          {t(
-                            r.source === "user"
-                              ? "shared.source.user"
-                              : "shared.source.global"
-                          )}
-                        </Badge>
-                      </div>
-                      <div className="mt-1 text-xs ui-text-muted">
-                        {t("shared.owner")}: {r.owner.email}
-                      </div>
-                      {r.article.articleDescription && (
-                        <div className="mt-2 text-sm ui-text-muted">
-                          {r.article.articleDescription}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                    <div className="flex min-w-0 flex-1 items-start gap-4">
+                      <ArticleThumb
+                        src={r.article.productImageUrl}
+                        alt={r.article.articleNom}
+                        size={56}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className="truncate font-medium ui-title"
+                            title={`${r.article.articleNom}${r.article.articleModele ? ` — ${r.article.articleModele}` : ""}`}
+                          >
+                            {r.article.articleNom} — {r.article.articleModele}
+                          </span>
+                          <Badge
+                            tone={
+                              r.permission === "WRITE" ? "warning" : "success"
+                            }
+                            title={t(
+                              r.permission === "WRITE"
+                                ? "shared.permission.write.tooltip"
+                                : "shared.permission.read.tooltip"
+                            )}
+                          >
+                            {t(
+                              r.permission === "WRITE"
+                                ? "shared.permission.write"
+                                : "shared.permission.read"
+                            )}
+                          </Badge>
+                          <Badge
+                            tone="neutral"
+                            title={t(
+                              r.source === "user"
+                                ? "shared.source.user.tooltip"
+                                : "shared.source.global.tooltip"
+                            )}
+                          >
+                            {t(
+                              r.source === "user"
+                                ? "shared.source.user"
+                                : "shared.source.global"
+                            )}
+                          </Badge>
                         </div>
-                      )}
+                        <div className="mt-1 break-words text-xs ui-text-muted">
+                          {t("shared.owner")}: {r.owner.email}
+                        </div>
+                        {r.article.articleDescription && (
+                          <div className="mt-2 break-words text-sm ui-text-muted">
+                            {r.article.articleDescription}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                    <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
                       <Button
                         variant="outline"
                         size="sm"

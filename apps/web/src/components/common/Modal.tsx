@@ -124,26 +124,34 @@ export default function Modal({
   // dialog element itself so a11y-lint doesn't flag a static container
   // with interactive props, and so Tab/Esc only fire when focus is
   // genuinely inside the dialog.
+  //
+  // Overflow: the outer container scrolls and the centering wrapper carries
+  // `min-h-full` so a short dialog stays vertically centered while a dialog
+  // taller than the viewport scrolls into reach instead of being clipped.
+  // `pointer-events-none` on the wrapper lets backdrop clicks in the padding
+  // pass through to the close button beneath; the panel re-enables them.
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain">
       <button
         type="button"
         aria-label="Close"
         tabIndex={-1}
         onClick={() => closeOnBackdropClick && onClose()}
-        className="ui-overlay absolute inset-0 w-full h-full cursor-default"
+        className="ui-overlay fixed inset-0 h-full w-full cursor-default"
       />
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        onKeyDown={onKeyDown}
-        className={`relative ${panelClassName}`}
-      >
-        {children}
+      <div className="pointer-events-none relative flex min-h-full items-center justify-center p-4">
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+        <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
+          onKeyDown={onKeyDown}
+          className={`pointer-events-auto relative ${panelClassName}`}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

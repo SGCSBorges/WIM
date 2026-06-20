@@ -113,7 +113,7 @@ export default function BulkEditDialog({
     inputType: "text" | "number",
     extraProps: Partial<React.InputHTMLAttributes<HTMLInputElement>> = {}
   ) => (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[10rem,9rem,1fr]">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[10rem_9rem_minmax(0,1fr)]">
       <span className="text-sm font-medium ui-title sm:self-center">
         {label}
       </span>

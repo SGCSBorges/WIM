@@ -198,7 +198,7 @@ export default function MessagesView() {
           description={t("messages.empty.hint")}
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-[minmax(0,22rem)_1fr]">
+        <div className="grid gap-4 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
           {/* Inbox list */}
           <div className={selectedId !== null ? "hidden md:block" : ""}>
             <div className="ui-card overflow-hidden">
@@ -307,6 +307,7 @@ export default function MessagesView() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="shrink-0"
                       onClick={() => setShowTransfer(true)}
                       leftIcon={<ArrowRightLeft className="h-4 w-4" />}
                     >
