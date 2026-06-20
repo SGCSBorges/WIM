@@ -54,6 +54,7 @@ import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
 import { useFeature, useFeatures } from "./features/features";
+import { MessagesUnreadProvider } from "./messages/unread";
 
 const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
 function isStripeUrl(url: string): boolean {
@@ -529,71 +530,76 @@ export default function App() {
   );
 
   return (
-    <AppShell role={role} onLogout={handleLogout}>
-      {upgradeSuccess && (
-        <div
-          className="mb-6 flex items-start justify-between gap-3 rounded-xl border ui-alert-success p-4 animate-slide-up"
-          role="status"
-        >
-          <p className="flex items-center gap-2 text-sm ui-text-success">
-            <PartyPopper className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {upgradeSuccess}
-          </p>
-          <button
-            type="button"
-            onClick={() => setUpgradeSuccess(null)}
-            className="ui-text-success hover:opacity-70"
-            aria-label={t("common.dismiss")}
+    // Scoped to the authed shell so the unread-count poll only runs while
+    // signed in (no 401 noise on the login screen), refreshes on a fresh
+    // login mount, and stops on logout when this subtree unmounts.
+    <MessagesUnreadProvider>
+      <AppShell role={role} onLogout={handleLogout}>
+        {upgradeSuccess && (
+          <div
+            className="mb-6 flex items-start justify-between gap-3 rounded-xl border ui-alert-success p-4 animate-slide-up"
+            role="status"
           >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+            <p className="flex items-center gap-2 text-sm ui-text-success">
+              <PartyPopper className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {upgradeSuccess}
+            </p>
+            <button
+              type="button"
+              onClick={() => setUpgradeSuccess(null)}
+              className="ui-text-success hover:opacity-70"
+              aria-label={t("common.dismiss")}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
-      <Suspense fallback={<RouteFallbackSkeleton />}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Home
-                role={role}
-                upgradeError={upgradeError}
-                onUpgrade={startUpgrade}
-              />
-            }
-          />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/articles" element={<ArticlesList />} />
-          <Route path="/articles/trash" element={<ArticlesTrash />} />
-          <Route path="/articles/:id" element={<ArticleDetail />} />
-          <Route path="/warranties" element={<WarrantiesView />} />
-          <Route path="/attachments" element={<AttachmentsList />} />
-          <Route path="/locations" element={<LocationsView />} />
-          <Route path="/alerts" element={<AlertsView />} />
-          <Route
-            path="/reports"
-            element={gatedRoute(canReports, <ReportsView />, "reports")}
-          />
-          <Route path="/profile" element={<ProfileView />} />
-          <Route path="/sharing" element={sharingRoute} />
-          <Route path="/sharing/accept" element={sharingRoute} />
-          <Route
-            path="/transfers"
-            element={gatedRoute(canTransfer, <TransfersView />, "transfers")}
-          />
-          <Route
-            path="/messages"
-            element={gatedRoute(canMessage, <MessagesView />, "messages")}
-          />
-          <Route
-            path="/admin"
-            element={
-              role === "ADMIN" ? <AdminUsers /> : <Navigate to="/" replace />
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </AppShell>
+        <Suspense fallback={<RouteFallbackSkeleton />}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home
+                  role={role}
+                  upgradeError={upgradeError}
+                  onUpgrade={startUpgrade}
+                />
+              }
+            />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/articles" element={<ArticlesList />} />
+            <Route path="/articles/trash" element={<ArticlesTrash />} />
+            <Route path="/articles/:id" element={<ArticleDetail />} />
+            <Route path="/warranties" element={<WarrantiesView />} />
+            <Route path="/attachments" element={<AttachmentsList />} />
+            <Route path="/locations" element={<LocationsView />} />
+            <Route path="/alerts" element={<AlertsView />} />
+            <Route
+              path="/reports"
+              element={gatedRoute(canReports, <ReportsView />, "reports")}
+            />
+            <Route path="/profile" element={<ProfileView />} />
+            <Route path="/sharing" element={sharingRoute} />
+            <Route path="/sharing/accept" element={sharingRoute} />
+            <Route
+              path="/transfers"
+              element={gatedRoute(canTransfer, <TransfersView />, "transfers")}
+            />
+            <Route
+              path="/messages"
+              element={gatedRoute(canMessage, <MessagesView />, "messages")}
+            />
+            <Route
+              path="/admin"
+              element={
+                role === "ADMIN" ? <AdminUsers /> : <Navigate to="/" replace />
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </AppShell>
+    </MessagesUnreadProvider>
   );
 }

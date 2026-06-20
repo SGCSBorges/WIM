@@ -64,8 +64,10 @@ export default function MessagesView() {
   const [sending, setSending] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
 
-  // Keeps the message list scrolled to the newest entry.
-  const endRef = useRef<HTMLDivElement | null>(null);
+  // Keeps the message list scrolled to the newest entry. We scroll the
+  // container's own scrollTop (not scrollIntoView) so a new message never
+  // yanks the whole page.
+  const streamRef = useRef<HTMLDivElement | null>(null);
 
   const loadThreads = useCallback(async () => {
     setLoading(true);
@@ -118,7 +120,8 @@ export default function MessagesView() {
 
   // Auto-scroll to newest message when the conversation grows.
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    const el = streamRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [detail?.messages.length]);
 
   const select = (id: number) => {
@@ -313,7 +316,10 @@ export default function MessagesView() {
                 </div>
 
                 {/* Message stream */}
-                <div className="max-h-[55vh] space-y-3 overflow-y-auto p-4">
+                <div
+                  ref={streamRef}
+                  className="max-h-[55vh] space-y-3 overflow-y-auto p-4"
+                >
                   {detail.messages.map((m) => {
                     const mine = m.senderUserId === myUserId;
                     return (
@@ -344,7 +350,6 @@ export default function MessagesView() {
                       </div>
                     );
                   })}
-                  <div ref={endRef} />
                 </div>
 
                 {/* Composer */}

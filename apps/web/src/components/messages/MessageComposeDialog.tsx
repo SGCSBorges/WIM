@@ -4,7 +4,7 @@
  * upserts the (article, requester) thread) and hands the new thread id back so
  * the caller can jump straight into the conversation.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessagesSquare } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { messagesAPI } from "../../services/api";
@@ -39,6 +39,13 @@ export default function MessageComposeDialog({
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Focus the message field on open (jsx-a11y/no-autofocus forbids the prop).
+  useEffect(() => {
+    const id = setTimeout(() => textareaRef.current?.focus(), 0);
+    return () => clearTimeout(id);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,6 +116,7 @@ export default function MessageComposeDialog({
             {t("messages.compose.label")}
           </label>
           <textarea
+            ref={textareaRef}
             id="message-compose-body"
             className="w-full resize-none rounded-md border border-line bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             rows={4}
