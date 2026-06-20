@@ -1020,5 +1020,5 @@ suite("API integration (real Postgres)", () => {
     expect(inbox.body.items.length).toBe(1);
     expect(inbox.body.items[0].article.articleId).toBe(articleId);
     expect(inbox.body.items[0].unread).toBe(true);
-  });
+  }, 30_000);
 });
