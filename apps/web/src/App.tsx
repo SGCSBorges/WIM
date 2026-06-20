@@ -111,6 +111,9 @@ const ReportsView = React.lazy(
 const TransfersView = React.lazy(
   () => import("./components/transfers/TransfersView")
 );
+const MessagesView = React.lazy(
+  () => import("./components/messages/MessagesView")
+);
 
 interface ErrorBoundaryState {
   error: Error | null;
@@ -351,6 +354,7 @@ export default function App() {
   const [role, setRole] = useState<string | null>(null);
   const canShare = useFeature("sharing");
   const canTransfer = useFeature("transfers");
+  const canMessage = useFeature("messaging");
   const canReports = useFeature("reports");
   const { loaded: featuresLoaded, refresh: refreshFeatures } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
@@ -576,6 +580,10 @@ export default function App() {
           <Route
             path="/transfers"
             element={gatedRoute(canTransfer, <TransfersView />, "transfers")}
+          />
+          <Route
+            path="/messages"
+            element={gatedRoute(canMessage, <MessagesView />, "messages")}
           />
           <Route
             path="/admin"

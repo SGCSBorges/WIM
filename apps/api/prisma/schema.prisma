@@ -156,6 +156,12 @@ model User {
   transferRequestsMade     ArticleTransferRequest[] @relation("TransferRequests")
   transferRequestsReceived ArticleTransferRequest[] @relation("TransferOffers")
 
+  // Secure 1:1 negotiation chat (see MessageThread). A user can be the
+  // article owner on some threads and the interested requester on others.
+  messageThreadsOwned     MessageThread[] @relation("ThreadOwner")
+  messageThreadsRequested MessageThread[] @relation("ThreadRequester")
+  messagesSent            Message[]       @relation("MessageSender")
+
   // Audit (optionnel)
   auditLogs AuditLog[]
   attachments Attachment[]
@@ -239,6 +245,7 @@ model Article {
   tags     ArticleTag[]
   notes    ArticleNote[]
   transferRequests ArticleTransferRequest[]
+  messageThreads   MessageThread[]
 
   @@index([ownerUserId])
   @@index([ownerUserId, deletedAt])
@@ -539,6 +546,62 @@ model ArticleTransferRequest {
   @@index([ownerId, status])
   @@index([requesterId, status])
   @@index([articleId, status])
+}
+
+// Secure 1:1 negotiation chat scoped to a single shared article. A POWER_USER
+// who can see a shared item (`Article.sharedWithPowerUsers` or an active
+// `InventoryShare`) opens a thread with the owner to negotiate a transfer; the
+// article it is pinned to lets the owner identify the item at a glance.
+//
+// Exactly two participants gate every read/write: the article owner *at thread
+// creation* (`ownerUserId`) and the interested `requesterId`. ownerUserId is a
+// snapshot — it stays put even if the article is later transferred, so the
+// original conversation stays readable by both original parties. One thread per
+// (article, requester); replies append `Message` rows.
+//
+// Unread is tracked with a boolean per side (rather than a read-timestamp
+// compared against lastMessageAt, which Prisma can't express column-to-column):
+// posting a message sets the *recipient's* flag true and the sender's false;
+// opening the thread clears the viewer's flag.
+model MessageThread {
+  id          Int @id @default(autoincrement())
+  articleId   Int
+  ownerUserId Int
+  requesterId Int
+
+  // Denormalized newest-activity time for a cheap inbox sort without a
+  // join/aggregate over Message. Bumped only on a new message, not on read.
+  lastMessageAt DateTime @default(now())
+
+  ownerUnread     Boolean @default(false)
+  requesterUnread Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  article   Article   @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+  owner     User      @relation("ThreadOwner", fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  requester User      @relation("ThreadRequester", fields: [requesterId], references: [userId], onDelete: Cascade)
+  messages  Message[]
+
+  @@unique([articleId, requesterId], map: "uq_thread_article_requester")
+  @@index([ownerUserId, lastMessageAt(sort: Desc)])
+  @@index([requesterId, lastMessageAt(sort: Desc)])
+  @@index([articleId])
+}
+
+model Message {
+  id           Int      @id @default(autoincrement())
+  threadId     Int
+  senderUserId Int
+  body         String   @db.VarChar(2000)
+  createdAt    DateTime @default(now())
+
+  thread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender User          @relation("MessageSender", fields: [senderUserId], references: [userId], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
+  @@index([senderUserId])
 }
 
 // Persistent record of every Stripe webhook event we have already

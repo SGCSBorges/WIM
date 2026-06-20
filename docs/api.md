@@ -187,6 +187,22 @@ On **accept**, a single transaction re-owns the article, its warranty + warranty
 
 Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day window). Concurrent accepts are race-safe: `updateMany` with `status:"PENDING"` in both the transfer row and the expiry check means only one commit can win; the loser gets 409.
 
+## Secure messaging
+
+A 1:1 negotiation chat pinned to a single shared article — the lead-in to a transfer. A POWER_USER who can see a shared item (the public `sharedWithPowerUsers` flag **or** an active `InventoryShare`) opens a thread with the owner; both parties append messages. Gated by the `messaging` feature flag (POWER_USER by default). Mounted on `/api/messages`.
+
+Security is app-level, not end-to-end: every read/write is authenticated (cookie), CSRF-protected, and **authorized to the thread's two fixed participants** — the article owner at creation time and the requester. Opening a thread re-checks article visibility (same rule as a PULL transfer), so article ids can't be enumerated and owners can't be spammed by strangers. Bodies are capped at 2000 chars.
+
+| Method | Path | Body | Description |
+| ------ | ---- | ---- | ----------- |
+| GET    | `/messages/unread-count` | — | `{ count }` of threads with unread activity (drives the nav badge; `authGuard` only) |
+| GET    | `/messages/threads` | — | Inbox: every thread the caller participates in, newest activity first |
+| POST   | `/messages/threads` | `{ articleId, body }` | Open (or append to) the thread for `(article, requester)` and post a message; emails the owner |
+| GET    | `/messages/threads/:id` | — | Full conversation (oldest first); clears the caller's unread flag |
+| POST   | `/messages/threads/:id/messages` | `{ body }` | Reply; emails the other party **only when they were caught up** (no piled-on pings) |
+
+There is exactly one thread per `(articleId, requesterId)` (unique constraint) — re-messaging the same item just continues the conversation. Unread is tracked as a boolean per side; posting flips the recipient's flag on and the sender's off, and opening the thread clears the viewer's. `ownerUserId` is a snapshot taken at creation, so a later ownership transfer leaves the original conversation intact for both original parties.
+
 ## Account security
 
 Three slices in `apps/api/src/modules/{auth,profile}/`. The password-only
@@ -241,8 +257,8 @@ specific bar to USER to make that one feature free.
 - `GET /api/features` — the caller's `{ [featureKey]: boolean }` access map.
   The web app fetches this once and re-fetches after login / logout / a
   Stripe role change. Keys: `cmd_palette`, `sharing`, `transfers`,
-  `reports`, `templates`, `bulk_edit`, `saved_views`, `notifications`,
-  `calendar_feed`, `csv_import`, `csv_export`.
+  `messaging`, `reports`, `templates`, `bulk_edit`, `saved_views`,
+  `notifications`, `calendar_feed`, `csv_import`, `csv_export`.
 - `GET /api/admin/features` — current flag overrides + active temp grants.
 - `PUT /api/admin/features/:key` — `{ requiredRole }` sets the minimum role
   for a feature (absent row = coded default).

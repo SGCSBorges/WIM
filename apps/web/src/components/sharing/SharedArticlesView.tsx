@@ -5,15 +5,25 @@
  * via `sharedAPI.updateArticle`).
  */
 import { useCallback, useEffect, useState } from "react";
-import { Inbox, RotateCw, Pencil, Check, ArrowRightLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  Inbox,
+  RotateCw,
+  Pencil,
+  Check,
+  ArrowRightLeft,
+  MessagesSquare,
+} from "lucide-react";
 import { sharedAPI, SharedArticleRow } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { useFeature } from "../../features/features";
 import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "../articles/ArticleThumb";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { Section, Button, Input, Textarea, Badge } from "../ui";
 import TransferDialog from "../articles/TransferDialog";
+import MessageComposeDialog from "../messages/MessageComposeDialog";
 import { useToast } from "../common/Toast";
 
 type EditDraft = {
@@ -35,12 +45,15 @@ function draftFrom(row: SharedArticleRow): EditDraft {
 export default function SharedArticlesView() {
   const { t } = useI18n();
   const toast = useToast();
+  const navigate = useNavigate();
+  const canMessage = useFeature("messaging");
   const [rows, setRows] = useState<SharedArticleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [pullTransferRow, setPullTransferRow] =
     useState<SharedArticleRow | null>(null);
+  const [messageRow, setMessageRow] = useState<SharedArticleRow | null>(null);
 
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EditDraft | null>(null);
@@ -205,6 +218,17 @@ export default function SharedArticlesView() {
                           {t("common.edit")}
                         </Button>
                       )}
+                      {canMessage && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setMessageRow(r)}
+                          leftIcon={<MessagesSquare className="h-4 w-4" />}
+                          title={t("messages.messageOwner")}
+                        >
+                          {t("messages.messageOwner")}
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -307,6 +331,22 @@ export default function SharedArticlesView() {
             toast.show(t("transfer.requested"), { kind: "success" });
           }}
           onClose={() => setPullTransferRow(null)}
+        />
+      )}
+
+      {messageRow && (
+        <MessageComposeDialog
+          articleId={messageRow.article.articleId}
+          articleName={messageRow.article.articleNom}
+          articleModel={messageRow.article.articleModele}
+          productImageUrl={messageRow.article.productImageUrl}
+          ownerEmail={messageRow.owner.email}
+          onClose={() => setMessageRow(null)}
+          onSent={(threadId) => {
+            setMessageRow(null);
+            toast.show(t("messages.sent"), { kind: "success" });
+            navigate(`/messages?thread=${threadId}`);
+          }}
         />
       )}
     </Section>

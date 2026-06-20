@@ -2182,6 +2182,115 @@ export const sharedAPI = {
   },
 };
 
+// Secure messaging (negotiation chat between Power Users about a shared item)
+export interface MessageParticipant {
+  userId: number;
+  email: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  senderUserId: number;
+  body: string;
+  createdAt: string;
+}
+
+export interface MessageThreadArticle {
+  articleId: number;
+  articleNom: string;
+  articleModele: string;
+  productImageUrl: string | null;
+  ownerUserId: number;
+}
+
+export interface MessageThreadSummary {
+  id: number;
+  article: MessageThreadArticle;
+  owner: MessageParticipant;
+  requester: MessageParticipant;
+  lastMessageAt: string;
+  lastMessage: string | null;
+  unread: boolean;
+  /** Which side of the conversation the current user is on. */
+  role: "owner" | "requester";
+}
+
+export interface MessageThreadDetail extends MessageThreadSummary {
+  messages: ChatMessage[];
+}
+
+export const messagesAPI = {
+  async getUnreadCount(): Promise<{ count: number }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/messages/unread-count`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch messages"));
+    return response.json();
+  },
+
+  async getThreads(): Promise<{ items: MessageThreadSummary[] }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/messages/threads`,
+      {
+        headers: getHeaders(),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch conversations")
+      );
+    return response.json();
+  },
+
+  async getThread(id: number): Promise<MessageThreadDetail> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/messages/threads/${id}`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to load conversation")
+      );
+    return response.json();
+  },
+
+  async startThread(
+    articleId: number,
+    body: string
+  ): Promise<{ threadId: number; message: ChatMessage }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/messages/threads`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ articleId, body }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to send message"));
+    return response.json();
+  },
+
+  async postMessage(
+    threadId: number,
+    body: string
+  ): Promise<{ message: ChatMessage }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/messages/threads/${threadId}/messages`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ body }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to send message"));
+    return response.json();
+  },
+};
+
 // Billing / Stripe
 export const billingAPI = {
   async createPowerUserCheckoutSession(

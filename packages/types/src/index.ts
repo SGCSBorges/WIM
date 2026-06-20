@@ -56,6 +56,8 @@ export const AUDIT_ACTIONS = [
   "ARTICLE_TRANSFER_ACCEPT",
   "ARTICLE_TRANSFER_REJECT",
   "ARTICLE_TRANSFER_REVOKE",
+  "MESSAGE_THREAD_CREATE",
+  "MESSAGE_SEND",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
@@ -74,6 +76,7 @@ export const AUDIT_ENTITIES = [
   "SavedView",
   "Database",
   "ArticleTransfer",
+  "MessageThread",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 

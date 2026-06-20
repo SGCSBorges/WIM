@@ -17,6 +17,7 @@ export type FeatureKey =
   | "cmd_palette"
   | "sharing"
   | "transfers"
+  | "messaging"
   | "reports"
   | "templates"
   | "bulk_edit"
@@ -32,6 +33,7 @@ const EMPTY: FeatureMap = {
   cmd_palette: false,
   sharing: false,
   transfers: false,
+  messaging: false,
   reports: false,
   templates: false,
   bulk_edit: false,

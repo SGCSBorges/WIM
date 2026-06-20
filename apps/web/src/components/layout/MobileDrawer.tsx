@@ -15,6 +15,7 @@ import {
   navItemFeatureKey,
 } from "../../lib/navItems";
 import { useFeatures } from "../../features/features";
+import { useMessagesUnread } from "../../messages/unread";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import { Button } from "../ui";
 
@@ -51,6 +52,7 @@ export default function MobileDrawer({
   const firstLinkRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
   const { features, loaded } = useFeatures();
+  const { unreadCount } = useMessagesUnread();
   const items = visibleNavItems(role);
   const lockedFor = (item: (typeof items)[number]): boolean => {
     if (!loaded) return false;
@@ -135,6 +137,7 @@ export default function MobileDrawer({
             const active = isActivePath(item.path, pathname);
             const Icon = item.icon;
             const locked = lockedFor(item);
+            const unread = item.key === "messages" ? unreadCount : 0;
             return (
               <button
                 key={item.path}
@@ -149,7 +152,17 @@ export default function MobileDrawer({
               >
                 <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
                 {t(`nav.${item.key}`)}
-                {locked && (
+                {unread > 0 && (
+                  <span
+                    className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-contrast"
+                    aria-label={t("messages.unread")}
+                  >
+                    <span aria-hidden="true">
+                      {unread > 99 ? "99+" : unread}
+                    </span>
+                  </span>
+                )}
+                {unread === 0 && locked && (
                   <Lock
                     className="ml-auto h-4 w-4 shrink-0 ui-text-muted"
                     aria-label={t("upgrade.lockedHint")}

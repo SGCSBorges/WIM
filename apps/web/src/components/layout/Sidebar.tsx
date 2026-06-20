@@ -12,6 +12,7 @@ import {
   navItemFeatureKey,
 } from "../../lib/navItems";
 import { useFeatures } from "../../features/features";
+import { useMessagesUnread } from "../../messages/unread";
 import { Badge } from "../ui";
 
 export interface SidebarProps {
@@ -29,6 +30,7 @@ export default function Sidebar({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { features, loaded } = useFeatures();
+  const { unreadCount } = useMessagesUnread();
   const items = visibleNavItems(role);
   // A visible nav item is "locked" when its feature flag has loaded false —
   // the user can still open it (the route shows an upgrade teaser), so we just
@@ -77,6 +79,7 @@ export default function Sidebar({
           const Icon = item.icon;
           const label = t(`nav.${item.key}`);
           const locked = lockedFor(item);
+          const unread = item.key === "messages" ? unreadCount : 0;
           const title = collapsed
             ? locked
               ? `${label} — ${t("upgrade.lockedHint")}`
@@ -95,9 +98,27 @@ export default function Sidebar({
                 collapsed ? "justify-center" : ""
               } ${active ? "ui-nav-item-active" : "ui-btn-ghost"}`}
             >
-              <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span className="relative shrink-0">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+                {/* When collapsed there's no room for the count pill — a dot
+                    on the icon still signals "you have unread messages". */}
+                {collapsed && unread > 0 && (
+                  <span
+                    className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-[var(--nav-bg,transparent)]"
+                    aria-label={t("messages.unread")}
+                  />
+                )}
+              </span>
               {!collapsed && <span className="truncate">{label}</span>}
-              {!collapsed && locked && (
+              {!collapsed && unread > 0 && (
+                <span
+                  className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-contrast"
+                  aria-label={t("messages.unread")}
+                >
+                  <span aria-hidden="true">{unread > 99 ? "99+" : unread}</span>
+                </span>
+              )}
+              {!collapsed && unread === 0 && locked && (
                 <Lock
                   className="ml-auto h-3.5 w-3.5 shrink-0 ui-text-muted"
                   aria-label={t("upgrade.lockedHint")}

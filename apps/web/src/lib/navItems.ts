@@ -15,6 +15,7 @@ import {
   FileText,
   Settings,
   ArrowRightLeft,
+  MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
 export type NavKey =
@@ -28,6 +29,7 @@ export type NavKey =
   | "reports"
   | "sharing"
   | "transfers"
+  | "messages"
   | "admin";
 
 export interface NavItem {
@@ -56,6 +58,12 @@ export const NAV_ITEMS: NavItem[] = [
     path: "/transfers",
     icon: ArrowRightLeft,
     requires: "share",
+  },
+  {
+    key: "messages",
+    path: "/messages",
+    icon: MessagesSquare,
+    feature: "messaging",
   },
   { key: "admin", path: "/admin", icon: Settings, requires: "admin" },
 ];
