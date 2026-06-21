@@ -222,7 +222,10 @@ export default function MessagesView() {
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="truncate text-sm font-medium ui-title">
+                            <span
+                              className="truncate text-sm font-medium ui-title"
+                              title={th.article.articleNom}
+                            >
                               {th.article.articleNom}
                             </span>
                             {th.unread && (
@@ -232,7 +235,10 @@ export default function MessagesView() {
                               />
                             )}
                           </div>
-                          <div className="truncate text-xs ui-text-muted">
+                          <div
+                            className="truncate text-xs ui-text-muted"
+                            title={otherEmail(th)}
+                          >
                             {otherEmail(th)}
                           </div>
                           {th.lastMessage && (
@@ -242,6 +248,7 @@ export default function MessagesView() {
                                   ? "font-medium ui-title"
                                   : "ui-text-muted"
                               }`}
+                              title={th.lastMessage}
                             >
                               {th.lastMessage}
                             </div>
@@ -292,13 +299,23 @@ export default function MessagesView() {
                     size={44}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold ui-title">
+                    <div
+                      className="truncate text-sm font-semibold ui-title"
+                      title={
+                        detail.article.articleModele
+                          ? `${detail.article.articleNom} — ${detail.article.articleModele}`
+                          : detail.article.articleNom
+                      }
+                    >
                       {detail.article.articleNom}
                       {detail.article.articleModele
                         ? ` — ${detail.article.articleModele}`
                         : ""}
                     </div>
-                    <div className="truncate text-xs ui-text-muted">
+                    <div
+                      className="truncate text-xs ui-text-muted"
+                      title={otherEmail(detail)}
+                    >
                       {otherEmail(detail)}
                     </div>
                   </div>

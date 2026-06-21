@@ -71,7 +71,10 @@ const upload = multer({
     if (ALLOWED_MIME_TYPES.has(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error(`Unsupported file type: ${file.mimetype}`));
+      // Carry a 415 so the global error middleware returns a clean status +
+      // helpful message; a plain Error would fall through to a 500 and log as
+      // [UnhandledError].
+      cb(createHttpError(415, `Unsupported file type: ${file.mimetype}`));
     }
   },
 });

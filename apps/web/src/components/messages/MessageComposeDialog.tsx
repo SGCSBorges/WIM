@@ -82,7 +82,10 @@ export default function MessageComposeDialog({
           <h2 id={TITLE_ID} className="text-lg font-semibold ui-title">
             {t("messages.compose.title")}
           </h2>
-          <p className="truncate text-sm ui-text-muted">
+          <p
+            className="truncate text-sm ui-text-muted"
+            title={ownerEmail ?? undefined}
+          >
             {ownerEmail
               ? t("messages.compose.toOwner").replace("{email}", ownerEmail)
               : t("messages.compose.subtitle")}
@@ -98,11 +101,19 @@ export default function MessageComposeDialog({
           size={44}
         />
         <div className="min-w-0">
-          <div className="truncate text-sm font-medium ui-title">
+          <div
+            className="truncate text-sm font-medium ui-title"
+            title={articleName}
+          >
             {articleName}
           </div>
           {articleModel && (
-            <div className="truncate text-xs ui-text-muted">{articleModel}</div>
+            <div
+              className="truncate text-xs ui-text-muted"
+              title={articleModel}
+            >
+              {articleModel}
+            </div>
           )}
         </div>
       </div>
