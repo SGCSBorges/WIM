@@ -7,6 +7,7 @@
  * leaks nothing beyond the caller's own pending-thread tally.
  */
 import { Router } from "express";
+import { security } from "../../config/security";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
@@ -49,6 +50,10 @@ router.get(
 // POST /api/messages/threads — open (or append to) a thread about an article.
 router.post(
   "/threads",
+  // Both message POSTs write rows and can fire an email to the other party, so
+  // they carry the same per-IP creation cap as tags/locations/saved-views — a
+  // compromised account can't be weaponised to spam threads or notifications.
+  security.createRateLimiter,
   authGuard,
   requireFeature("messaging"),
   asyncHandler(async (req: AuthRequest, res) => {
@@ -98,6 +103,7 @@ router.get(
 // POST /api/messages/threads/:id/messages — reply.
 router.post(
   "/threads/:id/messages",
+  security.createRateLimiter,
   authGuard,
   requireFeature("messaging"),
   asyncHandler(async (req: AuthRequest, res) => {
