@@ -20,6 +20,9 @@ const COLUMNS = [
   // based on warranty purchase date or createdAt). Read-only — the importer
   // ignores unknown columns, so a round-trip preserves data.
   "currentValue",
+  // Lifecycle status (ACTIVE/IN_REPAIR/LOANED/SOLD/DISPOSED/LOST). Read-only on
+  // round-trip — the importer ignores unknown columns, like currentValue.
+  "status",
   "locations",
   "tags",
   "warrantyName",
@@ -80,6 +83,7 @@ function serializeRow(a: ExportRow): string {
     a.purchasePrice,
     a.depreciationRate,
     current,
+    a.status,
     locationNames,
     tagNames,
     a.garantie?.garantieNom,

@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { ARTICLE_STATUSES } from "@wim/types";
+
+export const ArticleStatusSchema = z.enum(ARTICLE_STATUSES);
 
 export const ArticleCreateSchema = z.object({
   articleNom: z.string().trim().min(1).max(100),
@@ -25,6 +28,8 @@ export const ArticleCreateSchema = z.object({
     .nullable(),
   // Annual straight-line depreciation rate as a percentage (0–100).
   depreciationRate: z.coerce.number().min(0).max(100).optional().nullable(),
+  // Lifecycle state. Omitted on create defaults to ACTIVE (DB default).
+  status: ArticleStatusSchema.optional(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
   // Optional tags (owner-scoped). Empty/absent = no tags.

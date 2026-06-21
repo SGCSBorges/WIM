@@ -20,6 +20,7 @@
  *     row's `ownerUserId` into `hardRemove`.
  */
 import { Prisma } from "@prisma/client";
+import type { ArticleStatus } from "@wim/types";
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";
 import { addMonths } from "../common/date";
@@ -79,6 +80,7 @@ export type ArticleListFilters = {
   tagId?: number;
   q?: string;
   warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
+  status?: ArticleStatus;
   priceMin?: number;
   priceMax?: number;
   createdFrom?: Date;
@@ -99,6 +101,7 @@ function buildArticleWhere(
   const where: Prisma.ArticleWhereInput = { ownerUserId, deletedAt: null };
   if (f.locationId) where.locations = { some: { locationId: f.locationId } };
   if (f.tagId) where.tags = { some: { tagId: f.tagId } };
+  if (f.status) where.status = f.status;
   if (f.q && f.q.trim()) {
     // Split into terms and require every term to match somewhere (name, model
     // or description). This makes multi-word queries like "cordless drill"

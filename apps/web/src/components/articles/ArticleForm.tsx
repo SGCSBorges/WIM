@@ -36,6 +36,7 @@ import {
 } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, Location, Tag } from "../../types";
+import { ARTICLE_STATUSES, type ArticleStatus } from "@wim/types";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
@@ -46,7 +47,7 @@ import {
   barcodeLookupEnabled,
   lookupProduct,
 } from "../../services/barcodeLookup";
-import { Button, Field, Input, Textarea } from "../ui";
+import { Button, Field, Input, Textarea, Select } from "../ui";
 
 /**
  * A field label carrying a small "Private" chip — used to mark properties that
@@ -145,6 +146,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [depreciationRate, setDepreciationRate] = useState<string>(
     article?.depreciationRate != null ? String(article.depreciationRate) : ""
   );
+  const [status, setStatus] = useState<ArticleStatus>(
+    article?.status ?? "ACTIVE"
+  );
   const [showScanner, setShowScanner] = useState(false);
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
@@ -199,6 +203,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setDepreciationRate(
       article?.depreciationRate != null ? String(article.depreciationRate) : ""
     );
+    setStatus(article?.status ?? "ACTIVE");
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setSelectedTagIds(deriveInitialTagIds(article));
     setWarrantyEnabled(Boolean(article?.garantie));
@@ -431,6 +436,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       productImageUrl: formData.productImageUrl?.trim() || null,
       purchasePrice: priceVal,
       depreciationRate: depVal,
+      status,
       locationIds: selectedLocationIds,
       tagIds: selectedTagIds,
       ...(warrantyEnabled
@@ -773,6 +779,25 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             placeholder={t("articleForm.placeholder.imageUrl")}
             maxLength={255}
           />
+        </Field>
+
+        <Field
+          label={t("articleForm.status")}
+          htmlFor="articleStatus"
+          hint={t("articleForm.status.hint")}
+        >
+          <Select
+            id="articleStatus"
+            name="status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as ArticleStatus)}
+          >
+            {ARTICLE_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {t(`articleStatus.${s}`)}
+              </option>
+            ))}
+          </Select>
         </Field>
 
         {/* Warranty toggle + block */}

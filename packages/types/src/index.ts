@@ -135,6 +135,8 @@ export interface Article {
   // absent = no depreciation. String on reads (Prisma Decimal), number on writes.
   depreciationRate?: string | number | null;
   sharedWithPowerUsers?: boolean;
+  // Lifecycle state. Defaults to ACTIVE server-side; absent on legacy writes.
+  status?: ArticleStatus;
   locationIds?: number[];
   locations?: Array<{ locationId: number; location?: { name: string } }>;
   // Tags: write via tagIds; reads carry the joined tags array.
@@ -180,6 +182,8 @@ export interface ArticleListParams {
   // Inclusive createdAt range; ISO date strings (YYYY-MM-DD or full ISO).
   createdFrom?: string;
   createdTo?: string;
+  // Filter to a single lifecycle status (e.g. only SOLD, or only ACTIVE).
+  status?: ArticleStatus;
   sort?: ArticleSort;
   dir?: "asc" | "desc";
   page?: number;
@@ -210,6 +214,19 @@ export const ARTICLE_NOTE_KINDS: ArticleNoteKind[] = [
   "MAINTENANCE",
   "OTHER",
 ];
+
+/** Lifecycle state of an item. ACTIVE is the default; the rest are
+ *  organizational (kept in the inventory, surfaced as a badge + list filter).
+ *  Mirrors the Prisma `ArticleStatus` enum — keep both in lock-step. */
+export const ARTICLE_STATUSES = [
+  "ACTIVE",
+  "IN_REPAIR",
+  "LOANED",
+  "SOLD",
+  "DISPOSED",
+  "LOST",
+] as const;
+export type ArticleStatus = (typeof ARTICLE_STATUSES)[number];
 
 /** A free-form note attached to an article (service log, warranty
  *  claim record, etc.). Ordered newest-first by the article detail

@@ -27,7 +27,11 @@ import {
   streamLabelsPdf,
 } from "./article.pdf";
 import { prisma } from "../../libs/prisma";
-import { ArticleCreateSchema, ArticleUpdateSchema } from "./article.schemas";
+import {
+  ArticleCreateSchema,
+  ArticleUpdateSchema,
+  ArticleStatusSchema,
+} from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
@@ -70,6 +74,7 @@ const ArticleListQuerySchema = z.object({
   warrantyStatus: z
     .enum(["valid", "expiringSoon", "expired", "none"])
     .optional(),
+  status: ArticleStatusSchema.optional(),
   priceMin: z.coerce.number().nonnegative().optional(),
   priceMax: z.coerce.number().nonnegative().optional(),
   // Inclusive createdAt date range. Coerce from YYYY-MM-DD strings the web
@@ -97,6 +102,7 @@ router.get(
       tagId: q.tag,
       q: q.q,
       warrantyStatus: q.warrantyStatus,
+      status: q.status,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,
@@ -499,6 +505,7 @@ router.get(
       tagId: q.tag,
       q: q.q,
       warrantyStatus: q.warrantyStatus,
+      status: q.status,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,

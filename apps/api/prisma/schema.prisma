@@ -71,6 +71,20 @@ enum ArticleNoteKind {
   OTHER
 }
 
+// Lifecycle state of an item the user owns (or once owned). ACTIVE is the
+// default; the rest are organizational — items keep their record and stay in
+// the inventory regardless of status, but can be filtered and are badged.
+// Mirrored by `ARTICLE_STATUSES` in packages/types so the web filter/select
+// stays in lock-step.
+enum ArticleStatus {
+  ACTIVE
+  IN_REPAIR
+  LOANED
+  SOLD
+  DISPOSED
+  LOST
+}
+
 enum TransferDirection {
   PUSH
   PULL
@@ -230,6 +244,10 @@ model Article {
   // to all POWER_USER accounts (read-only; owner-only edit/unshare).
   sharedWithPowerUsers Boolean @default(false)
 
+  // Lifecycle state (ACTIVE by default). Organizational only — does not hide
+  // the row from the live list; surfaced as a badge + an optional list filter.
+  status ArticleStatus @default(ACTIVE)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   // Soft-delete marker. Null = live. Live reads scope `deletedAt: null`; the
@@ -249,6 +267,7 @@ model Article {
 
   @@index([ownerUserId])
   @@index([ownerUserId, deletedAt])
+  @@index([ownerUserId, status])
   @@index([articleNom, articleModele])
   @@index([sharedWithPowerUsers])
   @@index([sharedWithPowerUsers, updatedAt(sort: Desc)])

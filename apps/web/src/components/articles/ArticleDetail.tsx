@@ -47,6 +47,7 @@ import type {
   WarrantyHistoryItem,
 } from "../../types";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
+import { articleStatusInfo } from "../../utils/articleStatus";
 import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import TransferDialog from "./TransferDialog";
 import { ARTICLE_NOTE_KINDS } from "@wim/types";
@@ -466,6 +467,9 @@ export default function ArticleDetail() {
           size={120}
         />
         <div className="min-w-0 flex-1 space-y-3">
+          <Badge tone={articleStatusInfo(article.status).tone}>
+            {t(articleStatusInfo(article.status).labelKey)}
+          </Badge>
           {article.serialNumber && (
             <p className="select-all font-mono text-xs ui-text-muted">
               {t("articleDetail.serialNumber")}: {article.serialNumber}

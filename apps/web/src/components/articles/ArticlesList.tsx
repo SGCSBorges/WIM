@@ -62,6 +62,8 @@ import { consumeSharedDraft } from "../../utils/shareTarget";
 import { useFeature, useFeatures } from "../../features/features";
 import { useUpgrade } from "../../features/upgrade";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
+import { articleStatusInfo, isDefaultStatus } from "../../utils/articleStatus";
+import { ARTICLE_STATUSES, type ArticleStatus } from "@wim/types";
 import { PageHeader, Button, Input, Select, Badge } from "../ui";
 
 const ArticlesList: React.FC = () => {
@@ -152,6 +154,7 @@ const ArticlesList: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const qParam = searchParams.get("q") ?? "";
   const warrantyStatus = searchParams.get("warranty") ?? "";
+  const statusFilter = searchParams.get("status") ?? "";
   const priceMin = searchParams.get("priceMin") ?? "";
   const priceMax = searchParams.get("priceMax") ?? "";
   const createdFrom = searchParams.get("createdFrom") ?? "";
@@ -169,6 +172,7 @@ const ArticlesList: React.FC = () => {
   const hasActiveFilters = Boolean(
     qParam ||
     warrantyStatus ||
+    statusFilter ||
     priceMin ||
     priceMax ||
     createdFrom ||
@@ -232,6 +236,7 @@ const ArticlesList: React.FC = () => {
             | "expired"
             | "none"
             | "") || undefined,
+        status: (statusFilter as ArticleStatus | "") || undefined,
         priceMin: priceMin ? Number(priceMin) : undefined,
         priceMax: priceMax ? Number(priceMax) : undefined,
         createdFrom: createdFrom || undefined,
@@ -270,6 +275,7 @@ const ArticlesList: React.FC = () => {
     tagFilterId,
     qParam,
     warrantyStatus,
+    statusFilter,
     priceMin,
     priceMax,
     createdFrom,
@@ -736,6 +742,22 @@ const ArticlesList: React.FC = () => {
               {t("articles.filter.warrantyExpired")}
             </option>
             <option value="none">{t("articles.filter.warrantyNone")}</option>
+          </Select>
+
+          <Select
+            value={statusFilter}
+            onChange={(e) =>
+              updateParams({ status: e.target.value || undefined })
+            }
+            aria-label={t("articles.filter.status.label")}
+            className="w-auto"
+          >
+            <option value="">{t("articles.filter.status.all")}</option>
+            {ARTICLE_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {t(`articleStatus.${s}`)}
+              </option>
+            ))}
           </Select>
 
           <Input
@@ -1252,6 +1274,11 @@ const ArticlesList: React.FC = () => {
                       </p>
                       <div className="flex flex-wrap items-center gap-1 text-xs">
                         <Badge tone={ws.tone}>{ws.label}</Badge>
+                        {!isDefaultStatus(article.status) && (
+                          <Badge tone={articleStatusInfo(article.status).tone}>
+                            {t(articleStatusInfo(article.status).labelKey)}
+                          </Badge>
+                        )}
                         {article.purchasePrice != null && (
                           <span className="ui-text-muted">
                             {formatMoney(
@@ -1395,6 +1422,13 @@ const ArticlesList: React.FC = () => {
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                           <Badge tone={ws.tone}>{ws.label}</Badge>
+                          {!isDefaultStatus(article.status) && (
+                            <Badge
+                              tone={articleStatusInfo(article.status).tone}
+                            >
+                              {t(articleStatusInfo(article.status).labelKey)}
+                            </Badge>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                           {!article.garantie?.garantieFin || days === null ? (
