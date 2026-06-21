@@ -13,6 +13,7 @@ import { requireFeature } from "../features/feature.service";
 import { auditAction } from "../common/audit";
 import { security } from "../../config/security";
 import { prisma } from "../../libs/prisma";
+import { ARTICLE_STATUSES } from "@wim/types";
 import { streamPortfolioReportPdf } from "./report.pdf";
 
 const PortfolioFiltersSchema = z.object({
@@ -21,6 +22,7 @@ const PortfolioFiltersSchema = z.object({
   warrantyStatus: z
     .enum(["valid", "expiringSoon", "expired", "none"])
     .optional(),
+  status: z.enum(ARTICLE_STATUSES).optional(),
 });
 
 const router = Router();

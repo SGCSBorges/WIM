@@ -20,6 +20,7 @@
 import PDFDocument from "pdfkit";
 import type { Response } from "express";
 import { prisma } from "../../libs/prisma";
+import { NOT_OWNED_STATUSES, type ArticleStatus } from "@wim/types";
 import { currentValue } from "../common/depreciation";
 
 function money(amount: unknown, currency: string): string {
@@ -37,6 +38,10 @@ export interface ReportFilters {
   locationId?: number | null;
   tagId?: number | null;
   warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none" | null;
+  // Optional lifecycle-status scope. When set, only that status is reported.
+  // When unset, no-longer-owned items (SOLD/DISPOSED/LOST) are excluded so the
+  // insurance manifest reflects current holdings.
+  status?: ArticleStatus | null;
 }
 
 interface ArticleForReport {
@@ -91,6 +96,11 @@ export async function streamPortfolioReportPdf(
     where: {
       ownerUserId,
       deletedAt: null,
+      // Explicit status filter wins; otherwise drop items the owner no longer
+      // holds so the insurance total isn't inflated by sold/disposed/lost gear.
+      ...(filters.status
+        ? { status: filters.status }
+        : { status: { notIn: NOT_OWNED_STATUSES } }),
       ...(filters.locationId
         ? { locations: { some: { locationId: filters.locationId } } }
         : {}),

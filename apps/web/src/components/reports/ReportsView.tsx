@@ -11,6 +11,7 @@
 import { useEffect, useState } from "react";
 import { Check, Download, FileText } from "lucide-react";
 import { locationsAPI, reportsAPI, tagsAPI } from "../../services/api";
+import { ARTICLE_STATUSES, type ArticleStatus } from "@wim/types";
 import { useI18n } from "../../i18n/i18n";
 import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
@@ -37,6 +38,7 @@ export default function ReportsView() {
   const [locationId, setLocationId] = useState<string>("");
   const [tagId, setTagId] = useState<string>("");
   const [warrantyStatus, setWarrantyStatus] = useState<"" | WarrantyStatus>("");
+  const [status, setStatus] = useState<"" | ArticleStatus>("");
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
 
@@ -63,6 +65,7 @@ export default function ReportsView() {
         locationId: locationId ? Number(locationId) : null,
         tagId: tagId ? Number(tagId) : null,
         warrantyStatus: warrantyStatus || null,
+        status: status || null,
       });
       const date = new Date().toISOString().slice(0, 10);
       downloadBlob(`wim-portfolio-${date}.pdf`, blob);
@@ -90,7 +93,7 @@ export default function ReportsView() {
         title={t("reports.portfolio.title")}
         description={t("reports.portfolio.subtitle")}
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Field label={t("reports.filter.location")} htmlFor="report-location">
             <Select
               id="report-location"
@@ -137,6 +140,20 @@ export default function ReportsView() {
               </option>
               <option value="expired">{t("warrantyStatus.expired")}</option>
               <option value="none">{t("warrantyStatus.none")}</option>
+            </Select>
+          </Field>
+          <Field label={t("reports.filter.status")} htmlFor="report-status">
+            <Select
+              id="report-status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as "" | ArticleStatus)}
+            >
+              <option value="">{t("reports.filter.status.owned")}</option>
+              {ARTICLE_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {t(`articleStatus.${s}`)}
+                </option>
+              ))}
             </Select>
           </Field>
         </div>

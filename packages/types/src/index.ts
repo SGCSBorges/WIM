@@ -228,6 +228,12 @@ export const ARTICLE_STATUSES = [
 ] as const;
 export type ArticleStatus = (typeof ARTICLE_STATUSES)[number];
 
+/** Statuses where the item has left the owner's possession. These are kept in
+ *  the inventory for the record but are excluded from "what you currently own"
+ *  value totals (dashboard inventory value + insurance portfolio report).
+ *  IN_REPAIR / LOANED are still owned, so they continue to count. */
+export const NOT_OWNED_STATUSES: ArticleStatus[] = ["SOLD", "DISPOSED", "LOST"];
+
 /** A free-form note attached to an article (service log, warranty
  *  claim record, etc.). Ordered newest-first by the article detail
  *  view. */

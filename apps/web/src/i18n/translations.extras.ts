@@ -23,6 +23,8 @@ export const extras = {
     "articleStatus.SOLD": "Sold",
     "articleStatus.DISPOSED": "Disposed",
     "articleStatus.LOST": "Lost",
+    "reports.filter.status": "Item status",
+    "reports.filter.status.owned": "Currently owned",
     "upgrade.subtitle":
       "This is a Power User feature. Upgrade to unlock it — plus everything else:",
     "upgrade.benefit.reports": "Insurance-ready portfolio PDF reports",
@@ -809,6 +811,8 @@ export const extras = {
     "articleStatus.SOLD": "Vendu",
     "articleStatus.DISPOSED": "Mis au rebut",
     "articleStatus.LOST": "Perdu",
+    "reports.filter.status": "Statut de l'article",
+    "reports.filter.status.owned": "Actuellement possédés",
     "upgrade.subtitle":
       "Ceci est une fonctionnalité Power User. Passez à Power User pour la débloquer — ainsi que tout le reste :",
     "upgrade.benefit.reports":
@@ -1624,6 +1628,8 @@ export const extras = {
     "articleStatus.SOLD": "Vendido",
     "articleStatus.DISPOSED": "Descartado",
     "articleStatus.LOST": "Perdido",
+    "reports.filter.status": "Estado do item",
+    "reports.filter.status.owned": "Atualmente em posse",
     "upgrade.subtitle":
       "Esta é uma funcionalidade Power User. Faça upgrade para desbloqueá-la — e tudo o resto:",
     "upgrade.benefit.reports":
@@ -2433,6 +2439,8 @@ export const extras = {
     "articleStatus.SOLD": "Vendido",
     "articleStatus.DISPOSED": "Desechado",
     "articleStatus.LOST": "Perdido",
+    "reports.filter.status": "Estado del artículo",
+    "reports.filter.status.owned": "En posesión actual",
     "upgrade.subtitle":
       "Esta es una función Power User. Mejora a Power User para desbloquearla, y todo lo demás:",
     "upgrade.benefit.reports": "Informes PDF de cartera listos para el seguro",
@@ -3248,6 +3256,8 @@ export const extras = {
     "articleStatus.SOLD": "Verkocht",
     "articleStatus.DISPOSED": "Weggedaan",
     "articleStatus.LOST": "Verloren",
+    "reports.filter.status": "Itemstatus",
+    "reports.filter.status.owned": "Momenteel in bezit",
     "upgrade.subtitle":
       "Dit is een Power User-functie. Upgrade naar Power User om deze te ontgrendelen — plus al het andere:",
     "upgrade.benefit.reports": "Verzekeringsklare portfolio-PDF-rapporten",

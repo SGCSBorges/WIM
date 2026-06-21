@@ -412,13 +412,32 @@ intentionally rely on native validation with **no** custom field messages
   (`active` / `expiringSoon` / `expired` / `none`), so the badge in a
   row and the filter pill can never disagree.
 
+## Item lifecycle status
+
+- `Article.status` (`ArticleStatus` enum: `ACTIVE` default / `IN_REPAIR` /
+  `LOANED` / `SOLD` / `DISPOSED` / `LOST`) is an organizational axis
+  orthogonal to the trash/soft-delete one — status'd items stay in the live
+  list, are badged, and can be filtered (`?status=`), but aren't hidden.
+  Mirror the enum in three places when changing it: `prisma/schema.prisma`,
+  `ARTICLE_STATUSES` in `@wim/types`, and `utils/articleStatus.ts` (badge
+  tone + label-key map). Web badge is suppressed for `ACTIVE`
+  (`isDefaultStatus`) so dense rows stay clean.
+- **Value totals reflect current holdings**: `NOT_OWNED_STATUSES`
+  (`SOLD`/`DISPOSED`/`LOST`) are excluded from every *value* figure — the
+  dashboard inventory/current/at-risk/per-location/per-tag value
+  (`statistics.service.ts` `ownedValueScope`/`ownedArticleRelation`) and the
+  portfolio report — while **counts keep them** (you still have the record).
+  `IN_REPAIR`/`LOANED` are still owned, so they count.
+
 ## Reports & insurance portfolio
 
 - `GET /api/reports/portfolio.pdf` streams an insurance-ready PDF via
   PDFKit (cover totals, per-location manifest, uninsured/expired list
   sorted by value desc). Honors the same filters as the article list
-  (`locationId`, `tagId`, `warrantyStatus`). Auth-gated +
-  destructive-rate-limited; audited as `DB_EXPORT` with
+  (`locationId`, `tagId`, `warrantyStatus`, `status`). When `status` is
+  unset the report excludes `NOT_OWNED_STATUSES` so the manifest is current
+  holdings; pass an explicit `status` (e.g. `LOST`) to scope a claim report.
+  Auth-gated + destructive-rate-limited; audited as `DB_EXPORT` with
   `metadata.report="portfolio"`.
 - Totals use the **same `currentValue`** depreciation helper as the
   dashboard + claim PDF (`apps/api/src/modules/common/depreciation.ts`),

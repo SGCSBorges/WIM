@@ -10,6 +10,7 @@ export type {
   ArticleListResult,
   ArticleNote,
   ArticleNoteKind,
+  ArticleStatus,
   ArticleWarranty,
   AttachmentItem,
   AttachmentType,

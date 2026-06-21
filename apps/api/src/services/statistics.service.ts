@@ -10,6 +10,7 @@ import { currentValue } from "../modules/common/depreciation";
 // dropped in round 10 (T1) so the API and web client can't drift on
 // dashboard-statistics shape.
 import type { DashboardStatistics } from "@wim/types";
+import { NOT_OWNED_STATUSES } from "@wim/types";
 
 export type { DashboardStatistics };
 
@@ -69,6 +70,24 @@ export async function getDashboardStatistics(
     // so every warranty aggregate joins through to a live (or absent) article.
     const liveWarrantyScope = {
       OR: [{ garantieArticleId: null }, { article: { deletedAt: null } }],
+    };
+
+    // Value figures reflect what the user *currently owns*, so items that have
+    // left their possession (SOLD/DISPOSED/LOST) are excluded — they stay in
+    // the inventory for the record but don't inflate the portfolio's worth.
+    // Counts (above) deliberately keep them. IN_REPAIR/LOANED are still owned.
+    const ownedValueScope = {
+      ownerUserId,
+      deletedAt: null,
+      status: { notIn: NOT_OWNED_STATUSES },
+    };
+    // Same rule for value rows joined through the article relation.
+    const ownedArticleRelation = {
+      article: {
+        ownerUserId,
+        deletedAt: null,
+        status: { notIn: NOT_OWNED_STATUSES },
+      },
     };
 
     // Fire all independent counts concurrently.
@@ -145,26 +164,25 @@ export async function getDashboardStatistics(
         where: { ownerUserId, sharedWithPowerUsers: true, deletedAt: null },
       }),
       prisma.article.aggregate({
-        where: { ownerUserId, deletedAt: null },
+        where: ownedValueScope,
         _sum: { purchasePrice: true },
       }),
       prisma.article.aggregate({
         where: {
-          ownerUserId,
-          deletedAt: null,
+          ...ownedValueScope,
           garantie: { garantieFin: { lt: currentDate } },
         },
         _sum: { purchasePrice: true },
       }),
       prisma.articleLocation.findMany({
-        where: { article: { ownerUserId, deletedAt: null } },
+        where: ownedArticleRelation,
         select: {
           locationId: true,
           article: { select: { purchasePrice: true } },
         },
       }),
       prisma.articleTag.findMany({
-        where: { article: { ownerUserId, deletedAt: null } },
+        where: ownedArticleRelation,
         select: {
           tagId: true,
           tag: { select: { name: true } },
@@ -172,7 +190,7 @@ export async function getDashboardStatistics(
         },
       }),
       prisma.article.findMany({
-        where: { ownerUserId, purchasePrice: { not: null }, deletedAt: null },
+        where: { ...ownedValueScope, purchasePrice: { not: null } },
         select: {
           purchasePrice: true,
           depreciationRate: true,

@@ -33,6 +33,7 @@ import type {
   ArticleListResult,
   ArticleNote,
   ArticleNoteKind,
+  ArticleStatus,
   BillingSubscription,
   ClaimStatus,
   DateFormatPref,
@@ -1935,6 +1936,7 @@ export const reportsAPI = {
     locationId?: number | null;
     tagId?: number | null;
     warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none" | null;
+    status?: ArticleStatus | null;
   }): Promise<Blob> {
     const url = apiUrl("/reports/portfolio.pdf");
     if (filters.locationId)
@@ -1942,6 +1944,7 @@ export const reportsAPI = {
     if (filters.tagId) url.searchParams.set("tagId", String(filters.tagId));
     if (filters.warrantyStatus)
       url.searchParams.set("warrantyStatus", filters.warrantyStatus);
+    if (filters.status) url.searchParams.set("status", filters.status);
     const response = await fetchWithTimeout(url.toString(), {
       headers: getHeaders(),
     });
