@@ -7,8 +7,9 @@
  * `paths` below and reference its Zod input/output schemas inline.
  *
  * Auth, articles, locations, warranties, alerts, attachments, notes,
- * shares, tags, saved-views, calendar, push, billing, profile, admin,
- * statistics, and the meta endpoints are all listed below.
+ * shares, transfers, messaging, tags, saved-views, calendar, push,
+ * billing, profile, admin, statistics, and the meta endpoints are all
+ * listed below.
  */
 
 import { z } from "zod";
@@ -694,6 +695,165 @@ export function buildOpenApiDocument() {
           summary: "Edit a shared article (WRITE permission only).",
           security: [cookieAuth],
           responses: { "200": { description: "Updated" } },
+        },
+      },
+
+      "/api/articles/{id}/transfer/push": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["transfers"],
+          summary:
+            "Owner offers (pushes) an article to another POWER_USER by email.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Transfer request created" } },
+        },
+      },
+      "/api/articles/{id}/transfer/pull": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["transfers"],
+          summary:
+            "Requester asks (pulls) ownership of an article already shared with them.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Transfer request created" } },
+        },
+      },
+      "/api/articles/transfers/incoming": {
+        get: {
+          tags: ["transfers"],
+          summary: "List transfer requests awaiting the caller's decision.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/articles/transfers/outgoing": {
+        get: {
+          tags: ["transfers"],
+          summary: "List transfer requests the caller initiated.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/articles/transfers/{token}/accept": {
+        parameters: [
+          {
+            name: "token",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        post: {
+          tags: ["transfers"],
+          summary:
+            "Accept a pending transfer (atomically re-owns the article).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Accepted" } },
+        },
+      },
+      "/api/articles/transfers/{token}/reject": {
+        parameters: [
+          {
+            name: "token",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        post: {
+          tags: ["transfers"],
+          summary: "Reject a pending transfer.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Rejected" } },
+        },
+      },
+      "/api/articles/transfers/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["transfers"],
+          summary: "Revoke a transfer request the caller initiated.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Revoked" } },
+        },
+      },
+
+      "/api/messages/unread-count": {
+        get: {
+          tags: ["messaging"],
+          summary:
+            "Count threads with unread activity for the caller (nav badge).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/messages/threads": {
+        get: {
+          tags: ["messaging"],
+          summary:
+            "Inbox — every negotiation thread the caller participates in.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        post: {
+          tags: ["messaging"],
+          summary:
+            "Open (or append to) the thread for a shared article and post a message.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/messages/threads/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["messaging"],
+          summary:
+            "Full conversation, oldest first (marks the thread read for the caller).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/messages/threads/{id}/messages": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["messaging"],
+          summary: "Reply to an existing thread.",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
         },
       },
 

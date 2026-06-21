@@ -533,7 +533,7 @@ export default function App() {
     // Scoped to the authed shell so the unread-count poll only runs while
     // signed in (no 401 noise on the login screen), refreshes on a fresh
     // login mount, and stops on logout when this subtree unmounts.
-    <MessagesUnreadProvider>
+    <MessagesUnreadProvider enabled={canMessage}>
       <AppShell role={role} onLogout={handleLogout}>
         {upgradeSuccess && (
           <div

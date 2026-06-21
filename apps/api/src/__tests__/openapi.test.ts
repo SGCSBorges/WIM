@@ -15,6 +15,8 @@ const EXPECTED_PRIMARY_PATHS = [
   "/api/saved-views",
   "/api/shares/invites",
   "/api/shared/articles",
+  "/api/articles/transfers/incoming",
+  "/api/messages/threads",
   "/api/calendar/token",
   "/api/push/public-key",
   "/api/billing/me",

@@ -34,23 +34,35 @@ const POLL_MS = 90_000;
 
 export function MessagesUnreadProvider({
   children,
+  enabled = true,
 }: {
   children: React.ReactNode;
+  /**
+   * Poll only when the caller actually has messaging. A USER without the
+   * feature would otherwise hit /unread-count every 90s just to read back 0;
+   * gating on the flag drops that wasted request (and the badge stays 0).
+   */
+  enabled?: boolean;
 }) {
   const [unreadCount, setUnreadCount] = useState(0);
   // Guard against a state update after unmount (StrictMode double-invoke).
   const mounted = useRef(true);
 
   const refresh = useCallback(async () => {
+    if (!enabled) return;
     try {
       const { count } = await messagesAPI.getUnreadCount();
       if (mounted.current) setUnreadCount(count);
     } catch {
       if (mounted.current) setUnreadCount(0);
     }
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      setUnreadCount(0);
+      return;
+    }
     mounted.current = true;
     void refresh();
     const interval = window.setInterval(() => void refresh(), POLL_MS);
@@ -63,7 +75,7 @@ export function MessagesUnreadProvider({
       window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
     };
-  }, [refresh]);
+  }, [refresh, enabled]);
 
   return (
     <UnreadContext.Provider value={{ unreadCount, refresh }}>

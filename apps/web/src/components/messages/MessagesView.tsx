@@ -354,35 +354,44 @@ export default function MessagesView() {
                 </div>
 
                 {/* Composer */}
-                <form
-                  onSubmit={sendReply}
-                  className="flex items-end gap-2 border-t ui-divider p-3"
-                >
-                  <textarea
-                    className="min-h-[2.5rem] flex-1 resize-none rounded-md border border-line bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    rows={1}
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder={t("messages.composer.placeholder")}
-                    maxLength={MESSAGE_BODY_MAX}
-                    aria-label={t("messages.composer.placeholder")}
-                    onKeyDown={(e) => {
-                      // Enter sends; Shift+Enter inserts a newline.
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        void sendReply(e);
-                      }
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    loading={sending}
-                    disabled={reply.trim().length === 0}
-                    leftIcon={<Send className="h-4 w-4" />}
-                  >
-                    {t("messages.send")}
-                  </Button>
+                <form onSubmit={sendReply} className="border-t ui-divider p-3">
+                  <div className="flex items-end gap-2">
+                    <textarea
+                      className="min-h-[2.5rem] flex-1 resize-none rounded-md border border-line bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      rows={1}
+                      value={reply}
+                      onChange={(e) => setReply(e.target.value)}
+                      placeholder={t("messages.composer.placeholder")}
+                      maxLength={MESSAGE_BODY_MAX}
+                      aria-label={t("messages.composer.placeholder")}
+                      onKeyDown={(e) => {
+                        // Enter sends; Shift+Enter inserts a newline.
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          void sendReply(e);
+                        }
+                      }}
+                    />
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      loading={sending}
+                      disabled={reply.trim().length === 0}
+                      leftIcon={<Send className="h-4 w-4" />}
+                    >
+                      {t("messages.send")}
+                    </Button>
+                  </div>
+                  {/* A permanent "0 / 2000" reads as clutter on a chat box, so
+                      surface the counter only as the cap nears. */}
+                  {reply.length >= MESSAGE_BODY_MAX - 100 && (
+                    <p
+                      className="mt-1 text-right text-xs ui-text-muted tabular-nums"
+                      aria-live="polite"
+                    >
+                      {reply.length} / {MESSAGE_BODY_MAX}
+                    </p>
+                  )}
                 </form>
               </div>
             ) : null}
