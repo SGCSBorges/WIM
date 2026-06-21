@@ -21,6 +21,7 @@ import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import InstallPwaButton from "../common/InstallPwaButton";
+import ShareSiteButton from "../common/ShareSiteButton";
 import { useApiForm } from "../../hooks/useApiForm";
 import { Button, Field, Input } from "../ui";
 
@@ -363,7 +364,10 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           )}
 
           <div className="mt-8 flex flex-col items-center gap-3 border-t ui-divider pt-6">
-            <InstallPwaButton />
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <InstallPwaButton />
+              <ShareSiteButton />
+            </div>
             <LanguageThemeSelector />
             {/* TEMPORARY: bootstrap admin@admin.com to ADMIN. Remove once done. */}
             <div className="w-full text-center">

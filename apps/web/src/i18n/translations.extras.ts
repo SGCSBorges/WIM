@@ -10,6 +10,9 @@
 export const extras = {
   en: {
     "upgrade.title": "Unlock with Power User",
+    "share.site": "Share WIM",
+    "share.text": "Track your warranties and inventory with WIM",
+    "share.copied": "Link copied to clipboard",
     "upgrade.subtitle":
       "This is a Power User feature. Upgrade to unlock it — plus everything else:",
     "upgrade.benefit.reports": "Insurance-ready portfolio PDF reports",
@@ -783,6 +786,9 @@ export const extras = {
   },
   fr: {
     "upgrade.title": "Débloquer avec Power User",
+    "share.site": "Partager WIM",
+    "share.text": "Gérez vos garanties et votre inventaire avec WIM",
+    "share.copied": "Lien copié dans le presse-papiers",
     "upgrade.subtitle":
       "Ceci est une fonctionnalité Power User. Passez à Power User pour la débloquer — ainsi que tout le reste :",
     "upgrade.benefit.reports":
@@ -1585,6 +1591,9 @@ export const extras = {
   },
   pt: {
     "upgrade.title": "Desbloquear com Power User",
+    "share.site": "Partilhar o WIM",
+    "share.text": "Faça a gestão das suas garantias e inventário com o WIM",
+    "share.copied": "Ligação copiada para a área de transferência",
     "upgrade.subtitle":
       "Esta é uma funcionalidade Power User. Faça upgrade para desbloqueá-la — e tudo o resto:",
     "upgrade.benefit.reports":
@@ -2381,6 +2390,9 @@ export const extras = {
   },
   es: {
     "upgrade.title": "Desbloquear con Power User",
+    "share.site": "Compartir WIM",
+    "share.text": "Gestiona tus garantías e inventario con WIM",
+    "share.copied": "Enlace copiado al portapapeles",
     "upgrade.subtitle":
       "Esta es una función Power User. Mejora a Power User para desbloquearla, y todo lo demás:",
     "upgrade.benefit.reports": "Informes PDF de cartera listos para el seguro",
@@ -3183,6 +3195,9 @@ export const extras = {
   },
   nl: {
     "upgrade.title": "Ontgrendelen met Power User",
+    "share.site": "WIM delen",
+    "share.text": "Beheer je garanties en inventaris met WIM",
+    "share.copied": "Link gekopieerd naar klembord",
     "upgrade.subtitle":
       "Dit is een Power User-functie. Upgrade naar Power User om deze te ontgrendelen — plus al het andere:",
     "upgrade.benefit.reports": "Verzekeringsklare portfolio-PDF-rapporten",
