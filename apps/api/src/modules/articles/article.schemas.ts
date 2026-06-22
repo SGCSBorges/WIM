@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { ARTICLE_STATUSES } from "@wim/types";
+import { ARTICLE_STATUSES, ARTICLE_CATEGORIES } from "@wim/types";
 
 export const ArticleStatusSchema = z.enum(ARTICLE_STATUSES);
+export const ArticleCategorySchema = z.enum(ARTICLE_CATEGORIES);
 
 export const ArticleCreateSchema = z.object({
   articleNom: z.string().trim().min(1).max(100),
@@ -30,6 +31,8 @@ export const ArticleCreateSchema = z.object({
   depreciationRate: z.coerce.number().min(0).max(100).optional().nullable(),
   // Lifecycle state. Omitted on create defaults to ACTIVE (DB default).
   status: ArticleStatusSchema.optional(),
+  // Optional broad category (null clears it).
+  category: ArticleCategorySchema.optional().nullable(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
   // Optional tags (owner-scoped). Empty/absent = no tags.

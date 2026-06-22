@@ -36,7 +36,12 @@ import {
 } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, Location, Tag } from "../../types";
-import { ARTICLE_STATUSES, type ArticleStatus } from "@wim/types";
+import {
+  ARTICLE_STATUSES,
+  type ArticleStatus,
+  ARTICLE_CATEGORIES,
+  type ArticleCategory,
+} from "@wim/types";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
@@ -149,6 +154,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [status, setStatus] = useState<ArticleStatus>(
     article?.status ?? "ACTIVE"
   );
+  const [category, setCategory] = useState<ArticleCategory | "">(
+    article?.category ?? ""
+  );
   const [showScanner, setShowScanner] = useState(false);
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
@@ -204,6 +212,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       article?.depreciationRate != null ? String(article.depreciationRate) : ""
     );
     setStatus(article?.status ?? "ACTIVE");
+    setCategory(article?.category ?? "");
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setSelectedTagIds(deriveInitialTagIds(article));
     setWarrantyEnabled(Boolean(article?.garantie));
@@ -437,6 +446,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       purchasePrice: priceVal,
       depreciationRate: depVal,
       status,
+      category: category || null,
       locationIds: selectedLocationIds,
       tagIds: selectedTagIds,
       ...(warrantyEnabled
@@ -781,24 +791,48 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
           />
         </Field>
 
-        <Field
-          label={t("articleForm.status")}
-          htmlFor="articleStatus"
-          hint={t("articleForm.status.hint")}
-        >
-          <Select
-            id="articleStatus"
-            name="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as ArticleStatus)}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label={t("articleForm.status")}
+            htmlFor="articleStatus"
+            hint={t("articleForm.status.hint")}
           >
-            {ARTICLE_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(`articleStatus.${s}`)}
-              </option>
-            ))}
-          </Select>
-        </Field>
+            <Select
+              id="articleStatus"
+              name="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as ArticleStatus)}
+            >
+              {ARTICLE_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {t(`articleStatus.${s}`)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field
+            label={t("articleForm.category")}
+            htmlFor="articleCategory"
+            hint={t("articleForm.category.hint")}
+          >
+            <Select
+              id="articleCategory"
+              name="category"
+              value={category}
+              onChange={(e) =>
+                setCategory(e.target.value as ArticleCategory | "")
+              }
+            >
+              <option value="">{t("articleCategory.none")}</option>
+              {ARTICLE_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {t(`articleCategory.${c}`)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
 
         {/* Warranty toggle + block */}
         <div className="rounded-xl border ui-divider p-4">

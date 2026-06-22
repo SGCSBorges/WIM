@@ -41,6 +41,7 @@ describe("buildArticlesCsv", () => {
         purchasePrice: 1500,
         depreciationRate: null,
         status: "SOLD",
+        category: "ELECTRONICS",
         createdAt: new Date("2026-05-01T00:00:00Z"),
         garantie: null,
         locations: [{ locationId: 1, location: { name: "Office" } }],
@@ -54,8 +55,10 @@ describe("buildArticlesCsv", () => {
     const lines = csv.replace(/^﻿/, "").trim().split("\r\n");
     expect(lines[0]).toContain("articleId,name,model,brand,serialNumber");
     expect(lines[0]).toContain("status");
+    expect(lines[0]).toContain("category");
     expect(lines[1]).toContain("1,Laptop,X1,Lenovo,PF3K");
     expect(lines[1]).toContain("SOLD");
+    expect(lines[1]).toContain("ELECTRONICS");
     expect(lines[1]).toContain("Office");
     expect(lines[1]).toContain("work");
   });

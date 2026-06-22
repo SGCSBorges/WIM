@@ -428,6 +428,12 @@ intentionally rely on native validation with **no** custom field messages
   (`statistics.service.ts` `ownedValueScope`/`ownedArticleRelation`) and the
   portfolio report — while **counts keep them** (you still have the record).
   `IN_REPAIR`/`LOANED` are still owned, so they count.
+- **Article category** (`Article.category`, `ArticleCategory?` enum) is an
+  optional broad bucket (null = uncategorized) complementing free-form tags.
+  Same mirror rule as status (`schema.prisma` / `ARTICLE_CATEGORIES` in
+  `@wim/types` / `articleCategory.*` i18n keys). Filterable (`?category=`),
+  carried in the CSV export, and bucketed into the analytics `byCategory`
+  chart (key `UNCATEGORIZED` for items with no category).
 
 ## Reports & insurance portfolio
 

@@ -137,6 +137,8 @@ export interface Article {
   sharedWithPowerUsers?: boolean;
   // Lifecycle state. Defaults to ACTIVE server-side; absent on legacy writes.
   status?: ArticleStatus;
+  // Optional broad category (null/absent = uncategorized).
+  category?: ArticleCategory | null;
   locationIds?: number[];
   locations?: Array<{ locationId: number; location?: { name: string } }>;
   // Tags: write via tagIds; reads carry the joined tags array.
@@ -184,6 +186,8 @@ export interface ArticleListParams {
   createdTo?: string;
   // Filter to a single lifecycle status (e.g. only SOLD, or only ACTIVE).
   status?: ArticleStatus;
+  // Filter to a single category.
+  category?: ArticleCategory;
   sort?: ArticleSort;
   dir?: "asc" | "desc";
   page?: number;
@@ -233,6 +237,23 @@ export type ArticleStatus = (typeof ARTICLE_STATUSES)[number];
  *  value totals (dashboard inventory value + insurance portfolio report).
  *  IN_REPAIR / LOANED are still owned, so they continue to count. */
 export const NOT_OWNED_STATUSES: ArticleStatus[] = ["SOLD", "DISPOSED", "LOST"];
+
+/** Broad top-level category — a structured complement to free-form tags.
+ *  Optional on an article (absent = uncategorized). Mirrors the Prisma
+ *  `ArticleCategory` enum — keep both in lock-step. */
+export const ARTICLE_CATEGORIES = [
+  "ELECTRONICS",
+  "APPLIANCE",
+  "FURNITURE",
+  "TOOL",
+  "VEHICLE",
+  "CLOTHING",
+  "JEWELRY",
+  "SPORTS",
+  "COLLECTIBLE",
+  "OTHER",
+] as const;
+export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 
 /** A free-form note attached to an article (service log, warranty
  *  claim record, etc.). Ordered newest-first by the article detail
@@ -601,5 +622,8 @@ export interface PortfolioAnalytics {
   spendByMonth: SpendBucket[];
   byLocation: Array<{ locationId: number; name: string; value: number }>;
   byTag: Array<{ tagId: number; name: string; value: number }>;
+  // Spend grouped by category key (ARTICLE_CATEGORIES); "UNCATEGORIZED" for
+  // items with no category. The client maps keys to localized labels.
+  byCategory: Array<{ category: string; value: number }>;
   topItems: ValuedArticle[];
 }

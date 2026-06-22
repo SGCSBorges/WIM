@@ -11,6 +11,7 @@ export type {
   ArticleNote,
   ArticleNoteKind,
   ArticleStatus,
+  ArticleCategory,
   ArticleWarranty,
   AttachmentItem,
   AttachmentType,

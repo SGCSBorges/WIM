@@ -85,6 +85,22 @@ enum ArticleStatus {
   LOST
 }
 
+// Broad top-level category for an item — a structured complement to the
+// free-form tags. Optional (null = uncategorized). Mirrored by
+// ARTICLE_CATEGORIES in @wim/types; sharpens "spend by category" analytics.
+enum ArticleCategory {
+  ELECTRONICS
+  APPLIANCE
+  FURNITURE
+  TOOL
+  VEHICLE
+  CLOTHING
+  JEWELRY
+  SPORTS
+  COLLECTIBLE
+  OTHER
+}
+
 enum TransferDirection {
   PUSH
   PULL
@@ -263,6 +279,10 @@ model Article {
   // the row from the live list; surfaced as a badge + an optional list filter.
   status ArticleStatus @default(ACTIVE)
 
+  // Optional broad category (null = uncategorized). Complements tags and feeds
+  // the spend-by-category analytics.
+  category ArticleCategory?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   // Soft-delete marker. Null = live. Live reads scope `deletedAt: null`; the
@@ -283,6 +303,7 @@ model Article {
   @@index([ownerUserId])
   @@index([ownerUserId, deletedAt])
   @@index([ownerUserId, status])
+  @@index([ownerUserId, category])
   @@index([articleNom, articleModele])
   @@index([sharedWithPowerUsers])
   @@index([sharedWithPowerUsers, updatedAt(sort: Desc)])

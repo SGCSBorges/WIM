@@ -540,6 +540,7 @@ export async function getPortfolioAnalytics(params: {
       purchasePrice: true,
       depreciationRate: true,
       createdAt: true,
+      category: true,
       garantie: { select: { garantieDateAchat: true } },
       locations: {
         select: { locationId: true, location: { select: { name: true } } },
@@ -556,6 +557,7 @@ export async function getPortfolioAnalytics(params: {
   const spendPerMonth = new Map<string, number>();
   const locationValue = new Map<number, { name: string; value: number }>();
   const tagValue = new Map<number, { name: string; value: number }>();
+  const categoryValue = new Map<string, number>();
   const valued: { articleId: number; name: string; value: number }[] = [];
 
   for (const a of articles) {
@@ -589,6 +591,9 @@ export async function getPortfolioAnalytics(params: {
         value: (prev?.value ?? 0) + price,
       });
     }
+
+    const catKey = a.category ?? "UNCATEGORIZED";
+    categoryValue.set(catKey, (categoryValue.get(catKey) ?? 0) + price);
   }
 
   // Build a contiguous trailing-window axis (zero months still appear), but
@@ -622,6 +627,9 @@ export async function getPortfolioAnalytics(params: {
   const byTag = Array.from(tagValue.entries())
     .map(([tagId, v]) => ({ tagId, name: v.name, value: v.value }))
     .sort((a, b) => b.value - a.value);
+  const byCategory = Array.from(categoryValue.entries())
+    .map(([category, value]) => ({ category, value }))
+    .sort((a, b) => b.value - a.value);
   const topItems = valued.sort((a, b) => b.value - a.value).slice(0, 8);
 
   return {
@@ -631,6 +639,7 @@ export async function getPortfolioAnalytics(params: {
     spendByMonth,
     byLocation,
     byTag,
+    byCategory,
     topItems,
   };
 }

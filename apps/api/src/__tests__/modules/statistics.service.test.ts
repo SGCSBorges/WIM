@@ -465,6 +465,7 @@ describe("getPortfolioAnalytics", () => {
         purchasePrice: 1000,
         depreciationRate: null,
         createdAt: lastMonth,
+        category: "ELECTRONICS",
         garantie: null,
         locations: [{ locationId: 1, location: { name: "Office" } }],
         tags: [{ tagId: 7, tag: { name: "work" } }],
@@ -474,8 +475,9 @@ describe("getPortfolioAnalytics", () => {
         articleNom: "Chair",
         purchasePrice: 200,
         depreciationRate: null,
-        createdAt: thisMonth,
+        category: null,
         garantie: null,
+        createdAt: thisMonth,
         locations: [{ locationId: 1, location: { name: "Office" } }],
         tags: [],
       },
@@ -493,6 +495,11 @@ describe("getPortfolioAnalytics", () => {
       { locationId: 1, name: "Office", value: 1200 },
     ]);
     expect(out.byTag).toEqual([{ tagId: 7, name: "work", value: 1000 }]);
+    // Categorized vs uncategorized spend, sorted by value desc.
+    expect(out.byCategory).toEqual([
+      { category: "ELECTRONICS", value: 1000 },
+      { category: "UNCATEGORIZED", value: 200 },
+    ]);
     // Top items ranked by current value (no depreciation → purchase price).
     expect(out.topItems[0]).toMatchObject({ articleId: 1, value: 1000 });
   });
@@ -505,6 +512,7 @@ describe("getPortfolioAnalytics", () => {
     expect(out.spendByMonth).toHaveLength(24);
     expect(out.spendByMonth.every((b) => b.amount === 0)).toBe(true);
     expect(out.byLocation).toEqual([]);
+    expect(out.byCategory).toEqual([]);
     expect(out.topItems).toEqual([]);
   });
 });

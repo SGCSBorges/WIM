@@ -31,6 +31,7 @@ import {
   ArticleCreateSchema,
   ArticleUpdateSchema,
   ArticleStatusSchema,
+  ArticleCategorySchema,
 } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
@@ -75,6 +76,7 @@ const ArticleListQuerySchema = z.object({
     .enum(["valid", "expiringSoon", "expired", "none"])
     .optional(),
   status: ArticleStatusSchema.optional(),
+  category: ArticleCategorySchema.optional(),
   priceMin: z.coerce.number().nonnegative().optional(),
   priceMax: z.coerce.number().nonnegative().optional(),
   // Inclusive createdAt date range. Coerce from YYYY-MM-DD strings the web
@@ -103,6 +105,7 @@ router.get(
       q: q.q,
       warrantyStatus: q.warrantyStatus,
       status: q.status,
+      category: q.category,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,
@@ -506,6 +509,7 @@ router.get(
       q: q.q,
       warrantyStatus: q.warrantyStatus,
       status: q.status,
+      category: q.category,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,

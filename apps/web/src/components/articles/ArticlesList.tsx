@@ -63,7 +63,12 @@ import { useFeature, useFeatures } from "../../features/features";
 import { useUpgrade } from "../../features/upgrade";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import { articleStatusInfo, isDefaultStatus } from "../../utils/articleStatus";
-import { ARTICLE_STATUSES, type ArticleStatus } from "@wim/types";
+import {
+  ARTICLE_STATUSES,
+  type ArticleStatus,
+  ARTICLE_CATEGORIES,
+  type ArticleCategory,
+} from "@wim/types";
 import { PageHeader, Button, Input, Select, Badge } from "../ui";
 
 const ArticlesList: React.FC = () => {
@@ -155,6 +160,7 @@ const ArticlesList: React.FC = () => {
   const qParam = searchParams.get("q") ?? "";
   const warrantyStatus = searchParams.get("warranty") ?? "";
   const statusFilter = searchParams.get("status") ?? "";
+  const categoryFilter = searchParams.get("category") ?? "";
   const priceMin = searchParams.get("priceMin") ?? "";
   const priceMax = searchParams.get("priceMax") ?? "";
   const createdFrom = searchParams.get("createdFrom") ?? "";
@@ -173,6 +179,7 @@ const ArticlesList: React.FC = () => {
     qParam ||
     warrantyStatus ||
     statusFilter ||
+    categoryFilter ||
     priceMin ||
     priceMax ||
     createdFrom ||
@@ -237,6 +244,7 @@ const ArticlesList: React.FC = () => {
             | "none"
             | "") || undefined,
         status: (statusFilter as ArticleStatus | "") || undefined,
+        category: (categoryFilter as ArticleCategory | "") || undefined,
         priceMin: priceMin ? Number(priceMin) : undefined,
         priceMax: priceMax ? Number(priceMax) : undefined,
         createdFrom: createdFrom || undefined,
@@ -276,6 +284,7 @@ const ArticlesList: React.FC = () => {
     qParam,
     warrantyStatus,
     statusFilter,
+    categoryFilter,
     priceMin,
     priceMax,
     createdFrom,
@@ -756,6 +765,22 @@ const ArticlesList: React.FC = () => {
             {ARTICLE_STATUSES.map((s) => (
               <option key={s} value={s}>
                 {t(`articleStatus.${s}`)}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            value={categoryFilter}
+            onChange={(e) =>
+              updateParams({ category: e.target.value || undefined })
+            }
+            aria-label={t("articles.filter.category.label")}
+            className="w-auto"
+          >
+            <option value="">{t("articles.filter.category.all")}</option>
+            {ARTICLE_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {t(`articleCategory.${c}`)}
               </option>
             ))}
           </Select>

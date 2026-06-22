@@ -323,6 +323,7 @@ export const articlesAPI = {
     if (params.q) p.set("q", params.q);
     if (params.warrantyStatus) p.set("warrantyStatus", params.warrantyStatus);
     if (params.status) p.set("status", params.status);
+    if (params.category) p.set("category", params.category);
     if (params.priceMin != null) p.set("priceMin", String(params.priceMin));
     if (params.priceMax != null) p.set("priceMax", String(params.priceMax));
     if (params.createdFrom) p.set("createdFrom", params.createdFrom);

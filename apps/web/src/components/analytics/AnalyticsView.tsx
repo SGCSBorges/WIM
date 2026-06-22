@@ -24,7 +24,7 @@ import {
 } from "recharts";
 import { TrendingUp, Wallet, Package } from "lucide-react";
 import { statisticsAPI, profileAPI } from "../../services/api";
-import type { PortfolioAnalytics } from "../../types";
+import type { PortfolioAnalytics, ArticleCategory } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { formatMoney } from "../../utils/money";
 import { getErrorMessage } from "../../utils/error";
@@ -307,6 +307,33 @@ export default function AnalyticsView() {
               fill="var(--text-success)"
               radius={[6, 6, 0, 0]}
             />
+          </BarChart>
+        </ChartCard>
+
+        <ChartCard
+          title={t("analytics.byCategory")}
+          empty={data.byCategory.length === 0}
+          emptyLabel={t("analytics.noData")}
+        >
+          <BarChart
+            data={data.byCategory.map((c) => ({
+              name:
+                c.category === "UNCATEGORIZED"
+                  ? t("articleCategory.none")
+                  : t(`articleCategory.${c.category as ArticleCategory}`),
+              value: c.value,
+            }))}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+            <XAxis dataKey="name" {...AXIS} />
+            <YAxis {...AXIS} width={40} />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              formatter={(value) =>
+                [money(Number(value)), t("analytics.spend")] as [string, string]
+              }
+            />
+            <Bar dataKey="value" fill="var(--accent)" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ChartCard>
       </div>

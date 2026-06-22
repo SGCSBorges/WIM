@@ -23,6 +23,7 @@ const COLUMNS = [
   // Lifecycle status (ACTIVE/IN_REPAIR/LOANED/SOLD/DISPOSED/LOST). Read-only on
   // round-trip — the importer ignores unknown columns, like currentValue.
   "status",
+  "category",
   "locations",
   "tags",
   "warrantyName",
@@ -84,6 +85,7 @@ function serializeRow(a: ExportRow): string {
     a.depreciationRate,
     current,
     a.status,
+    a.category,
     locationNames,
     tagNames,
     a.garantie?.garantieNom,
