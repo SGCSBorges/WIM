@@ -176,10 +176,14 @@ router.post(
 // which fires a PUSH transfer of the item to the requester (they complete it on
 // their Transfers page). Resolving the offer only after the transfer is created
 // keeps the two consistent if createPush rejects (e.g. a pending one exists).
+// Gated on `transfers` too (not just `messaging`): accepting performs a real
+// ownership transfer, so it must respect the transfers paywall even if an admin
+// has gated transfers higher than messaging. Decline stays messaging-only.
 router.post(
   "/offers/:messageId/accept",
   authGuard,
   requireFeature("messaging"),
+  requireFeature("transfers"),
   asyncHandler(async (req: AuthRequest, res) => {
     const messageId = idParam.parse(req.params.messageId);
     const ownerId = req.user!.sub;
