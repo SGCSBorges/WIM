@@ -856,6 +856,55 @@ export function buildOpenApiDocument() {
           responses: { "201": { description: "Created" } },
         },
       },
+      "/api/messages/threads/{id}/offer": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["messaging"],
+          summary: "Requester proposes a purchase price (OFFER message).",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/messages/offers/{messageId}/accept": {
+        parameters: [
+          {
+            name: "messageId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["messaging"],
+          summary:
+            "Owner accepts an offer — fires a PUSH transfer to the requester.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Accepted" } },
+        },
+      },
+      "/api/messages/offers/{messageId}/decline": {
+        parameters: [
+          {
+            name: "messageId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["messaging"],
+          summary: "Owner declines an offer.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Declined" } },
+        },
+      },
 
       "/api/articles/{id}/share": {
         parameters: [

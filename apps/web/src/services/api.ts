@@ -2205,11 +2205,18 @@ export interface MessageParticipant {
   email: string;
 }
 
+export type MessageKind = "TEXT" | "OFFER";
+export type OfferStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "WITHDRAWN";
+
 export interface ChatMessage {
   id: number;
   senderUserId: number;
   body: string;
   createdAt: string;
+  kind: MessageKind;
+  /** Present on OFFER messages — the proposed price as a decimal string. */
+  offerAmount?: string | null;
+  offerStatus?: OfferStatus | null;
 }
 
 export interface MessageThreadArticle {
@@ -2304,6 +2311,39 @@ export const messagesAPI = {
     );
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to send message"));
+    return response.json();
+  },
+
+  async makeOffer(
+    threadId: number,
+    amount: number
+  ): Promise<{ message: ChatMessage }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/messages/threads/${threadId}/offer`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ amount }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to send offer"));
+    return response.json();
+  },
+
+  async respondToOffer(
+    messageId: number,
+    accept: boolean
+  ): Promise<{ message: ChatMessage }> {
+    const action = accept ? "accept" : "decline";
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/messages/offers/${messageId}/${action}`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to respond to offer")
+      );
     return response.json();
   },
 };

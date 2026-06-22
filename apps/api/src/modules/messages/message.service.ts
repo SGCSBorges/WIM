@@ -41,6 +41,9 @@ export interface ChatMessageDto {
   senderUserId: number;
   body: string;
   createdAt: Date;
+  kind: "TEXT" | "OFFER";
+  offerAmount: string | null;
+  offerStatus: "PENDING" | "ACCEPTED" | "DECLINED" | "WITHDRAWN" | null;
 }
 
 export interface ThreadSummaryDto {
@@ -56,6 +59,40 @@ export interface ThreadSummaryDto {
 
 export interface ThreadDetailDto extends ThreadSummaryDto {
   messages: ChatMessageDto[];
+}
+
+// Scalar projection for a chat message, including the offer fields. Decimal
+// `offerAmount` is normalized to a string for the JSON wire shape.
+const messageSelect = {
+  id: true,
+  senderUserId: true,
+  body: true,
+  createdAt: true,
+  kind: true,
+  offerAmount: true,
+  offerStatus: true,
+} as const;
+
+type MessageRow = {
+  id: number;
+  senderUserId: number;
+  body: string;
+  createdAt: Date;
+  kind: "TEXT" | "OFFER";
+  offerAmount: { toString(): string } | null;
+  offerStatus: ChatMessageDto["offerStatus"];
+};
+
+function toMessageDto(m: MessageRow): ChatMessageDto {
+  return {
+    id: m.id,
+    senderUserId: m.senderUserId,
+    body: m.body,
+    createdAt: m.createdAt,
+    kind: m.kind,
+    offerAmount: m.offerAmount == null ? null : m.offerAmount.toString(),
+    offerStatus: m.offerStatus,
+  };
 }
 
 const threadInclude = {
@@ -187,7 +224,7 @@ export const MessageService = {
 
       const message = await tx.message.create({
         data: { threadId: thread.id, senderUserId: requesterId, body },
-        select: { id: true, senderUserId: true, body: true, createdAt: true },
+        select: messageSelect,
       });
 
       return { threadId: thread.id, ownerUserId: thread.ownerUserId, message };
@@ -202,7 +239,7 @@ export const MessageService = {
 
     return {
       threadId: result.threadId,
-      message: result.message,
+      message: toMessageDto(result.message),
       ownerEmail: emailFor(result.ownerUserId),
       senderEmail: emailFor(requesterId),
       articleNom,
@@ -241,7 +278,7 @@ export const MessageService = {
         ...threadInclude,
         messages: {
           orderBy: { createdAt: "asc" },
-          select: { id: true, senderUserId: true, body: true, createdAt: true },
+          select: messageSelect,
         },
       },
     });
@@ -272,7 +309,7 @@ export const MessageService = {
         thread.messages[thread.messages.length - 1]?.body ?? null
       ),
       unread: false,
-      messages: thread.messages,
+      messages: thread.messages.map(toMessageDto),
     };
   },
 
@@ -314,7 +351,7 @@ export const MessageService = {
     const message = await prisma.$transaction(async (tx) => {
       const created = await tx.message.create({
         data: { threadId, senderUserId: senderId, body },
-        select: { id: true, senderUserId: true, body: true, createdAt: true },
+        select: messageSelect,
       });
       await tx.messageThread.update({
         where: { id: threadId },
@@ -326,13 +363,127 @@ export const MessageService = {
     });
 
     return {
-      message,
+      message: toMessageDto(message),
       senderEmail: sender.email,
       recipientUserId: recipient.userId,
       recipientEmail: recipient.email,
       notifyRecipient: recipientWasCaughtUp,
       articleNom: thread.article.articleNom,
     };
+  },
+
+  /**
+   * The requester proposes a price. Stored as an OFFER message the owner can
+   * later accept (→ fires a transfer) or decline. Only the requester side may
+   * make offers; the body carries a human label for inbox previews.
+   */
+  async makeOffer(threadId: number, senderId: number, amount: number) {
+    const thread = await prisma.messageThread.findUnique({
+      where: { id: threadId },
+      select: {
+        id: true,
+        ownerUserId: true,
+        requesterId: true,
+        article: { select: { articleNom: true } },
+        owner: { select: { userId: true, email: true } },
+        requester: { select: { userId: true, email: true } },
+      },
+    });
+    if (!thread || thread.requesterId !== senderId) {
+      // Owners can't offer on their own item; non-participants can't see it.
+      throw createHttpError(404, "Conversation not found");
+    }
+
+    const now = new Date();
+    const created = await prisma.$transaction(async (tx) => {
+      const msg = await tx.message.create({
+        data: {
+          threadId,
+          senderUserId: senderId,
+          body: `Offered ${amount}`,
+          kind: "OFFER",
+          offerAmount: amount,
+          offerStatus: "PENDING",
+        },
+        select: messageSelect,
+      });
+      await tx.messageThread.update({
+        where: { id: threadId },
+        data: { lastMessageAt: now, ownerUnread: true, requesterUnread: false },
+      });
+      return msg;
+    });
+
+    return {
+      message: toMessageDto(created),
+      ownerEmail: thread.owner.email,
+      senderEmail: thread.requester.email,
+      articleNom: thread.article.articleNom,
+    };
+  },
+
+  /**
+   * Load a PENDING offer for the owner to respond to. Throws unless the caller
+   * is the thread owner and the message is a still-open offer. Returns the
+   * context the route needs to fire a transfer on accept.
+   */
+  async loadPendingOffer(messageId: number, responderId: number) {
+    const msg = await prisma.message.findUnique({
+      where: { id: messageId },
+      select: {
+        id: true,
+        kind: true,
+        offerStatus: true,
+        offerAmount: true,
+        thread: {
+          select: {
+            id: true,
+            ownerUserId: true,
+            requesterId: true,
+            article: { select: { articleId: true, articleNom: true } },
+            requester: { select: { userId: true, email: true } },
+          },
+        },
+      },
+    });
+    if (
+      !msg ||
+      msg.kind !== "OFFER" ||
+      msg.thread.ownerUserId !== responderId
+    ) {
+      throw createHttpError(404, "Offer not found");
+    }
+    if (msg.offerStatus !== "PENDING") {
+      throw createHttpError(409, "This offer has already been resolved");
+    }
+    return {
+      messageId: msg.id,
+      threadId: msg.thread.id,
+      articleId: msg.thread.article.articleId,
+      articleNom: msg.thread.article.articleNom,
+      ownerUserId: msg.thread.ownerUserId,
+      requesterId: msg.thread.requesterId,
+      requesterEmail: msg.thread.requester.email,
+      amount: msg.offerAmount == null ? null : msg.offerAmount.toString(),
+    };
+  },
+
+  /** Stamp an offer's outcome and surface it to the requester (unread bump). */
+  async resolveOffer(
+    messageId: number,
+    status: "ACCEPTED" | "DECLINED" | "WITHDRAWN"
+  ) {
+    const now = new Date();
+    const updated = await prisma.message.update({
+      where: { id: messageId },
+      data: { offerStatus: status },
+      select: { ...messageSelect, threadId: true },
+    });
+    await prisma.messageThread.update({
+      where: { id: updated.threadId },
+      data: { lastMessageAt: now, requesterUnread: true, ownerUnread: false },
+    });
+    return toMessageDto(updated);
   },
 
   /** Number of threads with something unread for this user — the nav badge. */

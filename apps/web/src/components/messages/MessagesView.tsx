@@ -16,18 +16,24 @@ import {
   ArrowLeft,
   ArrowRightLeft,
   RotateCw,
+  Tag,
+  Check,
+  X,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import {
   messagesAPI,
+  profileAPI,
   type MessageThreadSummary,
   type MessageThreadDetail,
+  type ChatMessage,
 } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
+import { formatMoney } from "../../utils/money";
 import { useToast } from "../common/Toast";
 import { useMessagesUnread } from "../../messages/unread";
-import { PageHeader, Section, Button } from "../ui";
+import { PageHeader, Section, Button, Input, ConfirmDialog } from "../ui";
 import { EmptyState, ErrorBanner } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import ArticleThumb from "../articles/ArticleThumb";
@@ -40,7 +46,7 @@ function otherEmail(t: MessageThreadSummary): string {
 }
 
 export default function MessagesView() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const toast = useToast();
   const { formatDateTime } = usePreferences();
   const { refresh: refreshUnread } = useMessagesUnread();
@@ -64,6 +70,15 @@ export default function MessagesView() {
   const [sending, setSending] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
 
+  // Offers
+  const [currency, setCurrency] = useState("USD");
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [offerAmount, setOfferAmount] = useState("");
+  const [offerBusy, setOfferBusy] = useState(false);
+  // The PENDING offer message the owner is confirming acceptance of.
+  const [acceptOffer, setAcceptOffer] = useState<ChatMessage | null>(null);
+  const [respondBusy, setRespondBusy] = useState(false);
+
   // Keeps the message list scrolled to the newest entry. We scroll the
   // container's own scrollTop (not scrollIntoView) so a new message never
   // yanks the whole page.
@@ -85,6 +100,16 @@ export default function MessagesView() {
   useEffect(() => {
     void loadThreads();
   }, [loadThreads]);
+
+  // Currency for rendering offer amounts (best-effort).
+  useEffect(() => {
+    void profileAPI
+      .getMe()
+      .then((me) => {
+        if (me?.currency) setCurrency(me.currency);
+      })
+      .catch(() => {});
+  }, []);
 
   const loadDetail = useCallback(
     async (id: number) => {
@@ -147,6 +172,47 @@ export default function MessagesView() {
       });
     } finally {
       setSending(false);
+    }
+  };
+
+  const sendOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = Number(offerAmount);
+    if (offerBusy || selectedId === null || !(amount > 0)) return;
+    setOfferBusy(true);
+    try {
+      await messagesAPI.makeOffer(selectedId, amount);
+      setOfferAmount("");
+      setOfferOpen(false);
+      await loadDetail(selectedId);
+      await loadThreads();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setOfferBusy(false);
+    }
+  };
+
+  const respondOffer = async (messageId: number, accept: boolean) => {
+    if (respondBusy || selectedId === null) return;
+    setRespondBusy(true);
+    try {
+      await messagesAPI.respondToOffer(messageId, accept);
+      setAcceptOffer(null);
+      toast.show(
+        accept ? t("offer.accepted.toast") : t("offer.declined.toast"),
+        { kind: "success" }
+      );
+      await loadDetail(selectedId);
+      await loadThreads();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setRespondBusy(false);
     }
   };
 
@@ -319,19 +385,57 @@ export default function MessagesView() {
                       {otherEmail(detail)}
                     </div>
                   </div>
-                  {/* Only the interested party can pull ownership to themselves. */}
+                  {/* Only the interested party can offer / pull to themselves. */}
                   {detail.role === "requester" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="shrink-0"
-                      onClick={() => setShowTransfer(true)}
-                      leftIcon={<ArrowRightLeft className="h-4 w-4" />}
-                    >
-                      {t("transfer.pull")}
-                    </Button>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setOfferOpen((v) => !v)}
+                        leftIcon={<Tag className="h-4 w-4" />}
+                      >
+                        {t("offer.make")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowTransfer(true)}
+                        leftIcon={<ArrowRightLeft className="h-4 w-4" />}
+                      >
+                        {t("transfer.pull")}
+                      </Button>
+                    </div>
                   )}
                 </div>
+
+                {/* Offer composer (requester) */}
+                {detail.role === "requester" && offerOpen && (
+                  <form
+                    onSubmit={sendOffer}
+                    className="flex items-end gap-2 border-b ui-divider bg-surface-muted p-3"
+                  >
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      value={offerAmount}
+                      onChange={(e) => setOfferAmount(e.target.value)}
+                      placeholder={t("offer.amountPlaceholder")}
+                      aria-label={t("offer.amountPlaceholder")}
+                      className="max-w-[12rem]"
+                    />
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      loading={offerBusy}
+                      disabled={!(Number(offerAmount) > 0)}
+                    >
+                      {t("offer.send")}
+                    </Button>
+                  </form>
+                )}
 
                 {/* Message stream */}
                 <div
@@ -340,6 +444,55 @@ export default function MessagesView() {
                 >
                   {detail.messages.map((m) => {
                     const mine = m.senderUserId === myUserId;
+                    if (m.kind === "OFFER") {
+                      // The owner can act on a still-pending offer.
+                      const canRespond =
+                        detail.role === "owner" && m.offerStatus === "PENDING";
+                      return (
+                        <div key={m.id} className="flex justify-center">
+                          <div className="w-full max-w-sm rounded-2xl border border-primary/40 bg-primary/5 p-3 text-center">
+                            <div className="flex items-center justify-center gap-1.5 text-xs ui-text-muted">
+                              <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+                              {t("offer.label")}
+                            </div>
+                            <div className="mt-1 text-lg font-semibold ui-title tabular-nums">
+                              {m.offerAmount != null
+                                ? formatMoney(m.offerAmount, currency, language)
+                                : "—"}
+                            </div>
+                            {m.offerStatus && m.offerStatus !== "PENDING" && (
+                              <div className="mt-1 text-xs font-medium ui-text-muted">
+                                {t(`offer.status.${m.offerStatus}`)}
+                              </div>
+                            )}
+                            {canRespond && (
+                              <div className="mt-2 flex justify-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="primary"
+                                  onClick={() => setAcceptOffer(m)}
+                                  leftIcon={<Check className="h-4 w-4" />}
+                                >
+                                  {t("offer.accept")}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  loading={respondBusy}
+                                  onClick={() => void respondOffer(m.id, false)}
+                                  leftIcon={<X className="h-4 w-4" />}
+                                >
+                                  {t("offer.decline")}
+                                </Button>
+                              </div>
+                            )}
+                            <p className="mt-1 text-[10px] tabular-nums ui-text-muted">
+                              {formatDateTime(m.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
                     return (
                       <div
                         key={m.id}
@@ -428,6 +581,25 @@ export default function MessagesView() {
           onClose={() => setShowTransfer(false)}
         />
       )}
+
+      <ConfirmDialog
+        open={acceptOffer !== null}
+        tone="danger"
+        title={t("offer.accept.confirmTitle")}
+        message={t("offer.accept.confirmBody").replace(
+          "{amount}",
+          acceptOffer?.offerAmount != null
+            ? formatMoney(acceptOffer.offerAmount, currency, language)
+            : ""
+        )}
+        confirmLabel={t("offer.accept")}
+        cancelLabel={t("common.cancel")}
+        loading={respondBusy}
+        onConfirm={() => {
+          if (acceptOffer) void respondOffer(acceptOffer.id, true);
+        }}
+        onCancel={() => setAcceptOffer(null)}
+      />
     </div>
   );
 }

@@ -90,6 +90,21 @@ enum TransferDirection {
   PULL
 }
 
+// A chat message is either plain text or a structured purchase OFFER (carries
+// an amount + a status the owner resolves). Mirrored by MESSAGE_KINDS /
+// OFFER_STATUSES in @wim/types.
+enum MessageKind {
+  TEXT
+  OFFER
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+}
+
 model Location {
   locationId  Int      @id @default(autoincrement())
   ownerUserId Int
@@ -615,6 +630,12 @@ model Message {
   senderUserId Int
   body         String   @db.VarChar(2000)
   createdAt    DateTime @default(now())
+
+  // OFFER messages carry a price the owner can accept (→ fires a transfer) or
+  // decline. TEXT messages leave offerAmount/offerStatus null.
+  kind        MessageKind  @default(TEXT)
+  offerAmount Decimal?     @db.Decimal(12, 2)
+  offerStatus OfferStatus?
 
   thread MessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
   sender User          @relation("MessageSender", fields: [senderUserId], references: [userId], onDelete: Cascade)

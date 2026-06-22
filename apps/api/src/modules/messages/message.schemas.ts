@@ -14,5 +14,10 @@ export const PostMessageSchema = z.object({
   body: z.string().trim().min(1).max(MESSAGE_BODY_MAX),
 });
 
+export const MakeOfferSchema = z.object({
+  // Mirrors Article.purchasePrice bounds (Decimal(12,2), non-negative).
+  amount: z.coerce.number().positive().max(10_000_000_000),
+});
+
 export type StartThreadInput = z.infer<typeof StartThreadSchema>;
 export type PostMessageInput = z.infer<typeof PostMessageSchema>;

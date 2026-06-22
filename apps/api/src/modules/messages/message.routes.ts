@@ -14,8 +14,13 @@ import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
 import { EmailService } from "../email/email.service";
+import { TransferService } from "../articles/transfer.service";
 import { MessageService } from "./message.service";
-import { StartThreadSchema, PostMessageSchema } from "./message.schemas";
+import {
+  StartThreadSchema,
+  PostMessageSchema,
+  MakeOfferSchema,
+} from "./message.schemas";
 
 const router = Router();
 
@@ -132,6 +137,91 @@ router.post(
     });
 
     res.status(201).json({ message: result.message });
+  })
+);
+
+// POST /api/messages/threads/:id/offer — the requester proposes a price.
+router.post(
+  "/threads/:id/offer",
+  security.createRateLimiter,
+  authGuard,
+  requireFeature("messaging"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const { amount } = MakeOfferSchema.parse(req.body);
+
+    const result = await MessageService.makeOffer(id, req.user!.sub, amount);
+
+    if (result.ownerEmail) {
+      void EmailService.sendReminderEmail({
+        to: result.ownerEmail,
+        subject: `WIM: New offer on "${result.articleNom}"`,
+        body: `${result.senderEmail ?? "A Power User"} offered ${amount} for your item "${result.articleNom}".\n\nOpen WIM to accept or decline.`,
+        path: `/messages?thread=${id}`,
+      });
+    }
+
+    await auditAction(req, {
+      action: "MESSAGE_SEND",
+      entity: "MessageThread",
+      entityId: id,
+      metadata: { messageId: result.message.id, offer: amount },
+    });
+
+    res.status(201).json({ message: result.message });
+  })
+);
+
+// POST /api/messages/offers/:messageId/accept — the owner accepts an offer,
+// which fires a PUSH transfer of the item to the requester (they complete it on
+// their Transfers page). Resolving the offer only after the transfer is created
+// keeps the two consistent if createPush rejects (e.g. a pending one exists).
+router.post(
+  "/offers/:messageId/accept",
+  authGuard,
+  requireFeature("messaging"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const messageId = idParam.parse(req.params.messageId);
+    const ownerId = req.user!.sub;
+    const offer = await MessageService.loadPendingOffer(messageId, ownerId);
+
+    const transfer = await TransferService.createPush(
+      offer.articleId,
+      ownerId,
+      offer.requesterEmail,
+      `Accepted offer${offer.amount ? `: ${offer.amount}` : ""}`
+    );
+
+    void EmailService.sendReminderEmail({
+      to: offer.requesterEmail,
+      subject: `WIM: Offer accepted on "${offer.articleNom}"`,
+      body: `Your offer on "${offer.articleNom}" was accepted. Complete the transfer to your inventory.\n\nUse token: ${transfer.token}\n\nThis transfer expires in 7 days.`,
+      path: `/transfers?token=${transfer.token}`,
+    });
+
+    const message = await MessageService.resolveOffer(messageId, "ACCEPTED");
+
+    await auditAction(req, {
+      action: "ARTICLE_TRANSFER_INIT",
+      entity: "ArticleTransfer",
+      entityId: transfer.id,
+      metadata: { via: "offer", messageId, articleId: offer.articleId },
+    });
+
+    res.json({ message });
+  })
+);
+
+// POST /api/messages/offers/:messageId/decline — the owner declines.
+router.post(
+  "/offers/:messageId/decline",
+  authGuard,
+  requireFeature("messaging"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const messageId = idParam.parse(req.params.messageId);
+    await MessageService.loadPendingOffer(messageId, req.user!.sub);
+    const message = await MessageService.resolveOffer(messageId, "DECLINED");
+    res.json({ message });
   })
 );
 

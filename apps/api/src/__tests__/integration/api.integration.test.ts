@@ -1020,5 +1020,55 @@ suite("API integration (real Postgres)", () => {
     expect(inbox.body.items.length).toBe(1);
     expect(inbox.body.items[0].article.articleId).toBe(articleId);
     expect(inbox.body.items[0].unread).toBe(true);
+
+    // --- Offers: the buyer proposes a price; the owner accepts, which fires a
+    // PUSH transfer the buyer can then complete. ---
+    const offer = await buyer
+      .post(`/api/messages/threads/${threadId}/offer`)
+      .set("Origin", ORIGIN)
+      .send({ amount: 250 });
+    expect(offer.status).toBe(201);
+    expect(offer.body.message.kind).toBe("OFFER");
+    expect(offer.body.message.offerStatus).toBe("PENDING");
+    const offerId = offer.body.message.id;
+
+    // The owner (not the buyer) can't be the one making an offer on their item.
+    expect(
+      (
+        await owner
+          .post(`/api/messages/threads/${threadId}/offer`)
+          .set("Origin", ORIGIN)
+          .send({ amount: 999 })
+      ).status
+    ).toBe(404);
+
+    // The buyer can't accept their own offer (only the owner responds).
+    expect(
+      (
+        await buyer
+          .post(`/api/messages/offers/${offerId}/accept`)
+          .set("Origin", ORIGIN)
+      ).status
+    ).toBe(404);
+
+    // The owner accepts → offer ACCEPTED and a pending PUSH transfer now exists
+    // for the buyer to accept on their Transfers page.
+    const accept = await owner
+      .post(`/api/messages/offers/${offerId}/accept`)
+      .set("Origin", ORIGIN);
+    expect(accept.status).toBe(200);
+    expect(accept.body.message.offerStatus).toBe("ACCEPTED");
+    const incoming = await buyer.get("/api/articles/transfers/incoming");
+    expect(incoming.status).toBe(200);
+    expect(incoming.body.items.length).toBeGreaterThanOrEqual(1);
+
+    // Re-accepting a resolved offer is a 409.
+    expect(
+      (
+        await owner
+          .post(`/api/messages/offers/${offerId}/accept`)
+          .set("Origin", ORIGIN)
+      ).status
+    ).toBe(409);
   }, 30_000);
 });
