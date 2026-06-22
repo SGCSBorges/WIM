@@ -27,7 +27,6 @@ import {
   Upload,
   Tag as TagIcon,
   Trash2,
-  Pencil,
   X,
   ChevronLeft,
   ChevronRight,
@@ -36,6 +35,7 @@ import {
 import ArticleForm from "./ArticleForm";
 import ArticlesFilterBar from "./ArticlesFilterBar";
 import ArticlesTable from "./ArticlesTable";
+import ArticlesCardList from "./ArticlesCardList";
 import {
   articlesAPI,
   attachmentsAPI,
@@ -48,10 +48,8 @@ import {
 import { useI18n } from "../../i18n/i18n";
 import type { Article, FetchedArticle, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
-import { formatMoney } from "../../utils/money";
 import { formatCount } from "../../utils/number";
 import { downloadBlob } from "../../utils/csv";
-import ArticleThumb from "./ArticleThumb";
 import { ErrorBanner, EmptyState } from "../common/States";
 import BulkActionBar from "./BulkActionBar";
 import BulkEditDialog from "./BulkEditDialog";
@@ -62,9 +60,8 @@ import { consumeSharedDraft } from "../../utils/shareTarget";
 import { useFeature, useFeatures } from "../../features/features";
 import { useUpgrade } from "../../features/upgrade";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
-import { articleStatusInfo, isDefaultStatus } from "../../utils/articleStatus";
 import type { ArticleStatus, ArticleCategory } from "@wim/types";
-import { PageHeader, Button, Input, Badge } from "../ui";
+import { PageHeader, Button, Input } from "../ui";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
@@ -1064,108 +1061,24 @@ const ArticlesList: React.FC = () => {
           />
         ) : (
           <>
-            {/* Mobile: stacked-card layout (below sm:). The desktop table
-                below is hidden at the same breakpoint. */}
-            <ul
-              className="divide-y ui-divider sm:hidden"
-              aria-label={t("articles.title")}
-            >
-              <li className="flex items-center gap-2 p-3">
-                <input
-                  ref={selectAllRef}
-                  type="checkbox"
-                  aria-label={t("articles.bulk.selectAll")}
-                  checked={allPageSelected}
-                  onChange={toggleSelectAll}
-                  className="h-4 w-4 accent-[var(--primary)]"
-                />
-                <span className="text-xs ui-text-muted">
-                  {t("articles.bulk.selectAll")}
-                </span>
-              </li>
-              {articles.map((article) => {
-                const ws = getWarrantyStatus(article.garantie);
-                const days = getDaysUntilExpiry(article.garantie?.garantieFin);
-                return (
-                  <li
-                    key={`m-${article.articleId}`}
-                    className="flex items-start gap-3 p-3"
-                  >
-                    <input
-                      type="checkbox"
-                      aria-label={t("articles.bulk.selectRow").replace(
-                        "{name}",
-                        article.articleNom
-                      )}
-                      checked={selectedIds.has(article.articleId)}
-                      onChange={() => toggleSelected(article.articleId)}
-                      className="mt-1 h-4 w-4 accent-[var(--primary)]"
-                    />
-                    <ArticleThumb
-                      src={article.productImageUrl}
-                      alt={article.articleNom}
-                    />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <Link
-                        to={`/articles/${article.articleId}`}
-                        className="block truncate font-medium ui-action-primary"
-                        title={article.articleNom}
-                      >
-                        {article.articleNom}
-                      </Link>
-                      <p
-                        className="truncate text-xs ui-text-muted"
-                        title={article.articleModele ?? undefined}
-                      >
-                        {article.articleModele}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-1 text-xs">
-                        <Badge tone={ws.tone}>{ws.label}</Badge>
-                        {!isDefaultStatus(article.status) && (
-                          <Badge tone={articleStatusInfo(article.status).tone}>
-                            {t(articleStatusInfo(article.status).labelKey)}
-                          </Badge>
-                        )}
-                        {article.purchasePrice != null && (
-                          <span className="ui-text-muted">
-                            {formatMoney(
-                              article.purchasePrice,
-                              currency,
-                              language
-                            )}
-                          </span>
-                        )}
-                        {days !== null && days >= 0 && days <= 30 && (
-                          <span className="ui-text-warn">
-                            {days} {t("articles.warranty.daysLeft")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingArticle(article);
-                          setShowForm(true);
-                        }}
-                        aria-label={t("common.edit")}
-                        leftIcon={<Pencil className="h-4 w-4" />}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(article)}
-                        aria-label={t("common.delete")}
-                        className="text-danger"
-                        leftIcon={<Trash2 className="h-4 w-4" />}
-                      />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            {/* Mobile cards (below sm:) — extracted to ArticlesCardList. */}
+            <ArticlesCardList
+              articles={articles}
+              selectedIds={selectedIds}
+              allPageSelected={allPageSelected}
+              selectAllRef={selectAllRef}
+              onToggleSelectAll={toggleSelectAll}
+              onToggleSelected={toggleSelected}
+              getWarrantyStatus={getWarrantyStatus}
+              getDaysUntilExpiry={getDaysUntilExpiry}
+              currency={currency}
+              language={language}
+              onEdit={(a) => {
+                setEditingArticle(a);
+                setShowForm(true);
+              }}
+              onDelete={handleDelete}
+            />
 
             {/* Desktop table (sm+) — extracted to ArticlesTable. */}
             <ArticlesTable
