@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import type { FetchedArticle } from "../../services/api";
+import type { FetchedArticle } from "../../types";
 import ArticlesCardList from "../../components/articles/ArticlesCardList";
 import ArticlesTable from "../../components/articles/ArticlesTable";
 import { I18nProvider } from "../../i18n/i18n";
