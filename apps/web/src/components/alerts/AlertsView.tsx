@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
-import { alertsAPI } from "../../services/api";
+import { alertsAPI, articlesAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -26,6 +26,7 @@ import {
   Section,
   Button,
   Input,
+  Textarea,
   Select,
   Badge,
   type BadgeTone,
@@ -67,6 +68,11 @@ export default function AlertsView() {
   const [newName, setNewName] = useState("");
   const [newDate, setNewDate] = useState("");
   const [newRecurrence, setNewRecurrence] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newArticleId, setNewArticleId] = useState("");
+  const [articleOptions, setArticleOptions] = useState<
+    { articleId: number; articleNom: string }[]
+  >([]);
   const [creating, setCreating] = useState(false);
 
   const fetchAll = useCallback(async () => {
@@ -100,6 +106,29 @@ export default function AlertsView() {
       setTimeout(() => customSnoozeInputRef.current?.focus(), 0);
     }
   }, [customSnoozeId]);
+
+  // Lazily load the article list for the optional "link to item" picker the
+  // first time the create form is opened (best-effort — the picker just stays
+  // empty if it fails).
+  useEffect(() => {
+    if (!showCreate || articleOptions.length > 0) return;
+    let alive = true;
+    void articlesAPI
+      .getAll({ limit: 200, sort: "articleNom", dir: "asc" })
+      .then((res) => {
+        if (alive)
+          setArticleOptions(
+            res.items.map((a) => ({
+              articleId: a.articleId,
+              articleNom: a.articleNom,
+            }))
+          );
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [showCreate, articleOptions.length]);
 
   const sorted = useMemo(() => {
     const arr = [...items];
@@ -135,11 +164,15 @@ export default function AlertsView() {
         alerteNom: newName.trim(),
         alerteDate: new Date(newDate).toISOString(),
         recurrenceMonths: newRecurrence ? Number(newRecurrence) : null,
+        alerteDescription: newDescription.trim() || null,
+        alerteArticleId: newArticleId ? Number(newArticleId) : null,
       });
       toast.show(t("alerts.create.success"), { kind: "success" });
       setNewName("");
       setNewDate("");
       setNewRecurrence("");
+      setNewDescription("");
+      setNewArticleId("");
       setShowCreate(false);
       await fetchAll();
     } catch (e) {
@@ -255,6 +288,28 @@ export default function AlertsView() {
                 placeholder={t("alerts.create.recurrencePlaceholder")}
                 aria-label={t("alerts.recurrence")}
               />
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Textarea
+                rows={2}
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                placeholder={t("alerts.create.descriptionPlaceholder")}
+                aria-label={t("alerts.create.descriptionPlaceholder")}
+                maxLength={255}
+              />
+              <Select
+                value={newArticleId}
+                onChange={(e) => setNewArticleId(e.target.value)}
+                aria-label={t("alerts.create.linkArticle")}
+              >
+                <option value="">{t("alerts.create.noArticle")}</option>
+                {articleOptions.map((a) => (
+                  <option key={a.articleId} value={a.articleId}>
+                    {a.articleNom}
+                  </option>
+                ))}
+              </Select>
             </div>
             <div className="mt-3">
               <Button
