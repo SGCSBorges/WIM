@@ -35,6 +35,7 @@ import {
   Lock,
 } from "lucide-react";
 import ArticleForm from "./ArticleForm";
+import ArticlesFilterBar from "./ArticlesFilterBar";
 import ShareArticleButton from "./ShareArticleButton";
 import {
   articlesAPI,
@@ -63,13 +64,8 @@ import { useFeature, useFeatures } from "../../features/features";
 import { useUpgrade } from "../../features/upgrade";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import { articleStatusInfo, isDefaultStatus } from "../../utils/articleStatus";
-import {
-  ARTICLE_STATUSES,
-  type ArticleStatus,
-  ARTICLE_CATEGORIES,
-  type ArticleCategory,
-} from "@wim/types";
-import { PageHeader, Button, Input, Select, Badge } from "../ui";
+import type { ArticleStatus, ArticleCategory } from "@wim/types";
+import { PageHeader, Button, Input, Badge } from "../ui";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
@@ -672,199 +668,26 @@ const ArticlesList: React.FC = () => {
 
       {/* Toolbar */}
       <div className="ui-card mb-4 space-y-3 p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-[12rem] flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
-              aria-hidden="true"
-            />
-            <Input
-              type="search"
-              enterKeyHint="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={t("articles.search.placeholder")}
-              aria-label={t("articles.search.placeholder")}
-              className="pl-9 pr-9"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => setSearchInput("")}
-                aria-label={t("common.clear")}
-                title={t("common.clear")}
-                className="absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md ui-btn-ghost text-muted"
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
-          </div>
-
-          <Select
-            value={locationFilterId ?? ""}
-            onChange={(e) =>
-              updateParams({ location: e.target.value || undefined })
-            }
-            aria-label={t("common.allLocations")}
-            className="w-auto"
-          >
-            <option value="">{t("common.allLocations")}</option>
-            {locations.map((l) => (
-              <option key={l.locationId} value={l.locationId}>
-                {l.name}
-              </option>
-            ))}
-          </Select>
-
-          {tags.length > 0 && (
-            <Select
-              value={tagFilterId ?? ""}
-              onChange={(e) =>
-                updateParams({ tag: e.target.value || undefined })
-              }
-              aria-label={t("articles.filter.tag")}
-              className="w-auto"
-            >
-              <option value="">{t("articles.filter.allTags")}</option>
-              {tags.map((tg) => (
-                <option key={tg.tagId} value={tg.tagId}>
-                  {tg.name}
-                </option>
-              ))}
-            </Select>
-          )}
-
-          <Select
-            value={warrantyStatus}
-            onChange={(e) =>
-              updateParams({ warranty: e.target.value || undefined })
-            }
-            aria-label={t("articles.filter.warranty")}
-            className="w-auto"
-          >
-            <option value="">{t("articles.filter.allWarranties")}</option>
-            <option value="valid">{t("articles.filter.warrantyValid")}</option>
-            <option value="expiringSoon">
-              {t("articles.filter.warrantyExpiringSoon")}
-            </option>
-            <option value="expired">
-              {t("articles.filter.warrantyExpired")}
-            </option>
-            <option value="none">{t("articles.filter.warrantyNone")}</option>
-          </Select>
-
-          <Select
-            value={statusFilter}
-            onChange={(e) =>
-              updateParams({ status: e.target.value || undefined })
-            }
-            aria-label={t("articles.filter.status.label")}
-            className="w-auto"
-          >
-            <option value="">{t("articles.filter.status.all")}</option>
-            {ARTICLE_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(`articleStatus.${s}`)}
-              </option>
-            ))}
-          </Select>
-
-          <Select
-            value={categoryFilter}
-            onChange={(e) =>
-              updateParams({ category: e.target.value || undefined })
-            }
-            aria-label={t("articles.filter.category.label")}
-            className="w-auto"
-          >
-            <option value="">{t("articles.filter.category.all")}</option>
-            {ARTICLE_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {t(`articleCategory.${c}`)}
-              </option>
-            ))}
-          </Select>
-
-          <Input
-            type="number"
-            min="0"
-            value={priceMin}
-            onChange={(e) => updateParams({ priceMin: e.target.value })}
-            placeholder={t("articles.filter.priceMin")}
-            aria-label={t("articles.filter.priceMin")}
-            className="w-24"
-          />
-          <Input
-            type="number"
-            min="0"
-            value={priceMax}
-            onChange={(e) => updateParams({ priceMax: e.target.value })}
-            placeholder={t("articles.filter.priceMax")}
-            aria-label={t("articles.filter.priceMax")}
-            className="w-24"
-          />
-
-          <Input
-            type="date"
-            value={createdFrom}
-            onChange={(e) => updateParams({ createdFrom: e.target.value })}
-            aria-label={t("articles.filter.createdFrom")}
-            title={t("articles.filter.createdFrom")}
-            className="w-auto"
-          />
-          <Input
-            type="date"
-            value={createdTo}
-            onChange={(e) => updateParams({ createdTo: e.target.value })}
-            aria-label={t("articles.filter.createdTo")}
-            title={t("articles.filter.createdTo")}
-            className="w-auto"
-          />
-
-          <Select
-            value={`${sortParam || "articleId"}:${dirParam || "desc"}`}
-            onChange={(e) => {
-              const [s, d] = e.target.value.split(":");
-              updateParams({ sort: s, dir: d });
-            }}
-            aria-label={t("articles.filter.sort")}
-            className="w-auto"
-          >
-            <option value="articleId:desc">
-              {t("articles.sort.newestFirst")}
-            </option>
-            <option value="articleId:asc">
-              {t("articles.sort.oldestFirst")}
-            </option>
-            <option value="articleNom:asc">{t("articles.sort.nameAsc")}</option>
-            <option value="articleNom:desc">
-              {t("articles.sort.nameDesc")}
-            </option>
-            <option value="purchasePrice:desc">
-              {t("articles.sort.priceDesc")}
-            </option>
-            <option value="purchasePrice:asc">
-              {t("articles.sort.priceAsc")}
-            </option>
-            <option value="createdAt:desc">
-              {t("articles.sort.createdDesc")}
-            </option>
-            <option value="createdAt:asc">
-              {t("articles.sort.createdAsc")}
-            </option>
-          </Select>
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearAllFilters}
-              leftIcon={<X className="h-4 w-4" />}
-            >
-              {t("articles.filter.clearAll")}
-            </Button>
-          )}
-        </div>
+        <ArticlesFilterBar
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          locationFilterId={locationFilterId}
+          tagFilterId={tagFilterId}
+          warrantyStatus={warrantyStatus}
+          statusFilter={statusFilter}
+          categoryFilter={categoryFilter}
+          priceMin={priceMin}
+          priceMax={priceMax}
+          createdFrom={createdFrom}
+          createdTo={createdTo}
+          sortParam={sortParam}
+          dirParam={dirParam}
+          locations={locations}
+          tags={tags}
+          hasActiveFilters={hasActiveFilters}
+          updateParams={updateParams}
+          clearAllFilters={clearAllFilters}
+        />
 
         {/* Secondary actions */}
         <div className="flex flex-wrap items-center gap-2 border-t ui-divider pt-3">

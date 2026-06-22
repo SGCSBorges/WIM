@@ -1,0 +1,242 @@
+/**
+ * The Articles list filter bar — search + location/tag/warranty/status/category
+ * selects + price/date range + sort + "clear filters". Extracted from the
+ * (large) ArticlesList so that file can focus on data + selection + rendering.
+ *
+ * Purely presentational: every control reads a value from props and writes
+ * back through `updateParams` (which ArticlesList persists to the URL), so this
+ * component holds no state of its own. The typed props contract means a dropped
+ * binding is a compile error, not a silent regression.
+ */
+import { Search, X } from "lucide-react";
+import { useI18n } from "../../i18n/i18n";
+import { ARTICLE_STATUSES, ARTICLE_CATEGORIES } from "@wim/types";
+import { Button, Input, Select } from "../ui";
+
+interface FilterOption {
+  locationId?: number;
+  tagId?: number;
+  name: string;
+}
+
+interface ArticlesFilterBarProps {
+  searchInput: string;
+  setSearchInput: (value: string) => void;
+  locationFilterId?: number;
+  tagFilterId?: number;
+  warrantyStatus: string;
+  statusFilter: string;
+  categoryFilter: string;
+  priceMin: string;
+  priceMax: string;
+  createdFrom: string;
+  createdTo: string;
+  sortParam: string;
+  dirParam: string;
+  locations: FilterOption[];
+  tags: FilterOption[];
+  hasActiveFilters: boolean;
+  updateParams: (patch: Record<string, string | undefined>) => void;
+  clearAllFilters: () => void;
+}
+
+export default function ArticlesFilterBar({
+  searchInput,
+  setSearchInput,
+  locationFilterId,
+  tagFilterId,
+  warrantyStatus,
+  statusFilter,
+  categoryFilter,
+  priceMin,
+  priceMax,
+  createdFrom,
+  createdTo,
+  sortParam,
+  dirParam,
+  locations,
+  tags,
+  hasActiveFilters,
+  updateParams,
+  clearAllFilters,
+}: ArticlesFilterBarProps) {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="relative min-w-[12rem] flex-1">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+          aria-hidden="true"
+        />
+        <Input
+          type="search"
+          enterKeyHint="search"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder={t("articles.search.placeholder")}
+          aria-label={t("articles.search.placeholder")}
+          className="pl-9 pr-9"
+        />
+        {searchInput && (
+          <button
+            type="button"
+            onClick={() => setSearchInput("")}
+            aria-label={t("common.clear")}
+            title={t("common.clear")}
+            className="absolute right-2 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md ui-btn-ghost text-muted"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
+      <Select
+        value={locationFilterId ?? ""}
+        onChange={(e) =>
+          updateParams({ location: e.target.value || undefined })
+        }
+        aria-label={t("common.allLocations")}
+        className="w-auto"
+      >
+        <option value="">{t("common.allLocations")}</option>
+        {locations.map((l) => (
+          <option key={l.locationId} value={l.locationId}>
+            {l.name}
+          </option>
+        ))}
+      </Select>
+
+      {tags.length > 0 && (
+        <Select
+          value={tagFilterId ?? ""}
+          onChange={(e) => updateParams({ tag: e.target.value || undefined })}
+          aria-label={t("articles.filter.tag")}
+          className="w-auto"
+        >
+          <option value="">{t("articles.filter.allTags")}</option>
+          {tags.map((tg) => (
+            <option key={tg.tagId} value={tg.tagId}>
+              {tg.name}
+            </option>
+          ))}
+        </Select>
+      )}
+
+      <Select
+        value={warrantyStatus}
+        onChange={(e) =>
+          updateParams({ warranty: e.target.value || undefined })
+        }
+        aria-label={t("articles.filter.warranty")}
+        className="w-auto"
+      >
+        <option value="">{t("articles.filter.allWarranties")}</option>
+        <option value="valid">{t("articles.filter.warrantyValid")}</option>
+        <option value="expiringSoon">
+          {t("articles.filter.warrantyExpiringSoon")}
+        </option>
+        <option value="expired">{t("articles.filter.warrantyExpired")}</option>
+        <option value="none">{t("articles.filter.warrantyNone")}</option>
+      </Select>
+
+      <Select
+        value={statusFilter}
+        onChange={(e) => updateParams({ status: e.target.value || undefined })}
+        aria-label={t("articles.filter.status.label")}
+        className="w-auto"
+      >
+        <option value="">{t("articles.filter.status.all")}</option>
+        {ARTICLE_STATUSES.map((s) => (
+          <option key={s} value={s}>
+            {t(`articleStatus.${s}`)}
+          </option>
+        ))}
+      </Select>
+
+      <Select
+        value={categoryFilter}
+        onChange={(e) =>
+          updateParams({ category: e.target.value || undefined })
+        }
+        aria-label={t("articles.filter.category.label")}
+        className="w-auto"
+      >
+        <option value="">{t("articles.filter.category.all")}</option>
+        {ARTICLE_CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {t(`articleCategory.${c}`)}
+          </option>
+        ))}
+      </Select>
+
+      <Input
+        type="number"
+        min="0"
+        value={priceMin}
+        onChange={(e) => updateParams({ priceMin: e.target.value })}
+        placeholder={t("articles.filter.priceMin")}
+        aria-label={t("articles.filter.priceMin")}
+        className="w-24"
+      />
+      <Input
+        type="number"
+        min="0"
+        value={priceMax}
+        onChange={(e) => updateParams({ priceMax: e.target.value })}
+        placeholder={t("articles.filter.priceMax")}
+        aria-label={t("articles.filter.priceMax")}
+        className="w-24"
+      />
+
+      <Input
+        type="date"
+        value={createdFrom}
+        onChange={(e) => updateParams({ createdFrom: e.target.value })}
+        aria-label={t("articles.filter.createdFrom")}
+        title={t("articles.filter.createdFrom")}
+        className="w-auto"
+      />
+      <Input
+        type="date"
+        value={createdTo}
+        onChange={(e) => updateParams({ createdTo: e.target.value })}
+        aria-label={t("articles.filter.createdTo")}
+        title={t("articles.filter.createdTo")}
+        className="w-auto"
+      />
+
+      <Select
+        value={`${sortParam || "articleId"}:${dirParam || "desc"}`}
+        onChange={(e) => {
+          const [s, d] = e.target.value.split(":");
+          updateParams({ sort: s, dir: d });
+        }}
+        aria-label={t("articles.filter.sort")}
+        className="w-auto"
+      >
+        <option value="articleId:desc">{t("articles.sort.newestFirst")}</option>
+        <option value="articleId:asc">{t("articles.sort.oldestFirst")}</option>
+        <option value="articleNom:asc">{t("articles.sort.nameAsc")}</option>
+        <option value="articleNom:desc">{t("articles.sort.nameDesc")}</option>
+        <option value="purchasePrice:desc">
+          {t("articles.sort.priceDesc")}
+        </option>
+        <option value="purchasePrice:asc">{t("articles.sort.priceAsc")}</option>
+        <option value="createdAt:desc">{t("articles.sort.createdDesc")}</option>
+        <option value="createdAt:asc">{t("articles.sort.createdAsc")}</option>
+      </Select>
+
+      {hasActiveFilters && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={clearAllFilters}
+          leftIcon={<X className="h-4 w-4" />}
+        >
+          {t("articles.filter.clearAll")}
+        </Button>
+      )}
+    </div>
+  );
+}
