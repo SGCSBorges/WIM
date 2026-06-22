@@ -130,7 +130,7 @@ export function buildOpenApiDocument() {
         get: {
           tags: ["articles"],
           summary:
-            "List the caller's articles, optionally filtered by location.",
+            "List the caller's articles with search, filters, sort + pagination.",
           security: [cookieAuth],
           parameters: [
             {
@@ -138,6 +138,103 @@ export function buildOpenApiDocument() {
               in: "query",
               required: false,
               schema: { type: "integer", minimum: 1 },
+            },
+            {
+              name: "tag",
+              in: "query",
+              required: false,
+              schema: { type: "integer", minimum: 1 },
+            },
+            {
+              name: "q",
+              in: "query",
+              required: false,
+              description: "Trigram substring search over name/model/etc.",
+              schema: { type: "string", maxLength: 200 },
+            },
+            {
+              name: "warrantyStatus",
+              in: "query",
+              required: false,
+              schema: {
+                type: "string",
+                enum: ["valid", "expiringSoon", "expired", "none"],
+              },
+            },
+            {
+              name: "status",
+              in: "query",
+              required: false,
+              schema: {
+                type: "string",
+                enum: [
+                  "ACTIVE",
+                  "IN_REPAIR",
+                  "LOANED",
+                  "SOLD",
+                  "DISPOSED",
+                  "LOST",
+                ],
+              },
+            },
+            {
+              name: "category",
+              in: "query",
+              required: false,
+              schema: {
+                type: "string",
+                enum: [
+                  "ELECTRONICS",
+                  "APPLIANCE",
+                  "FURNITURE",
+                  "TOOL",
+                  "VEHICLE",
+                  "CLOTHING",
+                  "JEWELRY",
+                  "SPORTS",
+                  "COLLECTIBLE",
+                  "OTHER",
+                ],
+              },
+            },
+            {
+              name: "priceMin",
+              in: "query",
+              required: false,
+              schema: { type: "number", minimum: 0 },
+            },
+            {
+              name: "priceMax",
+              in: "query",
+              required: false,
+              schema: { type: "number", minimum: 0 },
+            },
+            {
+              name: "createdFrom",
+              in: "query",
+              required: false,
+              schema: { type: "string", format: "date" },
+            },
+            {
+              name: "createdTo",
+              in: "query",
+              required: false,
+              schema: { type: "string", format: "date" },
+            },
+            {
+              name: "sort",
+              in: "query",
+              required: false,
+              schema: {
+                type: "string",
+                enum: ["articleId", "articleNom", "purchasePrice", "createdAt"],
+              },
+            },
+            {
+              name: "dir",
+              in: "query",
+              required: false,
+              schema: { type: "string", enum: ["asc", "desc"] },
             },
             {
               name: "page",

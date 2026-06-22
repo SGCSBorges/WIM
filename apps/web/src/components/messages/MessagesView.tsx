@@ -9,7 +9,7 @@
  * transfer flow.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import {
   MessagesSquare,
   Send,
@@ -465,6 +465,17 @@ export default function MessagesView() {
                                 {t(`offer.status.${m.offerStatus}`)}
                               </div>
                             )}
+                            {/* Accepted → the requester finishes the transfer
+                                on their Transfers page (also emailed). */}
+                            {m.offerStatus === "ACCEPTED" &&
+                              detail.role === "requester" && (
+                                <Link
+                                  to="/transfers"
+                                  className="ui-action-primary mt-1 inline-block text-xs hover:underline"
+                                >
+                                  {t("offer.completeTransfer")}
+                                </Link>
+                              )}
                             {canRespond && (
                               <div className="mt-2 flex justify-center gap-2">
                                 <Button
