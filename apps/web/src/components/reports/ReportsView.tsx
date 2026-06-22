@@ -9,6 +9,7 @@
  * user actually opens /reports.
  */
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Check, Download, FileText } from "lucide-react";
 import { locationsAPI, reportsAPI, tagsAPI } from "../../services/api";
 import { ARTICLE_STATUSES, type ArticleStatus } from "@wim/types";
@@ -38,7 +39,15 @@ export default function ReportsView() {
   const [locationId, setLocationId] = useState<string>("");
   const [tagId, setTagId] = useState<string>("");
   const [warrantyStatus, setWarrantyStatus] = useState<"" | WarrantyStatus>("");
-  const [status, setStatus] = useState<"" | ArticleStatus>("");
+  // Allow deep-linking a status-scoped report, e.g. /reports?status=LOST from a
+  // lost item's detail page — the lost/sold/disposed "records report" path.
+  const [searchParams] = useSearchParams();
+  const initialStatus = searchParams.get("status") ?? "";
+  const [status, setStatus] = useState<"" | ArticleStatus>(
+    (ARTICLE_STATUSES as readonly string[]).includes(initialStatus)
+      ? (initialStatus as ArticleStatus)
+      : ""
+  );
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
 

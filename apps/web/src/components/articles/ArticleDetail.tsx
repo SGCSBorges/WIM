@@ -7,7 +7,7 @@
  * (not warranty / attachments) — see article.service.ts duplicate().
  */
 import { useCallback, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { usePreferences } from "../../preferences/preferences";
 import {
   Copy,
@@ -48,9 +48,9 @@ import type {
 } from "../../types";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import { articleStatusInfo } from "../../utils/articleStatus";
+import { NOT_OWNED_STATUSES, ARTICLE_NOTE_KINDS } from "@wim/types";
 import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import TransferDialog from "./TransferDialog";
-import { ARTICLE_NOTE_KINDS } from "@wim/types";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { currentValue } from "../../utils/depreciation";
@@ -467,9 +467,19 @@ export default function ArticleDetail() {
           size={120}
         />
         <div className="min-w-0 flex-1 space-y-3">
-          <Badge tone={articleStatusInfo(article.status).tone}>
-            {t(articleStatusInfo(article.status).labelKey)}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={articleStatusInfo(article.status).tone}>
+              {t(articleStatusInfo(article.status).labelKey)}
+            </Badge>
+            {article.status && NOT_OWNED_STATUSES.includes(article.status) && (
+              <Link
+                to={`/reports?status=${article.status}`}
+                className="ui-action-primary text-xs hover:underline"
+              >
+                {t("articleDetail.recordsReport")}
+              </Link>
+            )}
+          </div>
           {article.serialNumber && (
             <p className="select-all font-mono text-xs ui-text-muted">
               {t("articleDetail.serialNumber")}: {article.serialNumber}
