@@ -290,14 +290,19 @@ export default function AlertsView() {
               />
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <Textarea
-                rows={2}
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                placeholder={t("alerts.create.descriptionPlaceholder")}
-                aria-label={t("alerts.create.descriptionPlaceholder")}
-                maxLength={255}
-              />
+              <div>
+                <Textarea
+                  rows={2}
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder={t("alerts.create.descriptionPlaceholder")}
+                  aria-label={t("alerts.create.descriptionPlaceholder")}
+                  maxLength={255}
+                />
+                <p className="text-right text-xs ui-text-muted tabular-nums">
+                  {newDescription.length} / 255
+                </p>
+              </div>
               <Select
                 value={newArticleId}
                 onChange={(e) => setNewArticleId(e.target.value)}
