@@ -28,7 +28,6 @@ import {
   Tag as TagIcon,
   Trash2,
   Pencil,
-  Globe,
   X,
   ChevronLeft,
   ChevronRight,
@@ -36,7 +35,7 @@ import {
 } from "lucide-react";
 import ArticleForm from "./ArticleForm";
 import ArticlesFilterBar from "./ArticlesFilterBar";
-import ShareArticleButton from "./ShareArticleButton";
+import ArticlesTable from "./ArticlesTable";
 import {
   articlesAPI,
   attachmentsAPI,
@@ -1168,197 +1167,26 @@ const ArticlesList: React.FC = () => {
               })}
             </ul>
 
-            {/* Desktop: existing table (sm: and up). */}
-            <div className="hidden overflow-x-auto sm:block">
-              <table className="w-full">
-                <thead className="ui-panel">
-                  <tr>
-                    <th scope="col" className="w-10 px-3 py-3">
-                      <input
-                        ref={selectAllRef}
-                        type="checkbox"
-                        aria-label={t("articles.bulk.selectAll")}
-                        checked={allPageSelected}
-                        onChange={toggleSelectAll}
-                        className="h-4 w-4 accent-[var(--primary)]"
-                      />
-                    </th>
-                    {[
-                      t("articles.table.image"),
-                      t("articles.table.name"),
-                      t("articles.table.model"),
-                      t("articles.table.description"),
-                      t("articles.table.value"),
-                      t("articles.table.warranty"),
-                      t("articles.table.expiresIn"),
-                      t("articles.table.proof"),
-                      t("articles.table.shared"),
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ui-text-muted"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ui-text-muted"
-                    >
-                      {t("articles.table.actions")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y ui-divider">
-                  {articles.map((article) => {
-                    const ws = getWarrantyStatus(article.garantie);
-                    const days = getDaysUntilExpiry(
-                      article.garantie?.garantieFin
-                    );
-                    return (
-                      <tr key={article.articleId} className="hover-surface">
-                        <td className="px-3 py-4">
-                          <input
-                            type="checkbox"
-                            aria-label={t("articles.bulk.selectRow").replace(
-                              "{name}",
-                              article.articleNom
-                            )}
-                            checked={selectedIds.has(article.articleId)}
-                            onChange={() => toggleSelected(article.articleId)}
-                            className="h-4 w-4 accent-[var(--primary)]"
-                          />
-                        </td>
-                        <td className="px-6 py-4">
-                          <ArticleThumb
-                            src={article.productImageUrl}
-                            alt={article.articleNom}
-                          />
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium">
-                          <Link
-                            to={`/articles/${article.articleId}`}
-                            className="ui-action-primary hover:underline"
-                          >
-                            {article.articleNom}
-                          </Link>
-                          {article.tags && article.tags.length > 0 && (
-                            <div className="mt-1 flex flex-wrap gap-1">
-                              {article.tags.map((at) => (
-                                <Badge key={at.tagId} tone="info">
-                                  {at.tag?.name ?? `#${at.tagId}`}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm ui-text-muted">
-                          {article.articleModele}
-                        </td>
-                        <td className="px-6 py-4 text-sm ui-text-muted">
-                          {article.articleDescription || "-"}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm ui-text-muted tabular-nums">
-                          {article.purchasePrice != null
-                            ? formatMoney(
-                                article.purchasePrice,
-                                currency,
-                                language
-                              )
-                            : "—"}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm">
-                          <Badge tone={ws.tone}>{ws.label}</Badge>
-                          {!isDefaultStatus(article.status) && (
-                            <Badge
-                              tone={articleStatusInfo(article.status).tone}
-                            >
-                              {t(articleStatusInfo(article.status).labelKey)}
-                            </Badge>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm">
-                          {!article.garantie?.garantieFin || days === null ? (
-                            <span className="ui-text-muted">—</span>
-                          ) : days < 0 ? (
-                            <span className="font-medium ui-text-error">
-                              {t("articles.warranty.expired")}
-                            </span>
-                          ) : (
-                            <span
-                              className={
-                                days <= 30
-                                  ? "font-medium ui-text-warn"
-                                  : "ui-text-muted"
-                              }
-                            >
-                              {days} {t("articles.warranty.daysLeft")}
-                            </span>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm">
-                          <Badge
-                            tone={
-                              article.garantie?.garantieImageAttachmentId
-                                ? "success"
-                                : "neutral"
-                            }
-                          >
-                            {article.garantie?.garantieImageAttachmentId
-                              ? t("common.yes")
-                              : t("common.no")}
-                          </Badge>
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm">
-                          {article.sharedWithPowerUsers ? (
-                            <Badge
-                              tone="info"
-                              icon={<Globe className="h-3 w-3" />}
-                              title={t("articles.share.state.publicTooltip")}
-                            >
-                              {t("articles.share.state.publicLabel")}
-                            </Badge>
-                          ) : (
-                            <span className="ui-text-muted">—</span>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-right">
-                          <div className="inline-flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setEditingArticle(article);
-                                setShowForm(true);
-                              }}
-                              aria-label={t("common.edit")}
-                              leftIcon={<Pencil className="h-4 w-4" />}
-                            />
-                            <ShareArticleButton
-                              articleId={article.articleId}
-                              sharedWithPowerUsers={Boolean(
-                                article.sharedWithPowerUsers
-                              )}
-                              isPowerUser={isPowerUser}
-                              onChanged={fetchArticles}
-                            />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(article)}
-                              aria-label={t("common.delete")}
-                              className="text-danger"
-                              leftIcon={<Trash2 className="h-4 w-4" />}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            {/* Desktop table (sm+) — extracted to ArticlesTable. */}
+            <ArticlesTable
+              articles={articles}
+              selectedIds={selectedIds}
+              allPageSelected={allPageSelected}
+              selectAllRef={selectAllRef}
+              onToggleSelectAll={toggleSelectAll}
+              onToggleSelected={toggleSelected}
+              getWarrantyStatus={getWarrantyStatus}
+              getDaysUntilExpiry={getDaysUntilExpiry}
+              currency={currency}
+              language={language}
+              isPowerUser={isPowerUser}
+              onEdit={(a) => {
+                setEditingArticle(a);
+                setShowForm(true);
+              }}
+              onDelete={handleDelete}
+              onShareChanged={fetchArticles}
+            />
           </>
         )}
 
