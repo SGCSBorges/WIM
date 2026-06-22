@@ -200,8 +200,13 @@ Security is app-level, not end-to-end: every read/write is authenticated (cookie
 | POST   | `/messages/threads` | `{ articleId, body }` | Open (or append to) the thread for `(article, requester)` and post a message; emails the owner |
 | GET    | `/messages/threads/:id` | — | Full conversation (oldest first); clears the caller's unread flag |
 | POST   | `/messages/threads/:id/messages` | `{ body }` | Reply; emails the other party **only when they were caught up** (no piled-on pings) |
+| POST   | `/messages/threads/:id/offer` | `{ amount }` | Requester proposes a purchase price (an `OFFER` message); emails the owner |
+| POST   | `/messages/offers/:messageId/accept` | — | Owner accepts a pending offer → fires a PUSH transfer of the item to the requester (who completes it on `/transfers`); marks the offer `ACCEPTED` |
+| POST   | `/messages/offers/:messageId/decline` | — | Owner declines a pending offer (`DECLINED`) |
 
 There is exactly one thread per `(articleId, requesterId)` (unique constraint) — re-messaging the same item just continues the conversation. Unread is tracked as a boolean per side; posting flips the recipient's flag on and the sender's off, and opening the thread clears the viewer's. `ownerUserId` is a snapshot taken at creation, so a later ownership transfer leaves the original conversation intact for both original parties.
+
+A `Message` is either `TEXT` or a structured `OFFER` (carrying `offerAmount` + an `offerStatus` of `PENDING | ACCEPTED | DECLINED | WITHDRAWN`). Only the requester side may make offers; only the owner resolves them. Accepting reuses `TransferService.createPush` (so no new ownership-move path) and only marks the offer `ACCEPTED` **after** the transfer is created, keeping the two consistent if `createPush` rejects (e.g. a pending push already exists → 409).
 
 ## Account security
 
