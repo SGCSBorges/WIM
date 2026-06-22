@@ -109,6 +109,9 @@ const LocationsView = React.lazy(
 const ReportsView = React.lazy(
   () => import("./components/reports/ReportsView")
 );
+const AnalyticsView = React.lazy(
+  () => import("./components/analytics/AnalyticsView")
+);
 const TransfersView = React.lazy(
   () => import("./components/transfers/TransfersView")
 );
@@ -357,6 +360,7 @@ export default function App() {
   const canTransfer = useFeature("transfers");
   const canMessage = useFeature("messaging");
   const canReports = useFeature("reports");
+  const canAnalytics = useFeature("analytics");
   const { loaded: featuresLoaded, refresh: refreshFeatures } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
@@ -578,6 +582,10 @@ export default function App() {
             <Route
               path="/reports"
               element={gatedRoute(canReports, <ReportsView />, "reports")}
+            />
+            <Route
+              path="/analytics"
+              element={gatedRoute(canAnalytics, <AnalyticsView />, "analytics")}
             />
             <Route path="/profile" element={<ProfileView />} />
             <Route path="/sharing" element={sharingRoute} />

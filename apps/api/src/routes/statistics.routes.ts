@@ -18,10 +18,12 @@ import {
   AuthRequest,
 } from "../modules/auth/auth.middleware";
 import { asyncHandler } from "../modules/common/http";
+import { requireFeature } from "../modules/features/feature.service";
 import {
   getDashboardStatistics,
   getBasicStatistics,
   getAdminStatistics,
+  getPortfolioAnalytics,
 } from "../services/statistics.service";
 
 const router = Router();
@@ -34,6 +36,18 @@ router.get(
     const role = req.user!.role;
     const statistics = await getDashboardStatistics({ userId, role });
     res.json(statistics);
+  })
+);
+
+// Spending & value analytics — a paid (POWER_USER) BI surface beyond the
+// free operational dashboard.
+router.get(
+  "/analytics",
+  authGuard,
+  requireFeature("analytics"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const analytics = await getPortfolioAnalytics({ userId: req.user!.sub });
+    res.json(analytics);
   })
 );
 

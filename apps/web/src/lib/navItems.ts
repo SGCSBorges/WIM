@@ -13,6 +13,7 @@ import {
   Bell,
   Share2,
   FileText,
+  TrendingUp,
   Settings,
   ArrowRightLeft,
   MessagesSquare,
@@ -27,6 +28,7 @@ export type NavKey =
   | "locations"
   | "alerts"
   | "reports"
+  | "analytics"
   | "sharing"
   | "transfers"
   | "messages"
@@ -52,6 +54,12 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "locations", path: "/locations", icon: MapPin },
   { key: "alerts", path: "/alerts", icon: Bell },
   { key: "reports", path: "/reports", icon: FileText, feature: "reports" },
+  {
+    key: "analytics",
+    path: "/analytics",
+    icon: TrendingUp,
+    feature: "analytics",
+  },
   { key: "sharing", path: "/sharing", icon: Share2, requires: "share" },
   {
     key: "transfers",

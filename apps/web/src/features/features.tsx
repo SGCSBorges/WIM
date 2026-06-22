@@ -19,6 +19,7 @@ export type FeatureKey =
   | "transfers"
   | "messaging"
   | "reports"
+  | "analytics"
   | "templates"
   | "bulk_edit"
   | "saved_views"
@@ -35,6 +36,7 @@ const EMPTY: FeatureMap = {
   transfers: false,
   messaging: false,
   reports: false,
+  analytics: false,
   templates: false,
   bulk_edit: false,
   saved_views: false,

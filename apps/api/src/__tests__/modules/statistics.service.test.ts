@@ -43,6 +43,7 @@ import { prisma } from "../../libs/prisma";
 import {
   getDashboardStatistics,
   getAdminStatistics,
+  getPortfolioAnalytics,
 } from "../../services/statistics.service";
 
 const mockPrisma = prisma as unknown as {
@@ -346,10 +347,7 @@ describe("getDashboardStatistics", () => {
     );
     expect(expSum).toBe(3);
     expect(result.articlesAddedByMonth).toHaveLength(12);
-    const addSum = result.articlesAddedByMonth.reduce(
-      (s, b) => s + b.count,
-      0
-    );
+    const addSum = result.articlesAddedByMonth.reduce((s, b) => s + b.count, 0);
     expect(addSum).toBe(3);
   });
 });
@@ -446,5 +444,67 @@ describe("getAdminStatistics", () => {
     await expect(getAdminStatistics()).rejects.toThrow(
       "Failed to fetch admin statistics"
     );
+  });
+});
+
+describe("getPortfolioAnalytics", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("aggregates spend, cumulative trend, breakdowns and top items", async () => {
+    const thisMonth = new Date();
+    thisMonth.setUTCDate(15);
+    const lastMonth = new Date(thisMonth);
+    lastMonth.setUTCMonth(thisMonth.getUTCMonth() - 1);
+
+    mockPrisma.article.findMany.mockResolvedValue([
+      {
+        articleId: 1,
+        articleNom: "Laptop",
+        purchasePrice: 1000,
+        depreciationRate: null,
+        createdAt: lastMonth,
+        garantie: null,
+        locations: [{ locationId: 1, location: { name: "Office" } }],
+        tags: [{ tagId: 7, tag: { name: "work" } }],
+      },
+      {
+        articleId: 2,
+        articleNom: "Chair",
+        purchasePrice: 200,
+        depreciationRate: null,
+        createdAt: thisMonth,
+        garantie: null,
+        locations: [{ locationId: 1, location: { name: "Office" } }],
+        tags: [],
+      },
+    ]);
+
+    const out = await getPortfolioAnalytics({ userId: 1 });
+
+    expect(out.totalSpend).toBe(1200);
+    expect(out.itemsPriced).toBe(2);
+    // 24-month window, cumulative ends at the full total.
+    expect(out.spendByMonth).toHaveLength(24);
+    expect(out.spendByMonth[out.spendByMonth.length - 1].cumulative).toBe(1200);
+    // Office holds both items' spend.
+    expect(out.byLocation).toEqual([
+      { locationId: 1, name: "Office", value: 1200 },
+    ]);
+    expect(out.byTag).toEqual([{ tagId: 7, name: "work", value: 1000 }]);
+    // Top items ranked by current value (no depreciation → purchase price).
+    expect(out.topItems[0]).toMatchObject({ articleId: 1, value: 1000 });
+  });
+
+  it("returns zeroed figures and an empty axis baseline when nothing is priced", async () => {
+    mockPrisma.article.findMany.mockResolvedValue([]);
+    const out = await getPortfolioAnalytics({ userId: 1 });
+    expect(out.totalSpend).toBe(0);
+    expect(out.itemsPriced).toBe(0);
+    expect(out.spendByMonth).toHaveLength(24);
+    expect(out.spendByMonth.every((b) => b.amount === 0)).toBe(true);
+    expect(out.byLocation).toEqual([]);
+    expect(out.topItems).toEqual([]);
   });
 });

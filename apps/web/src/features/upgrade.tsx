@@ -53,6 +53,7 @@ export function UpgradeBenefits() {
   const { t } = useI18n();
   const keys = [
     "upgrade.benefit.reports",
+    "upgrade.benefit.analytics",
     "upgrade.benefit.csv",
     "upgrade.benefit.calendar",
     "upgrade.benefit.sharing",

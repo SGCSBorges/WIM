@@ -574,3 +574,32 @@ export interface DashboardStatistics {
   warrantyExpirationsByMonth: MonthlyBucket[];
   articlesAddedByMonth: MonthlyBucket[];
 }
+
+/** One month in the spend time-series. `amount` is what was acquired that
+ *  month (by purchase/acquisition date); `cumulative` is the running portfolio
+ *  acquisition cost through that month (the "value over time" trend line). */
+export interface SpendBucket {
+  month: string; // YYYY-MM
+  amount: number;
+  cumulative: number;
+}
+
+/** A single article weighted by its current (depreciated) value. */
+export interface ValuedArticle {
+  articleId: number;
+  name: string;
+  value: number;
+}
+
+/** Payload for `GET /api/statistics/analytics` — the spending & value picture.
+ *  All figures are owner-scoped and exclude NOT_OWNED_STATUSES (current
+ *  holdings only), matching the dashboard's value rule. */
+export interface PortfolioAnalytics {
+  totalSpend: number; // sum of purchase prices
+  currentValue: number; // sum of depreciated current values
+  itemsPriced: number; // articles that carry a price
+  spendByMonth: SpendBucket[];
+  byLocation: Array<{ locationId: number; name: string; value: number }>;
+  byTag: Array<{ tagId: number; name: string; value: number }>;
+  topItems: ValuedArticle[];
+}

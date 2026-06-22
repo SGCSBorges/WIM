@@ -35,6 +35,7 @@ import type {
   ArticleNoteKind,
   ArticleStatus,
   BillingSubscription,
+  PortfolioAnalytics,
   ClaimStatus,
   DateFormatPref,
   FetchedArticle,
@@ -1300,6 +1301,18 @@ export const statisticsAPI = {
     if (!response.ok)
       throw new Error(
         await extractError(response, "Failed to fetch admin statistics")
+      );
+    return response.json();
+  },
+
+  async getAnalytics(): Promise<PortfolioAnalytics> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/statistics/analytics`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch analytics")
       );
     return response.json();
   },

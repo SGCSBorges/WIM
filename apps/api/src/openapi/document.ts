@@ -1253,6 +1253,15 @@ export function buildOpenApiDocument() {
           responses: { "200": { description: "OK" } },
         },
       },
+      "/api/statistics/analytics": {
+        get: {
+          tags: ["statistics"],
+          summary:
+            "Spending & portfolio-value analytics (gated: analytics feature).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
 
       "/api/admin/users": {
         get: {

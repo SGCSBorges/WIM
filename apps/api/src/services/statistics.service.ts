@@ -9,7 +9,7 @@ import { currentValue } from "../modules/common/depreciation";
 // Single source of truth — the local interface that used to live here was
 // dropped in round 10 (T1) so the API and web client can't drift on
 // dashboard-statistics shape.
-import type { DashboardStatistics } from "@wim/types";
+import type { DashboardStatistics, PortfolioAnalytics } from "@wim/types";
 import { NOT_OWNED_STATUSES } from "@wim/types";
 
 export type { DashboardStatistics };
@@ -507,4 +507,130 @@ export async function getBasicStatistics(params: { userId: number }) {
     );
     throw new Error("Failed to fetch basic statistics");
   }
+}
+
+/**
+ * Spending & value analytics for the owner's current holdings (excludes
+ * NOT_OWNED_STATUSES, matching the dashboard's value rule). One findMany over
+ * priced articles, bucketed in memory:
+ *   - spend over time by acquisition date (warranty purchase date, else
+ *     createdAt) with a running cumulative total — the "portfolio value over
+ *     time" trend;
+ *   - spend split by location and by tag;
+ *   - the top items by current (depreciated) value.
+ * The trailing 24 months are returned for the chart; the cumulative line
+ * carries the pre-window baseline so it reflects the true running total.
+ */
+const ANALYTICS_MONTHS = 24;
+
+export async function getPortfolioAnalytics(params: {
+  userId: number;
+}): Promise<PortfolioAnalytics> {
+  const ownerUserId = params.userId;
+  const articles = await prisma.article.findMany({
+    where: {
+      ownerUserId,
+      deletedAt: null,
+      status: { notIn: NOT_OWNED_STATUSES },
+      purchasePrice: { not: null },
+    },
+    select: {
+      articleId: true,
+      articleNom: true,
+      purchasePrice: true,
+      depreciationRate: true,
+      createdAt: true,
+      garantie: { select: { garantieDateAchat: true } },
+      locations: {
+        select: { locationId: true, location: { select: { name: true } } },
+      },
+      tags: { select: { tagId: true, tag: { select: { name: true } } } },
+    },
+  });
+
+  const monthKey = (d: Date) =>
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+
+  let totalSpend = 0;
+  let currentTotal = 0;
+  const spendPerMonth = new Map<string, number>();
+  const locationValue = new Map<number, { name: string; value: number }>();
+  const tagValue = new Map<number, { name: string; value: number }>();
+  const valued: { articleId: number; name: string; value: number }[] = [];
+
+  for (const a of articles) {
+    const price = a.purchasePrice == null ? 0 : Number(a.purchasePrice);
+    totalSpend += price;
+
+    const acquired = a.garantie?.garantieDateAchat ?? a.createdAt;
+    const key = monthKey(new Date(acquired));
+    spendPerMonth.set(key, (spendPerMonth.get(key) ?? 0) + price);
+
+    const current =
+      currentValue(
+        a.purchasePrice == null ? null : Number(a.purchasePrice),
+        a.depreciationRate == null ? null : Number(a.depreciationRate),
+        acquired
+      ) ?? 0;
+    currentTotal += current;
+    valued.push({ articleId: a.articleId, name: a.articleNom, value: current });
+
+    for (const l of a.locations) {
+      const prev = locationValue.get(l.locationId);
+      locationValue.set(l.locationId, {
+        name: l.location?.name ?? "",
+        value: (prev?.value ?? 0) + price,
+      });
+    }
+    for (const tg of a.tags) {
+      const prev = tagValue.get(tg.tagId);
+      tagValue.set(tg.tagId, {
+        name: tg.tag?.name ?? "",
+        value: (prev?.value ?? 0) + price,
+      });
+    }
+  }
+
+  // Build a contiguous trailing-window axis (zero months still appear), but
+  // start the cumulative line from everything acquired before the window so it
+  // reads as a true running total rather than resetting to 0.
+  const now = new Date();
+  now.setUTCDate(1);
+  now.setUTCHours(0, 0, 0, 0);
+  const windowStart = new Date(now);
+  windowStart.setUTCMonth(windowStart.getUTCMonth() - (ANALYTICS_MONTHS - 1));
+
+  let baseline = 0;
+  for (const [k, amount] of spendPerMonth) {
+    if (k < monthKey(windowStart)) baseline += amount;
+  }
+
+  const spendByMonth: PortfolioAnalytics["spendByMonth"] = [];
+  let cumulative = baseline;
+  for (let i = 0; i < ANALYTICS_MONTHS; i++) {
+    const d = new Date(windowStart);
+    d.setUTCMonth(windowStart.getUTCMonth() + i);
+    const key = monthKey(d);
+    const amount = spendPerMonth.get(key) ?? 0;
+    cumulative += amount;
+    spendByMonth.push({ month: key, amount, cumulative });
+  }
+
+  const byLocation = Array.from(locationValue.entries())
+    .map(([locationId, v]) => ({ locationId, name: v.name, value: v.value }))
+    .sort((a, b) => b.value - a.value);
+  const byTag = Array.from(tagValue.entries())
+    .map(([tagId, v]) => ({ tagId, name: v.name, value: v.value }))
+    .sort((a, b) => b.value - a.value);
+  const topItems = valued.sort((a, b) => b.value - a.value).slice(0, 8);
+
+  return {
+    totalSpend,
+    currentValue: currentTotal,
+    itemsPriced: articles.length,
+    spendByMonth,
+    byLocation,
+    byTag,
+    topItems,
+  };
 }

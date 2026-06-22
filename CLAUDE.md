@@ -446,8 +446,24 @@ intentionally rely on native validation with **no** custom field messages
   `currentValue` column computed at export time; the importer ignores
   unknown columns so the round-trip stays clean.
 - Web: lazy `/reports` route (`components/reports/ReportsView.tsx`)
-  with three Selects + `downloadBlob`. Nav item `reports` added to
-  `src/lib/navItems.ts` for every authenticated user.
+  with four Selects (location/tag/warranty/status) + `downloadBlob`. Nav
+  item `reports` added to `src/lib/navItems.ts` for every authenticated user.
+
+## Spending & value analytics
+
+- `GET /api/statistics/analytics` (gated `analytics`, POWER_USER default) is
+  the paid BI surface that complements the free operational dashboard. One
+  `findMany` over priced, currently-owned articles
+  (`getPortfolioAnalytics` in `services/statistics.service.ts`), bucketed in
+  memory into: spend-over-time by acquisition month (`garantieDateAchat ??
+  createdAt`) with a running **cumulative** total (the "portfolio value over
+  time" trend, baseline-seeded from pre-window spend), spend by location +
+  tag, and the top items by current depreciated value. Trailing 24-month
+  window. Excludes `NOT_OWNED_STATUSES`, same as the dashboard value rule.
+- Web: lazy `/analytics` route (`components/analytics/AnalyticsView.tsx`),
+  recharts (own chunk), gated nav item + upgrade teaser like `reports`.
+  `PortfolioAnalytics`/`SpendBucket`/`ValuedArticle` shapes live in
+  `@wim/types`.
 
 ## Account security (login history → sessions → 2FA)
 
@@ -673,8 +689,9 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 - **Service** (`apps/api/src/modules/features/feature.service.ts`):
   `FEATURE_KEYS` + `DEFAULTS` are the source of truth. Defaults:
   `cmd_palette=ADMIN`; **every other feature (`sharing`, `transfers`,
-  `reports`, `templates`, `bulk_edit`, `saved_views`, `notifications`,
-  `calendar_feed`, `csv_import`, `csv_export`) defaults to `POWER_USER`** —
+  `reports`, `analytics`, `templates`, `bulk_edit`, `saved_views`,
+  `notifications`, `calendar_feed`, `csv_import`, `csv_export`) defaults to
+  `POWER_USER`** —
   i.e. they are all paid features by default, and an admin can lower a bar
   (e.g. to USER) per feature when desired. A **60-second
   process-level snapshot cache** (`getSnapshot`) holds both tables so gated
