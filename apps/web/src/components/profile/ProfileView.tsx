@@ -68,6 +68,7 @@ import {
 } from "../../utils/push";
 import ArticleThumb from "../articles/ArticleThumb";
 import SecuritySection from "./SecuritySection";
+import LockedFeatureNotice from "../common/LockedFeatureNotice";
 import { useToast } from "../common/Toast";
 import { Skeleton } from "../common/Skeleton";
 import DataExportPanel from "./DataExportPanel";
@@ -157,6 +158,7 @@ export default function ProfileView() {
   // call setState after the component unmounts (user navigates away mid-load).
   const canShare = useFeature("sharing");
   const canCalendarFeed = useFeature("calendar_feed");
+  const canBudget = useFeature("budget");
   const { loaded: featuresLoaded } = useFeatures();
   const { promptUpgrade } = useUpgrade();
   const mountedRef = useRef(true);
@@ -601,44 +603,56 @@ export default function ProfileView() {
         </Section>
 
         {/* Spend budgets — drive the dashboard budget card. Leave a field
-            blank to disable that period's budget. */}
-        <Section
-          icon={<Wallet className="h-5 w-5" />}
-          title={t("budget.title")}
-          description={t("budget.subtitle")}
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={t("budget.monthly")} htmlFor="profile-budget-monthly">
-              <Input
-                id="profile-budget-monthly"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step="0.01"
-                value={monthlyBudget}
-                onChange={(e) => setMonthlyBudget(e.target.value)}
-                placeholder={me?.currency ?? "USD"}
-              />
-            </Field>
-            <Field label={t("budget.annual")} htmlFor="profile-budget-annual">
-              <Input
-                id="profile-budget-annual"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                step="0.01"
-                value={annualBudget}
-                onChange={(e) => setAnnualBudget(e.target.value)}
-                placeholder={me?.currency ?? "USD"}
-              />
-            </Field>
-          </div>
-          <div className="mt-3">
-            <Button onClick={saveBudget} loading={budgetSaving}>
-              {t("common.save")}
-            </Button>
-          </div>
-        </Section>
+            blank to disable that period's budget. Paid feature: a locked notice
+            stands in for non-entitled users. */}
+        {featuresLoaded && !canBudget && (
+          <LockedFeatureNotice
+            icon={<Wallet className="h-5 w-5" />}
+            title={t("budget.title")}
+          />
+        )}
+        {canBudget && (
+          <Section
+            icon={<Wallet className="h-5 w-5" />}
+            title={t("budget.title")}
+            description={t("budget.subtitle")}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field
+                label={t("budget.monthly")}
+                htmlFor="profile-budget-monthly"
+              >
+                <Input
+                  id="profile-budget-monthly"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step="0.01"
+                  value={monthlyBudget}
+                  onChange={(e) => setMonthlyBudget(e.target.value)}
+                  placeholder={me?.currency ?? "USD"}
+                />
+              </Field>
+              <Field label={t("budget.annual")} htmlFor="profile-budget-annual">
+                <Input
+                  id="profile-budget-annual"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step="0.01"
+                  value={annualBudget}
+                  onChange={(e) => setAnnualBudget(e.target.value)}
+                  placeholder={me?.currency ?? "USD"}
+                />
+              </Field>
+            </div>
+            <div className="mt-3">
+              <Button onClick={saveBudget} loading={budgetSaving}>
+                {t("common.save")}
+              </Button>
+            </div>
+          </Section>
+        )}
 
         {/* Appearance: density toggle. Persisted locally (per-device) because
             it's a cosmetic preference; theme / language already sync to the

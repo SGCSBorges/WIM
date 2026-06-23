@@ -7,6 +7,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { security } from "../../config/security";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
@@ -24,6 +25,7 @@ const ListQuery = z.object({
 router.get(
   "/",
   authGuard,
+  requireFeature("loans"),
   asyncHandler(async (req: AuthRequest, res) => {
     const q = ListQuery.parse(req.query);
     const items = await LoanService.list(req.user!.sub, {
@@ -39,6 +41,7 @@ router.post(
   "/",
   security.createRateLimiter,
   authGuard,
+  requireFeature("loans"),
   asyncHandler(async (req: AuthRequest, res) => {
     const data = LoanCreateSchema.parse(req.body);
     const loan = await LoanService.create(req.user!.sub, data);

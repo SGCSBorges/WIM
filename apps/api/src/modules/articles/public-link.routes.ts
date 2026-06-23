@@ -11,6 +11,7 @@ import { Router } from "express";
 import crypto from "crypto";
 import { prisma } from "../../libs/prisma";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
@@ -47,6 +48,7 @@ router.post(
   "/:articleId/public-link",
   security.createRateLimiter,
   authGuard,
+  requireFeature("public_page"),
   asyncHandler(async (req: AuthRequest, res) => {
     const articleId = idParam.parse(req.params.articleId);
     await assertOwned(articleId, req.user!.sub);

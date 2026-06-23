@@ -7,6 +7,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { security } from "../../config/security";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
@@ -27,6 +28,7 @@ const ListQuery = z.object({
 router.get(
   "/",
   authGuard,
+  requireFeature("insurance"),
   asyncHandler(async (req: AuthRequest, res) => {
     const q = ListQuery.parse(req.query);
     const items = q.articleId
@@ -41,6 +43,7 @@ router.post(
   "/",
   security.createRateLimiter,
   authGuard,
+  requireFeature("insurance"),
   asyncHandler(async (req: AuthRequest, res) => {
     const data = PolicyCreateSchema.parse(req.body);
     const policy = await InsuranceService.create(req.user!.sub, data);
@@ -57,6 +60,7 @@ router.post(
 router.patch(
   "/:id",
   authGuard,
+  requireFeature("insurance"),
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     const data = PolicyUpdateSchema.parse(req.body);
@@ -91,6 +95,7 @@ router.post(
   "/:id/articles",
   security.createRateLimiter,
   authGuard,
+  requireFeature("insurance"),
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
     const { articleId } = LinkSchema.parse(req.body);

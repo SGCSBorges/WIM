@@ -26,7 +26,12 @@ export type FeatureKey =
   | "notifications"
   | "calendar_feed"
   | "csv_import"
-  | "csv_export";
+  | "csv_export"
+  | "insurance"
+  | "loans"
+  | "maintenance"
+  | "budget"
+  | "public_page";
 
 type FeatureMap = Record<FeatureKey, boolean>;
 
@@ -44,6 +49,11 @@ const EMPTY: FeatureMap = {
   calendar_feed: false,
   csv_import: false,
   csv_export: false,
+  insurance: false,
+  loans: false,
+  maintenance: false,
+  budget: false,
+  public_page: false,
 };
 
 interface FeatureContextValue {

@@ -12,6 +12,8 @@ import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
+import { useFeature, useFeatures } from "../../features/features";
+import LockedFeatureNotice from "../common/LockedFeatureNotice";
 import { useToast } from "../common/Toast";
 import { Section, Button, Input, Textarea, Badge } from "../ui";
 
@@ -27,6 +29,8 @@ export default function MaintenanceSection({
   const { t, language } = useI18n();
   const { formatDate } = usePreferences();
   const toast = useToast();
+  const allowed = useFeature("maintenance");
+  const { loaded: featuresLoaded } = useFeatures();
   const [records, setRecords] = useState<ServiceRecordItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -52,12 +56,13 @@ export default function MaintenanceSection({
   }, [articleId]);
 
   useEffect(() => {
+    if (!allowed) return;
     void load();
     profileAPI
       .getMe()
       .then((me) => me.currency && setCurrency(me.currency))
       .catch(() => {});
-  }, [load]);
+  }, [load, allowed]);
 
   const create = async () => {
     if (!description.trim()) return;
@@ -109,6 +114,15 @@ export default function MaintenanceSection({
       (d): d is string => d !== null && new Date(d).getTime() > Date.now()
     )
     .sort()[0];
+
+  if (!featuresLoaded) return null;
+  if (!allowed)
+    return (
+      <LockedFeatureNotice
+        icon={<Wrench className="h-5 w-5" />}
+        title={t("service.title")}
+      />
+    );
 
   return (
     <Section

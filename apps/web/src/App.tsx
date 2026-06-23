@@ -367,6 +367,7 @@ export default function App() {
   const canMessage = useFeature("messaging");
   const canReports = useFeature("reports");
   const canAnalytics = useFeature("analytics");
+  const canInsurance = useFeature("insurance");
   const { loaded: featuresLoaded, refresh: refreshFeatures } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
@@ -595,7 +596,10 @@ export default function App() {
             <Route path="/attachments" element={<AttachmentsList />} />
             <Route path="/locations" element={<LocationsView />} />
             <Route path="/alerts" element={<AlertsView />} />
-            <Route path="/insurance" element={<InsuranceView />} />
+            <Route
+              path="/insurance"
+              element={gatedRoute(canInsurance, <InsuranceView />, "insurance")}
+            />
             <Route
               path="/reports"
               element={gatedRoute(canReports, <ReportsView />, "reports")}

@@ -7,6 +7,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { security } from "../../config/security";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
@@ -23,6 +24,7 @@ const ListQuery = z.object({
 router.get(
   "/",
   authGuard,
+  requireFeature("maintenance"),
   asyncHandler(async (req: AuthRequest, res) => {
     const { articleId } = ListQuery.parse(req.query);
     const items = await ServiceRecordService.list(req.user!.sub, articleId);
@@ -35,6 +37,7 @@ router.post(
   "/",
   security.createRateLimiter,
   authGuard,
+  requireFeature("maintenance"),
   asyncHandler(async (req: AuthRequest, res) => {
     const data = ServiceCreateSchema.parse(req.body);
     const record = await ServiceRecordService.create(req.user!.sub, data);

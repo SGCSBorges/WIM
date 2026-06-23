@@ -11,6 +11,7 @@ import { Wallet, AlertTriangle } from "lucide-react";
 import { statisticsAPI } from "../../services/api";
 import type { BudgetStatus } from "../../types";
 import { useI18n } from "../../i18n/i18n";
+import { useFeature } from "../../features/features";
 import { formatMoney } from "../../utils/money";
 import { Section, Badge } from "../ui";
 
@@ -66,9 +67,11 @@ function BudgetRow({
 
 export default function BudgetCard() {
   const { t, language } = useI18n();
+  const allowed = useFeature("budget");
   const [status, setStatus] = useState<BudgetStatus | null>(null);
 
   useEffect(() => {
+    if (!allowed) return;
     let alive = true;
     statisticsAPI
       .getBudget()
@@ -77,7 +80,7 @@ export default function BudgetCard() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [allowed]);
 
   // Self-hide until loaded and only when at least one budget is set.
   if (!status || (status.monthlyBudget == null && status.annualBudget == null))

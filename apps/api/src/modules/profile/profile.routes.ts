@@ -1,5 +1,6 @@
 import { Router, Response } from "express";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
+import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { denyToken } from "../auth/token-denylist";
@@ -264,6 +265,7 @@ router.put(
 router.put(
   "/me/budget",
   authGuard,
+  requireFeature("budget"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const budget = UpdateBudgetSchema.parse(req.body);
     const updated = await ProfileService.updateBudget(req.user!.sub, budget);

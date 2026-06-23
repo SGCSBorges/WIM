@@ -30,6 +30,11 @@ export const FEATURE_KEYS = [
   "calendar_feed",
   "csv_import",
   "csv_export",
+  "insurance",
+  "loans",
+  "maintenance",
+  "budget",
+  "public_page",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -49,6 +54,11 @@ const DEFAULTS: Record<FeatureKey, RoleName> = {
   calendar_feed: "POWER_USER",
   csv_import: "POWER_USER",
   csv_export: "POWER_USER",
+  insurance: "POWER_USER",
+  loans: "POWER_USER",
+  maintenance: "POWER_USER",
+  budget: "POWER_USER",
+  public_page: "POWER_USER",
 };
 
 export { DEFAULTS as FEATURE_DEFAULTS };

@@ -52,10 +52,11 @@ router.get(
   })
 );
 
-// Spend-against-budget for the current month/year. Free for all users.
+// Spend-against-budget for the current month/year (paid feature).
 router.get(
   "/budget",
   authGuard,
+  requireFeature("budget"),
   asyncHandler(async (req: AuthRequest, res) => {
     const status = await getBudgetStatus(req.user!.sub);
     res.json(status);

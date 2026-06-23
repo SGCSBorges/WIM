@@ -11,6 +11,8 @@ import type { LoanItem } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
+import { useFeature, useFeatures } from "../../features/features";
+import LockedFeatureNotice from "../common/LockedFeatureNotice";
 import { useToast } from "../common/Toast";
 import { Section, Button, Input, Textarea, Badge } from "../ui";
 
@@ -32,6 +34,8 @@ export default function LoanSection({
   const { t } = useI18n();
   const { formatDate } = usePreferences();
   const toast = useToast();
+  const allowed = useFeature("loans");
+  const { loaded: featuresLoaded } = useFeatures();
   const [loans, setLoans] = useState<LoanItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -56,8 +60,8 @@ export default function LoanSection({
   }, [articleId]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (allowed) void load();
+  }, [load, allowed]);
 
   const active = loans.find((l) => l.returnedAt === null) ?? null;
   const history = loans.filter((l) => l.returnedAt !== null);
@@ -119,6 +123,15 @@ export default function LoanSection({
       setBusyId(null);
     }
   };
+
+  if (!featuresLoaded) return null;
+  if (!allowed)
+    return (
+      <LockedFeatureNotice
+        icon={<HandHelping className="h-5 w-5" />}
+        title={t("loan.title")}
+      />
+    );
 
   return (
     <Section

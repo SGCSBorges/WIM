@@ -11,6 +11,8 @@ import { QrCode, Copy, Check, Trash2, Download, Plus } from "lucide-react";
 import { articlesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { useFeature, useFeatures } from "../../features/features";
+import LockedFeatureNotice from "../common/LockedFeatureNotice";
 import { useToast } from "../common/Toast";
 import { Section, Button, Input } from "../ui";
 
@@ -21,6 +23,8 @@ export default function PublicLinkSection({
 }) {
   const { t } = useI18n();
   const toast = useToast();
+  const allowed = useFeature("public_page");
+  const { loaded: featuresLoaded } = useFeatures();
   const [token, setToken] = useState<string | null>(null);
   const [qr, setQr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,8 +46,8 @@ export default function PublicLinkSection({
   }, [articleId]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (allowed) void load();
+  }, [load, allowed]);
 
   // Regenerate the QR whenever the URL changes.
   useEffect(() => {
@@ -101,6 +105,14 @@ export default function PublicLinkSection({
     }
   };
 
+  if (!featuresLoaded) return null;
+  if (!allowed)
+    return (
+      <LockedFeatureNotice
+        icon={<QrCode className="h-5 w-5" />}
+        title={t("publicLink.title")}
+      />
+    );
   if (loading) return null;
 
   return (

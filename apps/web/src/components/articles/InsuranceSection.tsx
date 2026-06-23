@@ -11,12 +11,16 @@ import { insuranceAPI } from "../../services/api";
 import type { InsurancePolicyItem } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
+import { useFeature, useFeatures } from "../../features/features";
+import LockedFeatureNotice from "../common/LockedFeatureNotice";
 import { useToast } from "../common/Toast";
 import { Section, Button, Select, Badge } from "../ui";
 
 export default function InsuranceSection({ articleId }: { articleId: number }) {
   const { t } = useI18n();
   const toast = useToast();
+  const allowed = useFeature("insurance");
+  const { loaded: featuresLoaded } = useFeatures();
   const [covering, setCovering] = useState<InsurancePolicyItem[]>([]);
   const [all, setAll] = useState<InsurancePolicyItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,8 +47,8 @@ export default function InsuranceSection({ articleId }: { articleId: number }) {
   }, [articleId]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (allowed) void load();
+  }, [load, allowed]);
 
   const coveringIds = new Set(covering.map((p) => p.policyId));
   const linkable = all.filter((p) => !coveringIds.has(p.policyId));
@@ -81,6 +85,14 @@ export default function InsuranceSection({ articleId }: { articleId: number }) {
     }
   };
 
+  if (!featuresLoaded) return null;
+  if (!allowed)
+    return (
+      <LockedFeatureNotice
+        icon={<Umbrella className="h-5 w-5" />}
+        title={t("insurance.coverage")}
+      />
+    );
   if (failed) return null;
 
   return (
