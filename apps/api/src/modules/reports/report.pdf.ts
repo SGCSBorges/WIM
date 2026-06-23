@@ -4,12 +4,15 @@
  * Streams a multi-section PDF for filing a claim or sharing with an insurer:
  *   • Cover — total purchase value, depreciated current value, items
  *     covered/uncovered by an active warranty, at-risk value (uninsured +
- *     warranty expired).
+ *     warranty expired), and how many items have / lack an insurance policy.
  *   • Per-location manifest — every article grouped by location with serial,
- *     brand/model, purchase + current value, warranty end date.
+ *     brand/model, purchase + current value, warranty end date, and which
+ *     insurance policy (if any) covers it.
  *   • Uninsured-at-risk list — items with no warranty or whose warranty has
  *     already expired, sorted by purchase value desc so the user knows where
  *     the biggest exposure is.
+ *   • No-insurance-policy list — items not linked to any InsurancePolicy,
+ *     highest value first (a coverage gap distinct from warranty status).
  *
  * Honors the same article-list filters the rest of the app uses
  * (locationId/tagId/warrantyStatus) so a user can scope the report to one
@@ -132,6 +135,26 @@ export async function streamPortfolioReportPdf(
 
   const scoped = filterByWarranty(articles, filters.warrantyStatus);
 
+  // Which insurance policies cover each scoped article. Links are owner-scoped
+  // (you can only attach your own articles to your own policies), and the
+  // scoped set is already the caller's, so filtering by articleId is safe.
+  const scopedIds = scoped.map((a) => a.articleId);
+  const insuranceLinks = scopedIds.length
+    ? await prisma.articleInsurance.findMany({
+        where: { articleId: { in: scopedIds } },
+        select: { articleId: true, policy: { select: { provider: true } } },
+      })
+    : [];
+  const providersByArticle = new Map<number, string[]>();
+  for (const link of insuranceLinks) {
+    const list = providersByArticle.get(link.articleId) ?? [];
+    list.push(link.policy.provider);
+    providersByArticle.set(link.articleId, list);
+  }
+  const insuredCount = scoped.filter((a) =>
+    providersByArticle.has(a.articleId)
+  ).length;
+
   // Totals: purchase vs depreciated current value, plus how much of that is
   // exposed because the warranty is gone or never existed.
   let totalPurchase = 0;
@@ -183,6 +206,8 @@ export async function streamPortfolioReportPdf(
   doc.text(`Current depreciated value: ${money(totalCurrent, currency)}`);
   doc.text(`Items with active warranty: ${covered}`);
   doc.text(`Uninsured / expired-warranty exposure: ${money(atRisk, currency)}`);
+  doc.text(`Items with an insurance policy: ${insuredCount}`);
+  doc.text(`Items with no insurance policy: ${scoped.length - insuredCount}`);
   doc.moveDown();
 
   // Per-location manifest. Group articles by their first location name so the
@@ -212,6 +237,7 @@ export async function streamPortfolioReportPdf(
         ),
         currency
       );
+      const providers = providersByArticle.get(a.articleId);
       doc.text(
         `• ${a.articleNom} — ${a.brand ? a.brand + " " : ""}${a.articleModele}` +
           (a.serialNumber ? ` · S/N ${a.serialNumber}` : "") +
@@ -220,7 +246,8 @@ export async function streamPortfolioReportPdf(
             a.garantie?.garantieFin
               ? `to ${fmtDate(a.garantie.garantieFin)}`
               : "none"
-          }`
+          }` +
+          ` · ${providers ? `insured: ${providers.join(", ")}` : "no policy"}`
       );
     }
     doc.moveDown();
@@ -251,6 +278,30 @@ export async function streamPortfolioReportPdf(
           (a.garantie?.garantieFin
             ? ` · warranty expired ${fmtDate(a.garantie.garantieFin)}`
             : " · no warranty on file")
+      );
+    }
+  }
+
+  // Items with no linked insurance policy, highest purchase value first — the
+  // coverage gap an insurer-facing report should make obvious. Distinct from
+  // the warranty-based at-risk list above (an item can have a live warranty but
+  // still no insurance policy, and vice-versa).
+  const uninsured = scoped
+    .filter((a) => !providersByArticle.has(a.articleId))
+    .sort(
+      (a, b) => Number(b.purchasePrice ?? 0) - Number(a.purchasePrice ?? 0)
+    );
+
+  if (uninsured.length > 0) {
+    doc.addPage();
+    doc
+      .fontSize(16)
+      .text("Items with no insurance policy (highest value first)");
+    doc.moveDown();
+    doc.fontSize(9);
+    for (const a of uninsured) {
+      doc.text(
+        `• ${a.articleNom} (${a.articleModele}) — ${money(a.purchasePrice, currency)}`
       );
     }
   }

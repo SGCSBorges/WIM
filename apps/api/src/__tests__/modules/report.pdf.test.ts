@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../../libs/prisma", () => ({
   prisma: {
     article: { findMany: vi.fn() },
+    articleInsurance: { findMany: vi.fn() },
   },
 }));
 
@@ -17,6 +18,7 @@ import { streamPortfolioReportPdf } from "../../modules/reports/report.pdf";
 
 const p = prisma as unknown as {
   article: { findMany: ReturnType<typeof vi.fn> };
+  articleInsurance: { findMany: ReturnType<typeof vi.fn> };
 };
 
 function fakeResponse() {
@@ -61,6 +63,9 @@ describe("streamPortfolioReportPdf", () => {
         tags: [],
       },
     ]);
+    p.articleInsurance.findMany.mockResolvedValue([
+      { articleId: 1, policy: { provider: "Acme Insurance" } },
+    ]);
     const res = fakeResponse();
 
     await streamPortfolioReportPdf(
@@ -83,6 +88,7 @@ describe("streamPortfolioReportPdf", () => {
 
   it("passes location + tag filters through to the Prisma where clause", async () => {
     p.article.findMany.mockResolvedValue([]);
+    p.articleInsurance.findMany.mockResolvedValue([]);
     const res = fakeResponse();
 
     await streamPortfolioReportPdf(
