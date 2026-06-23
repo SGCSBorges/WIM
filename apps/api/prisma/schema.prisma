@@ -207,6 +207,7 @@ model User {
   messageThreadsRequested MessageThread[] @relation("ThreadRequester")
   messagesSent            Message[]       @relation("MessageSender")
   loansOwned              Loan[]          @relation("UserLoans")
+  insurancePolicies       InsurancePolicy[] @relation("UserInsurancePolicies")
 
   // Audit (optionnel)
   auditLogs AuditLog[]
@@ -301,6 +302,7 @@ model Article {
   transferRequests ArticleTransferRequest[]
   messageThreads   MessageThread[]
   loans            Loan[]
+  insurances       ArticleInsurance[]
 
   @@index([ownerUserId])
   @@index([ownerUserId, deletedAt])
@@ -691,6 +693,45 @@ model Loan {
   @@index([ownerUserId])
   @@index([articleId])
   @@index([ownerUserId, returnedAt])
+}
+
+// An insurance policy the user holds (home contents, electronics rider, etc.).
+// Covers zero-or-more articles via the ArticleInsurance join. An optional
+// renewal date schedules a reminder, mirroring the Loan/Garantie pattern.
+model InsurancePolicy {
+  policyId       Int       @id @default(autoincrement())
+  ownerUserId    Int
+  provider       String    @db.VarChar(150)
+  policyNumber   String?   @db.VarChar(100)
+  // Recurring premium and the total coverage limit. Decimal to avoid float
+  // rounding; serialized as strings over JSON and formatted on the client.
+  premium        Decimal?  @db.Decimal(12, 2)
+  coverageAmount Decimal?  @db.Decimal(12, 2)
+  renewalAt      DateTime?
+  note           String?   @db.VarChar(500)
+  // The renewal reminder this policy created (if any), so an edit/delete can
+  // cancel or reschedule it.
+  reminderAlerteId Int?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  owner    User               @relation("UserInsurancePolicies", fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  articles ArticleInsurance[]
+
+  @@index([ownerUserId])
+}
+
+// Join row linking an article to an insurance policy (many-to-many: one policy
+// covers many items; an item can sit under more than one policy).
+model ArticleInsurance {
+  articleId Int
+  policyId  Int
+
+  article Article         @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+  policy  InsurancePolicy @relation(fields: [policyId], references: [policyId], onDelete: Cascade)
+
+  @@id([articleId, policyId])
+  @@index([policyId])
 }
 
 // Persistent record of every Stripe webhook event we have already

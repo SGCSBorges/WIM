@@ -109,6 +109,9 @@ const LocationsView = React.lazy(
 const ReportsView = React.lazy(
   () => import("./components/reports/ReportsView")
 );
+const InsuranceView = React.lazy(
+  () => import("./components/insurance/InsuranceView")
+);
 const AnalyticsView = React.lazy(
   () => import("./components/analytics/AnalyticsView")
 );
@@ -579,6 +582,7 @@ export default function App() {
             <Route path="/attachments" element={<AttachmentsList />} />
             <Route path="/locations" element={<LocationsView />} />
             <Route path="/alerts" element={<AlertsView />} />
+            <Route path="/insurance" element={<InsuranceView />} />
             <Route
               path="/reports"
               element={gatedRoute(canReports, <ReportsView />, "reports")}

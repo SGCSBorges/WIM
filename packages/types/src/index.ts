@@ -78,6 +78,7 @@ export const AUDIT_ENTITIES = [
   "ArticleTransfer",
   "MessageThread",
   "Loan",
+  "InsurancePolicy",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 
@@ -623,6 +624,29 @@ export interface LoanItem {
     articleModele: string;
     productImageUrl: string | null;
   };
+}
+
+/** A minimal article reference embedded in insurance payloads. */
+export interface InsuredArticleRef {
+  articleId: number;
+  articleNom: string;
+  articleModele: string;
+  productImageUrl: string | null;
+}
+
+/** An insurance policy as returned by `/api/insurance`. Money fields are
+ *  Decimal strings (or null); `renewalAt` is an ISO string. `articles` lists
+ *  the items this policy covers. */
+export interface InsurancePolicyItem {
+  policyId: number;
+  provider: string;
+  policyNumber: string | null;
+  premium: string | number | null;
+  coverageAmount: string | number | null;
+  renewalAt: string | null;
+  note: string | null;
+  createdAt: string;
+  articles: InsuredArticleRef[];
 }
 
 /** A single article weighted by its current (depreciated) value. */

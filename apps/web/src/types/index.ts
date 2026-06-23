@@ -19,6 +19,8 @@ export type {
   ClaimStatus,
   DashboardStatistics,
   FetchedArticle,
+  InsuredArticleRef,
+  InsurancePolicyItem,
   LoanItem,
   Location,
   MonthlyBucket,

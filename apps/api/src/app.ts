@@ -32,6 +32,7 @@ import transferRoutes from "./modules/articles/transfer.routes";
 import warrantyRoutes from "./modules/warranties/warranty.routes";
 import messageRoutes from "./modules/messages/message.routes";
 import loanRoutes from "./modules/loans/loan.routes";
+import insuranceRoutes from "./modules/insurance/insurance.routes";
 import authRoutes from "./modules/auth/auth.routes";
 import auditRoutes from "./modules/audit/audit.routes";
 import adminRoutes from "./modules/admin/admin.routes";
@@ -264,6 +265,7 @@ export function createApp() {
   app.use("/api/shared", sharedRoutes);
   app.use("/api/messages", messageRoutes);
   app.use("/api/loans", loanRoutes);
+  app.use("/api/insurance", insuranceRoutes);
   app.use("/api/profile", profileRoutes);
   app.use("/api/reports", reportRoutes);
   app.use("/api/features", featureRoutes);

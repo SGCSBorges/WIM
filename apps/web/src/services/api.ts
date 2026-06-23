@@ -35,6 +35,7 @@ import type {
   ArticleNoteKind,
   ArticleStatus,
   BillingSubscription,
+  InsurancePolicyItem,
   LoanItem,
   PortfolioAnalytics,
   ClaimStatus,
@@ -2406,6 +2407,91 @@ export const loansAPI = {
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to delete loan"));
+  },
+};
+
+export type InsurancePolicyInput = {
+  provider: string;
+  policyNumber?: string | null;
+  premium?: number | null;
+  coverageAmount?: number | null;
+  renewalAt?: string | null;
+  note?: string | null;
+};
+
+export const insuranceAPI = {
+  async list(
+    opts: { articleId?: number } = {}
+  ): Promise<InsurancePolicyItem[]> {
+    const url = apiUrl("/insurance");
+    if (opts.articleId != null)
+      url.searchParams.set("articleId", String(opts.articleId));
+    const response = await fetchWithTimeout(url.toString(), {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch policies"));
+    const data = await response.json();
+    return data.items as InsurancePolicyItem[];
+  },
+
+  async create(input: InsurancePolicyInput): Promise<InsurancePolicyItem> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/insurance`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(input),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to create policy"));
+    return response.json();
+  },
+
+  async update(
+    policyId: number,
+    patch: Partial<InsurancePolicyInput>
+  ): Promise<InsurancePolicyItem> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/insurance/${policyId}`,
+      {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(patch),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update policy"));
+    return response.json();
+  },
+
+  async remove(policyId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/insurance/${policyId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to delete policy"));
+  },
+
+  async linkArticle(policyId: number, articleId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/insurance/${policyId}/articles`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ articleId }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to link article"));
+  },
+
+  async unlinkArticle(policyId: number, articleId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/insurance/${policyId}/articles/${articleId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to unlink article"));
   },
 };
 

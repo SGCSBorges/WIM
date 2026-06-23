@@ -37,6 +37,7 @@ const ROUTE_TITLE_KEYS = [
   ["/attachments", "nav.attachments"],
   ["/locations", "nav.locations"],
   ["/alerts", "nav.alerts"],
+  ["/insurance", "nav.insurance"],
   ["/reports", "nav.reports"],
   ["/profile", "nav.profile"],
   ["/sharing", "nav.sharing"],
