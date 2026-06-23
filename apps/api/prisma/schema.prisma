@@ -206,6 +206,7 @@ model User {
   messageThreadsOwned     MessageThread[] @relation("ThreadOwner")
   messageThreadsRequested MessageThread[] @relation("ThreadRequester")
   messagesSent            Message[]       @relation("MessageSender")
+  loansOwned              Loan[]          @relation("UserLoans")
 
   // Audit (optionnel)
   auditLogs AuditLog[]
@@ -299,6 +300,7 @@ model Article {
   notes    ArticleNote[]
   transferRequests ArticleTransferRequest[]
   messageThreads   MessageThread[]
+  loans            Loan[]
 
   @@index([ownerUserId])
   @@index([ownerUserId, deletedAt])
@@ -663,6 +665,32 @@ model Message {
 
   @@index([threadId, createdAt])
   @@index([senderUserId])
+}
+
+// A loan/borrow record for an item the owner lent out. Pairs with the LOANED
+// article status (auto-set while a loan is active). An optional due date can
+// spawn a CUSTOM reminder alert (reminderAlerteId), cancelled on return.
+model Loan {
+  loanId        Int       @id @default(autoincrement())
+  ownerUserId   Int
+  articleId     Int
+  borrowerName  String    @db.VarChar(120)
+  borrowerEmail String?   @db.VarChar(180)
+  loanedAt      DateTime  @default(now())
+  dueAt         DateTime?
+  returnedAt    DateTime?
+  note          String?   @db.VarChar(500)
+  // The due-date reminder this loan created (if any), so a return can cancel it.
+  reminderAlerteId Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  owner   User    @relation("UserLoans", fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+
+  @@index([ownerUserId])
+  @@index([articleId])
+  @@index([ownerUserId, returnedAt])
 }
 
 // Persistent record of every Stripe webhook event we have already

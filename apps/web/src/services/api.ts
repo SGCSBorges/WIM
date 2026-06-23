@@ -35,6 +35,7 @@ import type {
   ArticleNoteKind,
   ArticleStatus,
   BillingSubscription,
+  LoanItem,
   PortfolioAnalytics,
   ClaimStatus,
   DateFormatPref,
@@ -2350,6 +2351,64 @@ export const messagesAPI = {
 };
 
 // Billing / Stripe
+// Loans / borrow tracking
+export const loansAPI = {
+  async list(
+    opts: {
+      active?: boolean;
+      articleId?: number;
+    } = {}
+  ): Promise<LoanItem[]> {
+    const url = apiUrl("/loans");
+    if (opts.active) url.searchParams.set("active", "1");
+    if (opts.articleId != null)
+      url.searchParams.set("articleId", String(opts.articleId));
+    const response = await fetchWithTimeout(url.toString(), {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch loans"));
+    const data = await response.json();
+    return data.items as LoanItem[];
+  },
+
+  async create(input: {
+    articleId: number;
+    borrowerName: string;
+    borrowerEmail?: string | null;
+    dueAt?: string | null;
+    note?: string | null;
+  }): Promise<LoanItem> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/loans`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(input),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to create loan"));
+    return response.json();
+  },
+
+  async markReturned(loanId: number): Promise<LoanItem> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/loans/${loanId}/return`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to mark returned"));
+    return response.json();
+  },
+
+  async remove(loanId: number): Promise<void> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/loans/${loanId}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to delete loan"));
+  },
+};
+
 export const billingAPI = {
   async createPowerUserCheckoutSession(
     plan: "monthly" | "yearly",

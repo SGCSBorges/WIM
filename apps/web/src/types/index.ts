@@ -19,6 +19,7 @@ export type {
   ClaimStatus,
   DashboardStatistics,
   FetchedArticle,
+  LoanItem,
   Location,
   MonthlyBucket,
   PortfolioAnalytics,

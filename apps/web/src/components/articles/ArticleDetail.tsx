@@ -51,6 +51,7 @@ import { articleStatusInfo } from "../../utils/articleStatus";
 import { NOT_OWNED_STATUSES, ARTICLE_NOTE_KINDS } from "@wim/types";
 import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import TransferDialog from "./TransferDialog";
+import LoanSection from "./LoanSection";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { currentValue } from "../../utils/depreciation";
@@ -716,6 +717,9 @@ export default function ArticleDetail() {
           )}
         </Section>
       )}
+
+      {/* Loans */}
+      <LoanSection articleId={articleId} onChanged={load} />
 
       {article.garantie && (
         <RenewWarrantyDialog

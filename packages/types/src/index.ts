@@ -77,6 +77,7 @@ export const AUDIT_ENTITIES = [
   "Database",
   "ArticleTransfer",
   "MessageThread",
+  "Loan",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 
@@ -603,6 +604,25 @@ export interface SpendBucket {
   month: string; // YYYY-MM
   amount: number;
   cumulative: number;
+}
+
+/** A loan/borrow record as returned by `/api/loans`. Dates are ISO strings;
+ *  `returnedAt === null` means the item is still out. */
+export interface LoanItem {
+  loanId: number;
+  articleId: number;
+  borrowerName: string;
+  borrowerEmail: string | null;
+  loanedAt: string;
+  dueAt: string | null;
+  returnedAt: string | null;
+  note: string | null;
+  article: {
+    articleId: number;
+    articleNom: string;
+    articleModele: string;
+    productImageUrl: string | null;
+  };
 }
 
 /** A single article weighted by its current (depreciated) value. */
