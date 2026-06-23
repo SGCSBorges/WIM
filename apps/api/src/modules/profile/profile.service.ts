@@ -60,6 +60,8 @@ const PROFILE_SELECT = {
   email: true,
   role: true,
   currency: true,
+  monthlyBudget: true,
+  annualBudget: true,
   emailReminders: true,
   weeklyDigest: true,
   theme: true,
@@ -80,6 +82,24 @@ export const ProfileService = {
     return prisma.user.update({
       where: { userId },
       data: { currency },
+      select: PROFILE_SELECT,
+    });
+  },
+
+  async updateBudget(
+    userId: number,
+    budget: { monthlyBudget?: number | null; annualBudget?: number | null }
+  ) {
+    return prisma.user.update({
+      where: { userId },
+      data: {
+        ...("monthlyBudget" in budget
+          ? { monthlyBudget: budget.monthlyBudget ?? null }
+          : {}),
+        ...("annualBudget" in budget
+          ? { annualBudget: budget.annualBudget ?? null }
+          : {}),
+      },
       select: PROFILE_SELECT,
     });
   },

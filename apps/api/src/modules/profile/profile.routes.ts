@@ -8,6 +8,7 @@ import { signTokenWithJti } from "../auth/auth.service";
 import { security } from "../../config/security";
 import {
   DeleteAccountSchema,
+  UpdateBudgetSchema,
   UpdateCurrencySchema,
   UpdateEmailRemindersSchema,
   UpdateEmailSchema,
@@ -255,6 +256,22 @@ router.put(
       entity: "User",
       entityId: req.user!.sub,
       metadata: { field: "currency" },
+    });
+    res.json(updated);
+  })
+);
+
+router.put(
+  "/me/budget",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const budget = UpdateBudgetSchema.parse(req.body);
+    const updated = await ProfileService.updateBudget(req.user!.sub, budget);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { field: "budget", keys: Object.keys(budget) },
     });
     res.json(updated);
   })

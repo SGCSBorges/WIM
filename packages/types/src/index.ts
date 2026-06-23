@@ -649,6 +649,17 @@ export interface InsurancePolicyItem {
   articles: InsuredArticleRef[];
 }
 
+/** Spend-against-budget snapshot for the current calendar month and year.
+ *  `budget === null` means no budget is set for that period; `spend` is always
+ *  present (sum of purchase prices for items acquired in the period). */
+export interface BudgetStatus {
+  currency: string;
+  monthlyBudget: number | null;
+  monthlySpend: number;
+  annualBudget: number | null;
+  annualSpend: number;
+}
+
 /** A single article weighted by its current (depreciated) value. */
 export interface ValuedArticle {
   articleId: number;

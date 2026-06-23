@@ -29,6 +29,20 @@ export const UpdateCurrencySchema = z.object({
 });
 export type UpdateCurrencyInput = z.infer<typeof UpdateCurrencySchema>;
 
+// Spend budgets. Each field optional (PATCH-style); `null` clears a budget.
+// Coerced from string form inputs; non-negative and capped to the Decimal(12,2)
+// column range.
+const budgetAmount = z.coerce.number().min(0).max(1_000_000_000);
+export const UpdateBudgetSchema = z
+  .object({
+    monthlyBudget: budgetAmount.nullish(),
+    annualBudget: budgetAmount.nullish(),
+  })
+  .refine((v) => Object.keys(v).length > 0, {
+    message: "at least one budget field is required",
+  });
+export type UpdateBudgetInput = z.infer<typeof UpdateBudgetSchema>;
+
 export const UpdateEmailRemindersSchema = z.object({
   enabled: z.boolean(),
 });

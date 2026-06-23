@@ -33,6 +33,7 @@ import {
   Rows3,
   Eye,
   EyeOff,
+  Wallet,
 } from "lucide-react";
 import {
   profileAPI,
@@ -85,6 +86,8 @@ type Me = {
   email: string;
   role: string;
   currency?: string;
+  monthlyBudget?: string | number | null;
+  annualBudget?: string | number | null;
   emailReminders?: boolean;
   weeklyDigest?: boolean;
 };
@@ -123,6 +126,10 @@ export default function ProfileView() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const [monthlyBudget, setMonthlyBudget] = useState("");
+  const [annualBudget, setAnnualBudget] = useState("");
+  const [budgetSaving, setBudgetSaving] = useState(false);
 
   const [email, setEmail] = useState("");
   const [currentPasswordForEmail, setCurrentPasswordForEmail] = useState("");
@@ -194,6 +201,12 @@ export default function ProfileView() {
       const data = await profileAPI.getMe();
       setMe(data);
       setEmail(data.email);
+      setMonthlyBudget(
+        data.monthlyBudget != null ? String(data.monthlyBudget) : ""
+      );
+      setAnnualBudget(
+        data.annualBudget != null ? String(data.annualBudget) : ""
+      );
       // Pull subscription details from the billing endpoint in parallel —
       // it's a separate Stripe round-trip on the server and we don't want
       // to block first paint of the profile on it.
@@ -280,6 +293,30 @@ export default function ProfileView() {
       showSuccess(t("profile.currency.success"));
     } catch (e: unknown) {
       showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    }
+  };
+
+  const saveBudget = async () => {
+    setBudgetSaving(true);
+    try {
+      const updated = await profileAPI.updateBudget({
+        monthlyBudget: monthlyBudget.trim() ? Number(monthlyBudget) : null,
+        annualBudget: annualBudget.trim() ? Number(annualBudget) : null,
+      });
+      setMe((prev) =>
+        prev
+          ? {
+              ...prev,
+              monthlyBudget: updated.monthlyBudget,
+              annualBudget: updated.annualBudget,
+            }
+          : prev
+      );
+      showSuccess(t("budget.success"));
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setBudgetSaving(false);
     }
   };
 
@@ -561,6 +598,46 @@ export default function ProfileView() {
               ))}
             </Select>
           </Field>
+        </Section>
+
+        {/* Spend budgets — drive the dashboard budget card. Leave a field
+            blank to disable that period's budget. */}
+        <Section
+          icon={<Wallet className="h-5 w-5" />}
+          title={t("budget.title")}
+          description={t("budget.subtitle")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={t("budget.monthly")} htmlFor="profile-budget-monthly">
+              <Input
+                id="profile-budget-monthly"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step="0.01"
+                value={monthlyBudget}
+                onChange={(e) => setMonthlyBudget(e.target.value)}
+                placeholder={me?.currency ?? "USD"}
+              />
+            </Field>
+            <Field label={t("budget.annual")} htmlFor="profile-budget-annual">
+              <Input
+                id="profile-budget-annual"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step="0.01"
+                value={annualBudget}
+                onChange={(e) => setAnnualBudget(e.target.value)}
+                placeholder={me?.currency ?? "USD"}
+              />
+            </Field>
+          </div>
+          <div className="mt-3">
+            <Button onClick={saveBudget} loading={budgetSaving}>
+              {t("common.save")}
+            </Button>
+          </div>
         </Section>
 
         {/* Appearance: density toggle. Persisted locally (per-device) because

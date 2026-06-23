@@ -24,6 +24,7 @@ import {
   getBasicStatistics,
   getAdminStatistics,
   getPortfolioAnalytics,
+  getBudgetStatus,
 } from "../services/statistics.service";
 
 const router = Router();
@@ -48,6 +49,16 @@ router.get(
   asyncHandler(async (req: AuthRequest, res) => {
     const analytics = await getPortfolioAnalytics({ userId: req.user!.sub });
     res.json(analytics);
+  })
+);
+
+// Spend-against-budget for the current month/year. Free for all users.
+router.get(
+  "/budget",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const status = await getBudgetStatus(req.user!.sub);
+    res.json(status);
   })
 );
 

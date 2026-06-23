@@ -9,7 +9,11 @@ import { currentValue } from "../modules/common/depreciation";
 // Single source of truth — the local interface that used to live here was
 // dropped in round 10 (T1) so the API and web client can't drift on
 // dashboard-statistics shape.
-import type { DashboardStatistics, PortfolioAnalytics } from "@wim/types";
+import type {
+  DashboardStatistics,
+  PortfolioAnalytics,
+  BudgetStatus,
+} from "@wim/types";
 import { NOT_OWNED_STATUSES } from "@wim/types";
 
 export type { DashboardStatistics };
@@ -641,5 +645,57 @@ export async function getPortfolioAnalytics(params: {
     byTag,
     byCategory,
     topItems,
+  };
+}
+
+/**
+ * Spend-against-budget for the current calendar month and year. Spend is the
+ * sum of purchase prices for currently-owned, priced items acquired in the
+ * period (acquisition = warranty purchase date, else createdAt) — the same
+ * scope as the analytics spend trend, so the figures agree across surfaces.
+ */
+export async function getBudgetStatus(userId: number): Promise<BudgetStatus> {
+  const user = await prisma.user.findUnique({
+    where: { userId },
+    select: { currency: true, monthlyBudget: true, annualBudget: true },
+  });
+
+  const now = new Date();
+  const yearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+  const monthStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+  );
+
+  // Only items acquired this calendar year can count toward either period.
+  const articles = await prisma.article.findMany({
+    where: {
+      ownerUserId: userId,
+      deletedAt: null,
+      status: { notIn: NOT_OWNED_STATUSES },
+      purchasePrice: { not: null },
+    },
+    select: {
+      purchasePrice: true,
+      createdAt: true,
+      garantie: { select: { garantieDateAchat: true } },
+    },
+  });
+
+  let monthlySpend = 0;
+  let annualSpend = 0;
+  for (const a of articles) {
+    const acquired = new Date(a.garantie?.garantieDateAchat ?? a.createdAt);
+    const price = a.purchasePrice == null ? 0 : Number(a.purchasePrice);
+    if (acquired >= yearStart) annualSpend += price;
+    if (acquired >= monthStart) monthlySpend += price;
+  }
+
+  return {
+    currency: user?.currency ?? "USD",
+    monthlyBudget:
+      user?.monthlyBudget == null ? null : Number(user.monthlyBudget),
+    monthlySpend,
+    annualBudget: user?.annualBudget == null ? null : Number(user.annualBudget),
+    annualSpend,
   };
 }

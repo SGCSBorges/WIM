@@ -35,6 +35,7 @@ import type {
   ArticleNoteKind,
   ArticleStatus,
   BillingSubscription,
+  BudgetStatus,
   InsurancePolicyItem,
   LoanItem,
   PortfolioAnalytics,
@@ -1319,6 +1320,16 @@ export const statisticsAPI = {
       );
     return response.json();
   },
+
+  async getBudget(): Promise<BudgetStatus> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/statistics/budget`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to fetch budget"));
+    return response.json();
+  },
 };
 
 // Profile API
@@ -1328,6 +1339,8 @@ export const profileAPI = {
     email: string;
     role: string;
     currency?: string;
+    monthlyBudget?: string | number | null;
+    annualBudget?: string | number | null;
     emailReminders?: boolean;
     weeklyDigest?: boolean;
     theme?: ThemePref | null;
@@ -1516,6 +1529,23 @@ export const profileAPI = {
       throw new Error(
         await extractError(response, "Failed to update currency")
       );
+    return response.json();
+  },
+
+  async updateBudget(budget: {
+    monthlyBudget?: number | null;
+    annualBudget?: number | null;
+  }) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/budget`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify(budget),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update budget"));
     return response.json();
   },
 

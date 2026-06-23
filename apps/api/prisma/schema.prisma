@@ -156,6 +156,13 @@ model User {
   // Display currency (ISO 4217) for inventory value formatting on the client.
   currency String @default("USD") @db.VarChar(3)
 
+  // Optional spend budgets (in the display currency). Null = no budget set.
+  // Spend is measured against items acquired in the current calendar
+  // month/year (acquisition = warranty purchase date, else createdAt),
+  // matching the analytics spend rule.
+  monthlyBudget Decimal? @db.Decimal(12, 2)
+  annualBudget  Decimal? @db.Decimal(12, 2)
+
   // Capability token for the read-only iCalendar feed (calendar apps can't
   // send the auth cookie). Null = feed disabled.
   calendarToken String? @unique @db.VarChar(64)

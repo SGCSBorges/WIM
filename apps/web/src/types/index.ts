@@ -16,6 +16,7 @@ export type {
   AttachmentItem,
   AttachmentType,
   BillingSubscription,
+  BudgetStatus,
   ClaimStatus,
   DashboardStatistics,
   FetchedArticle,

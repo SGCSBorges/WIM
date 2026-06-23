@@ -40,6 +40,7 @@ import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
 import { ErrorBanner } from "../common/States";
 import { PageHeader, Stat, Section, type StatTone } from "../ui";
 import NeedsAttention from "./NeedsAttention";
+import BudgetCard from "./BudgetCard";
 import type { DashboardStatistics } from "@wim/types";
 
 // Recharts reads colors as plain strings; CSS vars resolve per active theme.
@@ -309,6 +310,8 @@ const Dashboard: React.FC = () => {
       />
 
       <NeedsAttention />
+
+      <BudgetCard />
 
       {/* KPIs */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
