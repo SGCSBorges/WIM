@@ -29,6 +29,7 @@ export type {
   SpendBucket,
   ValuedArticle,
   SavedView,
+  ServiceRecordItem,
   ShareInviteItem,
   ShareItem,
   SharedArticleRow,

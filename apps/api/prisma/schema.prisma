@@ -215,6 +215,7 @@ model User {
   messagesSent            Message[]       @relation("MessageSender")
   loansOwned              Loan[]          @relation("UserLoans")
   insurancePolicies       InsurancePolicy[] @relation("UserInsurancePolicies")
+  serviceRecordsOwned     ServiceRecord[] @relation("UserServiceRecords")
 
   // Audit (optionnel)
   auditLogs AuditLog[]
@@ -310,6 +311,7 @@ model Article {
   messageThreads   MessageThread[]
   loans            Loan[]
   insurances       ArticleInsurance[]
+  serviceRecords   ServiceRecord[]
 
   @@index([ownerUserId])
   @@index([ownerUserId, deletedAt])
@@ -739,6 +741,29 @@ model ArticleInsurance {
 
   @@id([articleId, policyId])
   @@index([policyId])
+}
+
+// Append-only service / maintenance log entry for an article (a repair, a
+// tune-up, a cleaning). An optional `nextDueAt` schedules a reminder so the
+// next service isn't forgotten — cancelled on delete, mirroring the Loan
+// reminder wiring.
+model ServiceRecord {
+  serviceId        Int       @id @default(autoincrement())
+  ownerUserId      Int
+  articleId        Int
+  performedAt      DateTime
+  description      String    @db.VarChar(300)
+  cost             Decimal?  @db.Decimal(12, 2)
+  provider         String?   @db.VarChar(150)
+  nextDueAt        DateTime?
+  reminderAlerteId Int?
+  createdAt        DateTime  @default(now())
+
+  owner   User    @relation("UserServiceRecords", fields: [ownerUserId], references: [userId], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [articleId], onDelete: Cascade)
+
+  @@index([ownerUserId])
+  @@index([articleId])
 }
 
 // Persistent record of every Stripe webhook event we have already

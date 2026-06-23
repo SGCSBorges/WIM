@@ -38,6 +38,7 @@ import type {
   BudgetStatus,
   InsurancePolicyItem,
   LoanItem,
+  ServiceRecordItem,
   PortfolioAnalytics,
   ClaimStatus,
   DateFormatPref,
@@ -2522,6 +2523,53 @@ export const insuranceAPI = {
     );
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to unlink article"));
+  },
+};
+
+export const serviceRecordsAPI = {
+  async list(articleId: number): Promise<ServiceRecordItem[]> {
+    const url = apiUrl("/service-records");
+    url.searchParams.set("articleId", String(articleId));
+    const response = await fetchWithTimeout(url.toString(), {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch service records")
+      );
+    const data = await response.json();
+    return data.items as ServiceRecordItem[];
+  },
+
+  async create(input: {
+    articleId: number;
+    performedAt: string;
+    description: string;
+    cost?: number | null;
+    provider?: string | null;
+    nextDueAt?: string | null;
+  }): Promise<ServiceRecordItem> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/service-records`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(input),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to log service record")
+      );
+    return response.json();
+  },
+
+  async remove(serviceId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/service-records/${serviceId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to delete service record")
+      );
   },
 };
 

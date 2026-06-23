@@ -79,6 +79,7 @@ export const AUDIT_ENTITIES = [
   "MessageThread",
   "Loan",
   "InsurancePolicy",
+  "ServiceRecord",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 
@@ -624,6 +625,19 @@ export interface LoanItem {
     articleModele: string;
     productImageUrl: string | null;
   };
+}
+
+/** A service / maintenance log entry as returned by `/api/service-records`.
+ *  Dates are ISO strings; `cost` is a Decimal string (or null). */
+export interface ServiceRecordItem {
+  serviceId: number;
+  articleId: number;
+  performedAt: string;
+  description: string;
+  cost: string | number | null;
+  provider: string | null;
+  nextDueAt: string | null;
+  createdAt: string;
 }
 
 /** A minimal article reference embedded in insurance payloads. */

@@ -53,6 +53,7 @@ import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import TransferDialog from "./TransferDialog";
 import LoanSection from "./LoanSection";
 import InsuranceSection from "./InsuranceSection";
+import MaintenanceSection from "./MaintenanceSection";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { currentValue } from "../../utils/depreciation";
@@ -724,6 +725,9 @@ export default function ArticleDetail() {
 
       {/* Insurance coverage */}
       <InsuranceSection articleId={articleId} />
+
+      {/* Service / maintenance log */}
+      <MaintenanceSection articleId={articleId} />
 
       {article.garantie && (
         <RenewWarrantyDialog
