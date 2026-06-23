@@ -8,8 +8,8 @@
  *
  * Auth, articles, locations, warranties, alerts, attachments, notes,
  * shares, transfers, messaging, tags, saved-views, calendar, push,
- * billing, profile, admin, statistics, and the meta endpoints are all
- * listed below.
+ * billing, profile, admin, statistics, loans, insurance, maintenance,
+ * the public item page, and the meta endpoints are all listed below.
  */
 
 import { z } from "zod";
@@ -1374,6 +1374,18 @@ export function buildOpenApiDocument() {
           responses: { "200": { description: "Updated" } },
         },
       },
+      "/api/profile/me/budget": {
+        put: {
+          tags: ["profile"],
+          summary:
+            "Set the caller's monthly/annual spend budgets (gated: budget feature). Null clears a budget.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "Updated" },
+            "403": { description: "Feature not available" },
+          },
+        },
+      },
 
       "/api/statistics/dashboard": {
         get: {
@@ -1406,6 +1418,302 @@ export function buildOpenApiDocument() {
             "Spending & portfolio-value analytics (gated: analytics feature).",
           security: [cookieAuth],
           responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/statistics/budget": {
+        get: {
+          tags: ["statistics"],
+          summary:
+            "Spend-against-budget for the current month + year (gated: budget feature).",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "BudgetStatus" },
+            "403": { description: "Feature not available" },
+          },
+        },
+      },
+
+      "/api/loans": {
+        get: {
+          tags: ["loans"],
+          summary:
+            "List the caller's loans (gated: loans feature). Filter with ?active=1 and/or ?articleId=.",
+          security: [cookieAuth],
+          parameters: [
+            { name: "active", in: "query", schema: { type: "boolean" } },
+            {
+              name: "articleId",
+              in: "query",
+              schema: { type: "integer", minimum: 1 },
+            },
+          ],
+          responses: {
+            "200": { description: "{ items: LoanItem[] }" },
+            "403": { description: "Feature not available" },
+          },
+        },
+        post: {
+          tags: ["loans"],
+          summary:
+            "Lend an item out (gated: loans feature). Sets the article LOANED; a due date schedules a reminder.",
+          security: [cookieAuth],
+          responses: {
+            "201": { description: "Created loan" },
+            "403": { description: "Feature not available" },
+            "404": { description: "Article not found" },
+          },
+        },
+      },
+      "/api/loans/{id}/return": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["loans"],
+          summary:
+            "Mark a loan returned (reverts the article to ACTIVE if still LOANED, cancels the reminder). Stays open so a downgraded user can always close out a loan.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "Updated loan" },
+            "404": { description: "Open loan not found" },
+          },
+        },
+      },
+      "/api/loans/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["loans"],
+          summary: "Delete a loan record (cancels any reminder).",
+          security: [cookieAuth],
+          responses: {
+            "204": { description: "Deleted" },
+            "404": { description: "Not found" },
+          },
+        },
+      },
+
+      "/api/insurance": {
+        get: {
+          tags: ["insurance"],
+          summary:
+            "List the caller's insurance policies (gated: insurance feature). ?articleId= scopes to policies covering one item.",
+          security: [cookieAuth],
+          parameters: [
+            {
+              name: "articleId",
+              in: "query",
+              schema: { type: "integer", minimum: 1 },
+            },
+          ],
+          responses: {
+            "200": { description: "{ items: InsurancePolicyItem[] }" },
+            "403": { description: "Feature not available" },
+          },
+        },
+        post: {
+          tags: ["insurance"],
+          summary:
+            "Create an insurance policy (gated). A renewal date schedules a reminder.",
+          security: [cookieAuth],
+          responses: {
+            "201": { description: "Created policy" },
+            "403": { description: "Feature not available" },
+          },
+        },
+      },
+      "/api/insurance/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        patch: {
+          tags: ["insurance"],
+          summary:
+            "Update a policy (gated). Editing the renewal date reschedules the reminder.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "Updated policy" },
+            "403": { description: "Feature not available" },
+            "404": { description: "Not found" },
+          },
+        },
+        delete: {
+          tags: ["insurance"],
+          summary:
+            "Delete a policy (cancels its reminder). Stays open so a downgraded user can clean up.",
+          security: [cookieAuth],
+          responses: {
+            "204": { description: "Deleted" },
+            "404": { description: "Not found" },
+          },
+        },
+      },
+      "/api/insurance/{id}/articles": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["insurance"],
+          summary:
+            "Cover an article under this policy (gated). Idempotent re-link.",
+          security: [cookieAuth],
+          responses: {
+            "204": { description: "Linked" },
+            "403": { description: "Feature not available" },
+            "404": { description: "Policy or article not found" },
+          },
+        },
+      },
+      "/api/insurance/{id}/articles/{articleId}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+          {
+            name: "articleId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["insurance"],
+          summary:
+            "Stop covering an article under this policy. Stays open for cleanup.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Unlinked" } },
+        },
+      },
+
+      "/api/service-records": {
+        get: {
+          tags: ["maintenance"],
+          summary:
+            "List an article's service/maintenance log (gated: maintenance feature). Requires ?articleId=.",
+          security: [cookieAuth],
+          parameters: [
+            {
+              name: "articleId",
+              in: "query",
+              required: true,
+              schema: { type: "integer", minimum: 1 },
+            },
+          ],
+          responses: {
+            "200": { description: "{ items: ServiceRecordItem[] }" },
+            "403": { description: "Feature not available" },
+          },
+        },
+        post: {
+          tags: ["maintenance"],
+          summary:
+            "Log a service entry (gated). A next-service date schedules a reminder.",
+          security: [cookieAuth],
+          responses: {
+            "201": { description: "Created record" },
+            "403": { description: "Feature not available" },
+            "404": { description: "Article not found" },
+          },
+        },
+      },
+      "/api/service-records/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["maintenance"],
+          summary:
+            "Delete a service record (cancels any reminder). Stays open for cleanup.",
+          security: [cookieAuth],
+          responses: {
+            "204": { description: "Deleted" },
+            "404": { description: "Not found" },
+          },
+        },
+      },
+
+      "/api/articles/{articleId}/public-link": {
+        parameters: [
+          {
+            name: "articleId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["public"],
+          summary:
+            "Get the article's current public-page token (or null). Open so a downgraded user can still see/disable an existing link.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "{ token: string | null }" },
+            "404": { description: "Not found" },
+          },
+        },
+        post: {
+          tags: ["public"],
+          summary:
+            "Generate (or rotate) the article's public-page token (gated: public_page feature).",
+          security: [cookieAuth],
+          responses: {
+            "201": { description: "{ token: string }" },
+            "403": { description: "Feature not available" },
+          },
+        },
+        delete: {
+          tags: ["public"],
+          summary: "Disable the public page. Stays open for cleanup.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Disabled" } },
+        },
+      },
+      "/api/public/items/{token}": {
+        parameters: [
+          {
+            name: "token",
+            in: "path",
+            required: true,
+            schema: { type: "string", pattern: "^[a-f0-9]{64}$" },
+          },
+        ],
+        get: {
+          tags: ["public"],
+          summary:
+            "Public, unauthenticated item view (QR-label target). Returns only privacy-safe fields — never price, serial, owner, or location.",
+          responses: {
+            "200": { description: "PublicItem" },
+            "404": { description: "Not found" },
+          },
         },
       },
 
