@@ -448,6 +448,13 @@ intentionally rely on native validation with **no** custom field messages
 - Totals use the **same `currentValue`** depreciation helper as the
   dashboard + claim PDF (`apps/api/src/modules/common/depreciation.ts`),
   so figures don't drift between surfaces.
+- **Insurance-aware** (additive — the warranty-based "uninsured/expired"
+  exposure section is unchanged): one owner-scoped `ArticleInsurance` query
+  over the report's articles drives a have/lack-a-policy count on the cover,
+  an "insured: <provider>" / "no policy" tag per manifest line, and a
+  separate "Items with no insurance policy" list by value desc. This is the
+  real `InsurancePolicy` coverage gap, distinct from warranty status (an
+  item can have a live warranty yet no policy, and vice-versa).
 - Inventory CSV (`/articles/export/inventory.csv`) gains a read-only
   `currentValue` column computed at export time; the importer ignores
   unknown columns so the round-trip stays clean.
@@ -470,6 +477,79 @@ intentionally rely on native validation with **no** custom field messages
   recharts (own chunk), gated nav item + upgrade teaser like `reports`.
   `PortfolioAnalytics`/`SpendBucket`/`ValuedArticle` shapes live in
   `@wim/types`.
+
+## Per-item lifecycle add-ons (loans / insurance / maintenance)
+
+Three owner-scoped, paid (POWER_USER-default) modules that hang off an
+article, all following the same shape: an append-only/owner-scoped table, a
+service with `assertArticleOwned`/`assert*Owned` checks, a thin route module
+mounted in `app.ts`, and a **best-effort** reminder via
+`AlertService.createCustom` (a Redis hiccup is caught + logged, never fails
+the write — mirrors `PushService`). Each owns an audit entity in
+`@wim/types` `AUDIT_ENTITIES` (`Loan` / `InsurancePolicy` / `ServiceRecord`)
+and a web section on the article-detail page that renders a
+`LockedFeatureNotice` when its flag is off.
+
+- **Loans** (`Loan`, `modules/loans/`): who borrowed an item + when it's due
+  back. Creating a loan sets the article `LOANED`; `markReturned` reverts to
+  `ACTIVE` **only if still `LOANED`** (atomic `updateMany` precondition so a
+  manual status change isn't stomped) and cancels the due-date reminder.
+  `markReturned`/`delete` use atomic `updateMany`/owned-row checks. Routes:
+  `GET/POST /api/loans`, `POST /:id/return`, `DELETE /:id` (return + delete
+  ungated for cleanup). Web `LoanSection` + `loansAPI`; `LoanItem` in types.
+- **Insurance** (`InsurancePolicy` + `ArticleInsurance` join, `modules/
+  insurance/`): provider / policy number / premium / coverage limit /
+  renewal date, covering **many** articles (m2m). A renewal date schedules a
+  reminder, **rescheduled** on edit (`"renewalAt" in data` patch check) and
+  cancelled on delete. CRUD under `/api/insurance` + link/unlink at
+  `/:id/articles[/:articleId]` (policy delete + unlink ungated). Web: lazy
+  `/insurance` route (`InsuranceView`, gated nav item w/ lock) for policy
+  management + `InsuranceSection` on article-detail to link existing
+  policies. `InsurancePolicyItem`/`InsuredArticleRef` in types.
+- **Maintenance** (`ServiceRecord`, `modules/service-records/`): append-only
+  service log per item (date / description / cost / provider / optional
+  next-service date → reminder). `GET /api/service-records?articleId=`
+  lists one item's log; **`GET /api/service-records/due`** returns the
+  *latest* record per article whose `nextDueAt` is within 30 days or overdue
+  (a later service with no `nextDueAt` clears an earlier schedule). Delete
+  ungated. Web `MaintenanceSection` + `serviceRecordsAPI`; `ServiceRecordItem`
+  / `ServiceDueItem` in types.
+
+The dashboard `AttentionExtraCard` (`components/dashboard/`) folds the three
+time-sensitive signals — overdue loans, insurance renewals due/lapsed, and
+services due/overdue — into one self-hiding card; each feed is independently
+flag-gated (skips its fetch when not entitled).
+
+## Spend budgets
+
+- Optional per-user `monthlyBudget` / `annualBudget` (`Decimal?` on `User`),
+  set via `PUT /api/profile/me/budget` (Profile → Budget) and read via
+  `GET /api/statistics/budget` (`getBudgetStatus`). Both gated on the
+  `budget` feature. Spend = sum of purchase prices for currently-owned,
+  priced items acquired (`garantieDateAchat ?? createdAt`) in the current
+  calendar month / year — the **same** acquisition-date rule as analytics, so
+  figures agree across surfaces. `BudgetStatus` in `@wim/types`.
+- Web: the dashboard `BudgetCard` (self-hides when no budget set or flag off)
+  shows month + year progress bars with an over-budget warning.
+
+## Public item page + QR labels
+
+- Opt-in per-article `Article.publicToken` (nullable, unique 64-hex). The
+  owner mints/rotates/disables it from the article-detail `PublicLinkSection`
+  (gated `public_page`), which renders a shareable `/i/<token>` link plus a
+  **client-generated** QR code (the `qrcode` web dep — built from
+  `window.location.origin` so the QR always targets the right front-end host
+  without the API knowing it).
+- `GET /api/public/items/:token` (`modules/public/`) is **unauthenticated**
+  (the token is the credential, like the calendar ICS feed) and returns only
+  a privacy-safe subset — name / brand / model / photo / category + a coarse
+  warranty-active flag — **never** price, serial, owner, or location. The
+  public web page lives at `/i/:token` and is matched **before** the auth
+  gate in `App.tsx` (so it renders without `/auth/me`). `PublicItem` in
+  `@wim/types`; supertest covers the route's privacy contract.
+- Owner-side generate/revoke is in `articles/public-link.routes.ts`, mounted
+  under `/api/articles` **before** the `/:id` catch-all (POST gated; GET
+  status + DELETE stay open for cleanup).
 
 ## Account security (login history → sessions → 2FA)
 
@@ -695,9 +775,10 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 - **Service** (`apps/api/src/modules/features/feature.service.ts`):
   `FEATURE_KEYS` + `DEFAULTS` are the source of truth. Defaults:
   `cmd_palette=ADMIN`; **every other feature (`sharing`, `transfers`,
-  `reports`, `analytics`, `templates`, `bulk_edit`, `saved_views`,
-  `notifications`, `calendar_feed`, `csv_import`, `csv_export`) defaults to
-  `POWER_USER`** —
+  `messaging`, `reports`, `analytics`, `templates`, `bulk_edit`,
+  `saved_views`, `notifications`, `calendar_feed`, `csv_import`,
+  `csv_export`, `insurance`, `loans`, `maintenance`, `budget`,
+  `public_page`) defaults to `POWER_USER`** —
   i.e. they are all paid features by default, and an admin can lower a bar
   (e.g. to USER) per feature when desired. A **60-second
   process-level snapshot cache** (`getSnapshot`) holds both tables so gated
@@ -727,11 +808,21 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   `/alerts/mark-seen` — the bell feed, **not** the core alert list/CRUD),
   `calendar_feed` (`POST /calendar/token` only — DELETE + the public ICS
   feed stay open), `csv_import` (`/articles/import`), `csv_export`
-  (`/articles/export/inventory.csv`). `cmd_palette` is frontend-only (it
-  reuses the shared article-search endpoint, so there's no dedicated route to
-  gate). Every gate except `cmd_palette` (ADMIN) defaults to POWER_USER, so
-  by default these are all paid features; an admin can lower a bar to USER
-  per feature to make one free.
+  (`/articles/export/inventory.csv`), `insurance` (`insurance.routes.ts` —
+  list/create/update + link; **policy delete + coverage unlink stay open**
+  for cleanup), `loans` (`loan.routes.ts` — list/create; **return + delete
+  stay open**), `maintenance` (`service-record.routes.ts` — list/`due`/create;
+  **delete stays open**), `budget` (`statistics/budget` GET +
+  `profile/me/budget` PUT), `public_page` (`articles/public-link.routes.ts`
+  **POST only** — the GET status + DELETE stay open, and the unauthenticated
+  `GET /api/public/items/:token` read is never gated). The "cleanup paths
+  stay open" rule mirrors the transfer reject/revoke + calendar-DELETE
+  pattern: a downgraded user can always wind a thing down even when the
+  feature is later restricted. `cmd_palette` is frontend-only (it reuses the
+  shared article-search endpoint, so there's no dedicated route to gate).
+  Every gate except `cmd_palette` (ADMIN) defaults to POWER_USER, so by
+  default these are all paid features; an admin can lower a bar to USER per
+  feature to make one free.
 - **Admin endpoints** (`admin.routes.ts`): `GET /api/admin/features`
   (flags + active grants), `PUT /api/admin/features/:key` (set required
   role), `POST /api/admin/features/grants` (rejects non-POWER_USER keys),
@@ -779,6 +870,15 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   check needed, since POWER_USER/ADMIN/granted users all have the flag true.
   The dialog/teaser reuse `home.upgrade.buyMonthly`/`buyYearly` for the plan
   buttons; the existing Home upgrade banner is unchanged.
+- **Inline section gating** (`components/common/LockedFeatureNotice`): the
+  embedded article-detail sections (`LoanSection`, `InsuranceSection`,
+  `MaintenanceSection`, `PublicLinkSection`) and the Profile budget section
+  render this shared notice (same icon + title as the real section, plus an
+  upgrade button) when their flag is off, instead of a route-level
+  `UpgradeTeaser`. Each guards its own data fetch on the flag so a locked
+  user never fires a doomed 403. The dashboard `BudgetCard` and
+  `AttentionExtraCard` simply self-hide (return null) when their flags are
+  off — no nag where there's no entitled content to show.
 
 ## PWA
 
@@ -872,6 +972,16 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   warranty.routes,warranty.schemas}.ts` (renew / extend / claim
   workflow + history)
 - Reports: `apps/api/src/modules/reports/{report.pdf,report.routes}.ts`
+- Loans: `apps/api/src/modules/loans/{loan.service,loan.routes,
+  loan.schemas}.ts`
+- Insurance: `apps/api/src/modules/insurance/{insurance.service,
+  insurance.routes,insurance.schemas}.ts`
+- Maintenance / service log: `apps/api/src/modules/service-records/
+  {service-record.service,service-record.routes,service-record.schemas}.ts`
+- Budget: `getBudgetStatus` in `services/statistics.service.ts` +
+  `PUT /me/budget` in `modules/profile/profile.routes.ts`
+- Public item page: `apps/api/src/modules/public/public.routes.ts` (open
+  read), `apps/api/src/modules/articles/public-link.routes.ts` (owner)
 - Article templates: `apps/api/src/modules/articles/{template.service,
   template.routes}.ts`
 - Billing: `apps/api/src/modules/billing/{billing,billing.me,billing.webhook}.routes.ts`
@@ -893,7 +1003,12 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   `apps/web/src/index.css` (incl. `data-density="compact"` rules)
 - Onboarding / actionable home: `apps/web/src/components/onboarding/
   OnboardingChecklist.tsx`, `apps/web/src/components/dashboard/
-  NeedsAttention.tsx`
+  {NeedsAttention,BudgetCard,AttentionExtraCard}.tsx`
+- Lifecycle add-on UI: `apps/web/src/components/articles/
+  {LoanSection,InsuranceSection,MaintenanceSection,PublicLinkSection}.tsx`,
+  `apps/web/src/components/insurance/InsuranceView.tsx`,
+  `apps/web/src/components/public/PublicItemView.tsx`, locked-section
+  placeholder `apps/web/src/components/common/LockedFeatureNotice.tsx`
 - Warranty UI: `apps/web/src/components/warranties/RenewWarrantyDialog.tsx`,
   status helper `apps/web/src/utils/warrantyStatus.ts`
 - Reports surface: `apps/web/src/components/reports/ReportsView.tsx`

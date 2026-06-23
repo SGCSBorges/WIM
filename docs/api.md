@@ -262,8 +262,10 @@ specific bar to USER to make that one feature free.
 - `GET /api/features` — the caller's `{ [featureKey]: boolean }` access map.
   The web app fetches this once and re-fetches after login / logout / a
   Stripe role change. Keys: `cmd_palette`, `sharing`, `transfers`,
-  `messaging`, `reports`, `templates`, `bulk_edit`, `saved_views`,
-  `notifications`, `calendar_feed`, `csv_import`, `csv_export`.
+  `messaging`, `reports`, `analytics`, `templates`, `bulk_edit`,
+  `saved_views`, `notifications`, `calendar_feed`, `csv_import`,
+  `csv_export`, `insurance`, `loans`, `maintenance`, `budget`,
+  `public_page`.
 - `GET /api/admin/features` — current flag overrides + active temp grants.
 - `PUT /api/admin/features/:key` — `{ requiredRole }` sets the minimum role
   for a feature (absent row = coded default).
@@ -277,9 +279,12 @@ after `authGuard`; a denied call returns **403**. A 60-second snapshot cache
 backs both `GET /api/features` and the middleware via one shared `isAllowed`
 helper, so the client map and the server gate can never disagree. Admin
 writes invalidate the cache immediately. The cleanup actions that must stay
-reachable when a feature is later restricted — transfer **reject/revoke**
-and the calendar feed **DELETE** + public ICS read — deliberately stay on
-`authGuard` only.
+reachable when a feature is later restricted — transfer **reject/revoke**,
+the calendar feed **DELETE** + public ICS read, loan **return/delete**,
+insurance **policy-delete/unlink**, service-record **delete**, and the
+public-link **GET/DELETE** — deliberately stay on `authGuard` only. The
+unauthenticated public item read (`GET /api/public/items/:token`) is never
+gated at all.
 
 ## Database backup / restore (ADMIN)
 

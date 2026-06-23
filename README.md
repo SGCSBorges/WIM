@@ -258,6 +258,8 @@ Per-user inventory sharing between **share-capable** users. Sharing is the POWER
 | `GET` | `/dashboard` | ✓ | Role-aware dashboard stats |
 | `GET` | `/basic` | ✓ | Basic counts for the current user |
 | `GET` | `/admin` | ADMIN | Platform-wide stats |
+| `GET` | `/analytics` | POWER_USER (`analytics`) | Spending & portfolio-value analytics |
+| `GET` | `/budget` | POWER_USER (`budget`) | Spend vs monthly/annual budget for the current period |
 
 ### Transfers — `/api/articles/transfers` (POWER_USER)
 
@@ -271,6 +273,52 @@ Permanent ownership transfer between Power Users. See [`docs/api.md`](./docs/api
 | `POST`   | `/transfers/:token/reject` | POWER_USER | Reject a transfer (PULL: owner rejects) |
 | `DELETE` | `/transfers/:id` | POWER_USER | Revoke a transfer the caller initiated (PUSH: owner cancels; PULL: requester cancels) |
 
+### Loans — `/api/loans` (POWER_USER · `loans`)
+
+Track who borrowed an item and when it's due back. Lending sets the article `LOANED`; returning reverts it (only if still `LOANED`). Return + delete stay open so a downgraded user can always close out a loan.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | POWER_USER | List own loans — `?active=1` `?articleId=` |
+| `POST`   | `/` | POWER_USER | Lend an item out (a due date schedules a reminder) |
+| `POST`   | `/:id/return` | ✓ | Mark returned (open for cleanup) |
+| `DELETE` | `/:id` | ✓ | Delete a loan record (open for cleanup) |
+
+### Insurance — `/api/insurance` (POWER_USER · `insurance`)
+
+Insurance policies (provider, premium, coverage limit, renewal date) covering many articles. A renewal date schedules a reminder. Policy delete + coverage unlink stay open for cleanup.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | POWER_USER | List policies — `?articleId=` scopes to one item's coverage |
+| `POST`   | `/` | POWER_USER | Create a policy |
+| `PATCH`  | `/:id` | POWER_USER | Update a policy (renewal-date edit reschedules the reminder) |
+| `DELETE` | `/:id` | ✓ | Delete a policy (open for cleanup) |
+| `POST`   | `/:id/articles` | POWER_USER | Cover an article under this policy |
+| `DELETE` | `/:id/articles/:articleId` | ✓ | Stop covering an article (open for cleanup) |
+
+### Maintenance — `/api/service-records` (POWER_USER · `maintenance`)
+
+Append-only service log per item (date, description, cost, provider, optional next-service date → reminder).
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` | POWER_USER | List one article's service log — requires `?articleId=` |
+| `GET`    | `/due` | POWER_USER | Services due/overdue across all items (latest per article, 30-day window) |
+| `POST`   | `/` | POWER_USER | Log a service entry |
+| `DELETE` | `/:id` | ✓ | Delete a record (open for cleanup) |
+
+### Public item page — `/api/public` + `/api/articles/:id/public-link`
+
+Opt-in, read-only public page per article (QR-label target). The owner mints a token (gated `public_page`); the public read is **unauthenticated** and returns only privacy-safe fields — never price, serial, owner, or location.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/api/articles/:id/public-link` | ✓ | Current token (or null) — open so a downgraded user can disable |
+| `POST`   | `/api/articles/:id/public-link` | POWER_USER (`public_page`) | Generate/rotate the token |
+| `DELETE` | `/api/articles/:id/public-link` | ✓ | Disable the public page (open for cleanup) |
+| `GET`    | `/api/public/items/:token` | Public | Privacy-safe item view (no auth — the token is the credential) |
+
 ### Profile — `/api/profile`
 
 | Method | Path | Auth | Description |
@@ -282,6 +330,7 @@ Permanent ownership transfer between Power Users. See [`docs/api.md`](./docs/api
 | `PUT`    | `/me/preferences` | ✓ | Update display preferences (`{ theme?, language?, dateFormat? }`) — any combination, `null` clears to device default |
 | `PUT`    | `/me/email-reminders` | ✓ | Toggle emailed warranty reminders |
 | `PUT`    | `/me/weekly-digest` | ✓ | Toggle the opt-in weekly expirations digest |
+| `PUT`    | `/me/budget` | POWER_USER (`budget`) | Set monthly/annual spend budgets (`null` clears) |
 | `GET`    | `/me/login-history` | ✓ | Last 50 login/logout events |
 | `GET`    | `/me/sessions` | ✓ | Active sessions — `{ items, currentJti }` (use `currentJti` to mark "this device") |
 | `DELETE` | `/me/sessions/:id` | ✓ | Revoke a single session (denylists its jti) |
