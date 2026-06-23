@@ -11,7 +11,13 @@
  * ArticlesList persists to the URL), so a dropped binding is a compile error.
  */
 import { useEffect, useRef, useState } from "react";
-import { Search, X, SlidersHorizontal, ChevronDown } from "lucide-react";
+import {
+  Search,
+  X,
+  SlidersHorizontal,
+  ChevronDown,
+  CalendarDays,
+} from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { ARTICLE_STATUSES, ARTICLE_CATEGORIES } from "@wim/types";
 import { Button, Input, Select, Badge } from "../ui";
@@ -263,22 +269,32 @@ export default function ArticlesFilterBar({
             className="w-24"
           />
 
-          <Input
-            type="date"
-            value={createdFrom}
-            onChange={(e) => updateParams({ createdFrom: e.target.value })}
-            aria-label={t("articles.filter.createdFrom")}
-            title={t("articles.filter.createdFrom")}
-            className="w-auto"
-          />
-          <Input
-            type="date"
-            value={createdTo}
-            onChange={(e) => updateParams({ createdTo: e.target.value })}
-            aria-label={t("articles.filter.createdTo")}
-            title={t("articles.filter.createdTo")}
-            className="w-auto"
-          />
+          {/* Date-added range — a visible caption + an en-dash so it's clear
+              these two pickers bound when an item was added (date inputs show
+              no placeholder text to hint at it). */}
+          <div className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs ui-text-muted">
+            <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap">
+              {t("articles.filter.added")}
+            </span>
+            <Input
+              type="date"
+              value={createdFrom}
+              onChange={(e) => updateParams({ createdFrom: e.target.value })}
+              aria-label={t("articles.filter.createdFrom")}
+              title={t("articles.filter.createdFrom")}
+              className="w-auto"
+            />
+            <span aria-hidden="true">–</span>
+            <Input
+              type="date"
+              value={createdTo}
+              onChange={(e) => updateParams({ createdTo: e.target.value })}
+              aria-label={t("articles.filter.createdTo")}
+              title={t("articles.filter.createdTo")}
+              className="w-auto"
+            />
+          </div>
 
           <Select
             value={`${sortParam || "articleId"}:${dirParam || "desc"}`}
