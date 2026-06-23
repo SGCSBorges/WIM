@@ -8,9 +8,13 @@
  */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HandHelping, Umbrella, ArrowRight } from "lucide-react";
-import { loansAPI, insuranceAPI } from "../../services/api";
-import type { LoanItem, InsurancePolicyItem } from "../../types";
+import { HandHelping, Umbrella, Wrench, ArrowRight } from "lucide-react";
+import { loansAPI, insuranceAPI, serviceRecordsAPI } from "../../services/api";
+import type {
+  LoanItem,
+  InsurancePolicyItem,
+  ServiceDueItem,
+} from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { useFeature } from "../../features/features";
@@ -35,9 +39,11 @@ export default function AttentionExtraCard() {
   const navigate = useNavigate();
   const canLoans = useFeature("loans");
   const canInsurance = useFeature("insurance");
+  const canMaintenance = useFeature("maintenance");
 
   const [loans, setLoans] = useState<LoanItem[]>([]);
   const [policies, setPolicies] = useState<InsurancePolicyItem[]>([]);
+  const [services, setServices] = useState<ServiceDueItem[]>([]);
 
   useEffect(() => {
     if (!canLoans) {
@@ -69,11 +75,32 @@ export default function AttentionExtraCard() {
     };
   }, [canInsurance]);
 
-  if (loans.length === 0 && policies.length === 0) return null;
+  useEffect(() => {
+    if (!canMaintenance) {
+      setServices([]);
+      return;
+    }
+    let alive = true;
+    serviceRecordsAPI
+      .listDue()
+      .then((items) => alive && setServices(items))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [canMaintenance]);
 
-  // Overdue loans first, then upcoming renewals, capped for the home screen.
+  if (loans.length === 0 && policies.length === 0 && services.length === 0)
+    return null;
+
+  // Overdue loans first, then upcoming renewals, then services due — capped
+  // together for the home screen.
   const loanRows = loans.slice(0, VISIBLE_LIMIT);
   const policyRows = policies.slice(0, VISIBLE_LIMIT - loanRows.length);
+  const serviceRows = services.slice(
+    0,
+    VISIBLE_LIMIT - loanRows.length - policyRows.length
+  );
 
   return (
     <Section
@@ -146,6 +173,38 @@ export default function AttentionExtraCard() {
                 onClick={() => navigate("/insurance")}
               >
                 {t("attentionExtra.manage")}
+              </Button>
+            </li>
+          );
+        })}
+        {serviceRows.map((s) => {
+          const overdue = new Date(s.nextDueAt).getTime() < Date.now();
+          return (
+            <li
+              key={`service-${s.serviceId}`}
+              className="flex flex-wrap items-center gap-3 py-2"
+            >
+              <Badge tone={overdue ? "danger" : "warning"}>
+                <Wrench className="h-3 w-3" />
+                {t("attentionExtra.serviceDue")}
+              </Badge>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="truncate text-sm font-medium ui-title"
+                  title={s.article.articleNom}
+                >
+                  {s.article.articleNom}
+                </p>
+                <p className="truncate text-xs ui-text-muted">
+                  {t("service.nextDue")} {formatDate(s.nextDueAt)}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/articles/${s.articleId}`)}
+              >
+                {t("notifications.viewArticle")}
               </Button>
             </li>
           );

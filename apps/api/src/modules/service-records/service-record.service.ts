@@ -28,6 +28,40 @@ export const ServiceRecordService = {
     });
   },
 
+  // Services coming due (or overdue) across all the caller's articles. The
+  // append-only log means each article's *latest* entry defines its current
+  // schedule, so we take the most recent record per article and surface it
+  // only when that entry set a nextDueAt inside the window. A later service
+  // with no nextDueAt correctly clears an earlier one.
+  async listDue(ownerUserId: number, withinDays = 30) {
+    const records = await prisma.serviceRecord.findMany({
+      where: { ownerUserId },
+      orderBy: { performedAt: "desc" },
+      select: {
+        serviceId: true,
+        articleId: true,
+        nextDueAt: true,
+        article: { select: { articleId: true, articleNom: true } },
+      },
+    });
+    const threshold = Date.now() + withinDays * 86_400_000;
+    const latestByArticle = new Map<number, (typeof records)[number]>();
+    for (const r of records) {
+      if (!latestByArticle.has(r.articleId))
+        latestByArticle.set(r.articleId, r);
+    }
+    return [...latestByArticle.values()]
+      .filter(
+        (r) =>
+          r.nextDueAt !== null && new Date(r.nextDueAt).getTime() <= threshold
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.nextDueAt as Date).getTime() -
+          new Date(b.nextDueAt as Date).getTime()
+      );
+  },
+
   async create(ownerUserId: number, data: ServiceCreateInput) {
     const article = await assertArticleOwned(data.articleId, ownerUserId);
 

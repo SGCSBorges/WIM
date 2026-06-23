@@ -654,6 +654,15 @@ export interface ServiceRecordItem {
   createdAt: string;
 }
 
+/** A "service coming due" row from `/api/service-records/due` — the latest
+ *  service per article whose scheduled next-due falls within the window. */
+export interface ServiceDueItem {
+  serviceId: number;
+  articleId: number;
+  nextDueAt: string;
+  article: { articleId: number; articleNom: string };
+}
+
 /** A minimal article reference embedded in insurance payloads. */
 export interface InsuredArticleRef {
   articleId: number;

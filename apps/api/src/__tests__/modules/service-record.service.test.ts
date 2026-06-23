@@ -103,6 +103,60 @@ describe("ServiceRecordService.create", () => {
   });
 });
 
+describe("ServiceRecordService.listDue", () => {
+  const future = new Date(Date.now() + 5 * 86_400_000);
+  const past = new Date(Date.now() - 5 * 86_400_000);
+  const farFuture = new Date(Date.now() + 999 * 86_400_000);
+
+  it("keeps only the latest record per article and filters to the window", async () => {
+    // Records arrive newest-first (the service orders by performedAt desc).
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([
+      // Article 1: latest entry is due soon → included.
+      {
+        serviceId: 10,
+        articleId: 1,
+        nextDueAt: future,
+        article: { articleId: 1, articleNom: "Bike" },
+      },
+      // An older entry for article 1 is ignored (not the latest).
+      {
+        serviceId: 9,
+        articleId: 1,
+        nextDueAt: past,
+        article: { articleId: 1, articleNom: "Bike" },
+      },
+      // Article 2: latest entry has no next-due → excluded.
+      {
+        serviceId: 8,
+        articleId: 2,
+        nextDueAt: null,
+        article: { articleId: 2, articleNom: "Car" },
+      },
+      // Article 3: latest entry is overdue → included.
+      {
+        serviceId: 7,
+        articleId: 3,
+        nextDueAt: past,
+        article: { articleId: 3, articleNom: "Boiler" },
+      },
+      // Article 4: latest entry is beyond the window → excluded.
+      {
+        serviceId: 6,
+        articleId: 4,
+        nextDueAt: farFuture,
+        article: { articleId: 4, articleNom: "Roof" },
+      },
+    ]);
+
+    const due = await ServiceRecordService.listDue(7);
+    const ids = due.map((d) => d.serviceId);
+    expect(ids).toEqual([7, 10]); // overdue first (sorted by nextDueAt asc)
+    expect(mockPrisma.serviceRecord.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { ownerUserId: 7 } })
+    );
+  });
+});
+
 describe("ServiceRecordService.remove", () => {
   it("throws 404 when the record isn't found", async () => {
     mockPrisma.serviceRecord.findFirst.mockResolvedValue(null);

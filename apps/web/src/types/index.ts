@@ -31,6 +31,7 @@ export type {
   ValuedArticle,
   SavedView,
   ServiceRecordItem,
+  ServiceDueItem,
   ShareInviteItem,
   ShareItem,
   SharedArticleRow,

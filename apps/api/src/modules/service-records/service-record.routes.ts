@@ -20,6 +20,19 @@ const ListQuery = z.object({
   articleId: z.coerce.number().int().positive(),
 });
 
+// GET /api/service-records/due — services coming due (or overdue) across all
+// of the caller's articles. Registered before "/" stays unambiguous (distinct
+// literal path). Gated like the rest of the maintenance feature.
+router.get(
+  "/due",
+  authGuard,
+  requireFeature("maintenance"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const items = await ServiceRecordService.listDue(req.user!.sub);
+    res.json({ items });
+  })
+);
+
 // GET /api/service-records?articleId=42
 router.get(
   "/",

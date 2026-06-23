@@ -39,6 +39,7 @@ import type {
   InsurancePolicyItem,
   LoanItem,
   ServiceRecordItem,
+  ServiceDueItem,
   PortfolioAnalytics,
   PublicItem,
   ClaimStatus,
@@ -2619,6 +2620,19 @@ export const serviceRecordsAPI = {
       throw new Error(
         await extractError(response, "Failed to delete service record")
       );
+  },
+
+  async listDue(): Promise<ServiceDueItem[]> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/service-records/due`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch due services")
+      );
+    const data = await response.json();
+    return data.items as ServiceDueItem[];
   },
 };
 

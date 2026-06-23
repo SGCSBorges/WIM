@@ -1640,6 +1640,18 @@ export function buildOpenApiDocument() {
           },
         },
       },
+      "/api/service-records/due": {
+        get: {
+          tags: ["maintenance"],
+          summary:
+            "Services coming due or overdue across all the caller's articles (gated: maintenance feature).",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "{ items: ServiceDueItem[] }" },
+            "403": { description: "Feature not available" },
+          },
+        },
+      },
       "/api/service-records/{id}": {
         parameters: [
           {
