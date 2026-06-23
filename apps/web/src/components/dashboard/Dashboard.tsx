@@ -41,6 +41,7 @@ import { ErrorBanner } from "../common/States";
 import { PageHeader, Stat, Section, type StatTone } from "../ui";
 import NeedsAttention from "./NeedsAttention";
 import BudgetCard from "./BudgetCard";
+import AttentionExtraCard from "./AttentionExtraCard";
 import type { DashboardStatistics } from "@wim/types";
 
 // Recharts reads colors as plain strings; CSS vars resolve per active theme.
@@ -310,6 +311,8 @@ const Dashboard: React.FC = () => {
       />
 
       <NeedsAttention />
+
+      <AttentionExtraCard />
 
       <BudgetCard />
 
