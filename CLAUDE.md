@@ -87,6 +87,12 @@ npm --workspace apps/web run build        # vite build (runs prebuild → sharp 
 npm --workspace apps/web run dev          # local dev server
 DATABASE_URL=... npm --workspace apps/api run promote:admin -- email@x   # promote
 
+# Demo data: 100 realistic users × 100 articles + every feature populated
+# (warranties/alerts/locations/tags/loans/insurance/maintenance/budgets/
+# public links/shares/threads/transfers). Deterministic per SEED; all users
+# share the password printed at the end. SEED_DEMO_RESET=true wipes first.
+DATABASE_URL=... SEED_DEMO_RESET=true npm --workspace apps/api run seed:demo
+
 # Tests beyond the default `npm test` (vitest unit suites):
 # API integration (real Postgres) — self-skips unless the URL is set:
 INTEGRATION_DATABASE_URL=postgresql://… npm --workspace apps/api run test:integration

@@ -23,6 +23,7 @@
     "lint": "eslint \"src/**/*.{js,ts}\"",
     "typecheck": "tsc --noEmit",
     "seed:dev": "ts-node src/scripts/generate-test-data.ts",
+    "seed:demo": "ts-node src/scripts/seed-demo.ts",
     "smoke:alerts": "ts-node src/scripts/smoke-alerts.ts",
     "prune:audit": "ts-node src/scripts/prune-audit-log.ts",
     "test": "vitest run",
