@@ -112,6 +112,9 @@ const ReportsView = React.lazy(
 const InsuranceView = React.lazy(
   () => import("./components/insurance/InsuranceView")
 );
+const PublicItemView = React.lazy(
+  () => import("./components/public/PublicItemView")
+);
 const AnalyticsView = React.lazy(
   () => import("./components/analytics/AnalyticsView")
 );
@@ -474,6 +477,16 @@ export default function App() {
     void refreshFeatures();
     navigate("/");
   };
+
+  // Public, unauthenticated item page (QR-label target). Rendered before the
+  // auth gate so it never waits on /auth/me and works for anyone with the link.
+  const publicMatch = location.pathname.match(/^\/i\/([a-f0-9]{64})$/);
+  if (publicMatch)
+    return (
+      <React.Suspense fallback={null}>
+        <PublicItemView token={publicMatch[1]} />
+      </React.Suspense>
+    );
 
   if (authStatus === "loading") {
     return (

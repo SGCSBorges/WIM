@@ -5,6 +5,15 @@ import userEvent from "@testing-library/user-event";
 vi.mock("../../services/api", () => ({
   statisticsAPI: {
     getDashboard: vi.fn(),
+    // BudgetCard fetches this on mount; resolve with "no budget set" so it
+    // self-hides and doesn't interfere with the dashboard assertions.
+    getBudget: vi.fn().mockResolvedValue({
+      currency: "USD",
+      monthlyBudget: null,
+      monthlySpend: 0,
+      annualBudget: null,
+      annualSpend: 0,
+    }),
   },
   profileAPI: {
     getMe: vi.fn().mockResolvedValue({

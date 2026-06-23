@@ -26,6 +26,7 @@ export type {
   Location,
   MonthlyBucket,
   PortfolioAnalytics,
+  PublicItem,
   SpendBucket,
   ValuedArticle,
   SavedView,

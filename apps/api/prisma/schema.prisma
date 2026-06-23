@@ -285,6 +285,11 @@ model Article {
   // to all POWER_USER accounts (read-only; owner-only edit/unshare).
   sharedWithPowerUsers Boolean @default(false)
 
+  // Opt-in public page token. Null = no public page. When set, anyone with the
+  // link can view a read-only, privacy-safe subset (name/brand/model/photo —
+  // never price or serial) at /i/<token>; powers the QR label.
+  publicToken String? @unique @db.VarChar(64)
+
   // Lifecycle state (ACTIVE by default). Organizational only — does not hide
   // the row from the live list; surfaced as a badge + an optional list filter.
   status ArticleStatus @default(ACTIVE)

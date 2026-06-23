@@ -54,6 +54,7 @@ import TransferDialog from "./TransferDialog";
 import LoanSection from "./LoanSection";
 import InsuranceSection from "./InsuranceSection";
 import MaintenanceSection from "./MaintenanceSection";
+import PublicLinkSection from "./PublicLinkSection";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { currentValue } from "../../utils/depreciation";
@@ -728,6 +729,9 @@ export default function ArticleDetail() {
 
       {/* Service / maintenance log */}
       <MaintenanceSection articleId={articleId} />
+
+      {/* Public link + QR label */}
+      <PublicLinkSection articleId={articleId} />
 
       {article.garantie && (
         <RenewWarrantyDialog

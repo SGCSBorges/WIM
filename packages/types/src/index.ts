@@ -627,6 +627,20 @@ export interface LoanItem {
   };
 }
 
+/** The privacy-safe public view of an article, served unauthenticated from
+ *  `GET /api/public/items/:token`. Deliberately omits price, serial, owner,
+ *  location, and any other sensitive field — only what's safe to show to
+ *  anyone who scans the QR label. */
+export interface PublicItem {
+  articleNom: string;
+  brand: string | null;
+  articleModele: string;
+  articleDescription: string | null;
+  productImageUrl: string | null;
+  category: ArticleCategory | null;
+  warrantyActive: boolean | null;
+}
+
 /** A service / maintenance log entry as returned by `/api/service-records`.
  *  Dates are ISO strings; `cost` is a Decimal string (or null). */
 export interface ServiceRecordItem {

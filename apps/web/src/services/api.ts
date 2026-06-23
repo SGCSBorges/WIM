@@ -40,6 +40,7 @@ import type {
   LoanItem,
   ServiceRecordItem,
   PortfolioAnalytics,
+  PublicItem,
   ClaimStatus,
   DateFormatPref,
   FetchedArticle,
@@ -486,6 +487,41 @@ export const articlesAPI = {
         await extractError(response, "Failed to fetch article shares")
       );
     return response.json();
+  },
+
+  async getPublicLink(articleId: number): Promise<{ token: string | null }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/public-link`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch public link")
+      );
+    return response.json();
+  },
+
+  async createPublicLink(articleId: number): Promise<{ token: string }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/public-link`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to create public link")
+      );
+    return response.json();
+  },
+
+  async deletePublicLink(articleId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${articleId}/public-link`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to disable public link")
+      );
   },
 
   async removeShare(articleId: number) {
@@ -1329,6 +1365,19 @@ export const statisticsAPI = {
     );
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to fetch budget"));
+    return response.json();
+  },
+};
+
+// Public, unauthenticated item lookup (QR-label target). No auth headers
+// needed — the token in the path is the credential.
+export const publicAPI = {
+  async getItem(token: string): Promise<PublicItem> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/public/items/${token}`
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Item not found"));
     return response.json();
   },
 };
