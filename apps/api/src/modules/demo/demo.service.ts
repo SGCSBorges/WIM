@@ -723,81 +723,80 @@ const ARTICLE_STATUSES: Prisma.ArticleCreateManyInput["status"][] = [
   "LOST",
 ];
 
-// Topical product-photo keywords per catalogue model (falls back to a
-// per-category keyword). Drives a believable `productImageUrl` on every
-// seeded article — loremflickr returns a real photo for the keyword, and the
-// `ArticleThumb` component falls back to a placeholder if a URL ever 404s.
-const IMG_KEYWORDS: Record<string, string> = {
-  MKGP3: "laptop",
-  A3102: "smartphone",
-  WH1000XM5: "headphones",
-  "SM-S928": "smartphone",
-  OLED55C3: "television",
-  "9315": "laptop",
-  R6M2: "camera",
-  "HEG-001": "game,console",
-  "QC-U": "headphones",
-  MUWC3: "tablet",
-  SMS6ZCI00E: "dishwasher",
-  SV22: "vacuum,cleaner",
-  RF28: "refrigerator",
-  HD9650: "kitchen,appliance",
-  KSM150: "kitchen,mixer",
-  ENV120: "coffee,machine",
-  WWG360: "washing,machine",
-  AER1B23: "office,chair",
-  "MALM-160": "bed,bedroom",
-  "AND-3S": "sofa,couch",
-  EA670: "armchair",
-  "OAK-6": "dining,table",
-  GSB18V55: "power,drill",
-  DCS570: "circular,saw",
-  XDT13: "power,tool",
-  K5: "pressure,washer",
-  TS55: "saw,tool",
-  MARLIN7: "mountain,bike",
-  VADO4: "bicycle",
-  PV150: "scooter",
-  CLINE6: "folding,bike",
-  "EXP-PK": "winter,jacket",
-  NANO: "jacket",
-  "1460": "boots",
-  "126610LN": "luxury,watch",
-  "310.30": "watch",
-  CBN2A1A: "wristwatch",
-  "TIF-DP": "necklace,jewelry",
-  BIKEPLUS: "exercise,bike",
-  FENIX7: "smartwatch",
-  RF97: "tennis,racket",
-  "MODEL-D": "rowing,machine",
-  "75192": "lego,toy",
-  "0113900": "electric,guitar",
-  MEIST149: "fountain,pen",
-  A1277: "power,bank",
-  "E-310": "bbq,grill",
-  ERA300: "speaker",
-};
-const CATEGORY_IMG: Record<string, string> = {
-  ELECTRONICS: "electronics",
-  APPLIANCE: "appliance",
-  FURNITURE: "furniture",
-  TOOL: "tool",
-  VEHICLE: "vehicle",
-  CLOTHING: "clothing",
-  JEWELRY: "jewelry",
-  SPORTS: "sport",
-  COLLECTIBLE: "collectible",
-  OTHER: "product",
+// Real product photos per catalogue model, served from Wikimedia Commons via
+// `Special:FilePath/<file>` — a stable redirect to the actual upload that also
+// honors `?width=`, so we get a sized thumbnail of the real item (a MacBook for
+// the MacBook, a Submariner for the Rolex). Commons files are CC-licensed and
+// hot-linkable. If a file is ever renamed/removed the URL 404s and the
+// `ArticleThumb` component falls back to its placeholder, so a stale entry
+// degrades gracefully rather than breaking the row.
+const PRODUCT_IMAGE_FILE: Record<string, string> = {
+  // Electronics
+  MKGP3: "MacBook_Pro_14-inch.jpg",
+  A3102: "IPhone_15_Pro.jpg",
+  WH1000XM5: "Sony_WH-1000XM5.jpg",
+  "SM-S928": "Samsung_Galaxy_S24_Ultra.jpg",
+  OLED55C3: "LG_OLED_TV.jpg",
+  "9315": "Dell_XPS_13.jpg",
+  R6M2: "Canon_EOS_R6.jpg",
+  "HEG-001": "Nintendo-Switch-Console-Docked-wJoyConRedBlue.jpg",
+  "QC-U": "Bose_QuietComfort_35_II.jpg",
+  MUWC3: "IPad_Air.jpg",
+  // Appliances
+  SMS6ZCI00E: "Dishwasher.jpg",
+  SV22: "Dyson_DC07.jpg",
+  RF28: "Refrigerator.jpg",
+  HD9650: "Air_fryer.jpg",
+  KSM150: "KitchenAid_Mixer.jpg",
+  ENV120: "Nespresso_machine.jpg",
+  WWG360: "Washing_machine.jpg",
+  // Furniture
+  AER1B23: "Aeron_chair.jpg",
+  "MALM-160": "Bed.jpg",
+  "AND-3S": "Couch.jpg",
+  EA670: "Eames_lounge_chair.jpg",
+  "OAK-6": "Dining_table.jpg",
+  // Tools
+  GSB18V55: "Cordless_drill.jpg",
+  DCS570: "Circular_saw.jpg",
+  XDT13: "Impact_driver.jpg",
+  K5: "Pressure_washer.jpg",
+  TS55: "Plunge_saw.jpg",
+  // Vehicles
+  MARLIN7: "Mountain_bike.jpg",
+  VADO4: "Electric_bicycle.jpg",
+  PV150: "Vespa_Primavera.jpg",
+  CLINE6: "Brompton_bicycle.jpg",
+  // Clothing
+  "EXP-PK": "Parka.jpg",
+  NANO: "Jacket.jpg",
+  "1460": "Dr._Martens_boots.jpg",
+  // Jewelry / watches
+  "126610LN": "Rolex_Submariner.jpg",
+  "310.30": "Omega_Speedmaster.jpg",
+  CBN2A1A: "TAG_Heuer_Carrera.jpg",
+  "TIF-DP": "Pendant.jpg",
+  // Sports
+  BIKEPLUS: "Peloton_bike.jpg",
+  FENIX7: "Garmin_Fenix.jpg",
+  RF97: "Tennis_racket.jpg",
+  "MODEL-D": "Concept2_indoor_rower.jpg",
+  // Collectibles
+  "75192": "Lego_Millennium_Falcon.jpg",
+  "0113900": "Fender_Stratocaster.jpg",
+  MEIST149: "Fountain_pen.jpg",
+  // Other
+  A1277: "Power_bank.jpg",
+  "E-310": "Barbecue_grill.jpg",
+  ERA300: "Smart_speaker.jpg",
 };
 
-function imageUrl(item: CatalogItem): string {
-  const kw =
-    IMG_KEYWORDS[item.model] ??
-    CATEGORY_IMG[item.category ?? "OTHER"] ??
-    "product";
-  // `lock` pins a specific image so the same row always shows the same photo;
-  // a random lock per article gives variety across the inventory.
-  return `https://loremflickr.com/400/300/${kw}?lock=${randInt(1, 99999)}`;
+function imageUrl(item: CatalogItem): string | null {
+  const file = PRODUCT_IMAGE_FILE[item.model];
+  if (!file) return null;
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(
+    file
+  )}?width=400`;
 }
 
 function serialFor(brand: string): string {
