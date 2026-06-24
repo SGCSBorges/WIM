@@ -21,7 +21,10 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 
 export const DEMO_PASSWORD = "Demo1234!";
-export const DEMO_ADMIN_EMAIL = "admin@demo.wim.app";
+// Demo accounts live on a dedicated domain so a re-seed can identify and
+// replace ONLY the demo data, never touching real user accounts.
+export const DEMO_EMAIL_DOMAIN = "demo.wim.app";
+export const DEMO_ADMIN_EMAIL = `admin@${DEMO_EMAIL_DOMAIN}`;
 
 export interface SeedDemoOptions {
   users?: number; // default 100
@@ -180,15 +183,6 @@ const LAST_NAMES = [
   "Russo",
   "Laurent",
   "Weber",
-];
-const EMAIL_DOMAINS = [
-  "gmail.com",
-  "outlook.com",
-  "proton.me",
-  "yahoo.com",
-  "icloud.com",
-  "hey.com",
-  "fastmail.com",
 ];
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF"];
 const THEMES = [null, "light", "dark", "ocean", "cyber", "sunset"];
@@ -832,9 +826,9 @@ function buildEmails(count: number, used: Set<string>) {
     const first = pick(FIRST_NAMES);
     const last = pick(LAST_NAMES);
     const base = `${first}.${last}`.toLowerCase();
-    let email = `${base}@${pick(EMAIL_DOMAINS)}`;
+    let email = `${base}@${DEMO_EMAIL_DOMAIN}`;
     let n = 1;
-    while (used.has(email)) email = `${base}${n++}@${pick(EMAIL_DOMAINS)}`;
+    while (used.has(email)) email = `${base}${n++}@${DEMO_EMAIL_DOMAIN}`;
     used.add(email);
     out.push({ first, last, email });
   }
@@ -853,6 +847,18 @@ async function reserveUserIdMargin(prisma: PrismaClient, margin: number) {
      )`,
     margin
   );
+}
+
+// Delete every demo account (and — via cascade — all its articles, warranties,
+// alerts, loans, insurance, services, shares, threads, etc.). Real users are
+// left untouched because demo accounts are the only ones on DEMO_EMAIL_DOMAIN.
+// Lets the login-screen button reload fresh, up-to-date demo data on a repeat
+// click without wiping the whole database.
+export async function resetDemoData(prisma: PrismaClient): Promise<number> {
+  const { count } = await prisma.user.deleteMany({
+    where: { email: { endsWith: `@${DEMO_EMAIL_DOMAIN}` } },
+  });
+  return count;
 }
 
 // ---------------------------------------------------------------------------
@@ -893,7 +899,8 @@ export async function seedDemoData(
   if (makeAdmin) {
     adminEmail = DEMO_ADMIN_EMAIL;
     let n = 1;
-    while (used.has(adminEmail)) adminEmail = `admin${n++}@demo.wim.app`;
+    while (used.has(adminEmail))
+      adminEmail = `admin${n++}@${DEMO_EMAIL_DOMAIN}`;
     used.add(adminEmail);
     people[0].email = adminEmail;
   }

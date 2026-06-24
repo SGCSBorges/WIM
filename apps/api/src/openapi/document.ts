@@ -118,14 +118,11 @@ export function buildOpenApiDocument() {
         post: {
           tags: ["auth"],
           summary:
-            "Temporary demo-data loader (login-screen button). Appends 100 users × 100 articles + the full feature set in the background and returns 202 immediately. Append-only; demo accounts start after a reserved id margin. Idempotent: refused once the user count passes DEMO_SEED_MAX_EXISTING_USERS. Disable with DEMO_SEED_ENABLED=false.",
+            "Temporary demo-data loader (login-screen button). REFRESHES the demo dataset: deletes prior demo accounts (any @demo.wim.app user, cascading their data) then reseeds 100 users × 100 articles + the full feature set in the background and returns 202 immediately. Real (non-demo) accounts are untouched, so it's safe to re-run and a second click picks up new fields. Demo accounts start after a reserved id margin. Disable with DEMO_SEED_ENABLED=false.",
           responses: {
             "202": { description: "Seeding started (returns shared password)" },
             "403": { description: "Demo seeding disabled" },
-            "409": {
-              description:
-                "A seed is already running, or demo data is already loaded",
-            },
+            "409": { description: "A seed is already running" },
           },
         },
       },

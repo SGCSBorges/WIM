@@ -28,8 +28,10 @@ import { security } from "../../config/security";
 import { logger } from "../../config/logger";
 import {
   seedDemoData,
+  resetDemoData,
   DEMO_PASSWORD,
   DEMO_ADMIN_EMAIL,
+  DEMO_EMAIL_DOMAIN,
 } from "../demo/demo.service";
 
 const router = Router();
@@ -240,18 +242,20 @@ router.post(
   })
 );
 
-// Temporary demo-data loader (login-screen "Load demo data" button). Appends
-// 100 users × 100 articles + the full feature set to the database; it never
-// wipes, dedupes emails against existing rows, and starts demo accounts after a
-// reserved id margin so they don't collide with the handful of real users.
+// Temporary demo-data loader (login-screen "Load demo data" button). Each click
+// REFRESHES the demo dataset: it first deletes every prior demo account (any
+// `@demo.wim.app` user — which cascades their articles/warranties/etc.) and then
+// reseeds 100 users × 100 articles + the full feature set with the latest
+// generator. Real accounts (any other email domain) are never touched, so this
+// is safe to re-run on a live DB and a second click picks up new fields/code
+// (e.g. product image URLs) instead of being refused. Demo accounts still start
+// after a reserved id margin so they don't collide with the handful of real
+// users.
 //
 // The job inserts thousands of rows (~1–2 min), so it runs in the BACKGROUND
 // and the request returns 202 immediately — the client can't sit on a long
-// request. A single run at a time (demoSeeding guard). It's idempotent in
-// practice: once the user count is past DEMO_SEED_MAX_EXISTING_USERS (default
-// 50 — well above the handful of real accounts, below one demo batch) a repeat
-// click is refused, so an accidental double-tap can't balloon the DB. Disable
-// entirely with DEMO_SEED_ENABLED=false.
+// request. A single run at a time (demoSeeding guard). Disable entirely with
+// DEMO_SEED_ENABLED=false.
 router.post(
   "/seed-demo",
   asyncHandler(async (_req: Request, res: Response) => {
@@ -264,28 +268,30 @@ router.post(
       return;
     }
 
-    const userCount = await prisma.user.count();
-    const maxExisting = Number(process.env.DEMO_SEED_MAX_EXISTING_USERS ?? 50);
-    if (userCount >= maxExisting) {
-      res.status(409).json({
-        error: `Demo data already loaded (${userCount} users). Reset the database (or run the seed:demo CLI) to reseed.`,
-      });
-      return;
-    }
-
-    // Mint a fresh demo admin only when no admin exists yet, so we never add
-    // surprise admins to a database that already has a real operator.
-    const existingAdmin = await prisma.user.findFirst({
-      where: { role: "ADMIN" },
+    // Mint a demo admin only when no REAL (non-demo) admin exists, so we never
+    // add a surprise admin to a database that already has a real operator. The
+    // demo admin from a prior run is about to be deleted by resetDemoData, so
+    // exclude `@demo.wim.app` admins from this check.
+    const realAdmin = await prisma.user.findFirst({
+      where: {
+        role: "ADMIN",
+        NOT: { email: { endsWith: `@${DEMO_EMAIL_DOMAIN}` } },
+      },
       select: { userId: true },
     });
+    const makeAdmin = !realAdmin;
 
     demoSeeding = true;
-    void seedDemoData(prisma, {
-      reservedUserIdMargin: 1000,
-      makeAdmin: !existingAdmin,
-      onProgress: (m) => logger.info(`[demo-seed] ${m}`),
-    })
+    void (async () => {
+      const removed = await resetDemoData(prisma);
+      if (removed > 0)
+        logger.info(`[demo-seed] cleared ${removed} prior demo account(s)`);
+      return seedDemoData(prisma, {
+        reservedUserIdMargin: 1000,
+        makeAdmin,
+        onProgress: (m) => logger.info(`[demo-seed] ${m}`),
+      });
+    })()
       .then((s) =>
         logger.info(
           { users: s.users, articles: s.articles, warranties: s.warranties },
@@ -299,10 +305,11 @@ router.post(
 
     res.status(202).json({
       started: true,
+      refreshed: true,
       users: 100,
       articlesPerUser: 100,
       password: DEMO_PASSWORD,
-      adminEmail: existingAdmin ? null : DEMO_ADMIN_EMAIL,
+      adminEmail: makeAdmin ? DEMO_ADMIN_EMAIL : null,
     });
   })
 );

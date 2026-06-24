@@ -965,13 +965,17 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   screen are temporary too. The button POSTs to the endpoint, which runs the
   shared generator (`modules/demo/demo.service.ts` — the same one behind the
   `seed:demo` CLI) in the **background** and returns 202 immediately (the job
-  inserts ~10k+ rows over 1–2 min). It's **append-only** (dedupes emails
-  against existing rows, never wipes), starts demo accounts after a reserved
-  user-id margin (1000) so they don't collide with real users, and only mints
-  a demo admin (`admin@demo.wim.app`) when no admin exists. A `demoSeeding`
-  guard prevents overlapping runs, and it's idempotent in practice: once the
-  user count passes `DEMO_SEED_MAX_EXISTING_USERS` (default 50) a repeat click
-  is refused, so an accidental double-tap can't balloon the DB. Set
+  inserts ~10k+ rows over 1–2 min). Each click **refreshes** the demo dataset:
+  `resetDemoData` first deletes every prior demo account — any `@demo.wim.app`
+  user (`DEMO_EMAIL_DOMAIN`), which cascades their articles/warranties/etc. —
+  then `seedDemoData` reseeds from scratch. **Real (non-demo) accounts are
+  never touched** (matched purely by email domain), so it's safe on a live DB
+  and a second click picks up new fields/code (e.g. the product image URLs)
+  instead of being refused — and re-running can't balloon the DB because the
+  prior demo batch is removed first. Demo accounts still start after a reserved
+  user-id margin (1000) so they don't collide with real users, and a demo admin
+  (`admin@demo.wim.app`) is minted only when no **real** (non-demo) admin
+  exists. A `demoSeeding` guard prevents overlapping runs. Set
   `DEMO_SEED_ENABLED=false` to disable. All demo accounts share the password
   `Demo1234!`. The demo module is excluded from coverage in `vitest.config.ts`.
 - **Two sharing models** (public flag vs InventoryShare) still both
