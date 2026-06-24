@@ -247,8 +247,11 @@ router.post(
 //
 // The job inserts thousands of rows (~1–2 min), so it runs in the BACKGROUND
 // and the request returns 202 immediately — the client can't sit on a long
-// request. A single run at a time (demoSeeding guard). Disable in an
-// environment by setting DEMO_SEED_ENABLED=false.
+// request. A single run at a time (demoSeeding guard). It's idempotent in
+// practice: once the user count is past DEMO_SEED_MAX_EXISTING_USERS (default
+// 50 — well above the handful of real accounts, below one demo batch) a repeat
+// click is refused, so an accidental double-tap can't balloon the DB. Disable
+// entirely with DEMO_SEED_ENABLED=false.
 router.post(
   "/seed-demo",
   asyncHandler(async (_req: Request, res: Response) => {
@@ -260,7 +263,15 @@ router.post(
       res.status(409).json({ error: "A demo seed is already running." });
       return;
     }
-    demoSeeding = true;
+
+    const userCount = await prisma.user.count();
+    const maxExisting = Number(process.env.DEMO_SEED_MAX_EXISTING_USERS ?? 50);
+    if (userCount >= maxExisting) {
+      res.status(409).json({
+        error: `Demo data already loaded (${userCount} users). Reset the database (or run the seed:demo CLI) to reseed.`,
+      });
+      return;
+    }
 
     // Mint a fresh demo admin only when no admin exists yet, so we never add
     // surprise admins to a database that already has a real operator.
@@ -269,6 +280,7 @@ router.post(
       select: { userId: true },
     });
 
+    demoSeeding = true;
     void seedDemoData(prisma, {
       reservedUserIdMargin: 1000,
       makeAdmin: !existingAdmin,

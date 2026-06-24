@@ -969,9 +969,11 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   against existing rows, never wipes), starts demo accounts after a reserved
   user-id margin (1000) so they don't collide with real users, and only mints
   a demo admin (`admin@demo.wim.app`) when no admin exists. A `demoSeeding`
-  guard prevents overlapping runs; set `DEMO_SEED_ENABLED=false` to disable.
-  All demo accounts share the password `Demo1234!`. The demo module is
-  excluded from coverage in `vitest.config.ts`.
+  guard prevents overlapping runs, and it's idempotent in practice: once the
+  user count passes `DEMO_SEED_MAX_EXISTING_USERS` (default 50) a repeat click
+  is refused, so an accidental double-tap can't balloon the DB. Set
+  `DEMO_SEED_ENABLED=false` to disable. All demo accounts share the password
+  `Demo1234!`. The demo module is excluded from coverage in `vitest.config.ts`.
 - **Two sharing models** (public flag vs InventoryShare) still both
   exist intentionally. The owner-side UX has separate flows for each;
   consolidating into a single "Share article…" dialog with options
