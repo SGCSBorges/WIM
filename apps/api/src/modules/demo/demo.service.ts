@@ -306,6 +306,27 @@ const NOTE_TEXTS = [
   "Runs hot under load; monitor over summer.",
 ];
 
+// Device + network strings for seeded sign-in sessions and audit rows, so the
+// Security page (active sessions) and the login-history / admin audit-log
+// surfaces have believable content instead of rendering empty.
+const DEVICE_LABELS = [
+  "Chrome on macOS",
+  "Safari on iPhone",
+  "Firefox on Windows",
+  "Edge on Windows",
+  "Chrome on Android",
+  "Safari on iPad",
+  "Chrome on Linux",
+];
+const USER_AGENTS = [
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0",
+  "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36",
+];
+const randIp = () =>
+  `${randInt(2, 223)}.${randInt(0, 255)}.${randInt(0, 255)}.${randInt(1, 254)}`;
+
 type CatalogItem = {
   category: Prisma.ArticleCreateManyInput["category"];
   brand: string;
@@ -849,13 +870,25 @@ async function reserveUserIdMargin(prisma: PrismaClient, margin: number) {
 }
 
 // Delete every demo account (and — via cascade — all its articles, warranties,
-// alerts, loans, insurance, services, shares, threads, etc.). Real users are
-// left untouched because demo accounts are the only ones on DEMO_EMAIL_DOMAIN.
-// Lets the login-screen button reload fresh, up-to-date demo data on a repeat
-// click without wiping the whole database.
+// warranty history, alerts, sessions, loans, insurance, services, shares,
+// threads, etc.). Real users are left untouched because demo accounts are the
+// only ones on DEMO_EMAIL_DOMAIN. Lets the login-screen button reload fresh,
+// up-to-date demo data on a repeat click without wiping the whole database.
 export async function resetDemoData(prisma: PrismaClient): Promise<number> {
-  const { count } = await prisma.user.deleteMany({
+  const demoUsers = await prisma.user.findMany({
     where: { email: { endsWith: `@${DEMO_EMAIL_DOMAIN}` } },
+    select: { userId: true },
+  });
+  if (demoUsers.length === 0) return 0;
+  const ids = demoUsers.map((u) => u.userId);
+
+  // AuditLog.userId is onDelete: SetNull, so the rows survive a user delete
+  // (orphaned, userId=null) and would pile up across reseeds. Delete them while
+  // the link still exists, before the cascade fires.
+  await prisma.auditLog.deleteMany({ where: { userId: { in: ids } } });
+
+  const { count } = await prisma.user.deleteMany({
+    where: { userId: { in: ids } },
   });
   return count;
 }
@@ -919,6 +952,7 @@ export async function seedDemoData(
           : "USER";
     const paid = role !== "USER";
 
+    const accountCreatedAt = daysAgo(randInt(30, 1400));
     const user = await prisma.user.create({
       data: {
         email: people[i].email,
@@ -933,7 +967,7 @@ export async function seedDemoData(
         calendarToken: paid && chance(0.5) ? token() : null,
         monthlyBudget: paid && chance(0.6) ? jitter(800, 0.4) : null,
         annualBudget: paid && chance(0.6) ? jitter(9000, 0.4) : null,
-        createdAt: daysAgo(randInt(30, 1400)),
+        createdAt: accountCreatedAt,
       },
       select: { userId: true },
     });
@@ -1029,11 +1063,40 @@ export async function seedDemoData(
     const locJoin: Prisma.ArticleLocationCreateManyInput[] = [];
     const tagJoin: Prisma.ArticleTagCreateManyInput[] = [];
     const noteRows: Prisma.ArticleNoteCreateManyInput[] = [];
+    // Captures the pre-renewal contract for warranties that were renewed, so we
+    // can write the matching append-only WarrantyHistory chain once the
+    // garanties have ids (keyed by article — the warranty is 1:1 with one).
+    const renewalByArticle = new Map<
+      number,
+      {
+        event: Prisma.WarrantyHistoryCreateManyInput["event"];
+        priorDateAchat: Date;
+        priorDuration: number;
+        priorFin: Date;
+        renewedAt: Date;
+      }
+    >();
 
     articles.forEach((a, idx) => {
       const s = specs[idx];
       if (s.warranty) {
         const claimRoll = rand();
+        const renewedAt = chance(0.1) ? daysAgo(randInt(10, 300)) : null;
+        if (renewedAt) {
+          // The live row was rolled forward from an older, shorter contract.
+          const priorDuration = pick([12, 24, 36]);
+          const priorDateAchat = addMonths(
+            s.warranty.dateAchat,
+            -priorDuration
+          );
+          renewalByArticle.set(a.articleId, {
+            event: chance(0.5) ? "RENEWED" : "EXTENDED",
+            priorDateAchat,
+            priorDuration,
+            priorFin: s.warranty.dateAchat,
+            renewedAt,
+          });
+        }
         warrantyRows.push({
           ownerUserId: user.userId,
           garantieArticleId: a.articleId,
@@ -1043,7 +1106,7 @@ export async function seedDemoData(
           garantieFin: s.warranty.fin,
           garantieIsValide: s.warranty.fin.getTime() > nowMs,
           ...providerFields(),
-          renewedAt: chance(0.1) ? daysAgo(randInt(10, 300)) : null,
+          renewedAt,
           claimStatus:
             claimRoll < 0.04 ? "OPEN" : claimRoll < 0.08 ? "RESOLVED" : "NONE",
           claimNote:
@@ -1092,6 +1155,29 @@ export async function seedDemoData(
       where: { ownerUserId: user.userId },
       select: { garantieId: true, garantieArticleId: true, garantieFin: true },
     });
+
+    const historyRows: Prisma.WarrantyHistoryCreateManyInput[] = [];
+    for (const g of garanties) {
+      if (g.garantieArticleId == null) continue;
+      const r = renewalByArticle.get(g.garantieArticleId);
+      if (!r) continue;
+      historyRows.push({
+        garantieId: g.garantieId,
+        ownerUserId: user.userId,
+        event: r.event,
+        priorDateAchat: r.priorDateAchat,
+        priorDuration: r.priorDuration,
+        priorFin: r.priorFin,
+        note:
+          r.event === "EXTENDED"
+            ? "Extended cover before expiry."
+            : "Renewed with a fresh contract.",
+        createdAt: r.renewedAt,
+      });
+    }
+    if (historyRows.length)
+      await prisma.warrantyHistory.createMany({ data: historyRows });
+
     const alertRows: Prisma.AlerteCreateManyInput[] = [];
     for (const g of garanties) {
       const finMs = g.garantieFin.getTime();
@@ -1164,6 +1250,13 @@ export async function seedDemoData(
       });
     }
 
+    await seedAccountActivity(
+      prisma,
+      user.userId,
+      accountCreatedAt,
+      articles.map((a) => a.articleId)
+    );
+
     if (paid) {
       await seedPaidAddOns(prisma, user.userId, articles);
     }
@@ -1185,6 +1278,110 @@ export async function seedDemoData(
     samplePowerEmail: people[Math.min(1, users - 1)]?.email ?? null,
     sampleUserEmail: people[powerUserCount + 1]?.email ?? null,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Per-account activity: sign-in sessions + an audit trail. Populates the
+// Security page (active sessions), the login-history list, and the admin audit
+// log — all of which read these tables and would otherwise be empty in a demo.
+// ---------------------------------------------------------------------------
+async function seedAccountActivity(
+  prisma: PrismaClient,
+  userId: number,
+  createdAt: Date,
+  articleIds: number[]
+) {
+  // 1–3 devices; the most recent is "active", older ones may be revoked.
+  const sessionRows: Prisma.UserSessionCreateManyInput[] = [];
+  const sessionCount = randInt(1, 3);
+  for (let k = 0; k < sessionCount; k++) {
+    const lastActive = daysAgo(randInt(0, 40));
+    sessionRows.push({
+      userId,
+      jti: token(),
+      deviceLabel: pick(DEVICE_LABELS),
+      ip: randIp(),
+      userAgent: pick(USER_AGENTS),
+      lastActiveAt: lastActive,
+      createdAt: new Date(lastActive.getTime() - randInt(0, 20) * DAY),
+      revokedAt: chance(0.2) ? daysAgo(randInt(1, 10)) : null,
+    });
+  }
+  await prisma.userSession.createMany({ data: sessionRows });
+
+  // A believable audit trail: several recent logins (also drives the
+  // login-history view), the registration, and a handful of CRUD/export rows.
+  const auditRows: Prisma.AuditLogCreateManyInput[] = [];
+  const ua = pick(USER_AGENTS);
+  const ip = randIp();
+  auditRows.push({
+    userId,
+    action: "CREATE",
+    entity: "User",
+    entityId: userId,
+    ip,
+    userAgent: ua,
+    method: "POST",
+    path: "/api/auth/register",
+    status: 201,
+    createdAt,
+  });
+  for (let k = 0; k < randInt(3, 9); k++) {
+    const at = daysAgo(randInt(0, 60));
+    const loggedOut = chance(0.5);
+    auditRows.push({
+      userId,
+      action: "LOGIN",
+      entity: "User",
+      entityId: userId,
+      ip: randIp(),
+      userAgent: pick(USER_AGENTS),
+      method: "POST",
+      path: "/api/auth/login",
+      status: 200,
+      createdAt: at,
+    });
+    if (loggedOut) {
+      auditRows.push({
+        userId,
+        action: "LOGOUT",
+        entity: "User",
+        entityId: userId,
+        method: "POST",
+        path: "/api/auth/logout",
+        status: 204,
+        createdAt: new Date(at.getTime() + randInt(5, 600) * 60_000),
+      });
+    }
+  }
+  const crudActions = [
+    { action: "CREATE", method: "POST", status: 201, path: "/api/articles" },
+    { action: "UPDATE", method: "PUT", status: 200, path: "/api/articles" },
+    { action: "DELETE", method: "DELETE", status: 204, path: "/api/articles" },
+    {
+      action: "DB_EXPORT",
+      method: "GET",
+      status: 200,
+      path: "/api/articles/export/inventory.csv",
+    },
+  ] as const;
+  for (let k = 0; k < randInt(2, 6); k++) {
+    const c = pick(crudActions);
+    const targetsRow = c.action !== "DB_EXPORT" && articleIds.length > 0;
+    auditRows.push({
+      userId,
+      action: c.action,
+      entity: "Article",
+      entityId: targetsRow ? pick(articleIds) : null,
+      ip: randIp(),
+      userAgent: pick(USER_AGENTS),
+      method: c.method,
+      path: c.path,
+      status: c.status,
+      createdAt: daysAgo(randInt(0, 120)),
+    });
+  }
+  await prisma.auditLog.createMany({ data: auditRows });
 }
 
 // ---------------------------------------------------------------------------

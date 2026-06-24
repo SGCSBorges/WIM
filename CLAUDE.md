@@ -88,8 +88,9 @@ npm --workspace apps/web run dev          # local dev server
 DATABASE_URL=... npm --workspace apps/api run promote:admin -- email@x   # promote
 
 # Demo data: 100 realistic users × 100 articles + every feature populated
-# (warranties/alerts/locations/tags/loans/insurance/maintenance/budgets/
-# public links/shares/threads/transfers). Deterministic per SEED; all users
+# (warranties/warranty-history/alerts/locations/tags/loans/insurance/
+# maintenance/budgets/public links/shares/threads/transfers/sessions/audit
+# log). Deterministic per SEED; all users
 # share the password printed at the end. SEED_DEMO_RESET=true wipes first.
 DATABASE_URL=... SEED_DEMO_RESET=true npm --workspace apps/api run seed:demo
 
