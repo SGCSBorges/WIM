@@ -327,6 +327,18 @@ const USER_AGENTS = [
 const randIp = () =>
   `${randInt(2, 223)}.${randInt(0, 255)}.${randInt(0, 255)}.${randInt(1, 254)}`;
 
+// Attachment flavours for seeded article documents. `type` matches the
+// AttachmentType enum; all use the article's real product photo as the file.
+const ATTACHMENT_SPECS: {
+  type: Prisma.AttachmentCreateManyInput["type"];
+  fileName: string;
+}[] = [
+  { type: "INVOICE", fileName: "purchase-receipt.jpg" },
+  { type: "WARRANTY", fileName: "warranty-card.jpg" },
+  { type: "OTHER", fileName: "product-photo.jpg" },
+  { type: "OTHER", fileName: "serial-label.jpg" },
+];
+
 type CatalogItem = {
   category: Prisma.ArticleCreateManyInput["category"];
   brand: string;
@@ -1063,6 +1075,7 @@ export async function seedDemoData(
     const locJoin: Prisma.ArticleLocationCreateManyInput[] = [];
     const tagJoin: Prisma.ArticleTagCreateManyInput[] = [];
     const noteRows: Prisma.ArticleNoteCreateManyInput[] = [];
+    const attachmentRows: Prisma.AttachmentCreateManyInput[] = [];
     // Captures the pre-renewal contract for warranties that were renewed, so we
     // can write the matching append-only WarrantyHistory chain once the
     // garanties have ids (keyed by article — the warranty is 1:1 with one).
@@ -1139,6 +1152,26 @@ export async function seedDemoData(
           createdAt: daysAgo(randInt(1, 600)),
         });
       }
+      // Documents/photos: most items carry a proof-of-purchase / product photo.
+      // Image attachments point at the catalogue's real Commons photo, so the
+      // article-detail attachments panel renders actual thumbnails (and the
+      // download opens the live image) instead of sitting empty.
+      const photo = imageUrl(s.item);
+      if (photo && chance(0.55)) {
+        for (const spec of pickN(ATTACHMENT_SPECS, randInt(1, 2))) {
+          attachmentRows.push({
+            ownerUserId: user.userId,
+            articleId: a.articleId,
+            type: spec.type,
+            fileName: spec.fileName,
+            mimeType: "image/jpeg",
+            fileSize: randInt(120_000, 4_500_000),
+            fileUrl: photo,
+            thumbUrl: photo,
+            createdAt: daysAgo(randInt(1, 800)),
+          });
+        }
+      }
     });
 
     await prisma.garantie.createMany({ data: warrantyRows });
@@ -1149,6 +1182,8 @@ export async function seedDemoData(
     await prisma.articleTag.createMany({ data: tagJoin, skipDuplicates: true });
     if (noteRows.length)
       await prisma.articleNote.createMany({ data: noteRows });
+    if (attachmentRows.length)
+      await prisma.attachment.createMany({ data: attachmentRows });
     totalWarranties += warrantyRows.length;
 
     const garanties = await prisma.garantie.findMany({
