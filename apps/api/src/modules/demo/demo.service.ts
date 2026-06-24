@@ -729,6 +729,83 @@ const ARTICLE_STATUSES: Prisma.ArticleCreateManyInput["status"][] = [
   "LOST",
 ];
 
+// Topical product-photo keywords per catalogue model (falls back to a
+// per-category keyword). Drives a believable `productImageUrl` on every
+// seeded article — loremflickr returns a real photo for the keyword, and the
+// `ArticleThumb` component falls back to a placeholder if a URL ever 404s.
+const IMG_KEYWORDS: Record<string, string> = {
+  MKGP3: "laptop",
+  A3102: "smartphone",
+  WH1000XM5: "headphones",
+  "SM-S928": "smartphone",
+  OLED55C3: "television",
+  "9315": "laptop",
+  R6M2: "camera",
+  "HEG-001": "game,console",
+  "QC-U": "headphones",
+  MUWC3: "tablet",
+  SMS6ZCI00E: "dishwasher",
+  SV22: "vacuum,cleaner",
+  RF28: "refrigerator",
+  HD9650: "kitchen,appliance",
+  KSM150: "kitchen,mixer",
+  ENV120: "coffee,machine",
+  WWG360: "washing,machine",
+  AER1B23: "office,chair",
+  "MALM-160": "bed,bedroom",
+  "AND-3S": "sofa,couch",
+  EA670: "armchair",
+  "OAK-6": "dining,table",
+  GSB18V55: "power,drill",
+  DCS570: "circular,saw",
+  XDT13: "power,tool",
+  K5: "pressure,washer",
+  TS55: "saw,tool",
+  MARLIN7: "mountain,bike",
+  VADO4: "bicycle",
+  PV150: "scooter",
+  CLINE6: "folding,bike",
+  "EXP-PK": "winter,jacket",
+  NANO: "jacket",
+  "1460": "boots",
+  "126610LN": "luxury,watch",
+  "310.30": "watch",
+  CBN2A1A: "wristwatch",
+  "TIF-DP": "necklace,jewelry",
+  BIKEPLUS: "exercise,bike",
+  FENIX7: "smartwatch",
+  RF97: "tennis,racket",
+  "MODEL-D": "rowing,machine",
+  "75192": "lego,toy",
+  "0113900": "electric,guitar",
+  MEIST149: "fountain,pen",
+  A1277: "power,bank",
+  "E-310": "bbq,grill",
+  ERA300: "speaker",
+};
+const CATEGORY_IMG: Record<string, string> = {
+  ELECTRONICS: "electronics",
+  APPLIANCE: "appliance",
+  FURNITURE: "furniture",
+  TOOL: "tool",
+  VEHICLE: "vehicle",
+  CLOTHING: "clothing",
+  JEWELRY: "jewelry",
+  SPORTS: "sport",
+  COLLECTIBLE: "collectible",
+  OTHER: "product",
+};
+
+function imageUrl(item: CatalogItem): string {
+  const kw =
+    IMG_KEYWORDS[item.model] ??
+    CATEGORY_IMG[item.category ?? "OTHER"] ??
+    "product";
+  // `lock` pins a specific image so the same row always shows the same photo;
+  // a random lock per article gives variety across the inventory.
+  return `https://loremflickr.com/400/300/${kw}?lock=${randInt(1, 99999)}`;
+}
+
 function serialFor(brand: string): string {
   const prefix =
     brand
@@ -923,6 +1000,7 @@ export async function seedDemoData(
         articleNom: s.item.name.slice(0, 100),
         articleModele: s.item.model.slice(0, 100),
         articleDescription: pick(NOTE_TEXTS).slice(0, 255),
+        productImageUrl: chance(0.9) ? imageUrl(s.item) : null,
         brand: s.item.brand.slice(0, 120),
         serialNumber: chance(0.8) ? serialFor(s.item.brand) : null,
         purchasePrice: s.price,
