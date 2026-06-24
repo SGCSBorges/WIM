@@ -114,6 +114,18 @@ export function buildOpenApiDocument() {
           },
         },
       },
+      "/api/auth/seed-demo": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Temporary demo-data loader (login-screen button). Appends 100 users × 100 articles + the full feature set in the background and returns 202 immediately. Append-only; demo accounts start after a reserved id margin. Disable with DEMO_SEED_ENABLED=false.",
+          responses: {
+            "202": { description: "Seeding started (returns shared password)" },
+            "403": { description: "Demo seeding disabled" },
+            "409": { description: "A demo seed is already running" },
+          },
+        },
+      },
       "/api/auth/me": {
         get: {
           tags: ["auth"],

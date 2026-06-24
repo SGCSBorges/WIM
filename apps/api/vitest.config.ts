@@ -12,6 +12,7 @@ export default defineConfig({
         "src/index.ts",
         "src/scripts/**",
         "src/jobs/**",
+        "src/modules/demo/**",
         "src/__tests__/**",
         "src/**/*.d.ts",
       ],

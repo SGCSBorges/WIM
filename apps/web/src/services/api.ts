@@ -311,6 +311,24 @@ export const authAPI = {
       throw new Error(await extractError(response, "Bootstrap failed"));
     return response.json();
   },
+
+  // Temporary helper: kicks off the demo-data loader. Returns 202 immediately
+  // (the seed runs in the background ~1–2 min); the login info is fixed.
+  async seedDemo(): Promise<{
+    started: boolean;
+    users: number;
+    articlesPerUser: number;
+    password: string;
+    adminEmail: string | null;
+  }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/seed-demo`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Demo seed failed"));
+    return response.json();
+  },
 };
 
 // Articles API

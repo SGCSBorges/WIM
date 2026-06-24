@@ -25,8 +25,17 @@ import { SessionService } from "./session.service";
 import { TotpService } from "./totp.service";
 import { z } from "zod";
 import { security } from "../../config/security";
+import { logger } from "../../config/logger";
+import {
+  seedDemoData,
+  DEMO_PASSWORD,
+  DEMO_ADMIN_EMAIL,
+} from "../demo/demo.service";
 
 const router = Router();
+
+// Guards a single in-flight demo seed (the op inserts thousands of rows).
+let demoSeeding = false;
 
 router.post(
   "/register",
@@ -228,6 +237,61 @@ router.post(
     });
 
     res.json({ ok: true, email: user.email, role: "ADMIN" });
+  })
+);
+
+// Temporary demo-data loader (login-screen "Load demo data" button). Appends
+// 100 users × 100 articles + the full feature set to the database; it never
+// wipes, dedupes emails against existing rows, and starts demo accounts after a
+// reserved id margin so they don't collide with the handful of real users.
+//
+// The job inserts thousands of rows (~1–2 min), so it runs in the BACKGROUND
+// and the request returns 202 immediately — the client can't sit on a long
+// request. A single run at a time (demoSeeding guard). Disable in an
+// environment by setting DEMO_SEED_ENABLED=false.
+router.post(
+  "/seed-demo",
+  asyncHandler(async (_req: Request, res: Response) => {
+    if (process.env.DEMO_SEED_ENABLED === "false") {
+      res.status(403).json({ error: "Demo seeding is disabled." });
+      return;
+    }
+    if (demoSeeding) {
+      res.status(409).json({ error: "A demo seed is already running." });
+      return;
+    }
+    demoSeeding = true;
+
+    // Mint a fresh demo admin only when no admin exists yet, so we never add
+    // surprise admins to a database that already has a real operator.
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      select: { userId: true },
+    });
+
+    void seedDemoData(prisma, {
+      reservedUserIdMargin: 1000,
+      makeAdmin: !existingAdmin,
+      onProgress: (m) => logger.info(`[demo-seed] ${m}`),
+    })
+      .then((s) =>
+        logger.info(
+          { users: s.users, articles: s.articles, warranties: s.warranties },
+          "[demo-seed] complete"
+        )
+      )
+      .catch((err) => logger.error({ err }, "[demo-seed] failed"))
+      .finally(() => {
+        demoSeeding = false;
+      });
+
+    res.status(202).json({
+      started: true,
+      users: 100,
+      articlesPerUser: 100,
+      password: DEMO_PASSWORD,
+      adminEmail: existingAdmin ? null : DEMO_ADMIN_EMAIL,
+    });
   })
 );
 

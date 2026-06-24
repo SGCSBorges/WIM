@@ -119,6 +119,21 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     }
   };
 
+  const [seedMsg, setSeedMsg] = useState<string | null>(null);
+  const [seedBusy, setSeedBusy] = useState(false);
+  const runSeedDemo = async () => {
+    setSeedMsg(null);
+    setSeedBusy(true);
+    try {
+      const res = await authAPI.seedDemo();
+      setSeedMsg(t("auth.demo.started").replace("{password}", res.password));
+    } catch (e) {
+      setSeedMsg(e instanceof Error ? e.message : "Demo seed failed");
+    } finally {
+      setSeedBusy(false);
+    }
+  };
+
   // Zod resolver returns the translation key we stored in the schema.
   const fieldError = (key?: string) => (key ? t(key as never) : undefined);
 
@@ -369,20 +384,32 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               <ShareSiteButton />
             </div>
             <LanguageThemeSelector />
-            {/* TEMPORARY: bootstrap admin@admin.com to ADMIN. Remove once done. */}
-            <div className="w-full text-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={runTestAdmin}
-                loading={testAdminBusy}
-                className="border ui-divider"
-              >
-                TestAdmin
-              </Button>
+            {/* TEMPORARY: bootstrap admin@admin.com + load demo data. */}
+            <div className="flex w-full flex-col items-center gap-2">
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={runTestAdmin}
+                  loading={testAdminBusy}
+                  className="border ui-divider"
+                >
+                  TestAdmin
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={runSeedDemo}
+                  loading={seedBusy}
+                  className="border ui-divider"
+                >
+                  {t("auth.demo.button")}
+                </Button>
+              </div>
               {testAdminMsg && (
-                <p className="mt-2 text-xs ui-text-muted">{testAdminMsg}</p>
+                <p className="text-xs ui-text-muted">{testAdminMsg}</p>
               )}
+              {seedMsg && <p className="text-xs ui-text-muted">{seedMsg}</p>}
             </div>
           </div>
         </div>

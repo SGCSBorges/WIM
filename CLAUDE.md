@@ -961,6 +961,17 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   backdoor). User wants to keep them around for now since Render's free
   Postgres expires monthly and they'd otherwise have to re-promote
   manually. Remove once the seed flow is replaced.
+- **`/api/auth/seed-demo`** + the **"Load demo data"** button on the login
+  screen are temporary too. The button POSTs to the endpoint, which runs the
+  shared generator (`modules/demo/demo.service.ts` — the same one behind the
+  `seed:demo` CLI) in the **background** and returns 202 immediately (the job
+  inserts ~10k+ rows over 1–2 min). It's **append-only** (dedupes emails
+  against existing rows, never wipes), starts demo accounts after a reserved
+  user-id margin (1000) so they don't collide with real users, and only mints
+  a demo admin (`admin@demo.wim.app`) when no admin exists. A `demoSeeding`
+  guard prevents overlapping runs; set `DEMO_SEED_ENABLED=false` to disable.
+  All demo accounts share the password `Demo1234!`. The demo module is
+  excluded from coverage in `vitest.config.ts`.
 - **Two sharing models** (public flag vs InventoryShare) still both
   exist intentionally. The owner-side UX has separate flows for each;
   consolidating into a single "Share article…" dialog with options

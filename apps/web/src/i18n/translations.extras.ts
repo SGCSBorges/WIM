@@ -435,6 +435,9 @@ export const extras = {
     "articles.warranty.daysLeft": "days",
 
     "auth.bootstrap.success": "✓ {email} is now {role}. Log in to use it.",
+    "auth.demo.button": "Load demo data",
+    "auth.demo.started":
+      "✓ Generating demo data (~1–2 min). Refresh, then sign in with {password}.",
 
     "articles.table.value": "Value",
     "articleForm.purchasePrice": "Purchase price",
@@ -1378,6 +1381,9 @@ export const extras = {
 
     "auth.bootstrap.success":
       "✓ {email} est maintenant {role}. Connectez-vous pour l'utiliser.",
+    "auth.demo.button": "Charger des données démo",
+    "auth.demo.started":
+      "✓ Génération des données démo (~1–2 min). Actualisez, puis connectez-vous avec {password}.",
 
     "articles.table.value": "Valeur",
     "articleForm.purchasePrice": "Prix d'achat",
@@ -2333,6 +2339,9 @@ export const extras = {
 
     "auth.bootstrap.success":
       "✓ {email} agora é {role}. Inicie sessão para utilizar.",
+    "auth.demo.button": "Carregar dados demo",
+    "auth.demo.started":
+      "✓ A gerar dados de demonstração (~1–2 min). Atualize e inicie sessão com {password}.",
 
     "articles.table.value": "Valor",
     "articleForm.purchasePrice": "Preço de compra",
@@ -3290,6 +3299,9 @@ export const extras = {
 
     "auth.bootstrap.success":
       "✓ {email} ahora es {role}. Inicia sesión para usarlo.",
+    "auth.demo.button": "Cargar datos demo",
+    "auth.demo.started":
+      "✓ Generando datos de demostración (~1–2 min). Actualiza e inicia sesión con {password}.",
 
     "articles.table.value": "Valor",
     "articleForm.purchasePrice": "Precio de compra",
@@ -4244,6 +4256,9 @@ export const extras = {
 
     "auth.bootstrap.success":
       "✓ {email} is nu {role}. Log in om het te gebruiken.",
+    "auth.demo.button": "Demodata laden",
+    "auth.demo.started":
+      "✓ Demodata wordt gegenereerd (~1–2 min). Vernieuw en log in met {password}.",
 
     "articles.table.value": "Waarde",
     "articleForm.purchasePrice": "Aankoopprijs",
