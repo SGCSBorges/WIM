@@ -464,7 +464,7 @@ Two services on Render, both deploying from `dev`:
 
 API env vars (Render dashboard, **not in repo**): every Required var above, plus `NODE_ENV=production` and `RENDER_EXTERNAL_URL=https://wimapi.onrender.com`.
 
-Web env var: `VITE_API_BASE_URL=https://wimapi.onrender.com/api`.
+Web env var: leave `VITE_API_BASE_URL` **empty / unset** in the dashboard. The `render.yaml` `/api/*` rewrite proxies browser requests through `wim-web.onrender.com` to the API, so the web app calls same-origin `/api` (the production fallback in `apps/web/src/services/api.ts`). Do **not** set this to the absolute `wimapi` URL — that bypasses the proxy and breaks Safari/iOS login (ITP blocks cross-site `Set-Cookie` from fetch/XHR).
 
 > **Free-tier quirks:**
 > - Postgres expires after ~30 days. Re-seed admin with the `TestAdmin` button on the login screen (uses `/api/auth/bootstrap-admin`).
