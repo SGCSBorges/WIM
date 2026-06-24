@@ -339,6 +339,22 @@ const ATTACHMENT_SPECS: {
   { type: "OTHER", fileName: "serial-label.jpg" },
 ];
 
+// Buyer/owner message bodies for seeded share conversations.
+const THREAD_OPENERS = [
+  "Hi — is this still available?",
+  "Interested in this one. Could you tell me the condition?",
+  "Does it still have an active warranty?",
+  "Any original accessories included?",
+  "Would you be open to a trade?",
+];
+const OWNER_REPLIES = [
+  "Yes, still available!",
+  "It's in great shape — barely used.",
+  "Warranty runs for a few more months.",
+  "Happy to share more photos if helpful.",
+  "Sure, what did you have in mind?",
+];
+
 type CatalogItem = {
   category: Prisma.ArticleCreateManyInput["category"];
   brand: string;
@@ -1584,31 +1600,65 @@ async function seedCrossUser(
     if (!requester) continue;
 
     if (chance(0.6)) {
+      // A short back-and-forth: opener, an optional owner reply, and an
+      // optional offer that may be pending / accepted / declined / withdrawn —
+      // so the inbox shows varied states, not one canned pending offer.
+      const msgs: Prisma.MessageUncheckedCreateWithoutThreadInput[] = [];
+      let at = daysAgo(randInt(1, 60));
+      const step = () => {
+        at = new Date(at.getTime() + randInt(1, 48) * 3_600_000);
+        return at;
+      };
+      msgs.push({
+        senderUserId: requester.userId,
+        body: pick(THREAD_OPENERS),
+        createdAt: at,
+      });
+      if (chance(0.7)) {
+        msgs.push({
+          senderUserId: art.ownerUserId,
+          body: pick(OWNER_REPLIES),
+          createdAt: step(),
+        });
+      }
+      if (chance(0.6)) {
+        const offerStatus = pick([
+          "PENDING",
+          "ACCEPTED",
+          "DECLINED",
+          "WITHDRAWN",
+        ] as const);
+        msgs.push({
+          senderUserId: requester.userId,
+          body: "Would you take an offer?",
+          kind: "OFFER",
+          offerAmount: jitter(Number(art.purchasePrice ?? 200) * 0.8, 0.1),
+          offerStatus,
+          createdAt: step(),
+        });
+        if (offerStatus === "ACCEPTED" || offerStatus === "DECLINED") {
+          msgs.push({
+            senderUserId: art.ownerUserId,
+            body:
+              offerStatus === "ACCEPTED"
+                ? "Deal — I'll get the transfer started."
+                : "Thanks, but I'll pass on that price.",
+            createdAt: step(),
+          });
+        }
+      }
+      const lastFromRequester =
+        msgs[msgs.length - 1].senderUserId === requester.userId;
       try {
         await prisma.messageThread.create({
           data: {
             articleId: art.articleId,
             ownerUserId: art.ownerUserId,
             requesterId: requester.userId,
-            ownerUnread: true,
-            messages: {
-              create: [
-                {
-                  senderUserId: requester.userId,
-                  body: "Hi — is this still available?",
-                },
-                {
-                  senderUserId: requester.userId,
-                  body: "Would you take an offer?",
-                  kind: "OFFER",
-                  offerAmount: jitter(
-                    Number(art.purchasePrice ?? 200) * 0.8,
-                    0.1
-                  ),
-                  offerStatus: "PENDING",
-                },
-              ],
-            },
+            lastMessageAt: at,
+            ownerUnread: lastFromRequester && chance(0.6),
+            requesterUnread: !lastFromRequester && chance(0.5),
+            messages: { create: msgs },
           },
         });
       } catch {
@@ -1616,18 +1666,45 @@ async function seedCrossUser(
       }
     }
 
-    if (chance(0.3)) {
+    if (chance(0.4)) {
+      // Mix PUSH/PULL and terminal history (rejected/revoked/expired) alongside
+      // live pending requests. ACCEPTED is omitted on purpose — it would imply
+      // ownership moved, which the seeder doesn't actually perform.
+      const direction = chance(0.5) ? "PUSH" : "PULL";
+      const roll = rand();
+      let status: string;
+      let usedAt: Date | null = null;
+      let expiresAt: Date;
+      if (roll < 0.55) {
+        status = "PENDING";
+        expiresAt = daysFromNow(randInt(1, 7));
+      } else if (roll < 0.75) {
+        status = "REJECTED";
+        usedAt = daysAgo(randInt(1, 30));
+        expiresAt = new Date(usedAt.getTime() + 7 * DAY);
+      } else if (roll < 0.9) {
+        status = "REVOKED";
+        usedAt = daysAgo(randInt(1, 30));
+        expiresAt = new Date(usedAt.getTime() + 7 * DAY);
+      } else {
+        status = "EXPIRED";
+        expiresAt = daysAgo(randInt(1, 40));
+      }
       try {
         await prisma.articleTransferRequest.create({
           data: {
             articleId: art.articleId,
             requesterId: requester.userId,
             ownerId: art.ownerUserId,
-            direction: "PULL",
+            direction,
             token: token(),
-            status: "PENDING",
-            message: "Interested in taking this over.",
-            expiresAt: daysFromNow(7),
+            status,
+            usedAt,
+            message:
+              direction === "PUSH"
+                ? "Sending this your way — let me know if you want it."
+                : "Interested in taking this over.",
+            expiresAt,
           },
         });
       } catch {
