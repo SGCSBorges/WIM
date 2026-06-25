@@ -399,8 +399,11 @@ User ─── Article ─── Garantie (warranty) ─── WarrantyHistory (
 
 Key flags on User: `role`, `tokenVersion`, `totpEnabled`, `stripeCustomerId`, `stripeSubscriptionId`.
 
-See [`docs/architecture.md`](./docs/architecture.md) for how data moves through
-the system, and [`docs/uml/`](./docs/uml/) for the full class diagram.
+The diagram above is a simplified spine — for the **exhaustive field-by-field
+reference** of every table and enum, see
+[`docs/data-dictionary.md`](./docs/data-dictionary.md). See
+[`docs/architecture.md`](./docs/architecture.md) for how data moves through the
+system, and [`docs/uml/`](./docs/uml/) for the class diagram.
 
 ---
 

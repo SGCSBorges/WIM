@@ -3,7 +3,9 @@
 Ce dossier contient les diagrammes PlantUML du projet, **en français**. Ils
 sont tenus alignés sur le code (`apps/api/prisma/schema.prisma`, les routes et
 les services) ; la vue d'ensemble en anglais qui relie ces diagrammes au flux
-applicatif se trouve dans [`../architecture.md`](../architecture.md).
+applicatif se trouve dans [`../architecture.md`](../architecture.md). Le
+**dictionnaire de données** champ-par-champ (référence exhaustive de toutes les
+tables) est dans [`../data-dictionary.md`](../data-dictionary.md).
 
 ## Rendu
 
@@ -58,7 +60,15 @@ l'alerte.
 
 ![Classes (modèle de données)](./03-class-diagram.svg)
 
-Le modèle complet, fidèle à `schema.prisma`. Le `User` est propriétaire de
+Le **cœur relationnel** du modèle, fidèle à `schema.prisma`. Le diagramme se
+concentre sur la colonne vertébrale (inventaire, garanties, alertes, partage,
+transfert, sécurité du compte) ; les modules ajoutés ensuite — prêts (`Loan`),
+assurance (`InsurancePolicy`/`ArticleInsurance`), maintenance (`ServiceRecord`),
+messagerie (`MessageThread`/`Message`) et feature-gating
+(`FeatureFlag`/`FeatureTempGrant`) — sont catalogués dans le
+[dictionnaire de données](../data-dictionary.md), la **référence exhaustive
+champ-par-champ** des 30 tables (à réintégrer au diagramme lors d'un prochain
+rendu). Le `User` est propriétaire de
 tout (articles, emplacements, tags, vues, modèles, audit). Un `Article` porte
 0..1 `Garantie`, des `Attachment`, des `Alerte`, des `ArticleNote`, et des
 relations **M:N** vers `Location` et `Tag` (tables de jonction

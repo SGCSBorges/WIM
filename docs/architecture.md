@@ -7,6 +7,8 @@ the canonical detail lives elsewhere and is linked from here:
   and billing in depth (canonical when this doc and it disagree).
 - [`docs/api.md`](./api.md) — the auth model, the attachments gotcha, and a
   triage section for common confusions.
+- [`docs/data-dictionary.md`](./data-dictionary.md) — the exhaustive
+  field-by-field reference for all 30 tables + 14 enums.
 - [`docs/uml/`](./uml/) — PlantUML diagrams (in French) for the use cases,
   class model, core flows, and state machines.
 
