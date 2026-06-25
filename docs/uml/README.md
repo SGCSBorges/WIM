@@ -60,15 +60,14 @@ l'alerte.
 
 ![Classes (modèle de données)](./03-class-diagram.svg)
 
-Le **cœur relationnel** du modèle, fidèle à `schema.prisma`. Le diagramme se
-concentre sur la colonne vertébrale (inventaire, garanties, alertes, partage,
-transfert, sécurité du compte) ; les modules ajoutés ensuite — prêts (`Loan`),
-assurance (`InsurancePolicy`/`ArticleInsurance`), maintenance (`ServiceRecord`),
-messagerie (`MessageThread`/`Message`) et feature-gating
-(`FeatureFlag`/`FeatureTempGrant`) — sont catalogués dans le
-[dictionnaire de données](../data-dictionary.md), la **référence exhaustive
-champ-par-champ** des 30 tables (à réintégrer au diagramme lors d'un prochain
-rendu). Le `User` est propriétaire de
+Le modèle complet, fidèle à `schema.prisma` (les 30 tables) ; la **référence
+exhaustive champ-par-champ** vit dans le
+[dictionnaire de données](../data-dictionary.md). Couvre l'inventaire, les
+garanties, les alertes, le partage, le transfert et la sécurité du compte, plus
+les modules par article — prêts (`Loan`), assurance
+(`InsurancePolicy`/`ArticleInsurance`), maintenance (`ServiceRecord`) — la
+messagerie (`MessageThread`/`Message`) et le feature-gating
+(`FeatureFlag`/`FeatureTempGrant`). Le `User` est propriétaire de
 tout (articles, emplacements, tags, vues, modèles, audit). Un `Article` porte
 0..1 `Garantie`, des `Attachment`, des `Alerte`, des `ArticleNote`, et des
 relations **M:N** vers `Location` et `Tag` (tables de jonction

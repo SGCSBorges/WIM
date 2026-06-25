@@ -32,6 +32,8 @@ class User {
   +totpEnabled: bool
   +stripeCustomerId: string
   +stripeSubscriptionId: string
+  +monthlyBudget: decimal(12,2)
+  +annualBudget: decimal(12,2)
 }
 
 class Article {
@@ -45,6 +47,9 @@ class Article {
   +purchasePrice: decimal(12,2)
   +depreciationRate: decimal(5,2)
   +sharedWithPowerUsers: bool
+  +publicToken: varchar(64)
+  +status: ArticleStatus
+  +category: ArticleCategory
   +deletedAt: datetime
 }
 
@@ -190,6 +195,68 @@ class ProcessedStripeEvent {
   +processedAt: datetime
 }
 
+' --- Modules cycle de vie par article (payants) ---
+
+class Loan {
+  +loanId: int
+  +borrowerName: varchar(120)
+  +borrowerEmail: varchar(180)
+  +loanedAt: datetime
+  +dueAt: datetime
+  +returnedAt: datetime
+  +reminderAlerteId: int  ' rappel d'échéance
+}
+
+class InsurancePolicy {
+  +policyId: int
+  +provider: varchar(150)
+  +policyNumber: varchar(100)
+  +premium: decimal(12,2)
+  +coverageAmount: decimal(12,2)
+  +renewalAt: datetime
+  +reminderAlerteId: int  ' rappel de renouvellement
+}
+
+class ServiceRecord {
+  +serviceId: int
+  +performedAt: datetime
+  +description: varchar(300)
+  +cost: decimal(12,2)
+  +provider: varchar(150)
+  +nextDueAt: datetime
+  +reminderAlerteId: int  ' rappel prochain entretien
+}
+
+' --- Messagerie (négociation 1:1 sur un article partagé) ---
+
+class MessageThread {
+  +id: int
+  +lastMessageAt: datetime
+  +ownerUnread: bool
+  +requesterUnread: bool
+}
+
+class Message {
+  +id: int
+  +body: varchar(2000)
+  +kind: MessageKind
+  +offerAmount: decimal(12,2)
+  +offerStatus: OfferStatus
+}
+
+' --- Feature gating (autonome, configuré par l'admin) ---
+
+class FeatureFlag {
+  +featureKey: varchar(60)  ' unique
+  +requiredRole: Role
+}
+
+class FeatureTempGrant {
+  +featureKey: varchar(60)
+  +expiresAt: datetime
+  +note: varchar(255)
+}
+
 ' Possession (tout est rattaché à un User propriétaire)
 User "1" --> "0..*" Article : possède
 User "1" --> "0..*" Location : possède
@@ -225,18 +292,40 @@ User "1" --> "0..1" TotpSecret : 2FA (TOTP)
 User "1" --> "0..*" PasswordResetToken : réinitialisations
 User "1" --> "0..*" PushSubscription : navigateurs abonnés
 
+' Modules cycle de vie par article (prêt / assurance / entretien)
+User "1" --> "0..*" Loan : prête
+User "1" --> "0..*" InsurancePolicy : assure
+User "1" --> "0..*" ServiceRecord : entretient
+Article "1" o-- "0..*" Loan : prêts
+Article "1" o-- "0..*" ServiceRecord : entretien
+Article "0..*" -- "0..*" InsurancePolicy : ArticleInsurance
+
+' Messagerie (un fil par (article, demandeur) ; messages append-only)
+Article "1" o-- "0..*" MessageThread : négociations
+User "1" --> "0..*" MessageThread : owner / demandeur
+MessageThread "1" o-- "1..*" Message : messages
+User "1" --> "0..*" Message : envoie
+
 note bottom
 Aligné sur prisma/schema.prisma :
 - Une Garantie appartient à 0..1 Article (lien unique) ; le renouvellement
   fait avancer la ligne vivante et archive l'état antérieur dans
   WarrantyHistory (append-only).
-- ProcessedStripeEvent est autonome (marqueur d'idempotence du webhook,
-  inséré dans la même transaction que l'effet métier).
+- ProcessedStripeEvent, FeatureFlag et FeatureTempGrant sont autonomes
+  (pas de FK User) : marqueur d'idempotence du webhook et configuration
+  des features par l'admin.
+- Modules payants par article : Loan (prêt), InsurancePolicy +
+  ArticleInsurance (assurance M:N), ServiceRecord (entretien), chacun
+  pouvant planifier un rappel via reminderAlerteId.
+- MessageThread = 1 fil par (article, demandeur) ; ownerUserId est figé à
+  la création, donc un transfert ultérieur ne casse pas la conversation.
 - Les noms français legacy (Alerte*, Garantie, articleNom...) sont
   intentionnellement conservés ; les unions @wim/types sont anglaises
   (AlertStatus) mais les valeurs littérales coïncident.
 - Enums : Role, ClaimStatus, AlerteStatus, AlerteKind, AttachmentType,
-  ArticleNoteKind, SharePermission, InviteStatus, TransferDirection,
+  ArticleNoteKind, ArticleStatus, ArticleCategory, SharePermission,
+  InviteStatus, TransferDirection, MessageKind, OfferStatus,
   WarrantyHistoryEvent.
+- Référence champ-par-champ exhaustive : ../data-dictionary.md.
 end note
 @enduml
