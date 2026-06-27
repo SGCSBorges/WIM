@@ -6,10 +6,11 @@
  * actually accepts. To document a new endpoint, add an entry under
  * `paths` below and reference its Zod input/output schemas inline.
  *
- * Auth, articles, locations, warranties, alerts, attachments, notes,
- * shares, transfers, messaging, tags, saved-views, calendar, push,
- * billing, profile, admin, statistics, loans, insurance, maintenance,
- * the public item page, and the meta endpoints are all listed below.
+ * Auth, articles, article-templates, locations, warranties, alerts,
+ * attachments, notes, shares, transfers, messaging, tags, saved-views,
+ * calendar, push, billing, profile, admin, audit, statistics, reports,
+ * features, loans, insurance, maintenance, the public item page, and the
+ * meta endpoints are all listed below.
  */
 
 import { z } from "zod";
@@ -1442,6 +1443,139 @@ export function buildOpenApiDocument() {
             "200": { description: "BudgetStatus" },
             "403": { description: "Feature not available" },
           },
+        },
+      },
+
+      "/api/reports/portfolio.pdf": {
+        get: {
+          tags: ["reports"],
+          summary:
+            "Insurance-ready portfolio PDF (gated: reports feature). Honors the article-list filters; rate-limited; audited as DB_EXPORT.",
+          security: [cookieAuth],
+          parameters: [
+            {
+              name: "locationId",
+              in: "query",
+              schema: { type: "integer", minimum: 1 },
+            },
+            {
+              name: "tagId",
+              in: "query",
+              schema: { type: "integer", minimum: 1 },
+            },
+            { name: "warrantyStatus", in: "query", schema: { type: "string" } },
+            { name: "status", in: "query", schema: { type: "string" } },
+          ],
+          responses: {
+            "200": { description: "application/pdf stream" },
+            "403": { description: "Feature not available" },
+            "429": { description: "Rate limited" },
+          },
+        },
+      },
+
+      "/api/features": {
+        get: {
+          tags: ["features"],
+          summary:
+            "The caller's feature access map — { [featureKey]: boolean }.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Record<string, boolean>" } },
+        },
+      },
+
+      "/api/audit": {
+        get: {
+          tags: ["audit"],
+          summary:
+            "Read the audit log (ADMIN only). Filters: limit, userId, action, entity, entityId, createdFrom, createdTo.",
+          security: [cookieAuth],
+          parameters: [
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", minimum: 1 },
+            },
+            {
+              name: "userId",
+              in: "query",
+              schema: { type: "integer", minimum: 1 },
+            },
+            { name: "action", in: "query", schema: { type: "string" } },
+            { name: "entity", in: "query", schema: { type: "string" } },
+            {
+              name: "entityId",
+              in: "query",
+              schema: { type: "integer", minimum: 1 },
+            },
+            {
+              name: "createdFrom",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+            },
+            {
+              name: "createdTo",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+            },
+          ],
+          responses: {
+            "200": { description: "{ items: AuditLogEntry[] }" },
+            "403": { description: "ADMIN only" },
+          },
+        },
+      },
+
+      "/api/article-templates": {
+        get: {
+          tags: ["article-templates"],
+          summary:
+            "List the caller's article templates (gated: templates feature).",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "ArticleTemplate[]" },
+            "403": { description: "Feature not available" },
+          },
+        },
+        post: {
+          tags: ["article-templates"],
+          summary: "Create a template ({ name, payload }).",
+          security: [cookieAuth],
+          responses: {
+            "201": { description: "Created" },
+            "403": { description: "Feature not available" },
+          },
+        },
+      },
+      "/api/article-templates/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["article-templates"],
+          summary: "Get one template.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "ArticleTemplate" },
+            "404": { description: "Not found" },
+          },
+        },
+        put: {
+          tags: ["article-templates"],
+          summary: "Update a template.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+        delete: {
+          tags: ["article-templates"],
+          summary: "Delete a template.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
         },
       },
 

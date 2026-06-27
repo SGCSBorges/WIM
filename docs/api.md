@@ -1,7 +1,8 @@
 # WIM API documentation
 
-The **canonical, machine-readable** reference is Swagger UI — it's generated
-from the same Zod schemas the API validates against, so it never drifts:
+The **canonical, machine-readable** reference is Swagger UI — it's hand-built
+from the same Zod schemas the API validates against, so endpoint shapes stay in
+sync with what the server accepts:
 
 - **Swagger UI**: [`/api/docs`](https://wimapi.onrender.com/api/docs)
 - **OpenAPI 3.1 JSON**: [`/api/openapi.json`](https://wimapi.onrender.com/api/openapi.json)

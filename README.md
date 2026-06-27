@@ -109,7 +109,7 @@ For convenience on free-tier Render (Postgres expires monthly), there's also a t
 
 Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — clients must use `credentials: 'include'`. No `Authorization` header.
 
-> **Canonical reference:** the live **Swagger UI** at `GET /api/docs` (and the raw spec at `GET /api/openapi.json`) is generated from the same Zod schemas the API validates against, so it never drifts. The tables below are a curated map of the resource surface — for exhaustive request/response shapes and query params, use Swagger. See also [`docs/api.md`](./docs/api.md) for the auth model and triage.
+> **Canonical reference:** the live **Swagger UI** at `GET /api/docs` (and the raw spec at `GET /api/openapi.json`) is hand-built from the same Zod schemas the API validates against, so endpoint shapes stay in sync with what the server accepts. The tables below are a curated map of the resource surface — for exhaustive request/response shapes and query params, use Swagger. See also [`docs/api.md`](./docs/api.md) for the auth model and triage.
 
 ### Auth — `/api/auth`
 
