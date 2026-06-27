@@ -381,6 +381,27 @@ All routes require ADMIN.
 | `GET`    | `/db/export` | Full-database JSON export (backup) |
 | `POST`   | `/db/import` | Full-database restore (`confirm: "REPLACE"` + current password; destructive) |
 
+### Feature gating — `/api/features`
+
+Admins control which **role** each named feature requires, overriding hardcoded
+defaults. **POWER_USER is the paywall** — gating a feature at POWER_USER means
+"paid"; ADMIN inherits everything via the `USER < POWER_USER < ADMIN` hierarchy.
+By default every feature except `cmd_palette` (ADMIN) requires POWER_USER, so the
+full feature set is paid out of the box; an admin can lower a specific bar to
+USER. **Temp grants** let a USER try a POWER_USER-gated feature until an expiry
+date. Server-side, `requireFeature(key)` gates each toggleable route (denied →
+**403**); a 60-second snapshot cache backs both the gate and the access map via
+one shared `isAllowed` helper, so they can't disagree.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/features` | ✓ | The caller's feature access map — `{ [featureKey]: boolean }` |
+
+Admin-side management (set required role, issue/revoke temp grants) lives in the
+[Admin table above](#admin--apiadmin) (`/admin/features*`). For the full feature
+key list, the middleware wiring, and per-feature defaults, see the **Feature
+gating** sections of [`docs/api.md`](./docs/api.md) and [`CLAUDE.md`](./CLAUDE.md).
+
 ---
 
 ## Data model
