@@ -1,8 +1,8 @@
 /**
- * Calendar feed routes. /api/calendar/me (auth-required) returns the
- * current user's feed URL + token; /api/calendar/feed/<token>.ics is
- * PUBLIC (token-authenticated, no cookie) so external calendar clients
- * can subscribe without OAuth.
+ * Calendar feed routes. /api/calendar/token (auth-required) reads the current
+ * feed status (GET), enables/rotates the token (POST), or disables it (DELETE);
+ * /api/calendar/feed/<token>.ics is PUBLIC (token-authenticated, no cookie) so
+ * external calendar clients can subscribe without OAuth.
  */
 import { Router } from "express";
 import { asyncHandler } from "../common/http";

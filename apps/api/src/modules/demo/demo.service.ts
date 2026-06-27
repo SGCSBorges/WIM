@@ -3,15 +3,19 @@
  *
  * `seedDemoData(prisma, opts)` populates the database with N users, each owning
  * M articles, plus the full surrounding feature set, so every screen has
- * believable content. It is **append-only** and never wipes: it dedupes
- * generated emails against the existing rows, and (optionally) reserves a
- * margin of user ids so demo accounts sit in a high id range, clearly separated
- * from the handful of real users.
+ * believable content. `seedDemoData` itself is **append-only** and never wipes:
+ * it dedupes generated emails against the existing rows, and (optionally)
+ * reserves a margin of user ids so demo accounts sit in a high id range, clearly
+ * separated from the handful of real users. `resetDemoData(prisma)` is the
+ * separate teardown that deletes the prior demo batch (by `@demo.wim.app` email
+ * domain) so a caller can refresh rather than accumulate.
  *
  * Two callers:
- *   - the `seed:demo` CLI (`src/scripts/seed-demo.ts`) — fresh/reset DBs;
- *   - the temporary `POST /api/auth/seed-demo` login-screen button — appends to
- *     a live DB.
+ *   - the `seed:demo` CLI (`src/scripts/seed-demo.ts`) — fresh DBs, or full wipe
+ *     with `SEED_DEMO_RESET=true`;
+ *   - the temporary `POST /api/auth/seed-demo` login-screen button — calls
+ *     `resetDemoData` then `seedDemoData` to refresh the demo dataset on a live
+ *     DB on every click, leaving real (non-demo) accounts untouched.
  *
  * Excluded from coverage (demo tooling, not production logic) via
  * `vitest.config.ts`.

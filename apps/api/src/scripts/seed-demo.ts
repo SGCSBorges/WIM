@@ -3,7 +3,8 @@
  *
  * Seeds 100 users × 100 articles plus the full feature set. For fresh or
  * throwaway databases — the login-screen "Load demo data" button uses the same
- * generator to append to a live DB instead.
+ * generator to refresh the demo dataset on a live DB instead (resetDemoData +
+ * seedDemoData, scoped to @demo.wim.app accounts).
  *
  * Usage (from repo root):
  *   DATABASE_URL=... npm --workspace apps/api run seed:demo
