@@ -139,6 +139,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `DELETE` | `/:id/purge` | ✓ | Permanently delete (skip retention) |
 | `POST`   | `/trash/bulk-restore` · `/trash/bulk-purge` | ✓ | Bulk restore / purge (`{ ids }`, ≤ 500) |
 | `POST`   | `/bulk-delete` · `/bulk-share` · `/bulk-assign` | ✓ | Bulk soft-delete / share-toggle / assign locations+tags (`{ ids, … }`) |
+| `POST`   | `/bulk-update` | POWER_USER (`bulk_edit`) | Bulk-edit scalar fields (`purchasePrice`/`depreciationRate`/`brand`/`serialNumber`); `null` clears, missing keys leave alone |
 | `POST`   | `/import` | ✓ | CSV import (`?dryRun=1` validates without writing) |
 | `GET`    | `/export/inventory.csv` · `/export/inventory.pdf` · `/export/labels.pdf` | ✓ | Exports (CSV honours list filters; labels carry QR codes) |
 | `GET`    | `/:id/claim.pdf` | ✓ | Warranty-claim sheet PDF |
