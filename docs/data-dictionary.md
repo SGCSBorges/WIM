@@ -548,9 +548,13 @@ The webhook idempotency marker. Survives restarts.
 
 ## Enums
 
-Each enum below is mirrored by an `as const` union in
-[`@wim/types`](../packages/types/src/index.ts) (English names; identical literal
-values) so the API and web share one source of truth.
+Most of these enums are mirrored by an `as const` union in
+[`@wim/types`](../packages/types/src/index.ts) — English names (e.g.
+`AlertStatus`/`AlertKind` drop the French "e"), identical literal values — so the
+API and web share one source of truth. **Exceptions:** `MessageKind` and
+`OfferStatus` are *not* in `@wim/types`; they're typed inline as string-literal
+unions in [`apps/web/src/services/api.ts`](../apps/web/src/services/api.ts) and
+the message service. The literal values still match the DB enum either way.
 
 | Enum | Values | Used by |
 |---|---|---|

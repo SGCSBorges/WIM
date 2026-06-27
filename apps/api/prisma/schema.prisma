@@ -107,8 +107,10 @@ enum TransferDirection {
 }
 
 // A chat message is either plain text or a structured purchase OFFER (carries
-// an amount + a status the owner resolves). Mirrored by MESSAGE_KINDS /
-// OFFER_STATUSES in @wim/types.
+// an amount + a status the owner resolves). The literal values are typed inline
+// as string-literal unions in apps/web/src/services/api.ts (MessageKind /
+// OfferStatus) and apps/api/src/modules/messages/message.service.ts — these two
+// enums are not re-exported from @wim/types.
 enum MessageKind {
   TEXT
   OFFER
