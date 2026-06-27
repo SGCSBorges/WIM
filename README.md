@@ -161,6 +161,9 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `GET`    | `/:id` | ✓ | Get warranty |
 | `PUT`    | `/:id` | ✓ | Update warranty (recalculates expiry + reschedules alerts) |
 | `PATCH`  | `/:id/claim` | ✓ | Update claim status (`NONE→OPEN→APPROVED\|REJECTED→RESOLVED`) + note |
+| `POST`   | `/:id/renew` | ✓ | Renew in place — new purchase date + duration, snapshots the prior contract to history, reschedules alerts |
+| `POST`   | `/:id/extend` | ✓ | Extend by N months in place (rolls end date forward, reschedules alerts) |
+| `GET`    | `/:id/history` | ✓ | Warranty renewal/extension history (newest-first) |
 | `DELETE` | `/:id` | ✓ | Delete warranty (cancels its alerts) |
 
 ### Attachments — `/api/attachments`
@@ -369,6 +372,10 @@ All routes require ADMIN.
 | `POST`   | `/users/:id/reset-password` | Force a new password + bump `tokenVersion` |
 | `POST`   | `/users/:id/force-logout` | Bump `tokenVersion` so all their JWTs become invalid |
 | `GET`    | `/audit-log` | Cursor-paginated audit log (`?userId=`, `?action=`, `?entity=`, `?limit=`, `?cursor=`) |
+| `GET`    | `/features` | Feature-flag overrides + active temp grants |
+| `PUT`    | `/features/:key` | Set a feature's required role (`{ requiredRole }`; absent row = coded default) |
+| `POST`   | `/features/grants` | Time-bound a USER's access to a POWER_USER-gated feature (`{ featureKey, expiresAt, note? }`) |
+| `DELETE` | `/features/grants/:id` | Revoke a temp grant |
 | `GET`    | `/jobs` | BullMQ queue state (alerts + maintenance) + next audit-prune run |
 | `GET`    | `/failed-jobs` | Recent failed jobs across both queues (reason + stacktrace) |
 | `GET`    | `/db/export` | Full-database JSON export (backup) |
