@@ -8,9 +8,9 @@
  *
  * Auth, articles, article-templates, locations, warranties, alerts,
  * attachments, notes, shares, transfers, messaging, tags, saved-views,
- * calendar, push, billing, profile, admin, audit, statistics, reports,
- * features, loans, insurance, maintenance, the public item page, and the
- * meta endpoints are all listed below.
+ * calendar, push, billing, profile, admin (incl. the audit log), statistics,
+ * reports, features, loans, insurance, maintenance, the public item page, and
+ * the meta endpoints are all listed below.
  */
 
 import { z } from "zod";
@@ -1481,48 +1481,6 @@ export function buildOpenApiDocument() {
             "The caller's feature access map — { [featureKey]: boolean }.",
           security: [cookieAuth],
           responses: { "200": { description: "Record<string, boolean>" } },
-        },
-      },
-
-      "/api/audit": {
-        get: {
-          tags: ["audit"],
-          summary:
-            "Read the audit log (ADMIN only). Filters: limit, userId, action, entity, entityId, createdFrom, createdTo.",
-          security: [cookieAuth],
-          parameters: [
-            {
-              name: "limit",
-              in: "query",
-              schema: { type: "integer", minimum: 1 },
-            },
-            {
-              name: "userId",
-              in: "query",
-              schema: { type: "integer", minimum: 1 },
-            },
-            { name: "action", in: "query", schema: { type: "string" } },
-            { name: "entity", in: "query", schema: { type: "string" } },
-            {
-              name: "entityId",
-              in: "query",
-              schema: { type: "integer", minimum: 1 },
-            },
-            {
-              name: "createdFrom",
-              in: "query",
-              schema: { type: "string", format: "date-time" },
-            },
-            {
-              name: "createdTo",
-              in: "query",
-              schema: { type: "string", format: "date-time" },
-            },
-          ],
-          responses: {
-            "200": { description: "{ items: AuditLogEntry[] }" },
-            "403": { description: "ADMIN only" },
-          },
         },
       },
 

@@ -37,7 +37,6 @@ import serviceRecordRoutes from "./modules/service-records/service-record.routes
 import publicLinkRoutes from "./modules/articles/public-link.routes";
 import publicRoutes from "./modules/public/public.routes";
 import authRoutes from "./modules/auth/auth.routes";
-import auditRoutes from "./modules/audit/audit.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import attachmentRoutes from "./modules/attachments/attachment.routes";
 import billingRoutes from "./modules/billing/billing.routes";
@@ -254,7 +253,6 @@ export function createApp() {
   app.use("/api/article-templates", articleTemplateRoutes);
   app.use("/api/warranties", warrantyRoutes);
   app.use("/api/auth", security.authRateLimiter, authRoutes);
-  app.use("/api/audit", auditRoutes);
   app.use("/api/admin", adminRoutes);
   app.use("/api/attachments", attachmentRoutes);
   app.use("/api/locations", locationRoutes);
