@@ -37,7 +37,9 @@ export default function BarList({
         return (
           <div key={idx}>
             <div className="flex items-center justify-between text-sm mb-0.5">
-              <span className="truncate mr-2">{it.label}</span>
+              <span className="truncate mr-2" title={it.label}>
+                {it.label}
+              </span>
               <span className="ui-text-muted shrink-0">
                 {formatValue(it.value)}
               </span>

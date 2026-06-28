@@ -126,7 +126,10 @@ export default function AttentionExtraCard() {
               >
                 {l.article.articleNom}
               </p>
-              <p className="truncate text-xs ui-text-muted">
+              <p
+                className="truncate text-xs ui-text-muted"
+                title={l.borrowerName}
+              >
                 {l.borrowerName}
                 {l.dueAt && ` · ${t("loan.due")} ${formatDate(l.dueAt)}`}
               </p>

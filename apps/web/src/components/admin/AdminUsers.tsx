@@ -372,7 +372,10 @@ export default function AdminUsers() {
       />
 
       {error && (
-        <div className="mb-4 rounded-xl border ui-alert-error p-3 text-sm ui-text-error">
+        <div
+          role="alert"
+          className="mb-4 rounded-xl border ui-alert-error p-3 text-sm ui-text-error"
+        >
           {error}
         </div>
       )}
