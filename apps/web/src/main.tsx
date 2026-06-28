@@ -2,7 +2,8 @@
  * Web entry point. Boots the React tree with the provider stack the rest
  * of the app assumes is in place:
  *
- *   ErrorBoundary > BrowserRouter > Theme > I18n > Preferences > Toast > <App />
+ *   ErrorBoundary > BrowserRouter > Theme > I18n > Preferences > Toast >
+ *   Feature > Upgrade > <App />
  *
  * Also registers the PWA service worker (production builds only) so
  * Chrome treats the site as installable, and pipes any unhandled promise
