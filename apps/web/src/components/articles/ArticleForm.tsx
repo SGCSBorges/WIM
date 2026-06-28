@@ -774,6 +774,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             placeholder={t("articleForm.placeholder.description")}
             maxLength={255}
           />
+          <p className="text-right text-xs ui-text-muted tabular-nums">
+            {(formData.articleDescription || "").length} / 255
+          </p>
         </Field>
 
         <Field

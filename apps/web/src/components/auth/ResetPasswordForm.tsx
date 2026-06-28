@@ -32,6 +32,13 @@ export default function ResetPasswordForm() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
+    // Custom validation runs here (the form is noValidate), so it must cover
+    // the length rule the native minLength used to enforce — otherwise a
+    // too-short password would silently submit and round-trip to the API.
+    if (newPassword.length < 8) {
+      setError(t("auth.error.passwordTooShort"));
+      return;
+    }
     if (newPassword !== confirm) {
       setError(t("auth.reset.mismatch"));
       return;
@@ -76,7 +83,7 @@ export default function ResetPasswordForm() {
             {t("auth.reset.success")}
           </div>
         ) : (
-          <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-4" noValidate>
             <Field label={t("auth.reset.newPassword")}>
               <div className="relative">
                 <Input
