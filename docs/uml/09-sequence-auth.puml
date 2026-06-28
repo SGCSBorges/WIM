@@ -1,6 +1,7 @@
 @startuml
 title WIM – Diagramme de séquence (authentification & session)
 
+autonumber
 actor Utilisateur as User
 participant "PWA (Web)" as Web
 participant "API (Node)" as API
@@ -10,11 +11,18 @@ participant "Redis\n(denylist jti)" as Redis
 == Connexion ==
 User -> Web : Saisir e-mail + mot de passe
 Web -> API : POST /api/auth/login {email, password}
+activate API
 API -> DB : SELECT User (bcrypt.compare, dummy si absent)
+activate DB
+DB --> API : ligne User (ou absente)
+deactivate DB
 note right of API : compare toujours exécuté\n(anti-énumération par timing)
 alt totpEnabled = false (chemin classique)
   API -> API : signToken(sub, role, v=tokenVersion, jti aléatoire)
   API -> DB : INSERT UserSession (jti, appareil, IP)
+  activate DB
+  DB --> API : ok
+  deactivate DB
   API --> Web : 200 + Set-Cookie wim_token (httpOnly)
   note right of Web : aucun token manipulé côté JS ;\nle cookie part ensuite tout seul
 else totpEnabled = true (2FA)
@@ -23,19 +31,33 @@ else totpEnabled = true (2FA)
   User -> Web : Saisir le code TOTP (ou code de secours)
   Web -> API : POST /api/auth/login/verify-totp {challengeToken, code}
   API -> DB : Vérifier TotpSecret (ou consommer un code de secours)
+  activate DB
+  DB --> API : ok
+  deactivate DB
   API -> DB : INSERT UserSession
+  activate DB
+  DB --> API : ok
+  deactivate DB
   API --> Web : 200 + Set-Cookie wim_token (httpOnly)
 end
+deactivate API
 
 == Requête protégée ==
 User -> Web : Action authentifiée
 Web -> API : GET /api/... (cookie wim_token, credentials: include)
+activate API
 API -> API : authGuard : vérifier la signature JWT
 API -> Redis : jti dans la denylist ?
+activate Redis
+Redis --> API : présent / absent
+deactivate Redis
 alt jti révoqué
   API --> Web : 401 Token revoked
 else jti valide
   API -> DB : SELECT tokenVersion, role (1 colonne)
+  activate DB
+  DB --> API : {tokenVersion, role}
+  deactivate DB
   alt v(token) < tokenVersion(DB)
     API --> Web : 401 Session revoked
   else version OK
@@ -43,11 +65,17 @@ else jti valide
     API --> Web : 200 (réponse de la route)
   end
 end
+deactivate API
 
 == Déconnexion / Force-logout ==
 Web -> API : POST /api/auth/logout
+activate API
 API -> Redis : ajouter jti à la denylist (TTL = exp du token)
+activate Redis
+Redis --> API : ok
+deactivate Redis
 API --> Web : 200 + cookie vidé
+deactivate API
 
 note over API, DB
 Force-logout admin / reset de mot de passe / changement

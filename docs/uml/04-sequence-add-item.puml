@@ -1,6 +1,7 @@
 @startuml
 title WIM – Diagramme de séquence (ajout article + garantie + alertes)
 
+autonumber
 actor Utilisateur as User
 participant "PWA (Web)" as Web
 participant "API (Node)" as API
@@ -11,27 +12,51 @@ participant "E-mail (Resend)" as Mail
 
 User -> Web : Ouvrir le formulaire d'ajout
 Web -> API : POST /api/articles\n{nom, modèle, desc, prix, tagIds, locationIds, garantie?}
+activate API
 note right of API : authGuard (cookie + jti + tokenVersion)\npuis csrfGuard sur la mutation
 API -> DB : INSERT Article (+ ArticleTag / ArticleLocation)
+activate DB
 DB --> API : articleId
+deactivate DB
 
 alt Garantie incluse dans le corps
   API -> API : garantieFin = dateAchat + durée (mois)
   API -> DB : INSERT Garantie (avec garantieFin)
+  activate DB
+  DB --> API : ok
+  deactivate DB
   API -> Jobs : Planifier alertes J-30 / J-7 / J-1\n(file wim-alerts, jobId déterministe)
 end
 
 opt Pièce jointe
   Web -> API : POST /api/attachments/upload (multipart)
   API -> DB : INSERT Attachment (fileUrl -> /uploads/...)
+  activate DB
+  DB --> API : ok
+  deactivate DB
 end
 
 API --> Web : 201 Created (article + garantie + alertes)
+deactivate API
 
 == Exécution différée (échéance d'un rappel) ==
 Jobs -> API : Job d'alerte arrivé à échéance
+activate API
 API -> DB : Charger garantie / article + abonnements
+activate DB
+DB --> API : contexte
+deactivate DB
 API -> Push : Envoyer la notification (await, rejoué si échec)
+activate Push
+Push --> API : ok / throw → BullMQ rejoue
+deactivate Push
 API -> Mail : Envoyer l'e-mail (best-effort) [si configuré + opt-in]
+activate Mail
+Mail --> API : ok (ne throw jamais)
+deactivate Mail
 API -> DB : UPDATE Alerte status = SENT
+activate DB
+DB --> API : ok
+deactivate DB
+deactivate API
 @enduml

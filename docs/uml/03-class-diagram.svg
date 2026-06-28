@@ -1,812 +1,838 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="CLASS" height="1339px" preserveAspectRatio="none" style="width:6297px;height:1339px;background:#FFFFFF;"
-version="1.1" viewBox="0 0 6297 1339" width="6297px" zoomAndPan="magnify">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="CLASS" height="1932px" preserveAspectRatio="none" style="width:5328px;height:1932px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 5328 1932" width="5328px" zoomAndPan="magnify">
 <title>WIM - Diagramme de classes</title>
 <defs/>
 <g>
 <g class="title" data-source-line="1">
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="227.3564" x="3028.1273" y="22.9951">WIM - Diagramme de classes</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="227.3564" x="2543.4773" y="22.9951">WIM - Diagramme de classes</text>
 </g>
 <!--class Role-->
 <g class="entity" data-entity="Role" data-source-line="12" data-uid="ent0002" id="entity_Role">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="108.585" x="82.49" y="158.3769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30.7959" x="121.3845" y="176.372">Role</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="83.49" x2="190.075" y1="184.6737" y2="184.6737"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="37.707" x="88.49" y="201.6689">USER</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96.585" x="88.49" y="217.9657">POWER_USER</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="47.0381" x="88.49" y="234.2626">ADMIN</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="83.49" x2="190.075" y1="241.5644" y2="241.5644"/>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="108.585" x="86.18" y="158.3769"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30.7959" x="125.0745" y="176.372">Role</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="87.18" x2="193.765" y1="184.6738" y2="184.6738"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="37.707" x="92.18" y="201.6689">USER</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96.585" x="92.18" y="217.9657">POWER_USER</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="47.0381" x="92.18" y="234.2626">ADMIN</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="87.18" x2="193.765" y1="241.5644" y2="241.5644"/>
 </g>
 <!--class User-->
 <g class="entity" data-entity="User" data-source-line="18" data-uid="ent0003" id="entity_User">
-<rect fill="#FFFFFF" height="319.3438" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="240.4229" x="3007.57" y="44.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="31.9102" x="3111.8263" y="62.292">User</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3008.57" x2="3246.9929" y1="70.5938" y2="70.5938"/>
-<ellipse cx="3018.57" cy="84.2422" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70.9707" x="3027.57" y="87.5889">userId: int</text>
-<ellipse cx="3018.57" cy="100.5391" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="87.9648" x="3027.57" y="103.8857">email: string</text>
-<ellipse cx="3018.57" cy="116.8359" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="66.7871" x="3027.57" y="120.1826">role: Role</text>
-<ellipse cx="3018.57" cy="133.1328" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="119.6357" x="3027.57" y="136.4795">tokenVersion: int</text>
-<ellipse cx="3018.57" cy="149.4297" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="152.9746" x="3027.57" y="152.7764">emailReminders: bool</text>
-<ellipse cx="3018.57" cy="165.7266" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="132.9863" x="3027.57" y="169.0732">weeklyDigest: bool</text>
-<ellipse cx="3018.57" cy="182.0234" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.0391" x="3027.57" y="185.3701">alertsSeenAt: datetime</text>
-<ellipse cx="3018.57" cy="198.3203" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="124.0791" x="3027.57" y="201.667">totpEnabled: bool</text>
-<ellipse cx="3018.57" cy="214.6172" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="170.3037" x="3027.57" y="217.9639">stripeCustomerId: string</text>
-<ellipse cx="3018.57" cy="230.9141" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189.2871" x="3027.57" y="234.2607">stripeSubscriptionId: string</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3008.57" x2="3246.9929" y1="241.5625" y2="241.5625"/>
-<ellipse cx="3018.57" cy="255.2109" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.4541" x="3027.57" y="258.5576">currency: char(3)</text>
-<ellipse cx="3018.57" cy="271.5078" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="136.6572" x="3027.57" y="274.8545">theme: varchar(16)</text>
-<ellipse cx="3018.57" cy="287.8047" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.7041" x="3027.57" y="291.1514">language: varchar(8)</text>
-<ellipse cx="3018.57" cy="304.1016" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="173.0791" x="3027.57" y="307.4482">dateFormat: varchar(16)</text>
-<ellipse cx="3018.57" cy="320.3984" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="195.0156" x="3027.57" y="323.7451">calendarToken: varchar(64)</text>
-<ellipse cx="3018.57" cy="336.6953" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="214.4229" x="3027.57" y="340.042">monthlyBudget: decimal(12,2)</text>
-<ellipse cx="3018.57" cy="352.9922" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="204.4766" x="3027.57" y="356.3389">annualBudget: decimal(12,2)</text>
+<rect fill="#FFFFFF" height="319.3438" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="240.4229" x="1935.27" y="44.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="31.9102" x="2039.5263" y="62.292">User</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1936.27" x2="2174.6929" y1="70.5938" y2="70.5938"/>
+<ellipse cx="1946.27" cy="84.2422" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70.9707" x="1955.27" y="87.5889">userId: int</text>
+<ellipse cx="1946.27" cy="100.5391" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="87.9648" x="1955.27" y="103.8857">email: string</text>
+<ellipse cx="1946.27" cy="116.8359" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="66.7871" x="1955.27" y="120.1826">role: Role</text>
+<ellipse cx="1946.27" cy="133.1328" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="119.6357" x="1955.27" y="136.4795">tokenVersion: int</text>
+<ellipse cx="1946.27" cy="149.4297" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="152.9746" x="1955.27" y="152.7764">emailReminders: bool</text>
+<ellipse cx="1946.27" cy="165.7266" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="132.9863" x="1955.27" y="169.0732">weeklyDigest: bool</text>
+<ellipse cx="1946.27" cy="182.0234" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.0391" x="1955.27" y="185.3701">alertsSeenAt: datetime</text>
+<ellipse cx="1946.27" cy="198.3203" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="124.0791" x="1955.27" y="201.667">totpEnabled: bool</text>
+<ellipse cx="1946.27" cy="214.6172" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="170.3037" x="1955.27" y="217.9639">stripeCustomerId: string</text>
+<ellipse cx="1946.27" cy="230.9141" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189.2871" x="1955.27" y="234.2607">stripeSubscriptionId: string</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1936.27" x2="2174.6929" y1="241.5625" y2="241.5625"/>
+<ellipse cx="1946.27" cy="255.2109" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.4541" x="1955.27" y="258.5576">currency: char(3)</text>
+<ellipse cx="1946.27" cy="271.5078" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="136.6572" x="1955.27" y="274.8545">theme: varchar(16)</text>
+<ellipse cx="1946.27" cy="287.8047" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.7041" x="1955.27" y="291.1514">language: varchar(8)</text>
+<ellipse cx="1946.27" cy="304.1016" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="173.0791" x="1955.27" y="307.4482">dateFormat: varchar(16)</text>
+<ellipse cx="1946.27" cy="320.3984" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="195.0156" x="1955.27" y="323.7451">calendarToken: varchar(64)</text>
+<ellipse cx="1946.27" cy="336.6953" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="214.4229" x="1955.27" y="340.042">monthlyBudget: decimal(12,2)</text>
+<ellipse cx="1946.27" cy="352.9922" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="204.4766" x="1955.27" y="356.3389">annualBudget: decimal(12,2)</text>
 </g>
 <!--class Article-->
 <g class="entity" data-entity="Article" data-source-line="38" data-uid="ent0004" id="entity_Article">
-<rect fill="#FFFFFF" height="270.4531" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="249.9863" x="1620.79" y="461.7369"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="44.9121" x="1723.3271" y="479.732">Article</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1621.79" x2="1869.7763" y1="488.0337" y2="488.0337"/>
-<ellipse cx="1631.79" cy="501.6822" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="84.3486" x="1640.79" y="505.0289">articleId: int</text>
-<ellipse cx="1631.79" cy="517.9791" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="201.2021" x="1640.79" y="521.3257">sharedWithPowerUsers: bool</text>
-<ellipse cx="1631.79" cy="534.2759" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.709" x="1640.79" y="537.6226">status: ArticleStatus</text>
-<ellipse cx="1631.79" cy="550.5728" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="179.9014" x="1640.79" y="553.9195">category: ArticleCategory</text>
-<ellipse cx="1631.79" cy="566.8697" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.4238" x="1640.79" y="570.2164">deletedAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1621.79" x2="1869.7763" y1="577.5181" y2="577.5181"/>
-<ellipse cx="1631.79" cy="591.1666" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="176.9277" x="1640.79" y="594.5132">articleNom: varchar(100)</text>
-<ellipse cx="1631.79" cy="607.4634" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.8994" x="1640.79" y="610.8101">articleModele: varchar(100)</text>
-<ellipse cx="1631.79" cy="623.7603" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="223.9863" x="1640.79" y="627.107">articleDescription: varchar(255)</text>
-<ellipse cx="1631.79" cy="640.0572" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="218.2305" x="1640.79" y="643.4039">productImageUrl: varchar(500)</text>
-<ellipse cx="1631.79" cy="656.3541" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.5986" x="1640.79" y="659.7007">serialNumber: varchar(120)</text>
-<ellipse cx="1631.79" cy="672.6509" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.3193" x="1640.79" y="675.9976">brand: varchar(120)</text>
-<ellipse cx="1631.79" cy="688.9478" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="205.4268" x="1640.79" y="692.2945">purchasePrice: decimal(12,2)</text>
-<ellipse cx="1631.79" cy="705.2447" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="217.6973" x="1640.79" y="708.5914">depreciationRate: decimal(5,2)</text>
-<ellipse cx="1631.79" cy="721.5416" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="176.2646" x="1640.79" y="724.8882">publicToken: varchar(64)</text>
+<rect fill="#FFFFFF" height="270.4531" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="249.9863" x="1247.48" y="1237.1169"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="44.9121" x="1350.0171" y="1255.112">Article</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1248.48" x2="1496.4663" y1="1263.4138" y2="1263.4138"/>
+<ellipse cx="1258.48" cy="1277.0622" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="84.3486" x="1267.48" y="1280.4089">articleId: int</text>
+<ellipse cx="1258.48" cy="1293.3591" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="201.2021" x="1267.48" y="1296.7057">sharedWithPowerUsers: bool</text>
+<ellipse cx="1258.48" cy="1309.6559" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.709" x="1267.48" y="1313.0026">status: ArticleStatus</text>
+<ellipse cx="1258.48" cy="1325.9528" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="179.9014" x="1267.48" y="1329.2995">category: ArticleCategory</text>
+<ellipse cx="1258.48" cy="1342.2497" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.4238" x="1267.48" y="1345.5964">deletedAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1248.48" x2="1496.4663" y1="1352.8981" y2="1352.8981"/>
+<ellipse cx="1258.48" cy="1366.5466" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="176.9277" x="1267.48" y="1369.8932">articleNom: varchar(100)</text>
+<ellipse cx="1258.48" cy="1382.8434" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.8994" x="1267.48" y="1386.1901">articleModele: varchar(100)</text>
+<ellipse cx="1258.48" cy="1399.1403" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="223.9863" x="1267.48" y="1402.487">articleDescription: varchar(255)</text>
+<ellipse cx="1258.48" cy="1415.4372" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="218.2305" x="1267.48" y="1418.7839">productImageUrl: varchar(500)</text>
+<ellipse cx="1258.48" cy="1431.7341" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.5986" x="1267.48" y="1435.0807">serialNumber: varchar(120)</text>
+<ellipse cx="1258.48" cy="1448.0309" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.3193" x="1267.48" y="1451.3776">brand: varchar(120)</text>
+<ellipse cx="1258.48" cy="1464.3278" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="205.4268" x="1267.48" y="1467.6745">purchasePrice: decimal(12,2)</text>
+<ellipse cx="1258.48" cy="1480.6247" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="217.6973" x="1267.48" y="1483.9714">depreciationRate: decimal(5,2)</text>
+<ellipse cx="1258.48" cy="1496.9216" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="176.2646" x="1267.48" y="1500.2682">publicToken: varchar(64)</text>
 </g>
 <!--class Garantie-->
 <g class="entity" data-entity="Garantie" data-source-line="55" data-uid="ent0005" id="entity_Garantie">
-<rect fill="#FFFFFF" height="254.1563" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="226.2793" x="1473.65" y="830.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="60.6279" x="1556.4757" y="848.292">Garantie</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1474.65" x2="1698.9293" y1="856.5938" y2="856.5938"/>
-<ellipse cx="1484.65" cy="870.2422" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="99.1006" x="1493.65" y="873.5889">garantieId: int</text>
-<ellipse cx="1484.65" cy="886.5391" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="173.0791" x="1493.65" y="889.8857">garantieDateAchat: date</text>
-<ellipse cx="1484.65" cy="902.8359" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197.4766" x="1493.65" y="906.1826">garantieDuration: int  ' mois</text>
-<ellipse cx="1484.65" cy="919.1328" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120.2168" x="1493.65" y="922.4795">garantieFin: date</text>
-<ellipse cx="1484.65" cy="935.4297" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="152.5986" x="1493.65" y="938.7764">garantieIsValide: bool</text>
-<ellipse cx="1484.65" cy="951.7266" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="175.8545" x="1493.65" y="955.0732">claimStatus: ClaimStatus</text>
-<ellipse cx="1484.65" cy="968.0234" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184.7139" x="1493.65" y="971.3701">claimUpdatedAt: datetime</text>
-<ellipse cx="1484.65" cy="984.3203" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.2373" x="1493.65" y="987.667">renewedAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1474.65" x2="1698.9293" y1="994.9688" y2="994.9688"/>
-<ellipse cx="1484.65" cy="1008.6172" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="191.6797" x="1493.65" y="1011.9639">garantieNom: varchar(100)</text>
-<ellipse cx="1484.65" cy="1024.9141" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="180.0791" x="1493.65" y="1028.2607">claimNote: varchar(2000)</text>
-<ellipse cx="1484.65" cy="1041.2109" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="200.2793" x="1493.65" y="1044.5576">providerName: varchar(120)</text>
-<ellipse cx="1484.65" cy="1057.5078" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193.4365" x="1493.65" y="1060.8545">providerPhone: varchar(40)</text>
-<ellipse cx="1484.65" cy="1073.8047" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="187.7764" x="1493.65" y="1077.1514">providerUrl: varchar(2048)</text>
+<rect fill="#FFFFFF" height="254.1563" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="226.2793" x="1030.34" y="905.9569"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="60.6279" x="1113.1657" y="923.952">Garantie</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1031.34" x2="1255.6193" y1="932.2538" y2="932.2538"/>
+<ellipse cx="1041.34" cy="945.9022" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="99.1006" x="1050.34" y="949.2489">garantieId: int</text>
+<ellipse cx="1041.34" cy="962.1991" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="173.0791" x="1050.34" y="965.5457">garantieDateAchat: date</text>
+<ellipse cx="1041.34" cy="978.4959" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197.4766" x="1050.34" y="981.8426">garantieDuration: int  ' mois</text>
+<ellipse cx="1041.34" cy="994.7928" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120.2168" x="1050.34" y="998.1395">garantieFin: date</text>
+<ellipse cx="1041.34" cy="1011.0897" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="152.5986" x="1050.34" y="1014.4364">garantieIsValide: bool</text>
+<ellipse cx="1041.34" cy="1027.3866" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="175.8545" x="1050.34" y="1030.7332">claimStatus: ClaimStatus</text>
+<ellipse cx="1041.34" cy="1043.6834" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184.7139" x="1050.34" y="1047.0301">claimUpdatedAt: datetime</text>
+<ellipse cx="1041.34" cy="1059.9803" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.2373" x="1050.34" y="1063.327">renewedAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1031.34" x2="1255.6193" y1="1070.6288" y2="1070.6288"/>
+<ellipse cx="1041.34" cy="1084.2772" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="191.6797" x="1050.34" y="1087.6239">garantieNom: varchar(100)</text>
+<ellipse cx="1041.34" cy="1100.5741" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="180.0791" x="1050.34" y="1103.9207">claimNote: varchar(2000)</text>
+<ellipse cx="1041.34" cy="1116.8709" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="200.2793" x="1050.34" y="1120.2176">providerName: varchar(120)</text>
+<ellipse cx="1041.34" cy="1133.1678" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193.4365" x="1050.34" y="1136.5145">providerPhone: varchar(40)</text>
+<ellipse cx="1041.34" cy="1149.4647" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="187.7764" x="1050.34" y="1152.8114">providerUrl: varchar(2048)</text>
 </g>
 <!--class WarrantyHistory-->
 <g class="entity" data-entity="WarrantyHistory" data-source-line="71" data-uid="ent0006" id="entity_WarrantyHistory">
-<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="230.1143" x="1530.73" y="1184.5969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="114.9668" x="1588.3037" y="1202.592">WarrantyHistory</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1531.73" x2="1759.8443" y1="1210.8938" y2="1210.8938"/>
-<ellipse cx="1541.73" cy="1224.5422" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="1550.73" y="1227.8889">id: int</text>
-<ellipse cx="1541.73" cy="1240.8391" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="204.1143" x="1550.73" y="1244.1857">event: WarrantyHistoryEvent</text>
-<ellipse cx="1541.73" cy="1257.1359" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.2666" x="1550.73" y="1260.4826">priorDateAchat: date</text>
-<ellipse cx="1541.73" cy="1273.4328" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.0781" x="1550.73" y="1276.7795">priorDuration: int</text>
-<ellipse cx="1541.73" cy="1289.7297" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="94.4043" x="1550.73" y="1293.0764">priorFin: date</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1531.73" x2="1759.8443" y1="1300.3781" y2="1300.3781"/>
-<ellipse cx="1541.73" cy="1314.0266" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.8789" x="1550.73" y="1317.3732">note: varchar(500)</text>
+<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="230.1143" x="956.42" y="1302.3069"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="114.9668" x="1013.9937" y="1320.302">WarrantyHistory</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="957.42" x2="1185.5343" y1="1328.6038" y2="1328.6038"/>
+<ellipse cx="967.42" cy="1342.2522" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="976.42" y="1345.5989">id: int</text>
+<ellipse cx="967.42" cy="1358.5491" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="204.1143" x="976.42" y="1361.8957">event: WarrantyHistoryEvent</text>
+<ellipse cx="967.42" cy="1374.8459" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.2666" x="976.42" y="1378.1926">priorDateAchat: date</text>
+<ellipse cx="967.42" cy="1391.1428" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.0781" x="976.42" y="1394.4895">priorDuration: int</text>
+<ellipse cx="967.42" cy="1407.4397" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="94.4043" x="976.42" y="1410.7864">priorFin: date</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="957.42" x2="1185.5343" y1="1418.0881" y2="1418.0881"/>
+<ellipse cx="967.42" cy="1431.7366" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.8789" x="976.42" y="1435.0832">note: varchar(500)</text>
 </g>
 <!--class Alerte-->
 <g class="entity" data-entity="Alerte" data-source-line="80" data-uid="ent0007" id="entity_Alerte">
-<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="199.9541" x="1844.81" y="1176.4469"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.9385" x="1923.8178" y="1194.442">Alerte</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1845.81" x2="2043.7641" y1="1202.7437" y2="1202.7437"/>
-<ellipse cx="1855.81" cy="1216.3922" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.375" x="1864.81" y="1219.7389">alerteId: int</text>
-<ellipse cx="1855.81" cy="1232.6891" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="115.1377" x="1864.81" y="1236.0357">alerteDate: date</text>
-<ellipse cx="1855.81" cy="1248.9859" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7354" x="1864.81" y="1252.3326">status: AlerteStatus</text>
-<ellipse cx="1855.81" cy="1265.2828" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.6924" x="1864.81" y="1268.6295">kind: AlerteKind</text>
-<ellipse cx="1855.81" cy="1281.5797" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="154.8408" x="1864.81" y="1284.9264">recurrenceMonths: int</text>
-<ellipse cx="1855.81" cy="1297.8766" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.9004" x="1864.81" y="1301.2232">snoozedUntil: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1845.81" x2="2043.7641" y1="1308.525" y2="1308.525"/>
-<ellipse cx="1855.81" cy="1322.1734" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="173.9541" x="1864.81" y="1325.5201">alerteNom: varchar(100)</text>
+<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="199.9541" x="1294.5" y="556.6169"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.9385" x="1373.5078" y="574.612">Alerte</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1295.5" x2="1493.4541" y1="582.9138" y2="582.9138"/>
+<ellipse cx="1305.5" cy="596.5622" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.375" x="1314.5" y="599.9089">alerteId: int</text>
+<ellipse cx="1305.5" cy="612.8591" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="115.1377" x="1314.5" y="616.2057">alerteDate: date</text>
+<ellipse cx="1305.5" cy="629.1559" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7354" x="1314.5" y="632.5026">status: AlerteStatus</text>
+<ellipse cx="1305.5" cy="645.4528" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.6924" x="1314.5" y="648.7995">kind: AlerteKind</text>
+<ellipse cx="1305.5" cy="661.7497" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="154.8408" x="1314.5" y="665.0964">recurrenceMonths: int</text>
+<ellipse cx="1305.5" cy="678.0466" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.9004" x="1314.5" y="681.3932">snoozedUntil: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1295.5" x2="1493.4541" y1="688.695" y2="688.695"/>
+<ellipse cx="1305.5" cy="702.3434" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="173.9541" x="1314.5" y="705.6901">alerteNom: varchar(100)</text>
 </g>
 <!--class Attachment-->
 <g class="entity" data-entity="Attachment" data-source-line="90" data-uid="ent0008" id="entity_Attachment">
-<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="200.4531" x="1295.56" y="1184.5969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82.3184" x="1354.6274" y="1202.592">Attachment</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1296.56" x2="1495.0131" y1="1210.8938" y2="1210.8938"/>
-<ellipse cx="1306.56" cy="1224.5422" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.7549" x="1315.56" y="1227.8889">attachmentId: int</text>
-<ellipse cx="1306.56" cy="1240.8391" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="157.0967" x="1315.56" y="1244.1857">type: AttachmentType</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1296.56" x2="1495.0131" y1="1251.4875" y2="1251.4875"/>
-<ellipse cx="1306.56" cy="1265.1359" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.9619" x="1315.56" y="1268.4826">fileName: varchar(255)</text>
-<ellipse cx="1306.56" cy="1281.4328" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="174.4531" x="1315.56" y="1284.7795">mimeType: varchar(100)</text>
-<ellipse cx="1306.56" cy="1297.7297" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.5518" x="1315.56" y="1301.0764">fileUrl: varchar(500)</text>
-<ellipse cx="1306.56" cy="1314.0266" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="165.9902" x="1315.56" y="1317.3732">thumbUrl: varchar(500)</text>
+<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="200.4531" x="1059.25" y="564.7669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82.3184" x="1118.3174" y="582.762">Attachment</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1060.25" x2="1258.7031" y1="591.0638" y2="591.0638"/>
+<ellipse cx="1070.25" cy="604.7122" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.7549" x="1079.25" y="608.0589">attachmentId: int</text>
+<ellipse cx="1070.25" cy="621.0091" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="157.0967" x="1079.25" y="624.3557">type: AttachmentType</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1060.25" x2="1258.7031" y1="631.6575" y2="631.6575"/>
+<ellipse cx="1070.25" cy="645.3059" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.9619" x="1079.25" y="648.6526">fileName: varchar(255)</text>
+<ellipse cx="1070.25" cy="661.6028" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="174.4531" x="1079.25" y="664.9495">mimeType: varchar(100)</text>
+<ellipse cx="1070.25" cy="677.8997" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.5518" x="1079.25" y="681.2464">fileUrl: varchar(500)</text>
+<ellipse cx="1070.25" cy="694.1966" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="165.9902" x="1079.25" y="697.5432">thumbUrl: varchar(500)</text>
 </g>
 <!--class Location-->
 <g class="entity" data-entity="Location" data-source-line="99" data-uid="ent0009" id="entity_Location">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="204.1787" x="168.7" y="911.7769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.459" x="241.0599" y="929.772">Location</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="169.7" x2="371.8787" y1="938.0738" y2="938.0738"/>
-<ellipse cx="179.7" cy="951.7222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="95.9834" x="188.7" y="955.0689">locationId: int</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="169.7" x2="371.8787" y1="962.3706" y2="962.3706"/>
-<ellipse cx="179.7" cy="976.0191" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.041" x="188.7" y="979.3657">name: varchar(120)</text>
-<ellipse cx="179.7" cy="992.3159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="178.1787" x="188.7" y="995.6626">description: varchar(255)</text>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="204.1787" x="767.39" y="1617.1669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.459" x="839.7499" y="1635.162">Location</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="768.39" x2="970.5687" y1="1643.4638" y2="1643.4638"/>
+<ellipse cx="778.39" cy="1657.1122" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="95.9834" x="787.39" y="1660.4589">locationId: int</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="768.39" x2="970.5687" y1="1667.7606" y2="1667.7606"/>
+<ellipse cx="778.39" cy="1681.4091" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.041" x="787.39" y="1684.7557">name: varchar(120)</text>
+<ellipse cx="778.39" cy="1697.7059" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="178.1787" x="787.39" y="1701.0526">description: varchar(255)</text>
 </g>
 <!--class Tag-->
 <g class="entity" data-entity="Tag" data-source-line="105" data-uid="ent0010" id="entity_Tag">
-<rect fill="#FFFFFF" height="74.8906" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="157.1338" x="408.22" y="919.9269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="26.0176" x="473.7781" y="937.922">Tag</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="409.22" x2="564.3538" y1="946.2238" y2="946.2238"/>
-<ellipse cx="419.22" cy="959.8722" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63.3896" x="428.22" y="963.2189">tagId: int</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="409.22" x2="564.3538" y1="970.5206" y2="970.5206"/>
-<ellipse cx="419.22" cy="984.1691" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.1338" x="428.22" y="987.5157">name: varchar(40)</text>
+<rect fill="#FFFFFF" height="74.8906" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="157.1338" x="1869.91" y="1625.3169"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="26.0176" x="1935.4681" y="1643.312">Tag</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1870.91" x2="2026.0438" y1="1651.6138" y2="1651.6138"/>
+<ellipse cx="1880.91" cy="1665.2622" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63.3896" x="1889.91" y="1668.6089">tagId: int</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1870.91" x2="2026.0438" y1="1675.9106" y2="1675.9106"/>
+<ellipse cx="1880.91" cy="1689.5591" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.1338" x="1889.91" y="1692.9057">name: varchar(40)</text>
 </g>
 <!--class ArticleNote-->
 <g class="entity" data-entity="ArticleNote" data-source-line="110" data-uid="ent0011" id="entity_ArticleNote">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="188.8457" x="1735.36" y="911.7769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.0527" x="1790.7565" y="929.772">ArticleNote</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1736.36" x2="1923.2057" y1="938.0738" y2="938.0738"/>
-<ellipse cx="1746.36" cy="951.7222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="71.9756" x="1755.36" y="955.0689">noteId: int</text>
-<ellipse cx="1746.36" cy="968.0191" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.8066" x="1755.36" y="971.3657">kind: ArticleNoteKind</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="1736.36" x2="1923.2057" y1="978.6675" y2="978.6675"/>
-<ellipse cx="1746.36" cy="992.3159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.8457" x="1755.36" y="995.6626">content: varchar(2000)</text>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="188.8457" x="1007.05" y="1617.1669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.0527" x="1062.4465" y="1635.162">ArticleNote</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1008.05" x2="1194.8957" y1="1643.4638" y2="1643.4638"/>
+<ellipse cx="1018.05" cy="1657.1122" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="71.9756" x="1027.05" y="1660.4589">noteId: int</text>
+<ellipse cx="1018.05" cy="1673.4091" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.8066" x="1027.05" y="1676.7557">kind: ArticleNoteKind</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1008.05" x2="1194.8957" y1="1684.0575" y2="1684.0575"/>
+<ellipse cx="1018.05" cy="1697.7059" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.8457" x="1027.05" y="1701.0526">content: varchar(2000)</text>
 </g>
 <!--class SavedView-->
 <g class="entity" data-entity="SavedView" data-source-line="116" data-uid="ent0012" id="entity_SavedView">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="166.752" x="3112.41" y="551.3769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76.7813" x="3157.3954" y="569.372">SavedView</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3113.41" x2="3278.162" y1="577.6737" y2="577.6737"/>
-<ellipse cx="3123.41" cy="591.3222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="3132.41" y="594.6689">id: int</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3113.41" x2="3278.162" y1="601.9706" y2="601.9706"/>
-<ellipse cx="3123.41" cy="615.6191" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.1338" x="3132.41" y="618.9657">name: varchar(60)</text>
-<ellipse cx="3123.41" cy="631.9159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.752" x="3132.41" y="635.2626">query: varchar(500)</text>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="166.752" x="2143.1" y="589.2069"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76.7813" x="2188.0854" y="607.202">SavedView</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2144.1" x2="2308.852" y1="615.5038" y2="615.5038"/>
+<ellipse cx="2154.1" cy="629.1522" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="2163.1" y="632.4989">id: int</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2144.1" x2="2308.852" y1="639.8006" y2="639.8006"/>
+<ellipse cx="2154.1" cy="653.4491" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.1338" x="2163.1" y="656.7957">name: varchar(60)</text>
+<ellipse cx="2154.1" cy="669.7459" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.752" x="2163.1" y="673.0926">query: varchar(500)</text>
 </g>
 <!--class ArticleTemplate-->
 <g class="entity" data-entity="ArticleTemplate" data-source-line="122" data-uid="ent0013" id="entity_ArticleTemplate">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="261.3066" x="3314.13" y="551.3769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.1729" x="3389.1969" y="569.372">ArticleTemplate</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3315.13" x2="3574.4366" y1="577.6737" y2="577.6737"/>
-<ellipse cx="3325.13" cy="591.3222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="3334.13" y="594.6689">id: int</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3315.13" x2="3574.4366" y1="601.9706" y2="601.9706"/>
-<ellipse cx="3325.13" cy="615.6191" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.041" x="3334.13" y="618.9657">name: varchar(120)</text>
-<ellipse cx="3325.13" cy="631.9159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="235.3066" x="3334.13" y="635.2626">payload: jsonb  ' noms (pas d'ids)</text>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="261.3066" x="2344.82" y="589.2069"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.1729" x="2419.8869" y="607.202">ArticleTemplate</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2345.82" x2="2605.1266" y1="615.5038" y2="615.5038"/>
+<ellipse cx="2355.82" cy="629.1522" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="2364.82" y="632.4989">id: int</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2345.82" x2="2605.1266" y1="639.8006" y2="639.8006"/>
+<ellipse cx="2355.82" cy="653.4491" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.041" x="2364.82" y="656.7957">name: varchar(120)</text>
+<ellipse cx="2355.82" cy="669.7459" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="235.3066" x="2364.82" y="673.0926">payload: jsonb  ' noms (pas d'ids)</text>
 </g>
 <!--class InventoryShare-->
 <g class="entity" data-entity="InventoryShare" data-source-line="128" data-uid="ent0014" id="entity_InventoryShare">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="228.8291" x="3610.37" y="551.3769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="107.5771" x="3670.996" y="569.372">InventoryShare</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3611.37" x2="3838.1991" y1="577.6737" y2="577.6737"/>
-<ellipse cx="3621.37" cy="591.3222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.7725" x="3630.37" y="594.6689">inventoryShareId: int</text>
-<ellipse cx="3621.37" cy="607.6191" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.8291" x="3630.37" y="610.9657">permission: SharePermission</text>
-<ellipse cx="3621.37" cy="623.9159" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.6279" x="3630.37" y="627.2626">active: bool</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3611.37" x2="3838.1991" y1="634.5644" y2="634.5644"/>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="228.8291" x="2641.06" y="589.2069"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="107.5771" x="2701.686" y="607.202">InventoryShare</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2642.06" x2="2868.8891" y1="615.5038" y2="615.5038"/>
+<ellipse cx="2652.06" cy="629.1522" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147.7725" x="2661.06" y="632.4989">inventoryShareId: int</text>
+<ellipse cx="2652.06" cy="645.4491" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.8291" x="2661.06" y="648.7957">permission: SharePermission</text>
+<ellipse cx="2652.06" cy="661.7459" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.6279" x="2661.06" y="665.0926">active: bool</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2642.06" x2="2868.8891" y1="672.3944" y2="672.3944"/>
 </g>
 <!--class ShareInvite-->
 <g class="entity" data-entity="ShareInvite" data-source-line="134" data-uid="ent0015" id="entity_ShareInvite">
-<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="228.8291" x="3874.37" y="526.9269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.9873" x="3948.7909" y="544.922">ShareInvite</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3875.37" x2="4102.1991" y1="553.2238" y2="553.2238"/>
-<ellipse cx="3885.37" cy="566.8722" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118.8291" x="3894.37" y="570.2189">shareInviteId: int</text>
-<ellipse cx="3885.37" cy="583.1691" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="136.0762" x="3894.37" y="586.5157">status: InviteStatus</text>
-<ellipse cx="3885.37" cy="599.4659" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.8291" x="3894.37" y="602.8126">permission: SharePermission</text>
-<ellipse cx="3885.37" cy="615.7628" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="3894.37" y="619.1095">expiresAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3875.37" x2="4102.1991" y1="626.4113" y2="626.4113"/>
-<ellipse cx="3885.37" cy="640.0597" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.9473" x="3894.37" y="643.4064">email: varchar(255)</text>
-<ellipse cx="3885.37" cy="656.3566" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="139.9863" x="3894.37" y="659.7032">token: varchar(128)</text>
+<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="228.8291" x="2905.06" y="564.7669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.9873" x="2979.4809" y="582.762">ShareInvite</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2906.06" x2="3132.8891" y1="591.0638" y2="591.0638"/>
+<ellipse cx="2916.06" cy="604.7122" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118.8291" x="2925.06" y="608.0589">shareInviteId: int</text>
+<ellipse cx="2916.06" cy="621.0091" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="136.0762" x="2925.06" y="624.3557">status: InviteStatus</text>
+<ellipse cx="2916.06" cy="637.3059" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.8291" x="2925.06" y="640.6526">permission: SharePermission</text>
+<ellipse cx="2916.06" cy="653.6028" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="2925.06" y="656.9495">expiresAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2906.06" x2="3132.8891" y1="664.2513" y2="664.2513"/>
+<ellipse cx="2916.06" cy="677.8997" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.9473" x="2925.06" y="681.2464">email: varchar(255)</text>
+<ellipse cx="2916.06" cy="694.1966" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="139.9863" x="2925.06" y="697.5432">token: varchar(128)</text>
 </g>
 <!--class ArticleTransferRequest-->
 <g class="entity" data-entity="ArticleTransferRequest" data-source-line="143" data-uid="ent0016" id="entity_ArticleTransferRequest">
-<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="532.9395" x="2500.32" y="887.3369"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="160.7607" x="2686.4094" y="905.332">ArticleTransferRequest</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="2501.32" x2="3032.2595" y1="913.6338" y2="913.6338"/>
-<ellipse cx="2511.32" cy="927.2822" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="2520.32" y="930.6289">id: int</text>
-<ellipse cx="2511.32" cy="943.5791" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="192.7324" x="2520.32" y="946.9257">direction: TransferDirection</text>
-<ellipse cx="2511.32" cy="959.8759" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="2520.32" y="963.2226">expiresAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="2501.32" x2="3032.2595" y1="970.5244" y2="970.5244"/>
-<ellipse cx="2511.32" cy="984.1728" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="139.9863" x="2520.32" y="987.5195">token: varchar(128)</text>
-<ellipse cx="2511.32" cy="1000.4697" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="506.9395" x="2520.32" y="1003.8164">status: varchar(20)  ' PENDING|ACCEPTED|REJECTED|REVOKED|EXPIRED</text>
-<ellipse cx="2511.32" cy="1016.7666" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="163.2559" x="2520.32" y="1020.1132">message: varchar(500)</text>
+<rect fill="#FFFFFF" height="140.0781" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="532.9395" x="2062.01" y="1592.7169"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="160.7607" x="2248.0994" y="1610.712">ArticleTransferRequest</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2063.01" x2="2593.9495" y1="1619.0138" y2="1619.0138"/>
+<ellipse cx="2073.01" cy="1632.6622" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="2082.01" y="1636.0089">id: int</text>
+<ellipse cx="2073.01" cy="1648.9591" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="192.7324" x="2082.01" y="1652.3057">direction: TransferDirection</text>
+<ellipse cx="2073.01" cy="1665.2559" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="2082.01" y="1668.6026">expiresAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2063.01" x2="2593.9495" y1="1675.9044" y2="1675.9044"/>
+<ellipse cx="2073.01" cy="1689.5528" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="139.9863" x="2082.01" y="1692.8995">token: varchar(128)</text>
+<ellipse cx="2073.01" cy="1705.8497" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="506.9395" x="2082.01" y="1709.1964">status: varchar(20)  ' PENDING|ACCEPTED|REJECTED|REVOKED|EXPIRED</text>
+<ellipse cx="2073.01" cy="1722.1466" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="163.2559" x="2082.01" y="1725.4932">message: varchar(500)</text>
 </g>
 <!--class AuditLog-->
 <g class="entity" data-entity="AuditLog" data-source-line="152" data-uid="ent0017" id="entity_AuditLog">
-<rect fill="#FFFFFF" height="123.7813" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="167.0664" x="4138.25" y="535.0769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61.9678" x="4190.7993" y="553.072">AuditLog</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="4139.25" x2="4304.3164" y1="561.3738" y2="561.3738"/>
-<ellipse cx="4149.25" cy="575.0222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="4158.25" y="578.3689">id: int</text>
-<ellipse cx="4149.25" cy="591.3191" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.0742" x="4158.25" y="594.6657">entityId: int</text>
-<ellipse cx="4149.25" cy="607.6159" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.0664" x="4158.25" y="610.9626">createdAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="4139.25" x2="4304.3164" y1="618.2644" y2="618.2644"/>
-<ellipse cx="4149.25" cy="631.9128" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="134.5244" x="4158.25" y="635.2595">action: varchar(80)</text>
-<ellipse cx="4149.25" cy="648.2097" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="132.0703" x="4158.25" y="651.5564">entity: varchar(80)</text>
+<rect fill="#FFFFFF" height="123.7813" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="167.0664" x="3168.94" y="572.9069"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61.9678" x="3221.4893" y="590.902">AuditLog</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="3169.94" x2="3335.0064" y1="599.2038" y2="599.2038"/>
+<ellipse cx="3179.94" cy="612.8522" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="3188.94" y="616.1989">id: int</text>
+<ellipse cx="3179.94" cy="629.1491" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.0742" x="3188.94" y="632.4957">entityId: int</text>
+<ellipse cx="3179.94" cy="645.4459" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.0664" x="3188.94" y="648.7926">createdAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="3169.94" x2="3335.0064" y1="656.0944" y2="656.0944"/>
+<ellipse cx="3179.94" cy="669.7428" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="134.5244" x="3188.94" y="673.0895">action: varchar(80)</text>
+<ellipse cx="3179.94" cy="686.0397" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="132.0703" x="3188.94" y="689.3864">entity: varchar(80)</text>
 </g>
 <!--class UserSession-->
 <g class="entity" data-entity="UserSession" data-source-line="162" data-uid="ent0018" id="entity_UserSession">
-<rect fill="#FFFFFF" height="123.7813" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="376.1094" x="4340.73" y="535.0769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85.3262" x="4486.1216" y="553.072">UserSession</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="4341.73" x2="4715.8394" y1="561.3738" y2="561.3738"/>
-<ellipse cx="4351.73" cy="575.0222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="4360.73" y="578.3689">id: int</text>
-<ellipse cx="4351.73" cy="591.3191" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="156.2354" x="4360.73" y="594.6657">lastActiveAt: datetime</text>
-<ellipse cx="4351.73" cy="607.6159" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="144.2588" x="4360.73" y="610.9626">revokedAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="4341.73" x2="4715.8394" y1="618.2644" y2="618.2644"/>
-<ellipse cx="4351.73" cy="631.9128" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="350.1094" x="4360.73" y="635.2595">jti: varchar(64)  ' = claim JWT + cl&#233; denylist Redis</text>
-<ellipse cx="4351.73" cy="648.2097" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184.0918" x="4360.73" y="651.5564">deviceLabel: varchar(120)</text>
+<rect fill="#FFFFFF" height="123.7813" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="376.1094" x="3371.42" y="572.9069"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85.3262" x="3516.8116" y="590.902">UserSession</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="3372.42" x2="3746.5294" y1="599.2038" y2="599.2038"/>
+<ellipse cx="3382.42" cy="612.8522" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="3391.42" y="616.1989">id: int</text>
+<ellipse cx="3382.42" cy="629.1491" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="156.2354" x="3391.42" y="632.4957">lastActiveAt: datetime</text>
+<ellipse cx="3382.42" cy="645.4459" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="144.2588" x="3391.42" y="648.7926">revokedAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="3372.42" x2="3746.5294" y1="656.0944" y2="656.0944"/>
+<ellipse cx="3382.42" cy="669.7428" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="350.1094" x="3391.42" y="673.0895">jti: varchar(64)  ' = claim JWT + cl&#233; denylist Redis</text>
+<ellipse cx="3382.42" cy="686.0397" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184.0918" x="3391.42" y="689.3864">deviceLabel: varchar(120)</text>
 </g>
 <!--class TotpSecret-->
 <g class="entity" data-entity="TotpSecret" data-source-line="170" data-uid="ent0019" id="entity_TotpSecret">
-<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="358.2881" x="4751.64" y="543.2269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76.5488" x="4892.5096" y="561.222">TotpSecret</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="4752.64" x2="5108.9281" y1="569.5238" y2="569.5238"/>
-<ellipse cx="4762.64" cy="583.1722" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="4771.64" y="586.5189">id: int</text>
-<ellipse cx="4762.64" cy="599.4691" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="332.2881" x="4771.64" y="602.8157">backupCodesHash: text  ' bcrypt, usage unique</text>
-<ellipse cx="4762.64" cy="615.7659" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91.9365" x="4771.64" y="619.1126">verified: bool</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="4752.64" x2="5108.9281" y1="626.4144" y2="626.4144"/>
-<ellipse cx="4762.64" cy="640.0628" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="203.2803" x="4771.64" y="643.4095">secret: varchar(64)  ' base32</text>
+<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="358.2881" x="3782.33" y="581.0569"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76.5488" x="3923.1996" y="599.052">TotpSecret</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="3783.33" x2="4139.6181" y1="607.3538" y2="607.3538"/>
+<ellipse cx="3793.33" cy="621.0022" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="3802.33" y="624.3489">id: int</text>
+<ellipse cx="3793.33" cy="637.2991" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="332.2881" x="3802.33" y="640.6457">backupCodesHash: text  ' bcrypt, usage unique</text>
+<ellipse cx="3793.33" cy="653.5959" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91.9365" x="3802.33" y="656.9426">verified: bool</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="3783.33" x2="4139.6181" y1="664.2444" y2="664.2444"/>
+<ellipse cx="3793.33" cy="677.8928" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="203.2803" x="3802.33" y="681.2395">secret: varchar(64)  ' base32</text>
 </g>
 <!--class PasswordResetToken-->
 <g class="entity" data-entity="PasswordResetToken" data-source-line="177" data-uid="ent0020" id="entity_PasswordResetToken">
-<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="376.3008" x="5144.63" y="543.2269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.7158" x="5258.4225" y="561.222">PasswordResetToken</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="5145.63" x2="5519.9308" y1="569.5238" y2="569.5238"/>
-<ellipse cx="5155.63" cy="583.1722" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="5164.63" y="586.5189">id: int</text>
-<ellipse cx="5155.63" cy="599.4691" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="5164.63" y="602.8157">expiresAt: datetime</text>
-<ellipse cx="5155.63" cy="615.7659" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159.8721" x="5164.63" y="619.1126">consumedAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="5145.63" x2="5519.9308" y1="626.4144" y2="626.4144"/>
-<ellipse cx="5155.63" cy="640.0628" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="350.3008" x="5164.63" y="643.4095">tokenHash: varchar(64)  ' SHA-256, jamais le clair</text>
+<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="376.3008" x="4175.33" y="581.0569"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.7158" x="4289.1225" y="599.052">PasswordResetToken</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="4176.33" x2="4550.6308" y1="607.3538" y2="607.3538"/>
+<ellipse cx="4186.33" cy="621.0022" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="4195.33" y="624.3489">id: int</text>
+<ellipse cx="4186.33" cy="637.2991" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="4195.33" y="640.6457">expiresAt: datetime</text>
+<ellipse cx="4186.33" cy="653.5959" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159.8721" x="4195.33" y="656.9426">consumedAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="4176.33" x2="4550.6308" y1="664.2444" y2="664.2444"/>
+<ellipse cx="4186.33" cy="677.8928" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="350.3008" x="4195.33" y="681.2395">tokenHash: varchar(64)  ' SHA-256, jamais le clair</text>
 </g>
 <!--class PushSubscription-->
 <g class="entity" data-entity="PushSubscription" data-source-line="184" data-uid="ent0021" id="entity_PushSubscription">
-<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="188.415" x="5555.58" y="543.2269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120.4697" x="5589.5527" y="561.222">PushSubscription</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="5556.58" x2="5742.995" y1="569.5238" y2="569.5238"/>
-<ellipse cx="5566.58" cy="583.1722" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="5575.58" y="586.5189">id: int</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="5556.58" x2="5742.995" y1="593.8206" y2="593.8206"/>
-<ellipse cx="5566.58" cy="607.4691" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.415" x="5575.58" y="610.8157">endpoint: varchar(500)</text>
-<ellipse cx="5566.58" cy="623.7659" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="153.7061" x="5575.58" y="627.1126">p256dh: varchar(200)</text>
-<ellipse cx="5566.58" cy="640.0628" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="132.1523" x="5575.58" y="643.4095">auth: varchar(100)</text>
+<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="188.415" x="4586.27" y="581.0569"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120.4697" x="4620.2427" y="599.052">PushSubscription</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="4587.27" x2="4773.685" y1="607.3538" y2="607.3538"/>
+<ellipse cx="4597.27" cy="621.0022" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="4606.27" y="624.3489">id: int</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="4587.27" x2="4773.685" y1="631.6506" y2="631.6506"/>
+<ellipse cx="4597.27" cy="645.2991" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162.415" x="4606.27" y="648.6457">endpoint: varchar(500)</text>
+<ellipse cx="4597.27" cy="661.5959" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="153.7061" x="4606.27" y="664.9426">p256dh: varchar(200)</text>
+<ellipse cx="4597.27" cy="677.8928" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="132.1523" x="4606.27" y="681.2395">auth: varchar(100)</text>
 </g>
 <!--class ProcessedStripeEvent-->
 <g class="entity" data-entity="ProcessedStripeEvent" data-source-line="191" data-uid="ent0022" id="entity_ProcessedStripeEvent">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="393.958" x="225.81" y="158.3769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="152.79" x="346.394" y="176.372">ProcessedStripeEvent</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="226.81" x2="618.768" y1="184.6737" y2="184.6737"/>
-<ellipse cx="236.81" cy="198.3222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159.0381" x="245.81" y="201.6689">processedAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="226.81" x2="618.768" y1="208.9706" y2="208.9706"/>
-<ellipse cx="236.81" cy="222.6191" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="367.958" x="245.81" y="225.9657">eventId: varchar(255)  ' PK = idempotence webhook</text>
-<ellipse cx="236.81" cy="238.9159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.6123" x="245.81" y="242.2626">type: varchar(100)</text>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="393.958" x="229.5" y="158.3769"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="152.79" x="350.084" y="176.372">ProcessedStripeEvent</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="230.5" x2="622.458" y1="184.6738" y2="184.6738"/>
+<ellipse cx="240.5" cy="198.3222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159.0381" x="249.5" y="201.6689">processedAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="230.5" x2="622.458" y1="208.9706" y2="208.9706"/>
+<ellipse cx="240.5" cy="222.6191" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="367.958" x="249.5" y="225.9657">eventId: varchar(255)  ' PK = idempotence webhook</text>
+<ellipse cx="240.5" cy="238.9159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.6123" x="249.5" y="242.2626">type: varchar(100)</text>
 </g>
 <!--class Loan-->
 <g class="entity" data-entity="Loan" data-source-line="199" data-uid="ent0023" id="entity_Loan">
-<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="318.9541" x="600.31" y="879.1869"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33.8174" x="742.8784" y="897.182">Loan</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="601.31" x2="918.2641" y1="905.4838" y2="905.4838"/>
-<ellipse cx="611.31" cy="919.1322" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70.3418" x="620.31" y="922.4789">loanId: int</text>
-<ellipse cx="611.31" cy="935.4291" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="134.8389" x="620.31" y="938.7757">loanedAt: datetime</text>
-<ellipse cx="611.31" cy="951.7259" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113.8047" x="620.31" y="955.0726">dueAt: datetime</text>
-<ellipse cx="611.31" cy="968.0228" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.292" x="620.31" y="971.3695">returnedAt: datetime</text>
-<ellipse cx="611.31" cy="984.3197" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="292.9541" x="620.31" y="987.6664">reminderAlerteId: int  ' rappel d'&#233;ch&#233;ance</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="601.31" x2="918.2641" y1="994.9681" y2="994.9681"/>
-<ellipse cx="611.31" cy="1008.6166" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="204.9893" x="620.31" y="1011.9632">borrowerName: varchar(120)</text>
-<ellipse cx="611.31" cy="1024.9134" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.5283" x="620.31" y="1028.2601">borrowerEmail: varchar(180)</text>
+<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="318.9541" x="7" y="1584.5669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33.8174" x="149.5684" y="1602.562">Loan</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="8" x2="324.9541" y1="1610.8638" y2="1610.8638"/>
+<ellipse cx="18" cy="1624.5122" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70.3418" x="27" y="1627.8589">loanId: int</text>
+<ellipse cx="18" cy="1640.8091" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="134.8389" x="27" y="1644.1557">loanedAt: datetime</text>
+<ellipse cx="18" cy="1657.1059" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113.8047" x="27" y="1660.4526">dueAt: datetime</text>
+<ellipse cx="18" cy="1673.4028" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.292" x="27" y="1676.7495">returnedAt: datetime</text>
+<ellipse cx="18" cy="1689.6997" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="292.9541" x="27" y="1693.0464">reminderAlerteId: int  ' rappel d'&#233;ch&#233;ance</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="8" x2="324.9541" y1="1700.3481" y2="1700.3481"/>
+<ellipse cx="18" cy="1713.9966" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="204.9893" x="27" y="1717.3432">borrowerName: varchar(120)</text>
+<ellipse cx="18" cy="1730.2934" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.5283" x="27" y="1733.6401">borrowerEmail: varchar(180)</text>
 </g>
 <!--class InsurancePolicy-->
 <g class="entity" data-entity="InsurancePolicy" data-source-line="209" data-uid="ent0024" id="entity_InsurancePolicy">
-<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="371.1943" x="954.19" y="879.1869"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109.457" x="1085.0587" y="897.182">InsurancePolicy</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="955.19" x2="1324.3843" y1="905.4838" y2="905.4838"/>
-<ellipse cx="965.19" cy="919.1322" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.6484" x="974.19" y="922.4789">policyId: int</text>
-<ellipse cx="965.19" cy="935.4291" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143.2061" x="974.19" y="938.7757">renewalAt: datetime</text>
-<ellipse cx="965.19" cy="951.7259" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="345.1943" x="974.19" y="955.0726">reminderAlerteId: int  ' rappel de renouvellement</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="955.19" x2="1324.3843" y1="962.3744" y2="962.3744"/>
-<ellipse cx="965.19" cy="976.0228" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="158.9766" x="974.19" y="979.3695">provider: varchar(150)</text>
-<ellipse cx="965.19" cy="992.3197" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197.791" x="974.19" y="995.6664">policyNumber: varchar(100)</text>
-<ellipse cx="965.19" cy="1008.6166" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169.75" x="974.19" y="1011.9632">premium: decimal(12,2)</text>
-<ellipse cx="965.19" cy="1024.9134" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="226.4678" x="974.19" y="1028.2601">coverageAmount: decimal(12,2)</text>
+<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="371.1943" x="360.88" y="1584.5669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109.457" x="491.7487" y="1602.562">InsurancePolicy</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="361.88" x2="731.0743" y1="1610.8638" y2="1610.8638"/>
+<ellipse cx="371.88" cy="1624.5122" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.6484" x="380.88" y="1627.8589">policyId: int</text>
+<ellipse cx="371.88" cy="1640.8091" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143.2061" x="380.88" y="1644.1557">renewalAt: datetime</text>
+<ellipse cx="371.88" cy="1657.1059" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="345.1943" x="380.88" y="1660.4526">reminderAlerteId: int  ' rappel de renouvellement</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="361.88" x2="731.0743" y1="1667.7544" y2="1667.7544"/>
+<ellipse cx="371.88" cy="1681.4028" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="158.9766" x="380.88" y="1684.7495">provider: varchar(150)</text>
+<ellipse cx="371.88" cy="1697.6997" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197.791" x="380.88" y="1701.0464">policyNumber: varchar(100)</text>
+<ellipse cx="371.88" cy="1713.9966" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169.75" x="380.88" y="1717.3432">premium: decimal(12,2)</text>
+<ellipse cx="371.88" cy="1730.2934" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="226.4678" x="380.88" y="1733.6401">coverageAmount: decimal(12,2)</text>
 </g>
 <!--class ServiceRecord-->
 <g class="entity" data-entity="ServiceRecord" data-source-line="219" data-uid="ent0025" id="entity_ServiceRecord">
-<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="368.4395" x="2096.57" y="879.1869"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.9873" x="2230.2961" y="897.182">ServiceRecord</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="2097.57" x2="2464.0095" y1="905.4838" y2="905.4838"/>
-<ellipse cx="2107.57" cy="919.1322" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90.583" x="2116.57" y="922.4789">serviceId: int</text>
-<ellipse cx="2107.57" cy="935.4291" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161.0752" x="2116.57" y="938.7757">performedAt: datetime</text>
-<ellipse cx="2107.57" cy="951.7259" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="146.959" x="2116.57" y="955.0726">nextDueAt: datetime</text>
-<ellipse cx="2107.57" cy="968.0228" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="342.4395" x="2116.57" y="971.3695">reminderAlerteId: int  ' rappel prochain entretien</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="2097.57" x2="2464.0095" y1="978.6713" y2="978.6713"/>
-<ellipse cx="2107.57" cy="992.3197" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="178.1787" x="2116.57" y="995.6664">description: varchar(300)</text>
-<ellipse cx="2107.57" cy="1008.6166" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="135.502" x="2116.57" y="1011.9632">cost: decimal(12,2)</text>
-<ellipse cx="2107.57" cy="1024.9134" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="158.9766" x="2116.57" y="1028.2601">provider: varchar(150)</text>
+<rect fill="#FFFFFF" height="156.375" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="368.4395" x="1231.26" y="1584.5669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.9873" x="1364.9861" y="1602.562">ServiceRecord</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1232.26" x2="1598.6995" y1="1610.8638" y2="1610.8638"/>
+<ellipse cx="1242.26" cy="1624.5122" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90.583" x="1251.26" y="1627.8589">serviceId: int</text>
+<ellipse cx="1242.26" cy="1640.8091" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161.0752" x="1251.26" y="1644.1557">performedAt: datetime</text>
+<ellipse cx="1242.26" cy="1657.1059" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="146.959" x="1251.26" y="1660.4526">nextDueAt: datetime</text>
+<ellipse cx="1242.26" cy="1673.4028" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="342.4395" x="1251.26" y="1676.7495">reminderAlerteId: int  ' rappel prochain entretien</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1232.26" x2="1598.6995" y1="1684.0513" y2="1684.0513"/>
+<ellipse cx="1242.26" cy="1697.6997" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="178.1787" x="1251.26" y="1701.0464">description: varchar(300)</text>
+<ellipse cx="1242.26" cy="1713.9966" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="135.502" x="1251.26" y="1717.3432">cost: decimal(12,2)</text>
+<ellipse cx="1242.26" cy="1730.2934" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="158.9766" x="1251.26" y="1733.6401">provider: varchar(150)</text>
 </g>
 <!--class MessageThread-->
 <g class="entity" data-entity="MessageThread" data-source-line="231" data-uid="ent0026" id="entity_MessageThread">
-<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="200.043" x="3067.76" y="903.6269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="110.6191" x="3112.4719" y="921.622">MessageThread</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3068.76" x2="3266.803" y1="929.9237" y2="929.9237"/>
-<ellipse cx="3078.76" cy="943.5722" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="3087.76" y="946.9189">id: int</text>
-<ellipse cx="3078.76" cy="959.8691" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="174.043" x="3087.76" y="963.2157">lastMessageAt: datetime</text>
-<ellipse cx="3078.76" cy="976.1659" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="133.2871" x="3087.76" y="979.5126">ownerUnread: bool</text>
-<ellipse cx="3078.76" cy="992.4628" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="157.9238" x="3087.76" y="995.8095">requesterUnread: bool</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3068.76" x2="3266.803" y1="1003.1112" y2="1003.1112"/>
+<rect fill="#FFFFFF" height="107.4844" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="200.043" x="1634.46" y="1609.0169"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="110.6191" x="1679.1719" y="1627.012">MessageThread</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1635.46" x2="1833.503" y1="1635.3138" y2="1635.3138"/>
+<ellipse cx="1645.46" cy="1648.9622" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="1654.46" y="1652.3089">id: int</text>
+<ellipse cx="1645.46" cy="1665.2591" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="174.043" x="1654.46" y="1668.6057">lastMessageAt: datetime</text>
+<ellipse cx="1645.46" cy="1681.5559" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="133.2871" x="1654.46" y="1684.9026">ownerUnread: bool</text>
+<ellipse cx="1645.46" cy="1697.8528" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="157.9238" x="1654.46" y="1701.1995">requesterUnread: bool</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1635.46" x2="1833.503" y1="1708.5013" y2="1708.5013"/>
 </g>
 <!--class Message-->
 <g class="entity" data-entity="Message" data-source-line="238" data-uid="ent0027" id="entity_Message">
-<rect fill="#FFFFFF" height="123.7813" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="220.2637" x="3149.65" y="1192.7469"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61.3594" x="3229.1021" y="1210.742">Message</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3150.65" x2="3368.9137" y1="1219.0438" y2="1219.0438"/>
-<ellipse cx="3160.65" cy="1232.6922" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="3169.65" y="1236.0389">id: int</text>
-<ellipse cx="3160.65" cy="1248.9891" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.1133" x="3169.65" y="1252.3357">kind: MessageKind</text>
-<ellipse cx="3160.65" cy="1265.2859" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="166.4277" x="3169.65" y="1268.6326">offerStatus: OfferStatus</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="3150.65" x2="3368.9137" y1="1275.9344" y2="1275.9344"/>
-<ellipse cx="3160.65" cy="1289.5828" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143.8691" x="3169.65" y="1292.9295">body: varchar(2000)</text>
-<ellipse cx="3160.65" cy="1305.8797" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.2637" x="3169.65" y="1309.2264">offerAmount: decimal(12,2)</text>
+<rect fill="#FFFFFF" height="123.7813" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="220.2637" x="2080.35" y="1801.9469"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61.3594" x="2159.8021" y="1819.942">Message</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2081.35" x2="2299.6137" y1="1828.2438" y2="1828.2438"/>
+<ellipse cx="2091.35" cy="1841.8922" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="40.1953" x="2100.35" y="1845.2389">id: int</text>
+<ellipse cx="2091.35" cy="1858.1891" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.1133" x="2100.35" y="1861.5357">kind: MessageKind</text>
+<ellipse cx="2091.35" cy="1874.4859" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="166.4277" x="2100.35" y="1877.8326">offerStatus: OfferStatus</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="2081.35" x2="2299.6137" y1="1885.1344" y2="1885.1344"/>
+<ellipse cx="2091.35" cy="1898.7828" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143.8691" x="2100.35" y="1902.1295">body: varchar(2000)</text>
+<ellipse cx="2091.35" cy="1915.0797" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.2637" x="2100.35" y="1918.4264">offerAmount: decimal(12,2)</text>
 </g>
 <!--class FeatureFlag-->
 <g class="entity" data-entity="FeatureFlag" data-source-line="248" data-uid="ent0028" id="entity_FeatureFlag">
-<rect fill="#FFFFFF" height="74.8906" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="259.5703" x="7" y="559.5269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83.3848" x="95.0928" y="577.522">FeatureFlag</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="8" x2="265.5703" y1="585.8238" y2="585.8238"/>
-<ellipse cx="18" cy="599.4722" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130.0332" x="27" y="602.8189">requiredRole: Role</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="8" x2="265.5703" y1="610.1206" y2="610.1206"/>
-<ellipse cx="18" cy="623.7691" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="233.5703" x="27" y="627.1157">featureKey: varchar(60)  ' unique</text>
+<rect fill="#FFFFFF" height="74.8906" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="259.5703" x="10.69" y="597.3569"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83.3848" x="98.7828" y="615.352">FeatureFlag</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="11.69" x2="269.2603" y1="623.6538" y2="623.6538"/>
+<ellipse cx="21.69" cy="637.3022" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130.0332" x="30.69" y="640.6489">requiredRole: Role</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="11.69" x2="269.2603" y1="647.9506" y2="647.9506"/>
+<ellipse cx="21.69" cy="661.5991" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="233.5703" x="30.69" y="664.9457">featureKey: varchar(60)  ' unique</text>
 </g>
 <!--class FeatureTempGrant-->
 <g class="entity" data-entity="FeatureTempGrant" data-source-line="253" data-uid="ent0029" id="entity_FeatureTempGrant">
-<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="194.3623" x="5937.6" y="158.3769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="133.2119" x="5968.1752" y="176.372">FeatureTempGrant</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="5938.6" x2="6130.9623" y1="184.6737" y2="184.6737"/>
-<ellipse cx="5948.6" cy="198.3222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="5957.6" y="201.6689">expiresAt: datetime</text>
-<line style="stroke:#555555;stroke-width:0.5;" x1="5938.6" x2="6130.9623" y1="208.9706" y2="208.9706"/>
-<ellipse cx="5948.6" cy="222.6191" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="168.3623" x="5957.6" y="225.9657">featureKey: varchar(60)</text>
-<ellipse cx="5948.6" cy="238.9159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.8789" x="5957.6" y="242.2626">note: varchar(255)</text>
+<rect fill="#FFFFFF" height="91.1875" rx="2.5" ry="2.5" style="stroke:#555555;stroke-width:0.5;" width="194.3623" x="4968.3" y="158.3769"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="133.2119" x="4998.8752" y="176.372">FeatureTempGrant</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="4969.3" x2="5161.6623" y1="184.6738" y2="184.6738"/>
+<ellipse cx="4979.3" cy="198.3222" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="138.7695" x="4988.3" y="201.6689">expiresAt: datetime</text>
+<line style="stroke:#555555;stroke-width:0.5;" x1="4969.3" x2="5161.6623" y1="208.9706" y2="208.9706"/>
+<ellipse cx="4979.3" cy="222.6191" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="168.3623" x="4988.3" y="225.9657">featureKey: varchar(60)</text>
+<ellipse cx="4979.3" cy="238.9159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="131.8789" x="4988.3" y="242.2626">note: varchar(255)</text>
 </g>
-<g class="entity" data-entity="GMN63" data-source-line="309" data-uid="ent0064" id="entity_GMN63">
-<path d="M5778.95,440.6369 L5778.95,753.2931 A0,0 0 0 0 5778.95,753.2931 L6290.6111,753.2931 A0,0 0 0 0 6290.6111,753.2931 L6290.6111,450.6369 L6280.6111,440.6369 L6038.79,440.6369 L6034.79,249.8169 L6030.79,440.6369
-L5778.95,440.6369 A0,0 0 0 0 5778.95,440.6369" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
-<path d="M6280.6111,440.6369 L6280.6111,450.6369 L6290.6111,450.6369 L6280.6111,440.6369" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="226.2622" x="5784.95" y="457.7038">Align&#233; sur prisma/schema.prisma :</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="471.3579" x="5784.95" y="472.8366">- Une Garantie appartient &#224; 0..1 Article (lien unique) ; le renouvellement</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="387.8989" x="5793.2146" y="487.9694">fait avancer la ligne vivante et archive l'&#233;tat ant&#233;rieur
-dans</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="206.3115" x="5793.2146" y="503.1022">WarrantyHistory (append-only).</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="490.6611" x="5784.95" y="518.235">- ProcessedStripeEvent, FeatureFlag et FeatureTempGrant sont autonomes</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="476.1821" x="5793.2146" y="533.3678">(pas de FK User) : marqueur d'idempotence du webhook et configuration</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163.0269" x="5793.2146" y="548.5006">des features par l'admin.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="399.5342" x="5784.95" y="563.6335">- Modules payants par article : Loan (pr&#234;t), InsurancePolicy +</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="446.8433" x="5793.2146" y="578.7663">ArticleInsurance (assurance M:N), ServiceRecord (entretien), chacun</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="319.103" x="5793.2146" y="593.8991">pouvant planifier un rappel via reminderAlerteId.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="478.0674" x="5784.95" y="609.0319">- MessageThread = 1 fil par (article, demandeur) ; ownerUserId est fig&#233;
+<g class="entity" data-entity="GMN67" data-source-line="320" data-uid="ent0068" id="entity_GMN67">
+<path d="M4809.65,440.6369 L4809.65,828.9572 A0,0 0 0 0 4809.65,828.9572 L5321.3111,828.9572 A0,0 0 0 0 5321.3111,828.9572 L5321.3111,450.6369 L5311.3111,440.6369 L5069.48,440.6369 L5065.48,250.0469 L5061.48,440.6369
+L4809.65,440.6369 A0,0 0 0 0 4809.65,440.6369" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
+<path d="M5311.3111,440.6369 L5311.3111,450.6369 L5321.3111,450.6369 L5311.3111,440.6369" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="226.2622" x="4815.65" y="457.7038">Align&#233; sur prisma/schema.prisma :</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="482.936" x="4815.65" y="472.8366">- Notation : composition (&#10033;--) = appartenance exclusive + cascade
+delete</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="393.4341" x="4823.9146" y="487.9694">(FK obligatoire) ; association (--&gt;) = FK nullable, lien SetNull</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="414.521" x="4823.9146" y="503.1022">(AuditLog) ou r&#244;le multiple vers User. M:N via table de jonction.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="476.1187" x="4815.65" y="518.235">- Une Garantie r&#233;f&#233;rence 0..1 Article (garantieArticleId nullable,
+unique) :</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="436.9155" x="4823.9146" y="533.3678">une garantie autonome est possible (POST /api/warranties), d'o&#249;
+la</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="422.4937" x="4823.9146" y="548.5006">composition sous User et l'association &#171; couvre &#187; vers Article.
+Le</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="459.3545" x="4823.9146" y="563.6335">renouvellement fait avancer la ligne vivante et archive l'&#233;tat
+ant&#233;rieur</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="241.6743" x="4823.9146" y="578.7663">dans WarrantyHistory (append-only).</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="490.6611" x="4815.65" y="593.8991">- ProcessedStripeEvent, FeatureFlag et FeatureTempGrant sont autonomes</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="476.1821" x="4823.9146" y="609.0319">(pas de FK User) : marqueur d'idempotence du webhook et configuration</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163.0269" x="4823.9146" y="624.1647">des features par l'admin.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="399.5342" x="4815.65" y="639.2975">- Modules payants par article : Loan (pr&#234;t), InsurancePolicy +</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="446.8433" x="4823.9146" y="654.4303">ArticleInsurance (assurance M:N), ServiceRecord (entretien), chacun</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="319.103" x="4823.9146" y="669.5631">pouvant planifier un rappel via reminderAlerteId.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="478.0674" x="4815.65" y="684.696">- MessageThread = 1 fil par (article, demandeur) ; ownerUserId est fig&#233;
 &#224;</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="445.999" x="5793.2146" y="624.1647">la cr&#233;ation, donc un transfert ult&#233;rieur ne casse pas la conversation.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="421.4146" x="5784.95" y="639.2975">- Les noms fran&#231;ais legacy (Alerte*, Garantie, articleNom...) sont</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="453.5654" x="5793.2146" y="654.4303">intentionnellement conserv&#233;s ; les unions @wim/types sont anglaises</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="328.7388" x="5793.2146" y="669.5631">(AlertStatus) mais les valeurs litt&#233;rales co&#239;ncident.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="466.0005" x="5784.95" y="684.696">- Enums : Role, ClaimStatus, AlerteStatus, AlerteKind, AttachmentType,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="422.8555" x="5793.2146" y="699.8288">ArticleNoteKind, ArticleStatus, ArticleCategory, SharePermission,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="379.7803" x="5793.2146" y="714.9616">InviteStatus, TransferDirection, MessageKind, OfferStatus,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="148.1289" x="5793.2146" y="730.0944">WarrantyHistoryEvent.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="427.5718" x="5784.95" y="745.2272">- R&#233;f&#233;rence champ-par-champ exhaustive : ../data-dictionary.md.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="445.999" x="4823.9146" y="699.8288">la cr&#233;ation, donc un transfert ult&#233;rieur ne casse pas la conversation.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="421.4146" x="4815.65" y="714.9616">- Les noms fran&#231;ais legacy (Alerte*, Garantie, articleNom...) sont</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="453.5654" x="4823.9146" y="730.0944">intentionnellement conserv&#233;s ; les unions @wim/types sont anglaises</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="328.7388" x="4823.9146" y="745.2272">(AlertStatus) mais les valeurs litt&#233;rales co&#239;ncident.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="466.0005" x="4815.65" y="760.36">- Enums : Role, ClaimStatus, AlerteStatus, AlerteKind, AttachmentType,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="422.8555" x="4823.9146" y="775.4928">ArticleNoteKind, ArticleStatus, ArticleCategory, SharePermission,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="379.7803" x="4823.9146" y="790.6256">InviteStatus, TransferDirection, MessageKind, OfferStatus,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="148.1289" x="4823.9146" y="805.7585">WarrantyHistoryEvent.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="427.5718" x="4815.65" y="820.8913">- R&#233;f&#233;rence champ-par-champ exhaustive : ../data-dictionary.md.</text>
 </g>
-<!--link User to Article-->
-<g class="link" data-entity-1="User" data-entity-2="Article" data-source-line="260" data-uid="lnk30" id="link_User_Article">
-<path codeLine="260" d="M3007.38,226.5869 C2842.91,257.3369 2539.56,318.4069 2286.79,393.6369 C2141.78,436.7969 1985.3391,497.1093 1876.7491,541.2093" fill="none" id="User-to-Article" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="1871.19,543.4669,1881.0337,543.7865,1875.8226,541.5855,1878.0235,536.3744,1871.19,543.4669" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="53.9995" x="2287.79" y="406.7038">poss&#232;de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2991.4192" y="224.6265">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1878.8073" y="524.1588">0..*</text>
+<!--reverse link User to Article-->
+<g class="link" data-entity-1="User" data-entity-2="Article" data-source-line="266" data-uid="lnk30" id="link_User_Article">
+<path codeLine="266" d="M1923.0286,223.7382 C1816.5386,244.8282 1677.21,289.6969 1592.48,393.6369 C1468.14,546.1769 1549.27,635.8269 1511.48,828.9569 C1482.62,976.4169 1482.6,1015.0469 1443.48,1160.1169
+C1436.73,1185.1469 1428.65,1211.5369 1420.4,1236.8769" fill="none" id="User-backto-Article" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1934.8,221.4069,1928.1372,218.6487,1923.0286,223.7382,1929.6914,226.4963,1934.8,221.4069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1918.8213" y="219.1147">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1399.3931" y="1226.1289">0..*</text>
 </g>
-<!--link User to Location-->
-<g class="link" data-entity-1="User" data-entity-2="Location" data-source-line="261" data-uid="lnk31" id="link_User_Location">
-<path codeLine="261" d="M3007.33,208.0469 C2515.87,221.6269 678.94,282.6669 477.79,440.6369 C325.46,560.2669 285.3534,803.4483 274.8734,905.4283" fill="none" id="User-to-Location" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="274.26,911.3969,279.1591,902.8529,274.7711,906.4231,271.201,902.0351,274.26,911.3969" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="53.9995" x="478.79" y="601.5338">poss&#232;de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2990.9731" y="221.7513">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="250.0833" y="900.6196">0..*</text>
+<!--reverse link User to Location-->
+<g class="link" data-entity-1="User" data-entity-2="Location" data-source-line="267" data-uid="lnk31" id="link_User_Location">
+<path codeLine="267" d="M1922.9753,218.3188 C1734.5853,239.5188 1372.74,290.1569 1071.48,393.6369 C943.02,437.7669 882.48,497.9769 882.48,633.7969 C882.48,633.7969 882.48,633.7969 882.48,1373.3469 C882.48,1459.5569
+876.61,1560.1169 872.76,1616.8269" fill="none" id="User-backto-Location" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1934.9,216.9769,1928.4903,213.6729,1922.9753,218.3188,1929.3849,221.6227,1934.9,216.9769" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1918.9277" y="214.4009">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="848.5554" y="1606.0554">0..*</text>
 </g>
-<!--link User to Tag-->
-<g class="link" data-entity-1="User" data-entity-2="Tag" data-source-line="262" data-uid="lnk32" id="link_User_Tag">
-<path codeLine="262" d="M3007.22,209.8669 C2548.82,229.4369 930.82,307.4669 745.79,440.6369 C577.86,561.5069 513.4817,817.0704 494.4217,913.6504" fill="none" id="User-to-Tag" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="493.26,919.5369,498.9268,911.4816,494.2281,914.6315,491.0782,909.9327,493.26,919.5369" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="53.9995" x="746.79" y="601.5338">poss&#232;de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2991.249" y="222.7963">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="469.3991" y="908.8232">0..*</text>
+<!--reverse link User to Tag-->
+<g class="link" data-entity-1="User" data-entity-2="Tag" data-source-line="268" data-uid="lnk32" id="link_User_Tag">
+<path codeLine="268" d="M1992.6435,375.4808 C1967.9535,455.2908 1948.48,542.6769 1948.48,633.7969 C1948.48,633.7969 1948.48,633.7969 1948.48,1373.3469 C1948.48,1463.7269 1948.48,1570.0369 1948.48,1624.8769"
+fill="none" id="User-backto-Tag" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1996.19,364.0169,1990.5954,368.5667,1992.6435,375.4808,1998.2381,370.931,1996.19,364.0169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1978.914" y="383.499">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1923.507" y="1614.1546">0..*</text>
 </g>
-<!--link User to SavedView-->
-<g class="link" data-entity-1="User" data-entity-2="SavedView" data-source-line="263" data-uid="lnk33" id="link_User_SavedView">
-<path codeLine="263" d="M3155.44,364.0069 C3167.21,431.6569 3179.003,499.4454 3186.953,545.2054" fill="none" id="User-to-SavedView" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="3187.98,551.1169,3190.3805,541.565,3187.1242,546.1907,3182.4985,542.9344,3187.98,551.1169" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="53.9995" x="3162.79" y="406.7038">poss&#232;de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3150.9348" y="383.4876">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3162.1471" y="540.3572">0..*</text>
+<!--reverse link User to SavedView-->
+<g class="link" data-entity-1="User" data-entity-2="SavedView" data-source-line="269" data-uid="lnk33" id="link_User_SavedView">
+<path codeLine="269" d="M2123.3545,375.1835 C2155.3845,455.5135 2187.41,535.8169 2208.59,588.9569" fill="none" id="User-backto-SavedView" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2118.91,364.0369,2117.4167,371.0917,2123.3545,375.1835,2124.8478,368.1287,2118.91,364.0369" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2119.6585" y="383.522">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2181.2766" y="578.1987">0..*</text>
 </g>
-<!--link User to ArticleTemplate-->
-<g class="link" data-entity-1="User" data-entity-2="ArticleTemplate" data-source-line="264" data-uid="lnk34" id="link_User_ArticleTemplate">
-<path codeLine="264" d="M3248.31,353.6269 C3305.38,424.0169 3365.6517,498.356 3404.6517,546.466" fill="none" id="User-to-ArticleTemplate" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="3408.43,551.1269,3405.8698,541.6166,3405.2814,547.2428,3399.6552,546.6544,3408.43,551.1269" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="53.9995" x="3287.29" y="406.7038">poss&#232;de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.9867" y="369.8052">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3378.4042" y="540.3687">0..*</text>
+<!--reverse link User to ArticleTemplate-->
+<g class="link" data-entity-1="User" data-entity-2="ArticleTemplate" data-source-line="270" data-uid="lnk34" id="link_User_ArticleTemplate">
+<path codeLine="270" d="M2185.23,308.0714 C2234.26,349.1314 2281,391.2869 2327.48,440.6369 C2372.08,488.0069 2416.58,548.2869 2444.95,588.8069" fill="none" id="User-backto-ArticleTemplate" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2176.03,300.3669,2178.0618,307.2858,2185.23,308.0714,2183.1982,301.1525,2176.03,300.3669" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.7094" y="309.3884">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2415.7804" y="578.0266">0..*</text>
 </g>
-<!--link User to AuditLog-->
-<g class="link" data-entity-1="User" data-entity-2="AuditLog" data-source-line="265" data-uid="lnk35" id="link_User_AuditLog">
-<path codeLine="265" d="M3248.28,205.5869 C3447.62,212.2869 3850.8,250.4769 4120.79,440.6369 C4154.05,464.0669 4176.3496,496.9444 4193.1896,529.5944" fill="none" id="User-to-AuditLog" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="4195.94,534.9269,4195.3695,525.0946,4193.648,530.4831,4188.2595,528.7617,4195.94,534.9269" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="33.5537" x="4052.51" y="406.7038">trace</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.9527" y="201.8723">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="4168.6243" y="523.9608">0..*</text>
+<!--reverse link User to ShareInvite-->
+<g class="link" data-entity-1="User" data-entity-2="ShareInvite" data-source-line="271" data-uid="lnk35" id="link_User_ShareInvite">
+<path codeLine="271" d="M2188.0193,214.6425 C2360.5293,232.0625 2669.04,283.4769 2887.48,440.6369 C2931.33,472.1869 2965.24,523.0969 2987.71,564.7269" fill="none" id="User-backto-ShareInvite" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2176.08,213.4369,2181.6478,218.0194,2188.0193,214.6425,2182.4515,210.0599,2176.08,213.4369" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.681" y="210.6277">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2960.2502" y="553.8003">0..*</text>
 </g>
-<!--reverse link Article to Garantie-->
-<g class="link" data-entity-1="Article" data-entity-2="Garantie" data-source-line="268" data-uid="lnk36" id="link_Article_Garantie">
-<path codeLine="268" d="M1681.263,743.4156 C1667.073,775.3956 1656.85,798.4369 1642.83,830.0369" fill="none" id="Article-backto-Garantie" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1686.13,732.4469,1680.0403,736.3089,1681.263,743.4156,1687.3527,739.5536,1686.13,732.4469" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="53.9995" x="1662.52" y="796.3638">poss&#232;de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1666.8159" y="752.3226">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1621.3994" y="819.3123">0..1</text>
+<!--reverse link User to InsurancePolicy-->
+<g class="link" data-entity-1="User" data-entity-2="InsurancePolicy" data-source-line="272" data-uid="lnk36" id="link_User_InsurancePolicy">
+<path codeLine="272" d="M1923.079,214.5637 C1568.409,243.2337 564.48,349.2169 564.48,633.7969 C564.48,633.7969 564.48,633.7969 564.48,1373.3469 C564.48,1444.8369 558.9,1526.0969 553.95,1584.1069" fill="none"
+id="User-backto-InsurancePolicy" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1935.04,213.5969,1928.7372,210.0933,1923.079,214.5637,1929.3818,218.0673,1935.04,213.5969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1919.0767" y="210.8044">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="530.5929" y="1573.5072">0..*</text>
 </g>
-<!--reverse link Article to Attachment-->
-<g class="link" data-entity-1="Article" data-entity-2="Attachment" data-source-line="269" data-uid="lnk37" id="link_Article_Attachment">
-<path codeLine="269" d="M1609.9546,655.6374 C1535.5846,693.8174 1457.89,747.9069 1412.79,830.2969 C1351.68,941.9169 1365.4,1096.0069 1380.72,1184.1969" fill="none" id="Article-backto-Attachment" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1620.63,650.1569,1613.4655,649.3387,1609.9546,655.6374,1617.1191,656.4556,1620.63,650.1569" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="41.7803" x="1413.79" y="961.9438">pi&#232;ces</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1604.3648" y="666.1162">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1355.1066" y="1173.5982">0..*</text>
+<!--reverse link User to Garantie-->
+<g class="link" data-entity-1="User" data-entity-2="Garantie" data-source-line="273" data-uid="lnk37" id="link_User_Garantie">
+<path codeLine="273" d="M1923.0202,215.7637 C1678.9702,238.1637 1151.99,301.5069 1041.48,440.6369 C936.26,573.1169 1005.55,775.4669 1070.31,905.7469" fill="none" id="User-backto-Garantie" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1934.97,214.6669,1928.6295,211.232,1923.0202,215.7637,1929.3607,219.1985,1934.97,214.6669" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1919.0022" y="211.9429">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1042.4161" y="895.0252">0..*</text>
 </g>
-<!--reverse link Article to Alerte-->
-<g class="link" data-entity-1="Article" data-entity-2="Alerte" data-source-line="270" data-uid="lnk38" id="link_Article_Alerte">
-<path codeLine="270" d="M1878.9803,724.2521 C1907.5903,758.3721 1926.38,788.5869 1941.79,830.2969 C1984.14,944.9169 1972.75,1089.2069 1959.55,1176.2869" fill="none" id="Article-backto-Alerte" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1871.27,715.0569,1872.0601,722.2246,1878.9803,724.2521,1878.1902,717.0844,1871.27,715.0569" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="66.6313" x="1972.57" y="961.9438">d&#233;clenche</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1878.8529" y="726.3021">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1936.8524" y="1165.4458">0..*</text>
+<!--reverse link User to Attachment-->
+<g class="link" data-entity-1="User" data-entity-2="Attachment" data-source-line="274" data-uid="lnk38" id="link_User_Attachment">
+<path codeLine="274" d="M1923.1189,216.2006 C1759.0189,235.1106 1474.94,287.9369 1277.48,440.6369 C1236.29,472.4969 1206.13,523.1169 1186.61,564.5469" fill="none" id="User-backto-Attachment" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1935.04,214.8269,1928.6215,211.54,1923.1189,216.2006,1929.5374,219.4874,1935.04,214.8269" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1918.6845" y="229.4847">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1165.224" y="553.6017">0..*</text>
+</g>
+<!--reverse link User to Alerte-->
+<g class="link" data-entity-1="User" data-entity-2="Alerte" data-source-line="275" data-uid="lnk39" id="link_User_Alerte">
+<path codeLine="275" d="M1923.0303,223.8401 C1805.6403,245.5601 1639.93,291.4169 1521.48,393.6369 C1471.76,436.5469 1438.55,503.8369 1418.6,556.2869" fill="none" id="User-backto-Alerte" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1934.83,221.6569,1928.2024,218.8153,1923.0303,223.8401,1929.6579,226.6817,1934.83,221.6569" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1918.8532" y="235.3416">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1396.7653" y="545.4302">0..*</text>
+</g>
+<!--reverse link User to UserSession-->
+<g class="link" data-entity-1="User" data-entity-2="UserSession" data-source-line="276" data-uid="lnk40" id="link_User_UserSession">
+<path codeLine="276" d="M2187.8984,218.876 C2469.0784,249.736 3148.29,333.2169 3353.48,440.6369 C3415.37,473.0469 3472.19,529.2269 3510.4,572.6669" fill="none" id="User-backto-UserSession" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2175.97,217.5669,2181.4978,222.1976,2187.8984,218.876,2182.3706,214.2453,2175.97,217.5669" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.6414" y="232.4778">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3480.3981" y="561.6904">0..*</text>
+</g>
+<!--reverse link User to TotpSecret-->
+<g class="link" data-entity-1="User" data-entity-2="TotpSecret" data-source-line="277" data-uid="lnk41" id="link_User_TotpSecret">
+<path codeLine="277" d="M2188.0381,212.4523 C2529.3581,233.1223 3483.76,301.9369 3765.48,440.6369 C3831.05,472.9269 3888.26,535.6169 3923.67,580.8369" fill="none" id="User-backto-TotpSecret" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2176.06,211.7269,2181.8072,216.0822,2188.0381,212.4523,2182.2908,208.0969,2176.06,211.7269" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.6598" y="208.8135">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="3893.3405" y="570.0374">0..1</text>
+</g>
+<!--reverse link User to PasswordResetToken-->
+<g class="link" data-entity-1="User" data-entity-2="PasswordResetToken" data-source-line="278" data-uid="lnk42" id="link_User_PasswordResetToken">
+<path codeLine="278" d="M2187.8433,208.9067 C2579.5533,221.9667 3801.13,275.1769 4158.48,440.6369 C4226.59,472.1769 4286.73,535.3469 4323.96,580.8669" fill="none" id="User-backto-PasswordResetToken" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2175.85,208.5069,2181.7134,212.7046,2187.8433,208.9067,2181.98,204.709,2175.85,208.5069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.5052" y="205.1847">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="4294.4253" y="570.0713">0..*</text>
+</g>
+<!--reverse link User to PushSubscription-->
+<g class="link" data-entity-1="User" data-entity-2="PushSubscription" data-source-line="279" data-uid="lnk43" id="link_User_PushSubscription">
+<path codeLine="279" d="M2187.9389,217.2235 C2501.3789,246.2535 3355.94,325.5169 4077.48,393.6369 C4296.17,414.2869 4384.81,321.6869 4569.48,440.6369 C4619.23,472.6869 4649.16,535.4269 4665.19,580.7169"
+fill="none" id="User-backto-PushSubscription" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2175.99,216.1169,2181.5955,220.6532,2187.9389,217.2235,2182.3333,212.6873,2175.99,216.1169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.664" y="213.8173">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="4638.7601" y="569.9021">0..*</text>
 </g>
 <!--reverse link Article to ArticleNote-->
-<g class="link" data-entity-1="Article" data-entity-2="ArticleNote" data-source-line="271" data-uid="lnk39" id="link_Article_ArticleNote">
-<path codeLine="271" d="M1780.0395,744.13 C1794.8495,807.29 1808.77,866.6969 1819.27,911.4969" fill="none" id="Article-backto-ArticleNote" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1777.3,732.4469,1774.7754,739.2016,1780.0395,744.13,1782.5641,737.3753,1777.3,732.4469" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="65.1206" x="1793.81" y="796.3638">historique</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1774.2256" y="752.3226">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1793.0395" y="900.7343">0..*</text>
-</g>
-<!--reverse link Garantie to Alerte-->
-<g class="link" data-entity-1="Garantie" data-entity-2="Alerte" data-source-line="272" data-uid="lnk40" id="link_Garantie_Alerte">
-<path codeLine="272" d="M1709.2789,1077.2392 C1715.1289,1082.4392 1712.01,1079.5569 1717.79,1084.4469 C1757.9,1118.4669 1804.13,1153.6069 1844.37,1182.9869" fill="none" id="Garantie-backto-Alerte" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1700.31,1069.2669,1702.137,1076.2427,1709.2789,1077.2392,1707.4519,1070.2634,1700.31,1069.2669" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="127.5244" x="1791.64" y="1135.0138">g&#233;n&#232;re (J-30/J-7/J-1)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1707.7304" y="1081.0232">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1812.144" y="1174.2463">0..3</text>
-</g>
-<!--reverse link Garantie to Attachment-->
-<g class="link" data-entity-1="Garantie" data-entity-2="Attachment" data-source-line="273" data-uid="lnk41" id="link_Garantie_Attachment">
-<path codeLine="273" d="M1498.4326,1094.9527 C1476.3626,1129.0727 1459.81,1154.6569 1440.6,1184.3569" fill="none" id="Garantie-backto-Attachment" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1504.95,1084.8769,1498.3327,1087.7423,1498.4326,1094.9527,1505.0499,1092.0873,1504.95,1084.8769" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="52.2983" x="1486.56" y="1135.0138">preuves</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1480.6126" y="1104.8318">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1421.0373" y="1173.4097">0..*</text>
-</g>
-<!--reverse link Garantie to WarrantyHistory-->
-<g class="link" data-entity-1="Garantie" data-entity-2="WarrantyHistory" data-source-line="274" data-uid="lnk42" id="link_Garantie_WarrantyHistory">
-<path codeLine="274" d="M1614.4121,1096.6441 C1621.2321,1130.7641 1626.01,1154.6569 1631.94,1184.3569" fill="none" id="Garantie-backto-WarrantyHistory" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1612.06,1084.8769,1609.3136,1091.5445,1614.4121,1096.6441,1617.1584,1089.9765,1612.06,1084.8769" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="109.459" x="1624.3" y="1127.5138">renouvellements</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="91.292" x="1633.3835" y="1142.6466">(append-only)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1608.1405" y="1104.8318">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1606.3279" y="1173.4097">0..*</text>
-</g>
-<!--link Article to Location-->
-<g class="link" data-entity-1="Article" data-entity-2="Location" data-source-line="277" data-uid="lnk43" id="link_Article_Location">
-<path codeLine="277" d="M1620.36,631.8169 C1486.97,666.7369 1269.35,720.5569 1078.79,753.2969 C775.54,805.3869 666.38,693.4869 390.79,830.2969 C353.97,848.5669 322.41,883.0069 300.9,911.2869" fill="none"
-id="Article-Location" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="96.916" x="498.74" y="796.3638">ArticleLocation</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1589.873" y="630.3833">0..*</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="280.5196" y="900.8279">0..*</text>
-</g>
-<!--link Article to Tag-->
-<g class="link" data-entity-1="Article" data-entity-2="Tag" data-source-line="278" data-uid="lnk44" id="link_Article_Tag">
-<path codeLine="278" d="M1620.57,634.4969 C1438.79,686.9969 1110.26,779.7569 988.79,800.2969 C899.58,815.3769 662.31,787.1669 582.79,830.2969 C546.51,849.9669 519.78,889.8669 503.87,919.5469" fill="none"
-id="Article-Tag" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="65.8633" x="1067.74" y="796.3638">ArticleTag</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1590.0144" y="639.6531">0..*</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="485.1407" y="908.5414">0..*</text>
-</g>
-<!--link User to ShareInvite-->
-<g class="link" data-entity-1="User" data-entity-2="ShareInvite" data-source-line="281" data-uid="lnk45" id="link_User_ShareInvite">
-<path codeLine="281" d="M3248.32,221.9269 C3401.18,248.0969 3667.58,309.6769 3856.79,440.6369 C3889.96,463.5969 3916.115,492.151 3938.975,522.041" fill="none" id="User-to-ShareInvite" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="3942.62,526.8069,3940.3298,517.228,3939.5825,522.8353,3933.9752,522.088,3942.62,526.8069" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="33.7568" x="3805.7" y="406.7038">&#233;met</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.9981" y="237.4236">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3913.6752" y="515.872">0..*</text>
-</g>
-<!--link User to InventoryShare-->
-<g class="link" data-entity-1="User" data-entity-2="InventoryShare" data-source-line="282" data-uid="lnk46" id="link_User_InventoryShare">
-<path codeLine="282" d="M3248.09,250.2969 C3346.74,290.9969 3486.9,357.1369 3592.79,440.6369 C3632.8,472.1969 3666.0178,512.554 3690.5278,546.064" fill="none" id="User-to-InventoryShare" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="3694.07,550.9069,3691.9853,541.2812,3691.1182,546.8712,3685.5282,546.0041,3694.07,550.9069" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="168.9238" x="3548.38" y="406.7038">partage (owner -&gt; target)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.7372" y="252.5902">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3665.1361" y="540.4507">0..*</text>
-</g>
-<!--reverse link Article to ArticleTransferRequest-->
-<g class="link" data-entity-1="Article" data-entity-2="ArticleTransferRequest" data-source-line="285" data-uid="lnk47" id="link_Article_ArticleTransferRequest">
-<path codeLine="285" d="M1882.6597,636.0985 C2030.4997,678.2685 2271.35,750.3269 2482.79,830.2969 C2527.57,847.2369 2575.43,867.5769 2618.86,886.9369" fill="none" id="Article-backto-ArticleTransferRequest"
-style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1871.12,632.8069,1875.7927,638.2993,1882.6597,636.0985,1877.9871,630.6061,1871.12,632.8069" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.21" x="2385.09" y="796.3638">transferts</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1878.6836" y="633.5138">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2580.1679" y="876.3382">0..*</text>
-</g>
-<!--link User to ArticleTransferRequest-->
-<g class="link" data-entity-1="User" data-entity-2="ArticleTransferRequest" data-source-line="286" data-uid="lnk48" id="link_User_ArticleTransferRequest">
-<path codeLine="286" d="M3007.25,240.0869 C2912.22,274.6369 2785.46,337.4769 2721.79,440.6369 C2637.68,576.8869 2668.97,643.3669 2700.79,800.2969 C2706.78,829.8469 2716.0754,855.2909 2728.0454,881.7309"
-fill="none" id="User-to-ArticleTransferRequest" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="2730.52,887.1969,2730.4521,877.3483,2728.4579,882.6419,2723.1642,880.6477,2730.52,887.1969" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="127.7656" x="2722.79" y="601.5338">demandeur / owner</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2991.2809" y="254.9523">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2702.5956" y="876.26">0..*</text>
-</g>
-<!--link User to UserSession-->
-<g class="link" data-entity-1="User" data-entity-2="UserSession" data-source-line="289" data-uid="lnk49" id="link_User_UserSession">
-<path codeLine="289" d="M3248.17,210.6169 C3470.07,224.8769 3954.53,274.1169 4322.79,440.6369 C4374.41,463.9869 4420.7556,498.2924 4459.0456,530.9624" fill="none" id="User-to-UserSession" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="4463.61,534.8569,4459.3597,525.9723,4459.8064,531.6115,4454.1672,532.0581,4463.61,534.8569" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="130.5015" x="4232.94" y="406.7038">appareils connect&#233;s</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.8279" y="207.5782">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="4431.7465" y="523.8827">0..*</text>
-</g>
-<!--link User to TotpSecret-->
-<g class="link" data-entity-1="User" data-entity-2="TotpSecret" data-source-line="290" data-uid="lnk50" id="link_User_TotpSecret">
-<path codeLine="290" d="M3248.28,214.4969 C3574.04,241.5369 4465.75,324.3869 4734.79,440.6369 C4789.99,464.4969 4838.4737,503.871 4875.3437,538.791" fill="none" id="User-to-TotpSecret" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="4879.7,542.9169,4875.9162,533.8239,4876.0698,539.4786,4870.415,539.6322,4879.7,542.9169" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="72.8711" x="4639.27" y="406.7038">2FA (TOTP)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.9527" y="228.9952">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="4847.669" y="532.1059">0..1</text>
-</g>
-<!--link User to PasswordResetToken-->
-<g class="link" data-entity-1="User" data-entity-2="PasswordResetToken" data-source-line="291" data-uid="lnk51" id="link_User_PasswordResetToken">
-<path codeLine="291" d="M3248.21,210.8769 C3625.85,230.6769 4782.19,301.4569 5127.79,440.6369 C5185.36,463.8269 5236.4113,503.5898 5275.1013,538.7798" fill="none" id="User-to-PasswordResetToken" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="5279.54,542.8169,5275.5734,533.8021,5275.8411,539.4526,5270.1906,539.7203,5279.54,542.8169" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="99.1187" x="5008.11" y="406.7038">r&#233;initialisations</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.8733" y="224.8888">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="5248.2474" y="531.9931">0..*</text>
-</g>
-<!--link User to PushSubscription-->
-<g class="link" data-entity-1="User" data-entity-2="PushSubscription" data-source-line="292" data-uid="lnk52" id="link_User_PushSubscription">
-<path codeLine="292" d="M3248.31,215.7269 C3558.26,243.5469 4408.38,320.7769 5115.79,393.6369 C5303.95,413.0169 5375.63,344.9369 5538.79,440.6369 C5578.52,463.9469 5605.0373,502.4264 5623.5273,537.5864"
-fill="none" id="User-to-PushSubscription" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="5626.32,542.8969,5625.6713,533.0694,5623.9928,538.4715,5618.5907,536.793,5626.32,542.8969" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="136.7349" x="5476.07" y="406.7038">navigateurs abonn&#233;s</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3255.9867" y="230.3905">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="5598.8421" y="532.0833">0..*</text>
-</g>
-<!--link User to Loan-->
-<g class="link" data-entity-1="User" data-entity-2="Loan" data-source-line="295" data-uid="lnk53" id="link_User_Loan">
-<path codeLine="295" d="M3007.4,205.0269 C2611.47,207.2669 1355.89,231.0969 1020.79,440.6369 C864.87,538.1369 799.6776,754.448 774.5076,872.848" fill="none" id="User-to-Loan" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="773.26,878.7169,779.044,870.7453,774.2997,873.8262,771.2189,869.0818,773.26,878.7169" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="34.6899" x="1021.79" y="601.5338">pr&#234;te</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2991.4405" y="201.6853">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="750.4373" y="868.1163">0..*</text>
-</g>
-<!--link User to InsurancePolicy-->
-<g class="link" data-entity-1="User" data-entity-2="InsurancePolicy" data-source-line="296" data-uid="lnk54" id="link_User_InsurancePolicy">
-<path codeLine="296" d="M3007.11,205.3069 C2737.8,209.8269 2071.14,241.9769 1558.79,440.6369 C1303.83,539.4969 1176.49,542.0369 1047.79,783.2969 C1031.13,814.5169 1039.83,843.9659 1060.02,873.8359" fill="none"
-id="User-to-InsurancePolicy" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="1063.38,878.8069,1061.654,869.1104,1060.58,874.6644,1055.026,873.5905,1063.38,878.8069" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="43.0942" x="1559.79" y="601.5338">assure</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2991.1319" y="201.9833">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1032.5524" y="868.2143">0..*</text>
-</g>
-<!--link User to ServiceRecord-->
-<g class="link" data-entity-1="User" data-entity-2="ServiceRecord" data-source-line="297" data-uid="lnk55" id="link_User_ServiceRecord">
-<path codeLine="297" d="M3007.21,235.2869 C2890.71,269.4769 2714.58,334.5869 2593.79,440.6369 C2520.09,505.3369 2389.5191,745.9841 2323.2091,873.4441" fill="none" id="User-to-ServiceRecord" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="2320.44,878.7669,2328.1422,872.6288,2322.7476,874.3312,2321.0452,868.9366,2320.44,878.7669" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="64.7207" x="2594.79" y="601.5338">entretient</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2991.2383" y="233.8839">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2299.9487" y="868.1707">0..*</text>
+<g class="link" data-entity-1="Article" data-entity-2="ArticleNote" data-source-line="282" data-uid="lnk44" id="link_Article_ArticleNote">
+<path codeLine="282" d="M1239.072,1515.3213 C1201.762,1555.0213 1171.63,1587.0969 1143.62,1616.9069" fill="none" id="Article-backto-ArticleNote" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1247.29,1506.5769,1240.2662,1508.2098,1239.072,1515.3213,1246.0958,1513.6884,1247.29,1506.5769" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1231.0229" y="1511.7669">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1125.1239" y="1606.1472">0..*</text>
 </g>
 <!--reverse link Article to Loan-->
-<g class="link" data-entity-1="Article" data-entity-2="Loan" data-source-line="298" data-uid="lnk56" id="link_Article_Loan">
-<path codeLine="298" d="M1608.955,644.748 C1436.425,703.718 1157.73,798.8769 1151.79,800.2969 C1057.92,822.6169 1026.43,794.6169 936.79,830.2969 C906.81,842.2269 877.12,860.2469 850.86,878.9669" fill="none"
-id="Article-backto-Loan" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1620.31,640.8669,1613.3388,639.0224,1608.955,644.748,1615.9262,646.5924,1620.31,640.8669" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="33.4648" x="1196.41" y="796.3638">pr&#234;ts</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1604.4285" y="640.1562">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="835.1973" y="868.1203">0..*</text>
+<g class="link" data-entity-1="Article" data-entity-2="Loan" data-source-line="283" data-uid="lnk45" id="link_Article_Loan">
+<path codeLine="283" d="M1236.8929,1492.0667 C1223.1429,1500.5667 1219.04,1501.7669 1204.48,1507.5669 C1130.51,1537.0269 926.78,1530.5369 847.48,1537.5669 C623.38,1557.4369 561.34,1528.4569 343.48,1584.5669
+C337.8,1586.0369 332.06,1587.6569 326.32,1589.4169" fill="none" id="Article-backto-Loan" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1247.1,1485.7569,1239.8931,1485.5094,1236.8929,1492.0667,1244.0997,1492.3142,1247.1,1485.7569" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1231.2246" y="1489.2819">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="330.0045" y="1581.1088">0..*</text>
 </g>
 <!--reverse link Article to ServiceRecord-->
-<g class="link" data-entity-1="Article" data-entity-2="ServiceRecord" data-source-line="299" data-uid="lnk57" id="link_Article_ServiceRecord">
-<path codeLine="299" d="M1881.1892,688.6763 C1969.9792,748.1663 2078.23,820.6769 2164.82,878.6869" fill="none" id="Article-backto-ServiceRecord" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1871.22,681.9969,1873.9781,688.6597,1881.1892,688.6763,1878.4311,682.0135,1871.22,681.9969" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="59.6235" x="2046.32" y="796.3638">entretien</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1878.7965" y="689.0062">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2130.4688" y="868.0836">0..*</text>
-</g>
-<!--link Article to InsurancePolicy-->
-<g class="link" data-entity-1="Article" data-entity-2="InsurancePolicy" data-source-line="300" data-uid="lnk58" id="link_Article_InsurancePolicy">
-<path codeLine="300" d="M1620.43,624.5769 C1516.52,651.3769 1369.15,700.7969 1262.79,783.2969 C1229.72,808.9369 1201.8,845.8669 1180.96,879.0269" fill="none" id="Article-InsurancePolicy" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="105.4854" x="1263.79" y="796.3638">ArticleInsurance</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1589.9468" y="622.7474">0..*</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1160.6971" y="868.1858">0..*</text>
+<g class="link" data-entity-1="Article" data-entity-2="ServiceRecord" data-source-line="284" data-uid="lnk46" id="link_Article_ServiceRecord">
+<path codeLine="284" d="M1394.3008,1519.7055 C1398.2008,1545.8455 1400.39,1560.5469 1403.9,1584.0869" fill="none" id="Article-backto-ServiceRecord" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1392.53,1507.8369,1389.4592,1514.3614,1394.3008,1519.7055,1397.3716,1513.1809,1392.53,1507.8369" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1387.4143" y="1527.7144">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1378.846" y="1573.4854">0..*</text>
 </g>
 <!--reverse link Article to MessageThread-->
-<g class="link" data-entity-1="Article" data-entity-2="MessageThread" data-source-line="303" data-uid="lnk59" id="link_Article_MessageThread">
-<path codeLine="303" d="M1882.7503,641.2303 C1999.1503,676.6503 2166.32,723.8169 2324.79,753.2969 C2519.44,789.4969 2570.9,779.4169 2767.79,800.2969 C2830.67,806.9669 2994.24,801.9869 3050.79,830.2969
-C3083.76,846.8069 3112.15,876.7269 3132.7,903.2769" fill="none" id="Article-backto-MessageThread" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="1871.27,637.7369,1875.8457,643.3103,1882.7503,641.2303,1878.1746,635.6568,1871.27,637.7369" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="82.8433" x="2768.79" y="796.3638">n&#233;gociations</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1878.8529" y="655.9973">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3103.734" y="892.4608">0..*</text>
+<g class="link" data-entity-1="Article" data-entity-2="MessageThread" data-source-line="285" data-uid="lnk47" id="link_Article_MessageThread">
+<path codeLine="285" d="M1443.4257,1517.3047 C1456.6057,1535.1247 1464.83,1541.9169 1482.48,1554.5669 C1532.43,1590.3769 1560.89,1560.5869 1617.48,1584.5669 C1632.82,1591.0769 1648.34,1599.6269 1662.82,1608.6669"
+fill="none" id="Article-backto-MessageThread" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1436.29,1507.6569,1436.6419,1514.8594,1443.4257,1517.3047,1443.0738,1510.1022,1436.29,1507.6569" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1438.969" y="1527.5024">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1629.1672" y="1597.8508">0..*</text>
 </g>
-<!--link User to MessageThread-->
-<g class="link" data-entity-1="User" data-entity-2="MessageThread" data-source-line="304" data-uid="lnk60" id="link_User_MessageThread">
-<path codeLine="304" d="M3007.33,298.8369 C2966.73,337.8169 2926.3,386.6069 2904.79,440.6369 C2853.39,569.7469 2833.02,634.3069 2904.79,753.2969 C2942.67,816.1169 2992.56,785.6669 3050.79,830.2969 C3078.28,851.3669
-3100.9587,874.6956 3121.8287,898.8656" fill="none" id="User-to-MessageThread" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="3125.75,903.4069,3122.8956,893.9807,3122.4823,899.6224,3116.8405,899.2091,3125.75,903.4069" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="127.7656" x="2905.79" y="601.5338">owner / demandeur</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2991.366" y="301.505">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3095.8936" y="892.6074">0..*</text>
+<!--reverse link Article to ArticleTransferRequest-->
+<g class="link" data-entity-1="Article" data-entity-2="ArticleTransferRequest" data-source-line="286" data-uid="lnk48" id="link_Article_ArticleTransferRequest">
+<path codeLine="286" d="M1509.4384,1414.6633 C1661.6584,1460.5933 1909.8,1535.4469 2098.33,1592.3269" fill="none" id="Article-backto-ArticleTransferRequest" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1497.95,1411.1969,1502.5387,1416.7596,1509.4384,1414.6633,1504.8497,1409.1006,1497.95,1411.1969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1505.5316" y="1412.2894">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2051.5444" y="1581.7292">0..*</text>
+</g>
+<!--reverse link Garantie to WarrantyHistory-->
+<g class="link" data-entity-1="Garantie" data-entity-2="WarrantyHistory" data-source-line="287" data-uid="lnk49" id="link_Garantie_WarrantyHistory">
+<path codeLine="287" d="M1073.1271,1171.8841 C1069.7171,1181.7141 1070.71,1180.2969 1068.48,1190.1169 C1060.19,1226.4769 1060.22,1268.0069 1062.64,1302.1269" fill="none" id="Garantie-backto-WarrantyHistory"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1077.06,1160.5469,1071.3145,1164.9045,1073.1271,1171.8841,1078.8726,1167.5264,1077.06,1160.5469" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="81.1484" x="1069.48" y="1203.1838">append-only</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1055.6621" y="1180.5037">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1037.5446" y="1291.1858">0..*</text>
 </g>
 <!--reverse link MessageThread to Message-->
-<g class="link" data-entity-1="MessageThread" data-entity-2="Message" data-source-line="305" data-uid="lnk61" id="link_MessageThread_Message">
-<path codeLine="305" d="M3187.9101,1022.9635 C3203.7401,1073.7635 3224.03,1138.8769 3240.66,1192.2669" fill="none" id="MessageThread-backto-Message" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="none" points="3184.34,1011.5069,3182.3061,1018.4252,3187.9101,1022.9635,3189.9439,1016.0452,3184.34,1011.5069" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="65.1968" x="3225.73" y="1135.0138">messages</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3182.5283" y="1031.3421">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3214.3127" y="1181.6989">1..*</text>
+<g class="link" data-entity-1="MessageThread" data-entity-2="Message" data-source-line="288" data-uid="lnk50" id="link_MessageThread_Message">
+<path codeLine="288" d="M1820.2389,1723.2422 C1834.0289,1731.8522 1838.35,1733.8969 1852.48,1740.9469 C1925.74,1777.4869 2012.73,1808.6069 2080.11,1830.2469" fill="none" id="MessageThread-backto-Message"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1810.06,1716.8869,1813.031,1723.4575,1820.2389,1723.2422,1817.2679,1716.6716,1810.06,1716.8869" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1837.0206" y="1736.7172">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2049.3037" y="1824.6857">1..*</text>
+</g>
+<!--link User to AuditLog-->
+<g class="link" data-entity-1="User" data-entity-2="AuditLog" data-source-line="296" data-uid="lnk51" id="link_User_AuditLog">
+<path codeLine="296" d="M2176.1,217.9269 C2427.8,246.9869 2998.33,324.1169 3151.48,440.6369 C3194.39,473.2969 3218.8688,523.7764 3233.8688,567.1464" fill="none" id="User-to-AuditLog" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="3235.83,572.8169,3236.6685,563.0038,3234.1957,568.0915,3229.1079,565.6187,3235.83,572.8169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="33.5537" x="3092.28" y="406.7038">trace</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.7888" y="232.8861">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3209.578" y="561.8578">0..*</text>
+</g>
+<!--link Garantie to Article-->
+<g class="link" data-entity-1="Garantie" data-entity-2="Article" data-source-line="299" data-uid="lnk52" id="link_Garantie_Article">
+<path codeLine="299" d="M1169.47,1160.4869 C1175.4,1176.7969 1182.64,1192.7869 1191.48,1207.1169 C1206.5,1231.4969 1221.9188,1250.233 1242.7588,1270.793" fill="none" id="Garantie-to-Article" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1247.03,1275.0069,1243.4324,1265.8386,1243.4706,1271.4953,1237.8139,1271.5336,1247.03,1275.0069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="103.2319" x="1192.48" y="1203.1838">couvre (unique)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1148.2138" y="1180.4323">0..1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1214.6791" y="1265.6893">0..1</text>
+</g>
+<!--link Attachment to Article-->
+<g class="link" data-entity-1="Attachment" data-entity-2="Article" data-source-line="300" data-uid="lnk53" id="link_Attachment_Article">
+<path codeLine="300" d="M1199.52,705.3069 C1221.6,742.5769 1250.02,788.9369 1277.48,828.9569 C1286.98,842.8169 1293.98,843.4669 1300.48,858.9569 C1328.23,925.1869 1348.8419,1102.5629 1360.8319,1230.9129"
+fill="none" id="Attachment-to-Article" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1361.39,1236.8869,1364.5356,1227.5538,1360.9249,1231.9085,1356.5702,1228.2979,1361.39,1236.8869" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1186.6949" y="724.8415">0..*</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1336.1497" y="1226.1395">0..1</text>
+</g>
+<!--link Attachment to Garantie-->
+<g class="link" data-entity-1="Attachment" data-entity-2="Garantie" data-source-line="301" data-uid="lnk54" id="link_Attachment_Garantie">
+<path codeLine="301" d="M1152.05,705.0669 C1147.72,749.0769 1142.67,807.2969 1140.48,858.9569 C1140.16,866.5069 1140.4,868.4069 1140.48,875.9569 C1140.57,885.5869 1140.6001,889.5375 1140.7501,899.5475"
+fill="none" id="Attachment-to-Garantie" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1140.84,905.5469,1144.7047,896.488,1140.7651,900.5474,1136.7056,896.6078,1140.84,905.5469" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="45.5254" x="1141.48" y="872.0238">preuve</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1122.0774" y="725.3014">0..*</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1116.017" y="894.8136">0..1</text>
+</g>
+<!--link Alerte to Garantie-->
+<g class="link" data-entity-1="Alerte" data-entity-2="Garantie" data-source-line="302" data-uid="lnk55" id="link_Alerte_Garantie">
+<path codeLine="302" d="M1348.47,713.2969 C1327.18,748.7469 1301.37,791.1869 1277.48,828.9569 C1261.73,853.8569 1247.9005,875.2496 1231.3405,900.4996" fill="none" id="Alerte-to-Garantie" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1228.05,905.5169,1236.3306,900.1847,1230.7921,901.3359,1229.6409,895.7974,1228.05,905.5169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="67.4185" x="1257.04" y="872.0238">J-30/J-7/J-1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1307.1453" y="733.0138">0..*</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1208.2688" y="894.7819">0..1</text>
+</g>
+<!--link Alerte to Article-->
+<g class="link" data-entity-1="Alerte" data-entity-2="Article" data-source-line="303" data-uid="lnk56" id="link_Alerte_Article">
+<path codeLine="303" d="M1392.15,713.4769 C1388.43,837.9269 1381.2591,1077.5595 1376.6791,1230.9295" fill="none" id="Alerte-to-Article" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1376.5,1236.9269,1380.7669,1228.0503,1376.6492,1231.9291,1372.7704,1227.8115,1376.5,1236.9269" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="47.874" x="1387.38" y="1037.6038">custom</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1364.7483" y="733.2512">0..*</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.8066" x="1351.1516" y="1226.2205">0..1</text>
+</g>
+<!--link User to Loan-->
+<g class="link" data-entity-1="User" data-entity-2="Loan" data-source-line="306" data-uid="lnk57" id="link_User_Loan">
+<path codeLine="306" d="M1935.06,208.8769 C1542.28,224.8369 323.48,301.1769 323.48,633.7969 C323.48,633.7969 323.48,633.7969 323.48,1373.3469 C323.48,1451.8769 281.6664,1524.632 239.6764,1579.502" fill="none"
+id="User-to-Loan" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="236.03,1584.2669,244.6761,1579.5505,239.0686,1580.2962,238.323,1574.6887,236.03,1584.2669" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="48.2739" x="324.48" y="1037.6038">pr&#234;teur</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1919.0979" y="205.782">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="218.3834" y="1573.4129">0..*</text>
+</g>
+<!--link User to ServiceRecord-->
+<g class="link" data-entity-1="User" data-entity-2="ServiceRecord" data-source-line="307" data-uid="lnk58" id="link_User_ServiceRecord">
+<path codeLine="307" d="M1934.91,259.4469 C1805.56,327.1169 1618.48,455.7569 1618.48,633.7969 C1618.48,633.7969 1618.48,633.7969 1618.48,1373.3469 C1618.48,1454.4769 1640.84,1486.6369 1596.48,1554.5669
+C1589.39,1565.4269 1585.1585,1571.224 1575.5885,1580.234" fill="none" id="User-to-ServiceRecord" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1571.22,1584.3469,1580.5147,1581.0899,1574.8604,1580.9195,1575.0309,1575.2652,1571.22,1584.3469" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="76.7749" x="1619.48" y="1037.6038">propri&#233;taire</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1918.9383" y="259.5916">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1561.5188" y="1573.5003">0..*</text>
+</g>
+<!--link User to MessageThread-->
+<g class="link" data-entity-1="User" data-entity-2="MessageThread" data-source-line="308" data-uid="lnk59" id="link_User_MessageThread">
+<path codeLine="308" d="M1935.01,308.0869 C1855.71,387.8969 1766.48,506.0869 1766.48,633.7969 C1766.48,633.7969 1766.48,633.7969 1766.48,1373.3469 C1766.48,1455.8369 1754.3473,1544.8854 1744.9173,1602.6154"
+fill="none" id="User-to-MessageThread" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1743.95,1608.5369,1749.3486,1600.2994,1744.7561,1603.6023,1741.4532,1599.0098,1743.95,1608.5369" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="127.7656" x="1767.48" y="1037.6038">owner / demandeur</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="1919.0447" y="311.3476">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1720.7046" y="1598.0895">0..*</text>
 </g>
 <!--link User to Message-->
-<g class="link" data-entity-1="User" data-entity-2="Message" data-source-line="306" data-uid="lnk62" id="link_User_Message">
-<path codeLine="306" d="M3102.44,364.0669 C3099.26,389.6069 3096.52,415.8069 3094.79,440.6369 C3085.13,579.2569 3017.04,638.1269 3094.79,753.2969 C3146,829.1569 3232.85,755.6269 3285.79,830.2969 C3362.44,938.4269
-3320.5259,1098.1711 3287.6559,1186.8211" fill="none" id="User-to-Message" style="stroke:#555555;stroke-width:1;"/>
-<polygon fill="#555555" points="3285.57,1192.4469,3292.4494,1185.3989,3287.3083,1187.7588,3284.9484,1182.6177,3285.57,1192.4469" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="43.4941" x="3250.04" y="796.3638">envoie</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="3090.1504" y="383.5564">1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="3264.2241" y="1181.4635">0..*</text>
+<g class="link" data-entity-1="User" data-entity-2="Message" data-source-line="309" data-uid="lnk60" id="link_User_Message">
+<path codeLine="309" d="M2069.52,364.0669 C2085.86,542.6069 2112.26,810.0269 2125.48,828.9569 C2169.28,891.7069 2225.57,851.6469 2279.48,905.9569 C2516.15,1144.4069 2536.51,1257.3169 2612.48,1584.5669
+C2628.19,1652.2669 2654.25,1685.3969 2612.48,1740.9469 C2574.98,1790.8069 2418.9317,1825.7013 2306.9317,1845.1313" fill="none" id="User-to-Message" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2301.02,1846.1569,2310.5713,1848.5596,2305.9464,1845.3022,2309.2038,1840.6774,2301.02,1846.1569" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="70.4844" x="2504.7" y="1203.1838">exp&#233;diteur</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2063.0143" y="383.5564">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2308.3559" y="1835.5325">0..*</text>
+</g>
+<!--link User to ArticleTransferRequest-->
+<g class="link" data-entity-1="User" data-entity-2="ArticleTransferRequest" data-source-line="310" data-uid="lnk61" id="link_User_ArticleTransferRequest">
+<path codeLine="310" d="M2045.05,364.1269 C2039.8,490.8869 2039.1,672.4169 2064.48,828.9569 C2111.83,1121.0969 2238.0681,1446.176 2296.5281,1586.896" fill="none" id="User-to-ArticleTransferRequest" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2298.83,1592.4369,2299.0711,1582.591,2296.9118,1587.8195,2291.6833,1585.6601,2298.83,1592.4369" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="127.7656" x="2143.84" y="1037.6038">demandeur / owner</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2034.9503" y="383.6252">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2271.5883" y="1581.4855">0..*</text>
+</g>
+<!--link User to InventoryShare-->
+<g class="link" data-entity-1="User" data-entity-2="InventoryShare" data-source-line="311" data-uid="lnk62" id="link_User_InventoryShare">
+<path codeLine="311" d="M2176.11,233.2369 C2298.92,266.6769 2489.76,331.9969 2623.48,440.6369 C2673.44,481.2369 2709.3931,540.2726 2731.6131,583.4226" fill="none" id="User-to-InventoryShare" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2734.36,588.7569,2733.7959,578.9242,2732.0709,584.3116,2726.6835,582.5867,2734.36,588.7569" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="40.168" x="2571.06" y="406.7038">owner</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.8002" y="250.2534">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2706.7761" y="578.3035">0..*</text>
+</g>
+<!--link User to InventoryShare-->
+<g class="link" data-entity-1="User" data-entity-2="InventoryShare" data-source-line="312" data-uid="lnk63" id="link_User_InventoryShare">
+<path codeLine="312" d="M2176.11,219.4869 C2299.67,239.7969 2491.42,287.0169 2620.48,393.6369 C2683.35,445.5869 2720.3596,529.2102 2739.3996,583.0502" fill="none" id="User-to-InventoryShare-1" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="2741.4,588.7069,2742.1705,578.8882,2739.733,583.993,2734.6282,581.5555,2741.4,588.7069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="39.7554" x="2637.89" y="406.7038">target</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="8.271" x="2183.8002" y="234.6558">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="2714.8061" y="578.2465">0..*</text>
+</g>
+<!--link Article to Location-->
+<g class="link" data-entity-1="Article" data-entity-2="Location" data-source-line="315" data-uid="lnk64" id="link_Article_Location">
+<path codeLine="315" d="M1247.23,1481.9069 C1233.3,1491.3669 1218.92,1500.1469 1204.48,1507.5669 C1160.93,1529.9569 1144.61,1521.1769 1098.48,1537.5669 C1048.77,1555.2369 1036.04,1559.7769 989.48,1584.5669
+C971.44,1594.1769 952.56,1605.6069 935.27,1616.6869" fill="none" id="Article-Location" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="96.916" x="1099.48" y="1550.6338">ArticleLocation</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1216.3256" y="1484.8782">0..*</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="919.9071" y="1606.2293">0..*</text>
+</g>
+<!--link Article to Tag-->
+<g class="link" data-entity-1="Article" data-entity-2="Tag" data-source-line="316" data-uid="lnk65" id="link_Article_Tag">
+<path codeLine="316" d="M1497.73,1418.0169 C1597.28,1455.9569 1738.29,1515.2069 1852.48,1584.5669 C1871.67,1596.2269 1891.27,1611.3069 1907.71,1625.0469" fill="none" id="Article-Tag" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="65.8633" x="1791.63" y="1550.6338">ArticleTag</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1505.3069" y="1425.3607">0..*</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1875.7297" y="1614.3538">0..*</text>
+</g>
+<!--link Article to InsurancePolicy-->
+<g class="link" data-entity-1="Article" data-entity-2="InsurancePolicy" data-source-line="317" data-uid="lnk66" id="link_Article_InsurancePolicy">
+<path codeLine="317" d="M1247.41,1485.0169 C1233.55,1493.7269 1219.13,1501.4869 1204.48,1507.5669 C1094.58,1553.1569 1055.57,1516.5069 938.48,1537.5669 C853.29,1552.8969 832.08,1558.6969 749.48,1584.5669
+C743.9,1586.3169 738.25,1588.1369 732.57,1590.0069" fill="none" id="Article-InsurancePolicy" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="105.4854" x="939.48" y="1550.6338">ArticleInsurance</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="1216.8947" y="1510.367">0..*</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="23.0356" x="739.5812" y="1573.2926">0..*</text>
 </g>
 </g>
 </svg>

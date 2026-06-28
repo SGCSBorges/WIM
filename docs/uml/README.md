@@ -23,6 +23,23 @@ Les `.svg` versionnés à côté de chaque `.puml` sont la version **rendue**
 - Alternative manuelle : une extension PlantUML (VS Code). Le serveur public
   plantuml.com n'est pas utilisé (rendu reproductible via l'image épinglée).
 
+## Conventions de notation (UML)
+
+- **Classes** : composition (losange plein `*--`) pour une appartenance
+  exclusive avec cascade delete — le « tout » est le parent dont la FK est
+  obligatoire (NOT NULL) ; association (`-->`) pour une FK nullable, un lien
+  `onDelete: SetNull` (AuditLog) ou un rôle multiple vers `User` ; `--` pour
+  une relation M:N via table de jonction. Multiplicités sur les deux extrémités.
+- **Cas d'utilisation** : `<<extend>>` orienté du cas **optionnel** vers le cas
+  de **base** ; `<<include>>` du cas de base vers le sous-cas **toujours**
+  exécuté ; les dépendances qui ne sont ni l'un ni l'autre portent un
+  stéréotype explicite (`<<unlock>>`, `<<trigger>>`).
+- **Séquences** : barres d'activation (execution occurrences) sur les lignes de
+  vie, messages numérotés (`autonumber`), flèches pleines pour les appels et
+  pointillées pour les retours, fragments `alt`/`opt`.
+- **États** : pseudo-états initial/final (`[*]`), transitions
+  `déclencheur [garde] / effet`.
+
 ## Analyse des diagrammes
 
 ### `01-use-cases.puml` — Cas d'utilisation

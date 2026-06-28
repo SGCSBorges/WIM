@@ -1,35 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="1073px" preserveAspectRatio="none" style="width:1268px;height:1073px;background:#FFFFFF;"
-version="1.1" viewBox="0 0 1268 1073" width="1268px" zoomAndPan="magnify">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="1189px" preserveAspectRatio="none" style="width:1321px;height:1189px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1321 1189" width="1321px" zoomAndPan="magnify">
 <title>WIM - Diagramme de s&#233;quence (facturation Stripe &amp; r&#244;le)</title>
 <defs/>
 <g>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="456.627" x="401.9355" y="27.9951">WIM - Diagramme de s&#233;quence (facturation Stripe
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="456.627" x="428.5264" y="27.9951">WIM - Diagramme de s&#233;quence (facturation Stripe
 &amp; r&#244;le)</text>
-<rect fill="none" height="140.4688" style="stroke:#000000;stroke-width:1.5;" width="616.5454" x="634.9526" y="580.8516"/>
 <g>
-<title>Utilisateur</title>
-<rect fill="#000000" fill-opacity="0.00000" height="873.9219" width="8" x="40.0049" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="44" x2="44" y1="118.5938" y2="992.5156"/>
-</g>
-<g>
-<title>PWA .Web.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="873.9219" width="8" x="354.7847" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="358.4951" x2="358.4951" y1="118.5938" y2="992.5156"/>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="87.3984" style="stroke:#181818;stroke-width:1;" width="10" x="710.0737" y="221.9922"/>
 </g>
 <g>
 <title>API .Node.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="873.9219" width="8" x="684.9829" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="688.9526" x2="688.9526" y1="118.5938" y2="992.5156"/>
+<rect fill="#FFFFFF" height="367.7969" style="stroke:#181818;stroke-width:1;" width="10" x="710.0737" y="439.9219"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="211.0625" style="stroke:#181818;stroke-width:1;" width="10" x="710.0737" y="879.9844"/>
 </g>
 <g>
 <title>Stripe</title>
-<rect fill="#000000" fill-opacity="0.00000" height="873.9219" width="8" x="1072.5957" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1075.835" x2="1075.835" y1="118.5938" y2="992.5156"/>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1115.7319" y="251.125"/>
+</g>
+<g>
+<title>Stripe</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1115.7319" y="974.5156"/>
 </g>
 <g>
 <title>PostgreSQL</title>
-<rect fill="#000000" fill-opacity="0.00000" height="873.9219" width="8" x="1194.1216" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1197.7451" x2="1197.7451" y1="118.5938" y2="992.5156"/>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1246.3032" y="619.1172"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1246.3032" y="692.1875"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1246.3032" y="1032.7813"/>
+</g>
+<rect fill="none" height="198.7344" style="stroke:#000000;stroke-width:1.5;" width="643.6362" x="661.0435" y="580.8516"/>
+<g>
+<title>Utilisateur</title>
+<rect fill="#000000" fill-opacity="0.00000" height="990.4531" width="8" x="40.0049" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="44" x2="44" y1="118.5938" y2="1109.0469"/>
+</g>
+<g>
+<title>PWA .Web.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="990.4531" width="8" x="367.8301" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="371.5405" x2="371.5405" y1="118.5938" y2="1109.0469"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="990.4531" width="8" x="711.0737" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="715.0435" x2="715.0435" y1="118.5938" y2="1109.0469"/>
+</g>
+<g>
+<title>Stripe</title>
+<rect fill="#000000" fill-opacity="0.00000" height="990.4531" width="8" x="1116.7319" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1119.9712" x2="1119.9712" y1="118.5938" y2="1109.0469"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#000000" fill-opacity="0.00000" height="990.4531" width="8" x="1247.3032" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1250.9268" x2="1250.9268" y1="118.5938" y2="1109.0469"/>
 </g>
 <g class="participant participant-head" data-participant="User">
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="5" y="115.292">Utilisateur</text>
@@ -37,160 +69,231 @@ version="1.1" viewBox="0 0 1268 1073" width="1268px" zoomAndPan="magnify">
 <path d="M44.0049,58.7969 L44.0049,85.7969 M31.0049,66.7969 L57.0049,66.7969 M44.0049,85.7969 L31.0049,100.7969 M44.0049,85.7969 L57.0049,100.7969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-tail" data-participant="User">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="5" y="1004.5107">Utilisateur</text>
-<ellipse cx="44.0049" cy="1016.3125" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M44.0049,1024.3125 L44.0049,1051.3125 M31.0049,1032.3125 L57.0049,1032.3125 M44.0049,1051.3125 L31.0049,1066.3125 M44.0049,1051.3125 L57.0049,1066.3125" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="5" y="1121.042">Utilisateur</text>
+<ellipse cx="44.0049" cy="1132.8438" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M44.0049,1140.8438 L44.0049,1167.8438 M31.0049,1148.8438 L57.0049,1148.8438 M44.0049,1167.8438 L31.0049,1182.8438 M44.0049,1167.8438 L57.0049,1182.8438" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-head" data-participant="Web">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="312.4951" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="319.4951" y="107.292">PWA (Web)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="325.5405" y="87.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="332.5405" y="107.292">PWA (Web)</text>
 </g>
 <g class="participant participant-tail" data-participant="Web">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="312.4951" y="991.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="319.4951" y="1011.5107">PWA (Web)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="325.5405" y="1108.0469"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="332.5405" y="1128.042">PWA (Web)</text>
 </g>
 <g class="participant participant-head" data-participant="API">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="644.9526" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="651.9526" y="107.292">API (Node)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="671.0435" y="87.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="678.0435" y="107.292">API (Node)</text>
 </g>
 <g class="participant participant-tail" data-participant="API">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="644.9526" y="991.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="651.9526" y="1011.5107">API (Node)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="671.0435" y="1108.0469"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="678.0435" y="1128.042">API (Node)</text>
 </g>
 <g class="participant participant-head" data-participant="Stripe">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="55.5215" x="1048.835" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.5215" x="1055.835" y="107.292">Stripe</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="55.5215" x="1092.9712" y="87.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.5215" x="1099.9712" y="107.292">Stripe</text>
 </g>
 <g class="participant participant-tail" data-participant="Stripe">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="55.5215" x="1048.835" y="991.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.5215" x="1055.835" y="1011.5107">Stripe</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="55.5215" x="1092.9712" y="1108.0469"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.5215" x="1099.9712" y="1128.042">Stripe</text>
 </g>
 <g class="participant participant-head" data-participant="DB">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1154.7451" y="115.292">PostgreSQL</text>
-<path d="M1180.1216,66.2969 C1180.1216,56.2969 1198.1216,56.2969 1198.1216,56.2969 C1198.1216,56.2969 1216.1216,56.2969 1216.1216,66.2969 L1216.1216,92.2969 C1216.1216,102.2969 1198.1216,102.2969 1198.1216,102.2969
-C1198.1216,102.2969 1180.1216,102.2969 1180.1216,92.2969 L1180.1216,66.2969" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1180.1216,66.2969 C1180.1216,76.2969 1198.1216,76.2969 1198.1216,76.2969 C1198.1216,76.2969 1216.1216,76.2969 1216.1216,66.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1207.9268" y="115.292">PostgreSQL</text>
+<path d="M1233.3032,66.2969 C1233.3032,56.2969 1251.3032,56.2969 1251.3032,56.2969 C1251.3032,56.2969 1269.3032,56.2969 1269.3032,66.2969 L1269.3032,92.2969 C1269.3032,102.2969 1251.3032,102.2969 1251.3032,102.2969
+C1251.3032,102.2969 1233.3032,102.2969 1233.3032,92.2969 L1233.3032,66.2969" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1233.3032,66.2969 C1233.3032,76.2969 1251.3032,76.2969 1251.3032,76.2969 C1251.3032,76.2969 1269.3032,76.2969 1269.3032,66.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-tail" data-participant="DB">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1154.7451" y="1004.5107">PostgreSQL</text>
-<path d="M1180.1216,1017.8125 C1180.1216,1007.8125 1198.1216,1007.8125 1198.1216,1007.8125 C1198.1216,1007.8125 1216.1216,1007.8125 1216.1216,1017.8125 L1216.1216,1043.8125 C1216.1216,1053.8125 1198.1216,1053.8125
-1198.1216,1053.8125 C1198.1216,1053.8125 1180.1216,1053.8125 1180.1216,1043.8125 L1180.1216,1017.8125" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1180.1216,1017.8125 C1180.1216,1027.8125 1198.1216,1027.8125 1198.1216,1027.8125 C1198.1216,1027.8125 1216.1216,1027.8125 1216.1216,1017.8125" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1207.9268" y="1121.042">PostgreSQL</text>
+<path d="M1233.3032,1134.3438 C1233.3032,1124.3438 1251.3032,1124.3438 1251.3032,1124.3438 C1251.3032,1124.3438 1269.3032,1124.3438 1269.3032,1134.3438 L1269.3032,1160.3438 C1269.3032,1170.3438 1251.3032,1170.3438
+1251.3032,1170.3438 C1251.3032,1170.3438 1233.3032,1170.3438 1233.3032,1160.3438 L1233.3032,1134.3438" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1233.3032,1134.3438 C1233.3032,1144.3438 1251.3032,1144.3438 1251.3032,1144.3438 C1251.3032,1144.3438 1269.3032,1144.3438 1269.3032,1134.3438" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
-<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1261.498" x="0" y="149.1602"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1261.498" y1="149.1602" y2="149.1602"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1261.498" y1="152.1602" y2="152.1602"/>
-<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="195.3208" x="533.0886" y="138.5938"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="176.7949" x="539.0886" y="154.6606">Souscription (Checkout)</text>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="87.3984" style="stroke:#181818;stroke-width:1;" width="10" x="710.0737" y="221.9922"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="367.7969" style="stroke:#181818;stroke-width:1;" width="10" x="710.0737" y="439.9219"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="211.0625" style="stroke:#181818;stroke-width:1;" width="10" x="710.0737" y="879.9844"/>
+</g>
+<g>
+<title>Stripe</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1115.7319" y="251.125"/>
+</g>
+<g>
+<title>Stripe</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1115.7319" y="974.5156"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1246.3032" y="619.1172"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1246.3032" y="692.1875"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1246.3032" y="1032.7813"/>
+</g>
+<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1314.6797" x="0" y="149.1602"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1314.6797" y1="149.1602" y2="149.1602"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1314.6797" y1="152.1602" y2="152.1602"/>
+<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="195.3208" x="559.6794" y="138.5938"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="176.7949" x="565.6794" y="154.6606">Souscription (Checkout)</text>
 <g class="message" data-participant-1="User" data-participant-2="Web">
-<polygon fill="#181818" points="346.7847,188.8594,356.7847,192.8594,346.7847,196.8594,350.7847,192.8594" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="44.0049" x2="352.7847" y1="192.8594" y2="192.8594"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="290.7798" x="51.0049" y="187.7935">Choisir l'offre Power User (mensuel / annuel)</text>
+<polygon fill="#181818" points="359.8301,188.8594,369.8301,192.8594,359.8301,196.8594,363.8301,192.8594" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="44.0049" x2="365.8301" y1="192.8594" y2="192.8594"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="51.0049" y="187.7935">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="290.7798" x="64.0503" y="187.7935">Choisir l'offre Power User (mensuel / annuel)</text>
 </g>
 <g class="message" data-participant-1="Web" data-participant-2="API">
-<polygon fill="#181818" points="676.9829,217.9922,686.9829,221.9922,676.9829,225.9922,680.9829,221.9922" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="358.7847" x2="682.9829" y1="221.9922" y2="221.9922"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="306.1982" x="365.7847" y="216.9263">POST /api/billing/upgrade/power-user/checkout</text>
+<polygon fill="#181818" points="698.0737,217.9922,708.0737,221.9922,698.0737,225.9922,702.0737,221.9922" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="371.8301" x2="704.0737" y1="221.9922" y2="221.9922"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="378.8301" y="216.9263">2</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="306.1982" x="391.8755" y="216.9263">POST /api/billing/upgrade/power-user/checkout</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Stripe">
-<polygon fill="#181818" points="1064.5957,247.125,1074.5957,251.125,1064.5957,255.125,1068.5957,251.125" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="688.9829" x2="1070.5957" y1="251.125" y2="251.125"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="363.6128" x="695.9829" y="246.0591">Cr&#233;er une session Checkout (success_url via getAppUrl)</text>
+<polygon fill="#181818" points="1103.7319,247.125,1113.7319,251.125,1103.7319,255.125,1107.7319,251.125" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="720.0737" x2="1109.7319" y1="251.125" y2="251.125"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="727.0737" y="246.0591">3</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="363.6128" x="740.1191" y="246.0591">Cr&#233;er une session Checkout (success_url via getAppUrl)</text>
 </g>
 <g class="message" data-participant-1="Stripe" data-participant-2="API">
-<polygon fill="#181818" points="699.9829,276.2578,689.9829,280.2578,699.9829,284.2578,695.9829,280.2578" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="693.9829" x2="1075.5957" y1="280.2578" y2="280.2578"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="105.5425" x="705.9829" y="275.1919">url de la session</text>
+<polygon fill="#181818" points="731.0737,276.2578,721.0737,280.2578,731.0737,284.2578,727.0737,280.2578" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="725.0737" x2="1119.7319" y1="280.2578" y2="280.2578"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="737.0737" y="275.1919">4</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="105.5425" x="750.1191" y="275.1919">url de la session</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Web">
-<polygon fill="#181818" points="369.7847,305.3906,359.7847,309.3906,369.7847,313.3906,365.7847,309.3906" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="363.7847" x2="687.9829" y1="309.3906" y2="309.3906"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="42.0024" x="375.7847" y="304.3247">{ url }</text>
+<polygon fill="#181818" points="382.8301,305.3906,372.8301,309.3906,382.8301,313.3906,378.8301,309.3906" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="376.8301" x2="714.0737" y1="309.3906" y2="309.3906"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="388.8301" y="304.3247">5</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="42.0024" x="401.8755" y="304.3247">{ url }</text>
 </g>
 <g class="message" data-participant-1="Web" data-participant-2="Stripe">
-<polygon fill="#181818" points="1064.5957,334.5234,1074.5957,338.5234,1064.5957,342.5234,1068.5957,338.5234" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="358.7847" x2="1070.5957" y1="338.5234" y2="338.5234"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="171.6406" x="365.7847" y="333.4575">Redirection vers Checkout</text>
+<polygon fill="#181818" points="1108.7319,334.5234,1118.7319,338.5234,1108.7319,342.5234,1112.7319,338.5234" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="371.8301" x2="1114.7319" y1="338.5234" y2="338.5234"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="378.8301" y="333.4575">6</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="171.6406" x="391.8755" y="333.4575">Redirection vers Checkout</text>
 </g>
 <g class="message" data-participant-1="User" data-participant-2="Stripe">
-<polygon fill="#181818" points="1064.5957,363.6563,1074.5957,367.6563,1064.5957,371.6563,1068.5957,367.6563" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="44.0049" x2="1070.5957" y1="367.6563" y2="367.6563"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.4136" x="51.0049" y="362.5903">Paiement</text>
+<polygon fill="#181818" points="1108.7319,363.6563,1118.7319,367.6563,1108.7319,371.6563,1112.7319,367.6563" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="44.0049" x2="1114.7319" y1="367.6563" y2="367.6563"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="51.0049" y="362.5903">7</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.4136" x="64.0503" y="362.5903">Paiement</text>
 </g>
-<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1261.498" x="0" y="396.2227"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1261.498" y1="396.2227" y2="396.2227"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1261.498" y1="399.2227" y2="399.2227"/>
-<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="222.3999" x="519.5491" y="385.6563"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="203.874" x="525.5491" y="401.7231">Webhook (canal canonique)</text>
+<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1314.6797" x="0" y="396.2227"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1314.6797" y1="396.2227" y2="396.2227"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1314.6797" y1="399.2227" y2="399.2227"/>
+<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="222.3999" x="546.1399" y="385.6563"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="203.874" x="552.1399" y="401.7231">Webhook (canal canonique)</text>
 <g class="message" data-participant-1="Stripe" data-participant-2="API">
-<polygon fill="#181818" points="699.9829,435.9219,689.9829,439.9219,699.9829,443.9219,695.9829,439.9219" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="693.9829" x2="1075.5957" y1="439.9219" y2="439.9219"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="253.811" x="705.9829" y="434.856">POST /api/billing (webhook, corps brut)</text>
+<polygon fill="#181818" points="731.0737,435.9219,721.0737,439.9219,731.0737,443.9219,727.0737,439.9219" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="725.0737" x2="1119.7319" y1="439.9219" y2="439.9219"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="737.0737" y="434.856">8</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="253.811" x="750.1191" y="434.856">POST /api/billing (webhook, corps brut)</text>
 </g>
-<path d="M693,452.9219 L693,567.9219 L1141,567.9219 L1141,462.9219 L1131,452.9219 L693,452.9219" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1131,452.9219 L1131,462.9219 L1141,462.9219 L1131,452.9219" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114.3149" x="699" y="469.9888">Gardes en ordre :</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="257.8354" x="699" y="485.1216">1. V&#233;rifier la signature (constructEvent)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="385.5503" x="699" y="500.2544">2. Fen&#234;tre de fra&#238;cheur (STRIPE_WEBHOOK_MAX_AGE_SEC)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="217.1089" x="699" y="515.3872">3. Whitelist du type d'&#233;v&#233;nement</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="389.7017" x="699" y="530.52">4. Marqueur d'idempotence (ProcessedStripeEvent.eventId)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="284.5337" x="711.397" y="545.6528">dans la M&#202;ME transaction que l'effet m&#233;tier</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="427.3813" x="699" y="560.7856">5. metadata.targetRole valid&#233; par Zod (pas d'auto-promo ADMIN)</text>
-<path d="M634.9526,580.8516 L699.3955,580.8516 L699.3955,587.9844 L689.3955,597.9844 L634.9526,597.9844 L634.9526,580.8516" fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/>
-<rect fill="none" height="140.4688" style="stroke:#000000;stroke-width:1.5;" width="616.5454" x="634.9526" y="580.8516"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="19.4429" x="649.9526" y="593.9185">alt</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="264.3813" x="714.3955" y="593.062">[checkout.session.completed (promotion)]</text>
+<path d="M725,452.9219 L725,567.9219 L1173,567.9219 L1173,462.9219 L1163,452.9219 L725,452.9219" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1163,452.9219 L1163,462.9219 L1173,462.9219 L1163,452.9219" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114.3149" x="731" y="469.9888">Gardes en ordre :</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="257.8354" x="731" y="485.1216">1. V&#233;rifier la signature (constructEvent)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="385.5503" x="731" y="500.2544">2. Fen&#234;tre de fra&#238;cheur (STRIPE_WEBHOOK_MAX_AGE_SEC)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="217.1089" x="731" y="515.3872">3. Whitelist du type d'&#233;v&#233;nement</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="389.7017" x="731" y="530.52">4. Marqueur d'idempotence (ProcessedStripeEvent.eventId)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="284.5337" x="743.397" y="545.6528">dans la M&#202;ME transaction que l'effet m&#233;tier</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="427.3813" x="731" y="560.7856">5. metadata.targetRole valid&#233; par Zod (pas d'auto-promo ADMIN)</text>
+<path d="M661.0435,580.8516 L725.4863,580.8516 L725.4863,587.9844 L715.4863,597.9844 L661.0435,597.9844 L661.0435,580.8516" fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/>
+<rect fill="none" height="198.7344" style="stroke:#000000;stroke-width:1.5;" width="643.6362" x="661.0435" y="580.8516"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="19.4429" x="676.0435" y="593.9185">alt</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="264.3813" x="740.4863" y="593.062">[checkout.session.completed (promotion)]</text>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1186.1216,615.1172,1196.1216,619.1172,1186.1216,623.1172,1190.1216,619.1172" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="688.9829" x2="1192.1216" y1="619.1172" y2="619.1172"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="471.4404" x="695.9829" y="614.0513">tx { INSERT ProcessedStripeEvent ; UPDATE User role = POWER_USER }</text>
+<polygon fill="#181818" points="1234.3032,615.1172,1244.3032,619.1172,1234.3032,623.1172,1238.3032,619.1172" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="720.0737" x2="1240.3032" y1="619.1172" y2="619.1172"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="727.0737" y="614.0513">9</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="471.4404" x="740.1191" y="614.0513">tx { INSERT ProcessedStripeEvent ; UPDATE User role = POWER_USER }</text>
 </g>
-<line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="634.9526" x2="1251.498" y1="628.1172" y2="628.1172"/>
-<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="356.2109" x="639.9526" y="638.3276">[subscription deleted / unpaid / expired (r&#233;trogradation)]</text>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="731.0737,644.25,721.0737,648.25,731.0737,652.25,727.0737,648.25" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="725.0737" x2="1250.3032" y1="648.25" y2="648.25"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="737.0737" y="643.1841">10</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="49.1372" x="759.1646" y="643.1841">commit</text>
+</g>
+<line style="stroke:#000000;stroke-width:1;stroke-dasharray:2,2;" x1="661.0435" x2="1304.6797" y1="657.25" y2="657.25"/>
+<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="356.2109" x="666.0435" y="667.4604">[subscription deleted / unpaid / expired (r&#233;trogradation)]</text>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1186.1216,659.0547,1196.1216,663.0547,1186.1216,667.0547,1190.1216,663.0547" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="688.9829" x2="1192.1216" y1="663.0547" y2="663.0547"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="485.1387" x="695.9829" y="657.9888">tx { marquer event ; UPDATE User role = USER ; cleanupSharingForUser
+<polygon fill="#181818" points="1234.3032,688.1875,1244.3032,692.1875,1234.3032,696.1875,1238.3032,692.1875" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="720.0737" x2="1240.3032" y1="692.1875" y2="692.1875"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="727.0737" y="687.1216">11</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="485.1387" x="749.1646" y="687.1216">tx { marquer event ; UPDATE User role = USER ; cleanupSharingForUser
 }</text>
 </g>
-<path d="M693,676.0547 L693,716.0547 L1004,716.0547 L1004,686.0547 L994,676.0547 L693,676.0547" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M994,676.0547 L994,686.0547 L1004,686.0547 L994,676.0547" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="290.5259" x="699" y="693.1216">partages d&#233;sactiv&#233;s + invitations r&#233;voqu&#233;es</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="243.3691" x="699" y="708.2544">dans la m&#234;me transaction que le r&#244;le</text>
-<g class="message" data-participant-1="API" data-participant-2="Stripe">
-<polygon fill="#181818" points="1064.5957,745.4531,1074.5957,749.4531,1064.5957,753.4531,1068.5957,749.4531" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="688.9829" x2="1070.5957" y1="749.4531" y2="749.4531"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="259.6572" x="695.9829" y="744.3872">200 (ack ; P2002 sur doublon = succ&#232;s)</text>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="731.0737,717.3203,721.0737,721.3203,731.0737,725.3203,727.0737,721.3203" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="725.0737" x2="1250.3032" y1="721.3203" y2="721.3203"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="737.0737" y="716.2544">12</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="49.1372" x="759.1646" y="716.2544">commit</text>
 </g>
-<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1261.498" x="0" y="778.0195"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1261.498" y1="778.0195" y2="778.0195"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1261.498" y1="781.0195" y2="781.0195"/>
-<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="357.5796" x="451.9592" y="767.4531"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="339.0537" x="457.9592" y="783.52">Repli de synchronisation (retour de Checkout)</text>
+<path d="M725,734.3203 L725,774.3203 L1036,774.3203 L1036,744.3203 L1026,734.3203 L725,734.3203" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1026,734.3203 L1026,744.3203 L1036,744.3203 L1026,734.3203" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="290.5259" x="731" y="751.3872">partages d&#233;sactiv&#233;s + invitations r&#233;voqu&#233;es</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="243.3691" x="731" y="766.52">dans la m&#234;me transaction que le r&#244;le</text>
+<g class="message" data-participant-1="API" data-participant-2="Stripe">
+<polygon fill="#181818" points="1108.7319,803.7188,1118.7319,807.7188,1108.7319,811.7188,1112.7319,807.7188" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="715.0737" x2="1114.7319" y1="807.7188" y2="807.7188"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="722.0737" y="802.6528">13</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="259.6572" x="744.1646" y="802.6528">200 (ack ; P2002 sur doublon = succ&#232;s)</text>
+</g>
+<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1314.6797" x="0" y="836.2852"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1314.6797" y1="836.2852" y2="836.2852"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1314.6797" y1="839.2852" y2="839.2852"/>
+<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="357.5796" x="478.55" y="825.7188"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="339.0537" x="484.55" y="841.7856">Repli de synchronisation (retour de Checkout)</text>
 <g class="message" data-participant-1="Web" data-participant-2="API">
-<polygon fill="#181818" points="676.9829,817.7188,686.9829,821.7188,676.9829,825.7188,680.9829,821.7188" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="358.7847" x2="682.9829" y1="821.7188" y2="821.7188"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="140.4102" x="365.7847" y="816.6528">POST /api/billing/sync</text>
+<polygon fill="#181818" points="698.0737,875.9844,708.0737,879.9844,698.0737,883.9844,702.0737,879.9844" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="371.8301" x2="704.0737" y1="879.9844" y2="879.9844"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="378.8301" y="874.9185">14</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="140.4102" x="400.9209" y="874.9185">POST /api/billing/sync</text>
 </g>
-<path d="M693,834.7188 L693,889.7188 L1034,889.7188 L1034,844.7188 L1024,834.7188 L693,834.7188" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1024,834.7188 L1024,844.7188 L1034,844.7188 L1024,834.7188" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="262.7676" x="699" y="851.7856">le cold start de Render d&#233;passe souvent</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="272.7271" x="699" y="866.9185">les ~10 s de retry de Stripe : on interroge</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="320.4805" x="699" y="882.0513">Stripe en direct pour ne pas attendre le webhook</text>
+<path d="M725,892.9844 L725,947.9844 L1066,947.9844 L1066,902.9844 L1056,892.9844 L725,892.9844" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1056,892.9844 L1056,902.9844 L1066,902.9844 L1056,892.9844" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="262.7676" x="731" y="910.0513">le cold start de Render d&#233;passe souvent</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="272.7271" x="731" y="925.1841">les ~10 s de retry de Stripe : on interroge</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="320.4805" x="731" y="940.3169">Stripe en direct pour ne pas attendre le webhook</text>
 <g class="message" data-participant-1="API" data-participant-2="Stripe">
-<polygon fill="#181818" points="1064.5957,912.25,1074.5957,916.25,1064.5957,920.25,1068.5957,916.25" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="688.9829" x2="1070.5957" y1="916.25" y2="916.25"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="172.2817" x="695.9829" y="911.1841">Lire l'abonnement courant</text>
+<polygon fill="#181818" points="1103.7319,970.5156,1113.7319,974.5156,1103.7319,978.5156,1107.7319,974.5156" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="720.0737" x2="1109.7319" y1="974.5156" y2="974.5156"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="727.0737" y="969.4497">15</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="172.2817" x="749.1646" y="969.4497">Lire l'abonnement courant</text>
+</g>
+<g class="message" data-participant-1="Stripe" data-participant-2="API">
+<polygon fill="#181818" points="731.0737,999.6484,721.0737,1003.6484,731.0737,1007.6484,727.0737,1003.6484" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="725.0737" x2="1119.7319" y1="1003.6484" y2="1003.6484"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="737.0737" y="998.5825">16</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="82.6465" x="759.1646" y="998.5825">abonnement</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1186.1216,941.3828,1196.1216,945.3828,1186.1216,949.3828,1190.1216,945.3828" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="688.9829" x2="1192.1216" y1="945.3828" y2="945.3828"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="249.8311" x="695.9829" y="940.3169">R&#233;concilier role + stripeSubscriptionId</text>
+<polygon fill="#181818" points="1234.3032,1028.7813,1244.3032,1032.7813,1234.3032,1036.7813,1238.3032,1032.7813" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="720.0737" x2="1240.3032" y1="1032.7813" y2="1032.7813"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="727.0737" y="1027.7153">17</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="249.8311" x="749.1646" y="1027.7153">R&#233;concilier role + stripeSubscriptionId</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="731.0737,1057.9141,721.0737,1061.9141,731.0737,1065.9141,727.0737,1061.9141" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="725.0737" x2="1250.3032" y1="1061.9141" y2="1061.9141"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="737.0737" y="1056.8481">18</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="15.4819" x="759.1646" y="1056.8481">ok</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Web">
-<polygon fill="#181818" points="369.7847,970.5156,359.7847,974.5156,369.7847,978.5156,365.7847,974.5156" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="363.7847" x2="687.9829" y1="974.5156" y2="974.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="105.3774" x="375.7847" y="969.4497">200 (role &#224; jour)</text>
+<polygon fill="#181818" points="382.8301,1087.0469,372.8301,1091.0469,382.8301,1095.0469,378.8301,1091.0469" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="376.8301" x2="714.0737" y1="1091.0469" y2="1091.0469"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="388.8301" y="1085.981">19</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="105.3774" x="410.9209" y="1085.981">200 (role &#224; jour)</text>
 </g>
 </g>
 </svg>

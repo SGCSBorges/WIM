@@ -1,46 +1,82 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="855px" preserveAspectRatio="none" style="width:1397px;height:855px;background:#FFFFFF;"
-version="1.1" viewBox="0 0 1397 855" width="1397px" zoomAndPan="magnify">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="1030px" preserveAspectRatio="none" style="width:1442px;height:1030px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1442 1030" width="1442px" zoomAndPan="magnify">
 <title>WIM - Diagramme de s&#233;quence (ajout article + garantie + alertes)</title>
 <defs/>
 <g>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="523.79" x="433.0874" y="27.9951">WIM - Diagramme de s&#233;quence (ajout article + garantie
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="523.79" x="455.1555" y="27.9951">WIM - Diagramme de s&#233;quence (ajout article + garantie
 + alertes)</text>
-<rect fill="none" height="132.6641" style="stroke:#000000;stroke-width:1.5;" width="560.3496" x="584.9775" y="317.5234"/>
-<rect fill="none" height="75.3984" style="stroke:#000000;stroke-width:1.5;" width="825.7505" x="188.1929" y="464.1875"/>
 <g>
-<title>Utilisateur</title>
-<rect fill="#000000" fill-opacity="0.00000" height="655.9219" width="8" x="40.0049" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="44" x2="44" y1="118.5938" y2="774.5156"/>
-</g>
-<g>
-<title>PWA .Web.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="655.9219" width="8" x="240.4824" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="244.1929" x2="244.1929" y1="118.5938" y2="774.5156"/>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="431.9922" style="stroke:#181818;stroke-width:1;" width="10" x="660.0986" y="193.9922"/>
 </g>
 <g>
 <title>API .Node.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="655.9219" width="8" x="635.0078" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="638.9775" x2="638.9775" y1="118.5938" y2="774.5156"/>
+<rect fill="#FFFFFF" height="233.0625" style="stroke:#181818;stroke-width:1;" width="10" x="660.0986" y="698.25"/>
 </g>
 <g>
 <title>PostgreSQL</title>
-<rect fill="#000000" fill-opacity="0.00000" height="655.9219" width="8" x="956.5669" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="960.1904" x2="960.1904" y1="118.5938" y2="774.5156"/>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="273.3906"/>
 </g>
 <g>
-<title>BullMQ . Redis</title>
-<rect fill="#000000" fill-opacity="0.00000" height="655.9219" width="8" x="1070.6353" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1073.9434" x2="1073.9434" y1="118.5938" y2="774.5156"/>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="397.9219"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="560.7188"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="727.3828"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="902.1797"/>
 </g>
 <g>
 <title>Push .VAPID.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="655.9219" width="8" x="1194.0083" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1197.3271" x2="1197.3271" y1="118.5938" y2="774.5156"/>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1237.1445" y="785.6484"/>
 </g>
 <g>
 <title>E-mail .Resend.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="655.9219" width="8" x="1319.3271" y="118.5938"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1322.6895" x2="1322.6895" y1="118.5938" y2="774.5156"/>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1362.4634" y="843.9141"/>
+</g>
+<rect fill="none" height="161.7969" style="stroke:#000000;stroke-width:1.5;" width="578.395" x="611.0684" y="317.5234"/>
+<rect fill="none" height="104.5313" style="stroke:#000000;stroke-width:1.5;" width="856.8413" x="201.2383" y="493.3203"/>
+<g>
+<title>Utilisateur</title>
+<rect fill="#000000" fill-opacity="0.00000" height="830.7188" width="8" x="40.0049" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="44" x2="44" y1="118.5938" y2="949.3125"/>
+</g>
+<g>
+<title>PWA .Web.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="830.7188" width="8" x="253.5278" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="257.2383" x2="257.2383" y1="118.5938" y2="949.3125"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="830.7188" width="8" x="661.0986" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="665.0684" x2="665.0684" y1="118.5938" y2="949.3125"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#000000" fill-opacity="0.00000" height="830.7188" width="8" x="1000.7031" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1004.3267" x2="1004.3267" y1="118.5938" y2="949.3125"/>
+</g>
+<g>
+<title>BullMQ . Redis</title>
+<rect fill="#000000" fill-opacity="0.00000" height="830.7188" width="8" x="1114.7715" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1118.0796" x2="1118.0796" y1="118.5938" y2="949.3125"/>
+</g>
+<g>
+<title>Push .VAPID.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="830.7188" width="8" x="1238.1445" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1241.4634" x2="1241.4634" y1="118.5938" y2="949.3125"/>
+</g>
+<g>
+<title>E-mail .Resend.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="830.7188" width="8" x="1363.4634" y="118.5938"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1366.8257" x2="1366.8257" y1="118.5938" y2="949.3125"/>
 </g>
 <g class="participant participant-head" data-participant="User">
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="5" y="115.292">Utilisateur</text>
@@ -48,162 +84,249 @@ version="1.1" viewBox="0 0 1397 855" width="1397px" zoomAndPan="magnify">
 <path d="M44.0049,58.7969 L44.0049,85.7969 M31.0049,66.7969 L57.0049,66.7969 M44.0049,85.7969 L31.0049,100.7969 M44.0049,85.7969 L57.0049,100.7969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-tail" data-participant="User">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="5" y="786.5107">Utilisateur</text>
-<ellipse cx="44.0049" cy="798.3125" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M44.0049,806.3125 L44.0049,833.3125 M31.0049,814.3125 L57.0049,814.3125 M44.0049,833.3125 L31.0049,848.3125 M44.0049,833.3125 L57.0049,848.3125" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="5" y="961.3076">Utilisateur</text>
+<ellipse cx="44.0049" cy="973.1094" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M44.0049,981.1094 L44.0049,1008.1094 M31.0049,989.1094 L57.0049,989.1094 M44.0049,1008.1094 L31.0049,1023.1094 M44.0049,1008.1094 L57.0049,1023.1094" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-head" data-participant="Web">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="198.1929" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="205.1929" y="107.292">PWA (Web)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="211.2383" y="87.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="218.2383" y="107.292">PWA (Web)</text>
 </g>
 <g class="participant participant-tail" data-participant="Web">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="198.1929" y="773.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="205.1929" y="793.5107">PWA (Web)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="211.2383" y="948.3125"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="218.2383" y="968.3076">PWA (Web)</text>
 </g>
 <g class="participant participant-head" data-participant="API">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="594.9775" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="601.9775" y="107.292">API (Node)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="621.0684" y="87.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="628.0684" y="107.292">API (Node)</text>
 </g>
 <g class="participant participant-tail" data-participant="API">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="594.9775" y="773.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="601.9775" y="793.5107">API (Node)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="621.0684" y="948.3125"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="628.0684" y="968.3076">API (Node)</text>
 </g>
 <g class="participant participant-head" data-participant="DB">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="917.1904" y="115.292">PostgreSQL</text>
-<path d="M942.5669,66.2969 C942.5669,56.2969 960.5669,56.2969 960.5669,56.2969 C960.5669,56.2969 978.5669,56.2969 978.5669,66.2969 L978.5669,92.2969 C978.5669,102.2969 960.5669,102.2969 960.5669,102.2969
-C960.5669,102.2969 942.5669,102.2969 942.5669,92.2969 L942.5669,66.2969" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M942.5669,66.2969 C942.5669,76.2969 960.5669,76.2969 960.5669,76.2969 C960.5669,76.2969 978.5669,76.2969 978.5669,66.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="961.3267" y="115.292">PostgreSQL</text>
+<path d="M986.7031,66.2969 C986.7031,56.2969 1004.7031,56.2969 1004.7031,56.2969 C1004.7031,56.2969 1022.7031,56.2969 1022.7031,66.2969 L1022.7031,92.2969 C1022.7031,102.2969 1004.7031,102.2969 1004.7031,102.2969
+C1004.7031,102.2969 986.7031,102.2969 986.7031,92.2969 L986.7031,66.2969" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M986.7031,66.2969 C986.7031,76.2969 1004.7031,76.2969 1004.7031,76.2969 C1004.7031,76.2969 1022.7031,76.2969 1022.7031,66.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-tail" data-participant="DB">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="917.1904" y="786.5107">PostgreSQL</text>
-<path d="M942.5669,799.8125 C942.5669,789.8125 960.5669,789.8125 960.5669,789.8125 C960.5669,789.8125 978.5669,789.8125 978.5669,799.8125 L978.5669,825.8125 C978.5669,835.8125 960.5669,835.8125 960.5669,835.8125
-C960.5669,835.8125 942.5669,835.8125 942.5669,825.8125 L942.5669,799.8125" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M942.5669,799.8125 C942.5669,809.8125 960.5669,809.8125 960.5669,809.8125 C960.5669,809.8125 978.5669,809.8125 978.5669,799.8125" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="961.3267" y="961.3076">PostgreSQL</text>
+<path d="M986.7031,974.6094 C986.7031,964.6094 1004.7031,964.6094 1004.7031,964.6094 C1004.7031,964.6094 1022.7031,964.6094 1022.7031,974.6094 L1022.7031,1000.6094 C1022.7031,1010.6094 1004.7031,1010.6094
+1004.7031,1010.6094 C1004.7031,1010.6094 986.7031,1010.6094 986.7031,1000.6094 L986.7031,974.6094" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M986.7031,974.6094 C986.7031,984.6094 1004.7031,984.6094 1004.7031,984.6094 C1004.7031,984.6094 1022.7031,984.6094 1022.7031,974.6094" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-head" data-participant="Jobs">
-<path d="M1018.9434,92.2969 L1130.3271,92.2969 C1135.3271,92.2969 1135.3271,105.4453 1135.3271,105.4453 C1135.3271,105.4453 1135.3271,118.5938 1130.3271,118.5938 L1018.9434,118.5938 C1013.9434,118.5938
-1013.9434,105.4453 1013.9434,105.4453 C1013.9434,105.4453 1013.9434,92.2969 1018.9434,92.2969" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1130.3271,92.2969 C1125.3271,92.2969 1125.3271,105.4453 1125.3271,105.4453 C1125.3271,118.5938 1130.3271,118.5938 1130.3271,118.5938" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101.3838" x="1018.9434" y="110.292">BullMQ / Redis</text>
+<path d="M1063.0796,92.2969 L1174.4634,92.2969 C1179.4634,92.2969 1179.4634,105.4453 1179.4634,105.4453 C1179.4634,105.4453 1179.4634,118.5938 1174.4634,118.5938 L1063.0796,118.5938 C1058.0796,118.5938
+1058.0796,105.4453 1058.0796,105.4453 C1058.0796,105.4453 1058.0796,92.2969 1063.0796,92.2969" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1174.4634,92.2969 C1169.4634,92.2969 1169.4634,105.4453 1169.4634,105.4453 C1169.4634,118.5938 1174.4634,118.5938 1174.4634,118.5938" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101.3838" x="1063.0796" y="110.292">BullMQ / Redis</text>
 </g>
 <g class="participant participant-tail" data-participant="Jobs">
-<path d="M1018.9434,773.5156 L1130.3271,773.5156 C1135.3271,773.5156 1135.3271,786.6641 1135.3271,786.6641 C1135.3271,786.6641 1135.3271,799.8125 1130.3271,799.8125 L1018.9434,799.8125 C1013.9434,799.8125
-1013.9434,786.6641 1013.9434,786.6641 C1013.9434,786.6641 1013.9434,773.5156 1018.9434,773.5156" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1130.3271,773.5156 C1125.3271,773.5156 1125.3271,786.6641 1125.3271,786.6641 C1125.3271,799.8125 1130.3271,799.8125 1130.3271,799.8125" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101.3838" x="1018.9434" y="791.5107">BullMQ / Redis</text>
+<path d="M1063.0796,948.3125 L1174.4634,948.3125 C1179.4634,948.3125 1179.4634,961.4609 1179.4634,961.4609 C1179.4634,961.4609 1179.4634,974.6094 1174.4634,974.6094 L1063.0796,974.6094 C1058.0796,974.6094
+1058.0796,961.4609 1058.0796,961.4609 C1058.0796,961.4609 1058.0796,948.3125 1063.0796,948.3125" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1174.4634,948.3125 C1169.4634,948.3125 1169.4634,961.4609 1169.4634,961.4609 C1169.4634,974.6094 1174.4634,974.6094 1174.4634,974.6094" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="101.3838" x="1063.0796" y="966.3076">BullMQ / Redis</text>
 </g>
 <g class="participant participant-head" data-participant="Push">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="105.3623" x="1145.3271" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91.3623" x="1152.3271" y="107.292">Push (VAPID)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="105.3623" x="1189.4634" y="87.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91.3623" x="1196.4634" y="107.292">Push (VAPID)</text>
 </g>
 <g class="participant participant-tail" data-participant="Push">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="105.3623" x="1145.3271" y="773.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91.3623" x="1152.3271" y="793.5107">Push (VAPID)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="105.3623" x="1189.4634" y="948.3125"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91.3623" x="1196.4634" y="968.3076">Push (VAPID)</text>
 </g>
 <g class="participant participant-head" data-participant="Mail">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1260.6895" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1267.6895" y="107.292">E-mail (Resend)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1304.8257" y="87.2969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1311.8257" y="107.292">E-mail (Resend)</text>
 </g>
 <g class="participant participant-tail" data-participant="Mail">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1260.6895" y="773.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1267.6895" y="793.5107">E-mail (Resend)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1304.8257" y="948.3125"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1311.8257" y="968.3076">E-mail (Resend)</text>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="431.9922" style="stroke:#181818;stroke-width:1;" width="10" x="660.0986" y="193.9922"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="233.0625" style="stroke:#181818;stroke-width:1;" width="10" x="660.0986" y="698.25"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="273.3906"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="397.9219"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="560.7188"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="727.3828"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="999.7031" y="902.1797"/>
+</g>
+<g>
+<title>Push .VAPID.</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1237.1445" y="785.6484"/>
+</g>
+<g>
+<title>E-mail .Resend.</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1362.4634" y="843.9141"/>
 </g>
 <g class="message" data-participant-1="User" data-participant-2="Web">
-<polygon fill="#181818" points="232.4824,145.7266,242.4824,149.7266,232.4824,153.7266,236.4824,149.7266" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="44.0049" x2="238.4824" y1="149.7266" y2="149.7266"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="176.4775" x="51.0049" y="144.6606">Ouvrir le formulaire d'ajout</text>
+<polygon fill="#181818" points="245.5278,145.7266,255.5278,149.7266,245.5278,153.7266,249.5278,149.7266" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="44.0049" x2="251.5278" y1="149.7266" y2="149.7266"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="51.0049" y="144.6606">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="176.4775" x="64.0503" y="144.6606">Ouvrir le formulaire d'ajout</text>
 </g>
 <g class="message" data-participant-1="Web" data-participant-2="API">
-<polygon fill="#181818" points="627.0078,189.9922,637.0078,193.9922,627.0078,197.9922,631.0078,193.9922" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="244.4824" x2="633.0078" y1="193.9922" y2="193.9922"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114.5371" x="251.4824" y="173.7935">POST /api/articles</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="370.5254" x="251.4824" y="188.9263">{nom, mod&#232;le, desc, prix, tagIds, locationIds, garantie?}</text>
+<polygon fill="#181818" points="648.0986,189.9922,658.0986,193.9922,648.0986,197.9922,652.0986,193.9922" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="257.5278" x2="654.0986" y1="193.9922" y2="193.9922"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="264.5278" y="181.3599">2</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114.5371" x="277.5732" y="173.7935">POST /api/articles</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="370.5254" x="277.5732" y="188.9263">{nom, mod&#232;le, desc, prix, tagIds, locationIds, garantie?}</text>
 </g>
-<path d="M644,206.9922 L644,246.9922 L927,246.9922 L927,216.9922 L917,206.9922 L644,206.9922" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M917,206.9922 L917,216.9922 L927,216.9922 L917,206.9922" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="262.1519" x="650" y="224.0591">authGuard (cookie + jti + tokenVersion)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="197.9263" x="650" y="239.1919">puis csrfGuard sur la mutation</text>
+<path d="M675,206.9922 L675,246.9922 L958,246.9922 L958,216.9922 L948,206.9922 L675,206.9922" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M948,206.9922 L948,216.9922 L958,216.9922 L948,206.9922" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="262.1519" x="681" y="224.0591">authGuard (cookie + jti + tokenVersion)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="197.9263" x="681" y="239.1919">puis csrfGuard sur la mutation</text>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="948.5669,269.3906,958.5669,273.3906,948.5669,277.3906,952.5669,273.3906" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="954.5669" y1="273.3906" y2="273.3906"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="297.5591" x="646.0078" y="268.3247">INSERT Article (+ ArticleTag / ArticleLocation)</text>
+<polygon fill="#181818" points="987.7031,269.3906,997.7031,273.3906,987.7031,277.3906,991.7031,273.3906" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="993.7031" y1="273.3906" y2="273.3906"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="677.0986" y="268.3247">3</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="297.5591" x="690.144" y="268.3247">INSERT Article (+ ArticleTag / ArticleLocation)</text>
 </g>
 <g class="message" data-participant-1="DB" data-participant-2="API">
-<polygon fill="#181818" points="650.0078,298.5234,640.0078,302.5234,650.0078,306.5234,646.0078,302.5234" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="644.0078" x2="959.5669" y1="302.5234" y2="302.5234"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="52.8633" x="656.0078" y="297.4575">articleId</text>
+<polygon fill="#181818" points="681.0986,298.5234,671.0986,302.5234,681.0986,306.5234,677.0986,302.5234" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="675.0986" x2="1003.7031" y1="302.5234" y2="302.5234"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="687.0986" y="297.4575">4</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="52.8633" x="700.144" y="297.4575">articleId</text>
 </g>
-<path d="M584.9775,317.5234 L649.4204,317.5234 L649.4204,324.6563 L639.4204,334.6563 L584.9775,334.6563 L584.9775,317.5234" fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/>
-<rect fill="none" height="132.6641" style="stroke:#000000;stroke-width:1.5;" width="560.3496" x="584.9775" y="317.5234"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="19.4429" x="599.9775" y="330.5903">alt</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="197.5542" x="664.4204" y="329.7339">[Garantie incluse dans le corps]</text>
+<path d="M611.0684,317.5234 L675.5112,317.5234 L675.5112,324.6563 L665.5112,334.6563 L611.0684,334.6563 L611.0684,317.5234" fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/>
+<rect fill="none" height="161.7969" style="stroke:#000000;stroke-width:1.5;" width="578.395" x="611.0684" y="317.5234"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="19.4429" x="626.0684" y="330.5903">alt</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="197.5542" x="690.5112" y="329.7339">[Garantie incluse dans le corps]</text>
 <g class="message" data-participant-1="API" data-participant-2="API">
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="681.0078" y1="355.7891" y2="355.7891"/>
-<line style="stroke:#181818;stroke-width:1;" x1="681.0078" x2="681.0078" y1="355.7891" y2="368.7891"/>
-<line style="stroke:#181818;stroke-width:1;" x1="640.0078" x2="681.0078" y1="368.7891" y2="368.7891"/>
-<polygon fill="#181818" points="650.0078,364.7891,640.0078,368.7891,650.0078,372.7891,646.0078,368.7891" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="261.8853" x="646.0078" y="350.7231">garantieFin = dateAchat + dur&#233;e (mois)</text>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="712.0986" y1="355.7891" y2="355.7891"/>
+<line style="stroke:#181818;stroke-width:1;" x1="712.0986" x2="712.0986" y1="355.7891" y2="368.7891"/>
+<line style="stroke:#181818;stroke-width:1;" x1="671.0986" x2="712.0986" y1="368.7891" y2="368.7891"/>
+<polygon fill="#181818" points="681.0986,364.7891,671.0986,368.7891,681.0986,372.7891,677.0986,368.7891" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="677.0986" y="350.7231">5</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="261.8853" x="690.144" y="350.7231">garantieFin = dateAchat + dur&#233;e (mois)</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="948.5669,393.9219,958.5669,397.9219,948.5669,401.9219,952.5669,397.9219" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="954.5669" y1="397.9219" y2="397.9219"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="230.4453" x="646.0078" y="392.856">INSERT Garantie (avec garantieFin)</text>
+<polygon fill="#181818" points="987.7031,393.9219,997.7031,397.9219,987.7031,401.9219,991.7031,397.9219" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="993.7031" y1="397.9219" y2="397.9219"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="677.0986" y="392.856">6</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="230.4453" x="690.144" y="392.856">INSERT Garantie (avec garantieFin)</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="681.0986,423.0547,671.0986,427.0547,681.0986,431.0547,677.0986,427.0547" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="675.0986" x2="1003.7031" y1="427.0547" y2="427.0547"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="687.0986" y="421.9888">7</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="15.4819" x="700.144" y="421.9888">ok</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Jobs">
-<polygon fill="#181818" points="1062.6353,438.1875,1072.6353,442.1875,1062.6353,446.1875,1066.6353,442.1875" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="1068.6353" y1="442.1875" y2="442.1875"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="189.8013" x="646.0078" y="421.9888">Planifier alertes J-30 / J-7 / J-1</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="229.4487" x="646.0078" y="437.1216">(file wim-alerts, jobId d&#233;terministe)</text>
+<polygon fill="#181818" points="1106.7715,467.3203,1116.7715,471.3203,1106.7715,475.3203,1110.7715,471.3203" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="1112.7715" y1="471.3203" y2="471.3203"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="677.0986" y="458.688">8</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="189.8013" x="690.144" y="451.1216">Planifier alertes J-30 / J-7 / J-1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="229.4487" x="690.144" y="466.2544">(file wim-alerts, jobId d&#233;terministe)</text>
 </g>
-<path d="M188.1929,464.1875 L257.644,464.1875 L257.644,471.3203 L247.644,481.3203 L188.1929,481.3203 L188.1929,464.1875" fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/>
-<rect fill="none" height="75.3984" style="stroke:#000000;stroke-width:1.5;" width="825.7505" x="188.1929" y="464.1875"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="24.4512" x="203.1929" y="477.2544">opt</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="82.8062" x="272.644" y="476.3979">[Pi&#232;ce jointe]</text>
+<path d="M201.2383,493.3203 L270.6895,493.3203 L270.6895,500.4531 L260.6895,510.4531 L201.2383,510.4531 L201.2383,493.3203" fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/>
+<rect fill="none" height="104.5313" style="stroke:#000000;stroke-width:1.5;" width="856.8413" x="201.2383" y="493.3203"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="24.4512" x="216.2383" y="506.3872">opt</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" font-weight="bold" lengthAdjust="spacing" textLength="82.8062" x="285.6895" y="505.5308">[Pi&#232;ce jointe]</text>
 <g class="message" data-participant-1="Web" data-participant-2="API">
-<polygon fill="#181818" points="627.0078,498.4531,637.0078,502.4531,627.0078,506.4531,631.0078,502.4531" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="244.4824" x2="633.0078" y1="502.4531" y2="502.4531"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="272.0859" x="251.4824" y="497.3872">POST /api/attachments/upload (multipart)</text>
+<polygon fill="#181818" points="648.0986,527.5859,658.0986,531.5859,648.0986,535.5859,652.0986,531.5859" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="257.5278" x2="654.0986" y1="531.5859" y2="531.5859"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="264.5278" y="526.52">9</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="272.0859" x="277.5732" y="526.52">POST /api/attachments/upload (multipart)</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="948.5669,527.5859,958.5669,531.5859,948.5669,535.5859,952.5669,531.5859" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="954.5669" y1="531.5859" y2="531.5859"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="276.1675" x="646.0078" y="526.52">INSERT Attachment (fileUrl -&gt; /uploads/...)</text>
+<polygon fill="#181818" points="987.7031,556.7188,997.7031,560.7188,987.7031,564.7188,991.7031,560.7188" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="993.7031" y1="560.7188" y2="560.7188"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="677.0986" y="555.6528">10</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="276.1675" x="699.1895" y="555.6528">INSERT Attachment (fileUrl -&gt; /uploads/...)</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="681.0986,585.8516,671.0986,589.8516,681.0986,593.8516,677.0986,589.8516" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="675.0986" x2="1003.7031" y1="589.8516" y2="589.8516"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="687.0986" y="584.7856">11</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="15.4819" x="709.1895" y="584.7856">ok</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Web">
-<polygon fill="#181818" points="255.4824,563.7188,245.4824,567.7188,255.4824,571.7188,251.4824,567.7188" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="249.4824" x2="638.0078" y1="567.7188" y2="567.7188"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="273.311" x="261.4824" y="562.6528">201 Created (article + garantie + alertes)</text>
+<polygon fill="#181818" points="268.5278,621.9844,258.5278,625.9844,268.5278,629.9844,264.5278,625.9844" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="262.5278" x2="664.0986" y1="625.9844" y2="625.9844"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="274.5278" y="620.9185">12</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="273.311" x="296.6187" y="620.9185">201 Created (article + garantie + alertes)</text>
 </g>
-<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1390.9648" x="0" y="596.2852"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1390.9648" y1="596.2852" y2="596.2852"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1390.9648" y1="599.2852" y2="599.2852"/>
-<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="326.3555" x="532.3047" y="585.7188"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="307.8296" x="538.3047" y="601.7856">Ex&#233;cution diff&#233;r&#233;e (&#233;ch&#233;ance
+<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1435.1011" x="0" y="654.5508"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1435.1011" y1="654.5508" y2="654.5508"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1435.1011" y1="657.5508" y2="657.5508"/>
+<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="326.3555" x="554.3728" y="643.9844"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="307.8296" x="560.3728" y="660.0513">Ex&#233;cution diff&#233;r&#233;e (&#233;ch&#233;ance
 d'un rappel)</text>
 <g class="message" data-participant-1="Jobs" data-participant-2="API">
-<polygon fill="#181818" points="650.0078,635.9844,640.0078,639.9844,650.0078,643.9844,646.0078,639.9844" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="644.0078" x2="1073.6353" y1="639.9844" y2="639.9844"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="195.0698" x="656.0078" y="634.9185">Job d'alerte arriv&#233; &#224; &#233;ch&#233;ance</text>
+<polygon fill="#181818" points="681.0986,694.25,671.0986,698.25,681.0986,702.25,677.0986,698.25" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="675.0986" x2="1117.7715" y1="698.25" y2="698.25"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="687.0986" y="693.1841">13</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="195.0698" x="709.1895" y="693.1841">Job d'alerte arriv&#233; &#224; &#233;ch&#233;ance</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="948.5669,665.1172,958.5669,669.1172,948.5669,673.1172,952.5669,669.1172" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="954.5669" y1="669.1172" y2="669.1172"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="272.8286" x="646.0078" y="664.0513">Charger garantie / article + abonnements</text>
+<polygon fill="#181818" points="987.7031,723.3828,997.7031,727.3828,987.7031,731.3828,991.7031,727.3828" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="993.7031" y1="727.3828" y2="727.3828"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="677.0986" y="722.3169">14</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="272.8286" x="699.1895" y="722.3169">Charger garantie / article + abonnements</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="681.0986,752.5156,671.0986,756.5156,681.0986,760.5156,677.0986,756.5156" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="675.0986" x2="1003.7031" y1="756.5156" y2="756.5156"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="687.0986" y="751.4497">15</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="57.2241" x="709.1895" y="751.4497">contexte</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Push">
-<polygon fill="#181818" points="1186.0083,694.25,1196.0083,698.25,1186.0083,702.25,1190.0083,698.25" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="1192.0083" y1="698.25" y2="698.25"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="302.2246" x="646.0078" y="693.1841">Envoyer la notification (await, rejou&#233; si &#233;chec)</text>
+<polygon fill="#181818" points="1225.1445,781.6484,1235.1445,785.6484,1225.1445,789.6484,1229.1445,785.6484" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="1231.1445" y1="785.6484" y2="785.6484"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="677.0986" y="780.5825">16</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="302.2246" x="699.1895" y="780.5825">Envoyer la notification (await, rejou&#233; si &#233;chec)</text>
+</g>
+<g class="message" data-participant-1="Push" data-participant-2="API">
+<polygon fill="#181818" points="681.0986,810.7813,671.0986,814.7813,681.0986,818.7813,677.0986,814.7813" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="675.0986" x2="1241.1445" y1="814.7813" y2="814.7813"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="687.0986" y="809.7153">17</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="175.6587" x="709.1895" y="809.7153">ok / throw &#8594; BullMQ rejoue</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Mail">
-<polygon fill="#181818" points="1311.3271,723.3828,1321.3271,727.3828,1311.3271,731.3828,1315.3271,727.3828" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="1317.3271" y1="727.3828" y2="727.3828"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="334.7881" x="646.0078" y="722.3169">Envoyer l'e-mail (best-effort) [si configur&#233; + opt-in]</text>
+<polygon fill="#181818" points="1350.4634,839.9141,1360.4634,843.9141,1350.4634,847.9141,1354.4634,843.9141" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="1356.4634" y1="843.9141" y2="843.9141"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="677.0986" y="838.8481">18</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="334.7881" x="699.1895" y="838.8481">Envoyer l'e-mail (best-effort) [si configur&#233; + opt-in]</text>
+</g>
+<g class="message" data-participant-1="Mail" data-participant-2="API">
+<polygon fill="#181818" points="681.0986,869.0469,671.0986,873.0469,681.0986,877.0469,677.0986,873.0469" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="675.0986" x2="1366.4634" y1="873.0469" y2="873.0469"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="687.0986" y="867.981">19</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="134.1196" x="709.1895" y="867.981">ok (ne throw jamais)</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="948.5669,752.5156,958.5669,756.5156,948.5669,760.5156,952.5669,756.5156" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="639.0078" x2="954.5669" y1="756.5156" y2="756.5156"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="192.8545" x="646.0078" y="751.4497">UPDATE Alerte status = SENT</text>
+<polygon fill="#181818" points="987.7031,898.1797,997.7031,902.1797,987.7031,906.1797,991.7031,902.1797" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="670.0986" x2="993.7031" y1="902.1797" y2="902.1797"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="677.0986" y="897.1138">20</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="192.8545" x="699.1895" y="897.1138">UPDATE Alerte status = SENT</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="676.0986,927.3125,666.0986,931.3125,676.0986,935.3125,672.0986,931.3125" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="670.0986" x2="1003.7031" y1="931.3125" y2="931.3125"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="682.0986" y="926.2466">21</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="15.4819" x="704.1895" y="926.2466">ok</text>
 </g>
 </g>
 </svg>

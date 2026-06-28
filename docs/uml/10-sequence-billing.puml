@@ -1,6 +1,7 @@
 @startuml
 title WIM – Diagramme de séquence (facturation Stripe & rôle)
 
+autonumber
 actor "Utilisateur" as User
 participant "PWA (Web)" as Web
 participant "API (Node)" as API
@@ -10,14 +11,19 @@ database "PostgreSQL" as DB
 == Souscription (Checkout) ==
 User -> Web : Choisir l'offre Power User (mensuel / annuel)
 Web -> API : POST /api/billing/upgrade/power-user/checkout
+activate API
 API -> Stripe : Créer une session Checkout (success_url via getAppUrl)
+activate Stripe
 Stripe --> API : url de la session
+deactivate Stripe
 API --> Web : { url }
+deactivate API
 Web -> Stripe : Redirection vers Checkout
 User -> Stripe : Paiement
 
 == Webhook (canal canonique) ==
 Stripe -> API : POST /api/billing (webhook, corps brut)
+activate API
 note right of API
 Gardes en ordre :
 1. Vérifier la signature (constructEvent)
@@ -29,16 +35,31 @@ Gardes en ordre :
 end note
 alt checkout.session.completed (promotion)
   API -> DB : tx { INSERT ProcessedStripeEvent ; UPDATE User role = POWER_USER }
+  activate DB
+  DB --> API : commit
+  deactivate DB
 else subscription deleted / unpaid / expired (rétrogradation)
   API -> DB : tx { marquer event ; UPDATE User role = USER ; cleanupSharingForUser }
+  activate DB
+  DB --> API : commit
+  deactivate DB
   note right of API : partages désactivés + invitations révoquées\ndans la même transaction que le rôle
 end
 API --> Stripe : 200 (ack ; P2002 sur doublon = succès)
+deactivate API
 
 == Repli de synchronisation (retour de Checkout) ==
 Web -> API : POST /api/billing/sync
+activate API
 note right of API : le cold start de Render dépasse souvent\nles ~10 s de retry de Stripe : on interroge\nStripe en direct pour ne pas attendre le webhook
 API -> Stripe : Lire l'abonnement courant
+activate Stripe
+Stripe --> API : abonnement
+deactivate Stripe
 API -> DB : Réconcilier role + stripeSubscriptionId
+activate DB
+DB --> API : ok
+deactivate DB
 API --> Web : 200 (role à jour)
+deactivate API
 @enduml

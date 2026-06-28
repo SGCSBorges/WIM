@@ -1,38 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="1043px" preserveAspectRatio="none" style="width:1267px;height:1043px;background:#FFFFFF;"
-version="1.1" viewBox="0 0 1267 1043" width="1267px" zoomAndPan="magnify">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="SEQUENCE" height="1146px" preserveAspectRatio="none" style="width:1338px;height:1146px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1338 1146" width="1338px" zoomAndPan="magnify">
 <title>WIM - Diagramme de s&#233;quence (partage par utilisateur)</title>
 <defs/>
 <g>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="443.1055" x="408.1011" y="27.9951">WIM - Diagramme de s&#233;quence (partage par utilisateur)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="443.1055" x="443.7014" y="27.9951">WIM - Diagramme de s&#233;quence (partage par utilisateur)</text>
 <g>
-<title>Propri.taire</title>
-<rect fill="#000000" fill-opacity="0.00000" height="811.7188" width="8" x="49.0557" y="134.8906"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="53" x2="53" y1="134.8906" y2="946.6094"/>
-</g>
-<g>
-<title>Destinataire</title>
-<rect fill="#000000" fill-opacity="0.00000" height="811.7188" width="8" x="155.167" y="134.8906"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="159.1113" x2="159.1113" y1="134.8906" y2="946.6094"/>
-</g>
-<g>
-<title>PWA .Web.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="811.7188" width="8" x="368.4731" y="134.8906"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="372.1836" x2="372.1836" y1="134.8906" y2="946.6094"/>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="211.0625" style="stroke:#181818;stroke-width:1;" width="10" x="729.0796" y="238.2891"/>
 </g>
 <g>
 <title>API .Node.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="811.7188" width="8" x="685.9697" y="134.8906"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="689.9395" x2="689.9395" y1="134.8906" y2="946.6094"/>
+<rect fill="#FFFFFF" height="195.9297" style="stroke:#181818;stroke-width:1;" width="10" x="729.0796" y="550.75"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="102.5313" style="stroke:#181818;stroke-width:1;" width="10" x="729.0796" y="848.0781"/>
 </g>
 <g>
 <title>PostgreSQL</title>
-<rect fill="#000000" fill-opacity="0.00000" height="811.7188" width="8" x="1072.6558" y="134.8906"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1076.2793" x2="1076.2793" y1="134.8906" y2="946.6094"/>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="332.8203"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="615.0156"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="688.4141"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="892.3438"/>
 </g>
 <g>
 <title>E-mail .Resend.</title>
-<rect fill="#000000" fill-opacity="0.00000" height="811.7188" width="8" x="1188.6699" y="134.8906"/>
-<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1192.0322" x2="1192.0322" y1="134.8906" y2="946.6094"/>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1258.8706" y="391.0859"/>
+</g>
+<g>
+<title>Propri.taire</title>
+<rect fill="#000000" fill-opacity="0.00000" height="914.25" width="8" x="49.0557" y="134.8906"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="53" x2="53" y1="134.8906" y2="1049.1406"/>
+</g>
+<g>
+<title>Destinataire</title>
+<rect fill="#000000" fill-opacity="0.00000" height="914.25" width="8" x="155.167" y="134.8906"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="159.1113" x2="159.1113" y1="134.8906" y2="1049.1406"/>
+</g>
+<g>
+<title>PWA .Web.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="914.25" width="8" x="390.564" y="134.8906"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="394.2744" x2="394.2744" y1="134.8906" y2="1049.1406"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="914.25" width="8" x="730.0796" y="134.8906"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="734.0493" x2="734.0493" y1="134.8906" y2="1049.1406"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#000000" fill-opacity="0.00000" height="914.25" width="8" x="1143.8564" y="134.8906"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1147.48" x2="1147.48" y1="134.8906" y2="1049.1406"/>
+</g>
+<g>
+<title>E-mail .Resend.</title>
+<rect fill="#000000" fill-opacity="0.00000" height="914.25" width="8" x="1259.8706" y="134.8906"/>
+<line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5,5;" x1="1263.2329" x2="1263.2329" y1="134.8906" y2="1049.1406"/>
 </g>
 <g class="participant participant-head" data-participant="Owner">
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82.2363" x="8.9375" y="115.292">Propri&#233;taire</text>
@@ -41,10 +73,10 @@ version="1.1" viewBox="0 0 1267 1043" width="1267px" zoomAndPan="magnify">
 <path d="M53.0557,58.7969 L53.0557,85.7969 M40.0557,66.7969 L66.0557,66.7969 M53.0557,85.7969 L40.0557,100.7969 M53.0557,85.7969 L66.0557,100.7969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-tail" data-participant="Owner">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82.2363" x="8.9375" y="958.6045">Propri&#233;taire</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90.1113" x="5" y="974.9014">(Power User)</text>
-<ellipse cx="53.0557" cy="986.7031" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M53.0557,994.7031 L53.0557,1021.7031 M40.0557,1002.7031 L66.0557,1002.7031 M53.0557,1021.7031 L40.0557,1036.7031 M53.0557,1021.7031 L66.0557,1036.7031" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82.2363" x="8.9375" y="1061.1357">Propri&#233;taire</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90.1113" x="5" y="1077.4326">(Power User)</text>
+<ellipse cx="53.0557" cy="1089.2344" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M53.0557,1097.2344 L53.0557,1124.2344 M40.0557,1105.2344 L66.0557,1105.2344 M53.0557,1124.2344 L40.0557,1139.2344 M53.0557,1124.2344 L66.0557,1139.2344" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-head" data-participant="Target">
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85.8457" x="113.2441" y="115.292">Destinataire</text>
@@ -53,156 +85,223 @@ version="1.1" viewBox="0 0 1267 1043" width="1267px" zoomAndPan="magnify">
 <path d="M159.167,58.7969 L159.167,85.7969 M146.167,66.7969 L172.167,66.7969 M159.167,85.7969 L146.167,100.7969 M159.167,85.7969 L172.167,100.7969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-tail" data-participant="Target">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85.8457" x="113.2441" y="958.6045">Destinataire</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90.1113" x="111.1113" y="974.9014">(Power User)</text>
-<ellipse cx="159.167" cy="986.7031" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M159.167,994.7031 L159.167,1021.7031 M146.167,1002.7031 L172.167,1002.7031 M159.167,1021.7031 L146.167,1036.7031 M159.167,1021.7031 L172.167,1036.7031" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85.8457" x="113.2441" y="1061.1357">Destinataire</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90.1113" x="111.1113" y="1077.4326">(Power User)</text>
+<ellipse cx="159.167" cy="1089.2344" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M159.167,1097.2344 L159.167,1124.2344 M146.167,1105.2344 L172.167,1105.2344 M159.167,1124.2344 L146.167,1139.2344 M159.167,1124.2344 L172.167,1139.2344" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-head" data-participant="Web">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="326.1836" y="103.5938"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="333.1836" y="123.5889">PWA (Web)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="348.2744" y="103.5938"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="355.2744" y="123.5889">PWA (Web)</text>
 </g>
 <g class="participant participant-tail" data-participant="Web">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="326.1836" y="945.6094"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="333.1836" y="965.6045">PWA (Web)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="92.5791" x="348.2744" y="1048.1406"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78.5791" x="355.2744" y="1068.1357">PWA (Web)</text>
 </g>
 <g class="participant participant-head" data-participant="API">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="645.9395" y="103.5938"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="652.9395" y="123.5889">API (Node)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="690.0493" y="103.5938"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="697.0493" y="123.5889">API (Node)</text>
 </g>
 <g class="participant participant-tail" data-participant="API">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="645.9395" y="945.6094"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="652.9395" y="965.6045">API (Node)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="88.0605" x="690.0493" y="1048.1406"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.0605" x="697.0493" y="1068.1357">API (Node)</text>
 </g>
 <g class="participant participant-head" data-participant="DB">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1033.2793" y="131.5889">PostgreSQL</text>
-<path d="M1058.6558,82.5938 C1058.6558,72.5938 1076.6558,72.5938 1076.6558,72.5938 C1076.6558,72.5938 1094.6558,72.5938 1094.6558,82.5938 L1094.6558,108.5938 C1094.6558,118.5938 1076.6558,118.5938 1076.6558,118.5938
-C1076.6558,118.5938 1058.6558,118.5938 1058.6558,108.5938 L1058.6558,82.5938" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1058.6558,82.5938 C1058.6558,92.5938 1076.6558,92.5938 1076.6558,92.5938 C1076.6558,92.5938 1094.6558,92.5938 1094.6558,82.5938" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1104.48" y="131.5889">PostgreSQL</text>
+<path d="M1129.8564,82.5938 C1129.8564,72.5938 1147.8564,72.5938 1147.8564,72.5938 C1147.8564,72.5938 1165.8564,72.5938 1165.8564,82.5938 L1165.8564,108.5938 C1165.8564,118.5938 1147.8564,118.5938 1147.8564,118.5938
+C1147.8564,118.5938 1129.8564,118.5938 1129.8564,108.5938 L1129.8564,82.5938" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1129.8564,82.5938 C1129.8564,92.5938 1147.8564,92.5938 1147.8564,92.5938 C1147.8564,92.5938 1165.8564,92.5938 1165.8564,82.5938" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-tail" data-participant="DB">
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1033.2793" y="958.6045">PostgreSQL</text>
-<path d="M1058.6558,971.9063 C1058.6558,961.9063 1076.6558,961.9063 1076.6558,961.9063 C1076.6558,961.9063 1094.6558,961.9063 1094.6558,971.9063 L1094.6558,997.9063 C1094.6558,1007.9063 1076.6558,1007.9063
-1076.6558,1007.9063 C1076.6558,1007.9063 1058.6558,1007.9063 1058.6558,997.9063 L1058.6558,971.9063" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1058.6558,971.9063 C1058.6558,981.9063 1076.6558,981.9063 1076.6558,981.9063 C1076.6558,981.9063 1094.6558,981.9063 1094.6558,971.9063" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="1104.48" y="1061.1357">PostgreSQL</text>
+<path d="M1129.8564,1074.4375 C1129.8564,1064.4375 1147.8564,1064.4375 1147.8564,1064.4375 C1147.8564,1064.4375 1165.8564,1064.4375 1165.8564,1074.4375 L1165.8564,1100.4375 C1165.8564,1110.4375 1147.8564,1110.4375
+1147.8564,1110.4375 C1147.8564,1110.4375 1129.8564,1110.4375 1129.8564,1100.4375 L1129.8564,1074.4375" fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1129.8564,1074.4375 C1129.8564,1084.4375 1147.8564,1084.4375 1147.8564,1084.4375 C1147.8564,1084.4375 1165.8564,1084.4375 1165.8564,1074.4375" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 </g>
 <g class="participant participant-head" data-participant="Mail">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1130.0322" y="103.5938"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1137.0322" y="123.5889">E-mail (Resend)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1201.2329" y="103.5938"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1208.2329" y="123.5889">E-mail (Resend)</text>
 </g>
 <g class="participant participant-tail" data-participant="Mail">
-<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1130.0322" y="945.6094"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1137.0322" y="965.6045">E-mail (Resend)</text>
+<rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="125.2754" x="1201.2329" y="1048.1406"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.2754" x="1208.2329" y="1068.1357">E-mail (Resend)</text>
 </g>
-<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1260.3076" x="0" y="165.457"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1260.3076" y1="165.457" y2="165.457"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1260.3076" y1="168.457" y2="168.457"/>
-<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="187.0181" x="536.6448" y="154.8906"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="168.4922" x="542.6448" y="170.9575">Cr&#233;ation de l'invitation</text>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="211.0625" style="stroke:#181818;stroke-width:1;" width="10" x="729.0796" y="238.2891"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="195.9297" style="stroke:#181818;stroke-width:1;" width="10" x="729.0796" y="550.75"/>
+</g>
+<g>
+<title>API .Node.</title>
+<rect fill="#FFFFFF" height="102.5313" style="stroke:#181818;stroke-width:1;" width="10" x="729.0796" y="848.0781"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="332.8203"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="615.0156"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="688.4141"/>
+</g>
+<g>
+<title>PostgreSQL</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1142.8564" y="892.3438"/>
+</g>
+<g>
+<title>E-mail .Resend.</title>
+<rect fill="#FFFFFF" height="29.1328" style="stroke:#181818;stroke-width:1;" width="10" x="1258.8706" y="391.0859"/>
+</g>
+<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1331.5083" x="0" y="165.457"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1331.5083" y1="165.457" y2="165.457"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1331.5083" y1="168.457" y2="168.457"/>
+<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="187.0181" x="572.2451" y="154.8906"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="168.4922" x="578.2451" y="170.9575">Cr&#233;ation de l'invitation</text>
 <g class="message" data-participant-1="Owner" data-participant-2="Web">
-<polygon fill="#181818" points="360.4731,205.1563,370.4731,209.1563,360.4731,213.1563,364.4731,209.1563" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="53.0557" x2="366.4731" y1="209.1563" y2="209.1563"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="292.4873" x="60.0557" y="204.0903">Inviter par e-mail (permission READ | WRITE)</text>
+<polygon fill="#181818" points="382.564,205.1563,392.564,209.1563,382.564,213.1563,386.564,209.1563" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="53.0557" x2="388.564" y1="209.1563" y2="209.1563"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="60.0557" y="204.0903">1</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="292.4873" x="73.1011" y="204.0903">Inviter par e-mail (permission READ | WRITE)</text>
 </g>
 <g class="message" data-participant-1="Web" data-participant-2="API">
-<polygon fill="#181818" points="677.9697,234.2891,687.9697,238.2891,677.9697,242.2891,681.9697,238.2891" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="372.4731" x2="683.9697" y1="238.2891" y2="238.2891"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="293.4966" x="379.4731" y="233.2231">POST /api/shares/invites {email, permission}</text>
+<polygon fill="#181818" points="717.0796,234.2891,727.0796,238.2891,717.0796,242.2891,721.0796,238.2891" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="394.564" x2="723.0796" y1="238.2891" y2="238.2891"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="401.564" y="233.2231">2</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="293.4966" x="414.6094" y="233.2231">POST /api/shares/invites {email, permission}</text>
 </g>
-<path d="M694,251.2891 L694,306.2891 L988,306.2891 L988,261.2891 L978,251.2891 L694,251.2891" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M978,251.2891 L978,261.2891 L988,261.2891 L978,251.2891" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="175.2144" x="700" y="268.356">requireRole(POWER_USER)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="273.5332" x="700" y="283.4888">M&#234;me erreur si introuvable / mauvais r&#244;le</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="195.7173" x="700" y="298.6216">(pas d'&#233;num&#233;ration d'e-mails)</text>
+<path d="M744,251.2891 L744,306.2891 L1038,306.2891 L1038,261.2891 L1028,251.2891 L744,251.2891" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1028,251.2891 L1028,261.2891 L1038,261.2891 L1028,251.2891" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="175.2144" x="750" y="268.356">requireRole(POWER_USER)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="273.5332" x="750" y="283.4888">M&#234;me erreur si introuvable / mauvais r&#244;le</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="195.7173" x="750" y="298.6216">(pas d'&#233;num&#233;ration d'e-mails)</text>
 <g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1064.6558,328.8203,1074.6558,332.8203,1064.6558,336.8203,1068.6558,332.8203" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="689.9697" x2="1070.6558" y1="332.8203" y2="332.8203"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="303.2847" x="696.9697" y="327.7544">INSERT ShareInvite (token, status = PENDING)</text>
-</g>
-<g class="message" data-participant-1="API" data-participant-2="Mail">
-<polygon fill="#181818" points="1180.6699,357.9531,1190.6699,361.9531,1180.6699,365.9531,1184.6699,361.9531" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="689.9697" x2="1186.6699" y1="361.9531" y2="361.9531"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="256.1851" x="696.9697" y="356.8872">Envoyer le lien d'invitation (best-effort)</text>
-</g>
-<g class="message" data-participant-1="API" data-participant-2="Web">
-<polygon fill="#181818" points="383.4731,387.0859,373.4731,391.0859,383.4731,395.0859,379.4731,391.0859" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="377.4731" x2="688.9697" y1="391.0859" y2="391.0859"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="172.2056" x="389.4731" y="386.02">201 (invitation en attente)</text>
-</g>
-<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1260.3076" x="0" y="419.6523"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1260.3076" y1="419.6523" y2="419.6523"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1260.3076" y1="422.6523" y2="422.6523"/>
-<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="105.9648" x="577.1714" y="409.0859"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="87.439" x="583.1714" y="425.1528">Acceptation</text>
-<g class="message" data-participant-1="Target" data-participant-2="Web">
-<polygon fill="#181818" points="360.4731,459.3516,370.4731,463.3516,360.4731,467.3516,364.4731,463.3516" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="159.167" x2="366.4731" y1="463.3516" y2="463.3516"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="188.8047" x="166.167" y="458.2856">Ouvrir le lien / coller le token</text>
-</g>
-<g class="message" data-participant-1="Web" data-participant-2="API">
-<polygon fill="#181818" points="677.9697,488.4844,687.9697,492.4844,677.9697,496.4844,681.9697,492.4844" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="372.4731" x2="683.9697" y1="492.4844" y2="492.4844"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="262.9644" x="379.4731" y="487.4185">POST /api/shares/invites/accept {token}</text>
-</g>
-<path d="M694,505.4844 L694,530.4844 L1004,530.4844 L1004,515.4844 L994,505.4844 L694,505.4844" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M994,505.4844 L994,515.4844 L1004,515.4844 L994,505.4844" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="289.6309" x="700" y="522.5513">requireRole(POWER_USER) c&#244;t&#233; destinataire</text>
-<g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1064.6558,552.75,1074.6558,556.75,1064.6558,560.75,1068.6558,556.75" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="689.9697" x2="1070.6558" y1="556.75" y2="556.75"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="264.6846" x="696.9697" y="551.6841">Valider le token (PENDING + non expir&#233;)</text>
-</g>
-<g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1064.6558,581.8828,1074.6558,585.8828,1064.6558,589.8828,1068.6558,585.8828" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="689.9697" x2="1070.6558" y1="585.8828" y2="585.8828"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="362.686" x="696.9697" y="580.8169">INSERT InventoryShare (owner -&gt; target, active = true)</text>
-</g>
-<g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1064.6558,611.0156,1074.6558,615.0156,1064.6558,619.0156,1068.6558,615.0156" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="689.9697" x2="1070.6558" y1="615.0156" y2="615.0156"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="263.3198" x="696.9697" y="609.9497">UPDATE ShareInvite status = ACCEPTED</text>
-</g>
-<g class="message" data-participant-1="API" data-participant-2="Web">
-<polygon fill="#181818" points="383.4731,640.1484,373.4731,644.1484,383.4731,648.1484,379.4731,644.1484" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="377.4731" x2="688.9697" y1="644.1484" y2="644.1484"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="122.4971" x="389.4731" y="639.0825">200 (partage actif)</text>
-</g>
-<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1260.3076" x="0" y="672.7148"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1260.3076" y1="672.7148" y2="672.7148"/>
-<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1260.3076" y1="675.7148" y2="675.7148"/>
-<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="214.5986" x="522.8545" y="662.1484"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="196.0728" x="528.8545" y="678.2153">Lecture par le destinataire</text>
-<g class="message" data-participant-1="Target" data-participant-2="Web">
-<polygon fill="#181818" points="360.4731,712.4141,370.4731,716.4141,360.4731,720.4141,364.4731,716.4141" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="159.167" x2="366.4731" y1="716.4141" y2="716.4141"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="189.3062" x="166.167" y="711.3481">Ouvrir &#171; Partag&#233;s avec moi &#187;</text>
-</g>
-<g class="message" data-participant-1="Web" data-participant-2="API">
-<polygon fill="#181818" points="677.9697,741.5469,687.9697,745.5469,677.9697,749.5469,681.9697,745.5469" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="372.4731" x2="683.9697" y1="745.5469" y2="745.5469"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="155.4541" x="379.4731" y="740.481">GET /api/shared/articles</text>
-</g>
-<g class="message" data-participant-1="API" data-participant-2="DB">
-<polygon fill="#181818" points="1064.6558,785.8125,1074.6558,789.8125,1064.6558,793.8125,1068.6558,789.8125" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;" x1="689.9697" x2="1070.6558" y1="789.8125" y2="789.8125"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="312.3555" x="696.9697" y="769.6138">SELECT via InventoryShare actifs (READ/WRITE)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="277.418" x="696.9697" y="784.7466">+ articles publics (sharedWithPowerUsers)</text>
+<polygon fill="#181818" points="1130.8564,328.8203,1140.8564,332.8203,1130.8564,336.8203,1134.8564,332.8203" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="739.0796" x2="1136.8564" y1="332.8203" y2="332.8203"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="746.0796" y="327.7544">3</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="303.2847" x="759.125" y="327.7544">INSERT ShareInvite (token, status = PENDING)</text>
 </g>
 <g class="message" data-participant-1="DB" data-participant-2="API">
-<polygon fill="#181818" points="700.9697,814.9453,690.9697,818.9453,700.9697,822.9453,696.9697,818.9453" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="694.9697" x2="1075.6558" y1="818.9453" y2="818.9453"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="108.2656" x="706.9697" y="813.8794">lignes partag&#233;es</text>
+<polygon fill="#181818" points="750.0796,357.9531,740.0796,361.9531,750.0796,365.9531,746.0796,361.9531" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="744.0796" x2="1146.8564" y1="361.9531" y2="361.9531"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="756.0796" y="356.8872">4</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="15.4819" x="769.125" y="356.8872">ok</text>
+</g>
+<g class="message" data-participant-1="API" data-participant-2="Mail">
+<polygon fill="#181818" points="1246.8706,387.0859,1256.8706,391.0859,1246.8706,395.0859,1250.8706,391.0859" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="739.0796" x2="1252.8706" y1="391.0859" y2="391.0859"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="746.0796" y="386.02">5</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="256.1851" x="759.125" y="386.02">Envoyer le lien d'invitation (best-effort)</text>
+</g>
+<g class="message" data-participant-1="Mail" data-participant-2="API">
+<polygon fill="#181818" points="750.0796,416.2188,740.0796,420.2188,750.0796,424.2188,746.0796,420.2188" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="744.0796" x2="1262.8706" y1="420.2188" y2="420.2188"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="756.0796" y="415.1528">6</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="134.1196" x="769.125" y="415.1528">ok (ne throw jamais)</text>
 </g>
 <g class="message" data-participant-1="API" data-participant-2="Web">
-<polygon fill="#181818" points="383.4731,844.0781,373.4731,848.0781,383.4731,852.0781,379.4731,848.0781" style="stroke:#181818;stroke-width:1;"/>
-<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="377.4731" x2="688.9697" y1="848.0781" y2="848.0781"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="288.4248" x="389.4731" y="843.0122">200 (liste en lecture seule, &#233;dition si WRITE)</text>
+<polygon fill="#181818" points="405.564,445.3516,395.564,449.3516,405.564,453.3516,401.564,449.3516" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="399.564" x2="733.0796" y1="449.3516" y2="449.3516"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="411.564" y="444.2856">7</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="172.2056" x="424.6094" y="444.2856">201 (invitation en attente)</text>
 </g>
-<path d="M648,861.0781 L648,931.0781 L1117,931.0781 L1117,871.0781 L1107,861.0781 L648,861.0781" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1107,861.0781 L1107,871.0781 L1117,871.0781 L1107,861.0781" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="401.0259" x="668.4309" y="878.145">&#192; la r&#233;trogradation POWER_USER -&gt; USER (annulation Stripe,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="419.231" x="668.4309" y="893.2778">sync manuelle, action admin), cleanupSharingForUser d&#233;sactive</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="383.0493" x="668.4309" y="908.4106">les partages sortants et r&#233;voque les invitations en attente,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="353.8564" x="668.4309" y="923.5435">dans la m&#234;me transaction que le changement de r&#244;le.</text>
+<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1331.5083" x="0" y="477.918"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1331.5083" y1="477.918" y2="477.918"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1331.5083" y1="480.918" y2="480.918"/>
+<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="105.9648" x="612.7717" y="467.3516"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="87.439" x="618.7717" y="483.4185">Acceptation</text>
+<g class="message" data-participant-1="Target" data-participant-2="Web">
+<polygon fill="#181818" points="382.564,517.6172,392.564,521.6172,382.564,525.6172,386.564,521.6172" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="159.167" x2="388.564" y1="521.6172" y2="521.6172"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="166.167" y="516.5513">8</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="188.8047" x="179.2124" y="516.5513">Ouvrir le lien / coller le token</text>
+</g>
+<g class="message" data-participant-1="Web" data-participant-2="API">
+<polygon fill="#181818" points="717.0796,546.75,727.0796,550.75,717.0796,554.75,721.0796,550.75" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="394.564" x2="723.0796" y1="550.75" y2="550.75"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9.0454" x="401.564" y="545.6841">9</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="262.9644" x="414.6094" y="545.6841">POST /api/shares/invites/accept {token}</text>
+</g>
+<path d="M744,563.75 L744,588.75 L1054,588.75 L1054,573.75 L1044,563.75 L744,563.75" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1044,563.75 L1044,573.75 L1054,573.75 L1044,563.75" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="289.6309" x="750" y="580.8169">requireRole(POWER_USER) c&#244;t&#233; destinataire</text>
+<g class="message" data-participant-1="API" data-participant-2="DB">
+<polygon fill="#181818" points="1130.8564,611.0156,1140.8564,615.0156,1130.8564,619.0156,1134.8564,615.0156" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="739.0796" x2="1136.8564" y1="615.0156" y2="615.0156"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="746.0796" y="609.9497">10</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="264.6846" x="768.1704" y="609.9497">Valider le token (PENDING + non expir&#233;)</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="750.0796,640.1484,740.0796,644.1484,750.0796,648.1484,746.0796,644.1484" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="744.0796" x2="1146.8564" y1="644.1484" y2="644.1484"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="756.0796" y="639.0825">11</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="104.3872" x="778.1704" y="639.0825">invitation valide</text>
+</g>
+<g class="message" data-participant-1="API" data-participant-2="DB">
+<polygon fill="#181818" points="1130.8564,684.4141,1140.8564,688.4141,1130.8564,692.4141,1134.8564,688.4141" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="739.0796" x2="1136.8564" y1="688.4141" y2="688.4141"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="746.0796" y="675.7817">12</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="362.686" x="768.1704" y="668.2153">INSERT InventoryShare (owner -&gt; target, active = true)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="278.3447" x="768.1704" y="683.3481">+ UPDATE ShareInvite status = ACCEPTED</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="750.0796,713.5469,740.0796,717.5469,750.0796,721.5469,746.0796,717.5469" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="744.0796" x2="1146.8564" y1="717.5469" y2="717.5469"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="756.0796" y="712.481">13</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="15.4819" x="778.1704" y="712.481">ok</text>
+</g>
+<g class="message" data-participant-1="API" data-participant-2="Web">
+<polygon fill="#181818" points="405.564,742.6797,395.564,746.6797,405.564,750.6797,401.564,746.6797" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="399.564" x2="733.0796" y1="746.6797" y2="746.6797"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="411.564" y="741.6138">14</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="122.4971" x="433.6548" y="741.6138">200 (partage actif)</text>
+</g>
+<rect fill="#EEEEEE" height="3" style="stroke:#EEEEEE;stroke-width:1;" width="1331.5083" x="0" y="775.2461"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1331.5083" y1="775.2461" y2="775.2461"/>
+<line style="stroke:#000000;stroke-width:1;" x1="0" x2="1331.5083" y1="778.2461" y2="778.2461"/>
+<rect fill="#EEEEEE" height="23.1328" style="stroke:#000000;stroke-width:2;" width="214.5986" x="558.4548" y="764.6797"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="196.0728" x="564.4548" y="780.7466">Lecture par le destinataire</text>
+<g class="message" data-participant-1="Target" data-participant-2="Web">
+<polygon fill="#181818" points="382.564,814.9453,392.564,818.9453,382.564,822.9453,386.564,818.9453" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="159.167" x2="388.564" y1="818.9453" y2="818.9453"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="166.167" y="813.8794">15</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="189.3062" x="188.2578" y="813.8794">Ouvrir &#171; Partag&#233;s avec moi &#187;</text>
+</g>
+<g class="message" data-participant-1="Web" data-participant-2="API">
+<polygon fill="#181818" points="717.0796,844.0781,727.0796,848.0781,717.0796,852.0781,721.0796,848.0781" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="394.564" x2="723.0796" y1="848.0781" y2="848.0781"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="401.564" y="843.0122">16</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="155.4541" x="423.6548" y="843.0122">GET /api/shared/articles</text>
+</g>
+<g class="message" data-participant-1="API" data-participant-2="DB">
+<polygon fill="#181818" points="1130.8564,888.3438,1140.8564,892.3438,1130.8564,896.3438,1134.8564,892.3438" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;" x1="739.0796" x2="1136.8564" y1="892.3438" y2="892.3438"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="746.0796" y="879.7114">17</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="312.3555" x="768.1704" y="872.145">SELECT via InventoryShare actifs (READ/WRITE)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="277.418" x="768.1704" y="887.2778">+ articles publics (sharedWithPowerUsers)</text>
+</g>
+<g class="message" data-participant-1="DB" data-participant-2="API">
+<polygon fill="#181818" points="750.0796,917.4766,740.0796,921.4766,750.0796,925.4766,746.0796,921.4766" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="744.0796" x2="1146.8564" y1="921.4766" y2="921.4766"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="756.0796" y="916.4106">18</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="108.2656" x="778.1704" y="916.4106">lignes partag&#233;es</text>
+</g>
+<g class="message" data-participant-1="API" data-participant-2="Web">
+<polygon fill="#181818" points="405.564,946.6094,395.564,950.6094,405.564,954.6094,401.564,950.6094" style="stroke:#181818;stroke-width:1;"/>
+<line style="stroke:#181818;stroke-width:1;stroke-dasharray:2,2;" x1="399.564" x2="733.0796" y1="950.6094" y2="950.6094"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18.0908" x="411.564" y="945.5435">19</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="288.4248" x="433.6548" y="945.5435">200 (liste en lecture seule, &#233;dition si WRITE)</text>
+</g>
+<path d="M692,963.6094 L692,1033.6094 L1188,1033.6094 L1188,973.6094 L1178,963.6094 L692,963.6094" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1178,963.6094 L1178,973.6094 L1188,973.6094 L1178,963.6094" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="401.0259" x="725.9763" y="980.6763">&#192; la r&#233;trogradation POWER_USER -&gt; USER (annulation Stripe,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="419.231" x="725.9763" y="995.8091">sync manuelle, action admin), cleanupSharingForUser d&#233;sactive</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="383.0493" x="725.9763" y="1010.9419">les partages sortants et r&#233;voque les invitations en attente,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="353.8564" x="725.9763" y="1026.0747">dans la m&#234;me transaction que le changement de r&#244;le.</text>
 </g>
 </svg>

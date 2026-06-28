@@ -257,60 +257,76 @@ class FeatureTempGrant {
   +note: varchar(255)
 }
 
-' Possession (tout est rattaché à un User propriétaire)
-User "1" --> "0..*" Article : possède
-User "1" --> "0..*" Location : possède
-User "1" --> "0..*" Tag : possède
-User "1" --> "0..*" SavedView : possède
-User "1" --> "0..*" ArticleTemplate : possède
+' ───────────────────────────────────────────────────────────────
+' Composition (losange plein ✱--) = appartenance exclusive avec
+' cascade delete : la partie disparaît avec son tout. Le « tout »
+' choisi est le parent dont la FK est OBLIGATOIRE (NOT NULL).
+' ───────────────────────────────────────────────────────────────
+
+' Entités rattachées au compte (ownerUserId / userId NOT NULL)
+User "1" *-- "0..*" Article
+User "1" *-- "0..*" Location
+User "1" *-- "0..*" Tag
+User "1" *-- "0..*" SavedView
+User "1" *-- "0..*" ArticleTemplate
+User "1" *-- "0..*" ShareInvite
+User "1" *-- "0..*" InsurancePolicy
+User "1" *-- "0..*" Garantie
+User "1" *-- "0..*" Attachment
+User "1" *-- "0..*" Alerte
+User "1" *-- "0..*" UserSession
+User "1" *-- "0..1" TotpSecret
+User "1" *-- "0..*" PasswordResetToken
+User "1" *-- "0..*" PushSubscription
+
+' Entités qui EXIGENT un article (articleId NOT NULL)
+Article "1" *-- "0..*" ArticleNote
+Article "1" *-- "0..*" Loan
+Article "1" *-- "0..*" ServiceRecord
+Article "1" *-- "0..*" MessageThread
+Article "1" *-- "0..*" ArticleTransferRequest
+Garantie "1" *-- "0..*" WarrantyHistory : append-only
+MessageThread "1" *-- "1..*" Message
+
+' ───────────────────────────────────────────────────────────────
+' Association (-->) = référence navigable SANS appartenance
+' exclusive (FK nullable, ou plusieurs rôles vers le même User).
+' ───────────────────────────────────────────────────────────────
+
+' AuditLog : userId onDelete SetNull → SURVIT au user (donc PAS composition)
 User "1" --> "0..*" AuditLog : trace
 
-' Articles et leurs entités liées
-Article "1" o-- "0..1" Garantie : possède
-Article "1" o-- "0..*" Attachment : pièces
-Article "1" o-- "0..*" Alerte : déclenche
-Article "1" o-- "0..*" ArticleNote : historique
-Garantie "1" o-- "0..3" Alerte : génère (J-30/J-7/J-1)
-Garantie "1" o-- "0..*" Attachment : preuves
-Garantie "1" o-- "0..*" WarrantyHistory : renouvellements\n(append-only)
+' Liens optionnels (FK nullable) : couverture de garantie / preuves
+Garantie "0..1" --> "0..1" Article : couvre (unique)
+Attachment "0..*" --> "0..1" Article
+Attachment "0..*" --> "0..1" Garantie : preuve
+Alerte "0..*" --> "0..1" Garantie : J-30/J-7/J-1
+Alerte "0..*" --> "0..1" Article : custom
 
-' Relations M:N via tables de jonction
+' Rôles « propriétaire / 2e partie » des entités co-rattachées à un article
+User "1" --> "0..*" Loan : prêteur
+User "1" --> "0..*" ServiceRecord : propriétaire
+User "1" --> "0..*" MessageThread : owner / demandeur
+User "1" --> "0..*" Message : expéditeur
+User "1" --> "0..*" ArticleTransferRequest : demandeur / owner
+User "1" --> "0..*" InventoryShare : owner
+User "1" --> "0..*" InventoryShare : target
+
+' Relations M:N via tables de jonction (association)
 Article "0..*" -- "0..*" Location : ArticleLocation
 Article "0..*" -- "0..*" Tag : ArticleTag
-
-' Partage entre utilisateurs
-User "1" --> "0..*" ShareInvite : émet
-User "1" --> "0..*" InventoryShare : partage (owner -> target)
-
-' Transfert de propriété (PUSH par l'owner / PULL par le demandeur)
-Article "1" o-- "0..*" ArticleTransferRequest : transferts
-User "1" --> "0..*" ArticleTransferRequest : demandeur / owner
-
-' Sécurité du compte
-User "1" --> "0..*" UserSession : appareils connectés
-User "1" --> "0..1" TotpSecret : 2FA (TOTP)
-User "1" --> "0..*" PasswordResetToken : réinitialisations
-User "1" --> "0..*" PushSubscription : navigateurs abonnés
-
-' Modules cycle de vie par article (prêt / assurance / entretien)
-User "1" --> "0..*" Loan : prête
-User "1" --> "0..*" InsurancePolicy : assure
-User "1" --> "0..*" ServiceRecord : entretient
-Article "1" o-- "0..*" Loan : prêts
-Article "1" o-- "0..*" ServiceRecord : entretien
 Article "0..*" -- "0..*" InsurancePolicy : ArticleInsurance
-
-' Messagerie (un fil par (article, demandeur) ; messages append-only)
-Article "1" o-- "0..*" MessageThread : négociations
-User "1" --> "0..*" MessageThread : owner / demandeur
-MessageThread "1" o-- "1..*" Message : messages
-User "1" --> "0..*" Message : envoie
 
 note bottom
 Aligné sur prisma/schema.prisma :
-- Une Garantie appartient à 0..1 Article (lien unique) ; le renouvellement
-  fait avancer la ligne vivante et archive l'état antérieur dans
-  WarrantyHistory (append-only).
+- Notation : composition (✱--) = appartenance exclusive + cascade delete
+  (FK obligatoire) ; association (-->) = FK nullable, lien SetNull
+  (AuditLog) ou rôle multiple vers User. M:N via table de jonction.
+- Une Garantie référence 0..1 Article (garantieArticleId nullable, unique) :
+  une garantie autonome est possible (POST /api/warranties), d'où la
+  composition sous User et l'association « couvre » vers Article. Le
+  renouvellement fait avancer la ligne vivante et archive l'état antérieur
+  dans WarrantyHistory (append-only).
 - ProcessedStripeEvent, FeatureFlag et FeatureTempGrant sont autonomes
   (pas de FK User) : marqueur d'idempotence du webhook et configuration
   des features par l'admin.

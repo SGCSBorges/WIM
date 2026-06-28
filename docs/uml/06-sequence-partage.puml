@@ -1,6 +1,7 @@
 @startuml
 title WIM – Diagramme de séquence (partage par utilisateur)
 
+autonumber
 actor "Propriétaire\n(Power User)" as Owner
 actor "Destinataire\n(Power User)" as Target
 participant "PWA (Web)" as Web
@@ -11,26 +12,45 @@ participant "E-mail (Resend)" as Mail
 == Création de l'invitation ==
 Owner -> Web : Inviter par e-mail (permission READ | WRITE)
 Web -> API : POST /api/shares/invites {email, permission}
+activate API
 note right of API : requireRole(POWER_USER)\nMême erreur si introuvable / mauvais rôle\n(pas d'énumération d'e-mails)
 API -> DB : INSERT ShareInvite (token, status = PENDING)
+activate DB
+DB --> API : ok
+deactivate DB
 API -> Mail : Envoyer le lien d'invitation (best-effort)
+activate Mail
+Mail --> API : ok (ne throw jamais)
+deactivate Mail
 API --> Web : 201 (invitation en attente)
+deactivate API
 
 == Acceptation ==
 Target -> Web : Ouvrir le lien / coller le token
 Web -> API : POST /api/shares/invites/accept {token}
+activate API
 note right of API : requireRole(POWER_USER) côté destinataire
 API -> DB : Valider le token (PENDING + non expiré)
-API -> DB : INSERT InventoryShare (owner -> target, active = true)
-API -> DB : UPDATE ShareInvite status = ACCEPTED
+activate DB
+DB --> API : invitation valide
+deactivate DB
+API -> DB : INSERT InventoryShare (owner -> target, active = true)\n+ UPDATE ShareInvite status = ACCEPTED
+activate DB
+DB --> API : ok
+deactivate DB
 API --> Web : 200 (partage actif)
+deactivate API
 
 == Lecture par le destinataire ==
 Target -> Web : Ouvrir « Partagés avec moi »
 Web -> API : GET /api/shared/articles
+activate API
 API -> DB : SELECT via InventoryShare actifs (READ/WRITE)\n+ articles publics (sharedWithPowerUsers)
+activate DB
 DB --> API : lignes partagées
+deactivate DB
 API --> Web : 200 (liste en lecture seule, édition si WRITE)
+deactivate API
 
 note over API, DB
 À la rétrogradation POWER_USER -> USER (annulation Stripe,

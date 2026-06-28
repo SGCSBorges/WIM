@@ -78,15 +78,22 @@ PowerUser --> UC_Analytics
 
 Admin --> UC_Admin
 
-UC_Items ..> UC_Attach : <<extend>> ajout de pièce jointe
-UC_Items ..> UC_Warranty : <<extend>> associer une garantie
-UC_Warranty ..> UC_Renew : <<extend>> garantie expirée / à prolonger
-UC_Warranty ..> UC_Alerts : <<extend>> proposer des rappels
-UC_Warranty ..> UC_Claim : <<extend>> ouvrir une réclamation
-UC_Alerts ..> UC_Notify : <<include>> envoi de notification
-UC_Billing ..> UC_Sharing : <<include>> débloque le partage
-UC_Billing ..> UC_Transfer : <<include>> débloque le transfert
-UC_Messaging ..> UC_Transfer : <<include>> offre acceptée → transfert (PUSH)
+' Extend : le cas OPTIONNEL pointe vers le cas de BASE (sens UML correct).
+UC_Attach ..> UC_Items : <<extend>>
+UC_Warranty ..> UC_Items : <<extend>>
+UC_Renew ..> UC_Warranty : <<extend>>
+UC_Alerts ..> UC_Warranty : <<extend>>
+UC_Claim ..> UC_Warranty : <<extend>>
+
+' Include : le cas de base exécute TOUJOURS le sous-cas (sens base → inclus).
+UC_Alerts ..> UC_Notify : <<include>>
+
+' Dépendances stéréotypées (ni include ni extend) : l'abonnement
+' déverrouille les options Power User ; une offre acceptée dans la
+' messagerie déclenche un transfert PUSH.
+UC_Billing ..> UC_Sharing : <<unlock>>
+UC_Billing ..> UC_Transfer : <<unlock>>
+UC_Messaging ..> UC_Transfer : <<trigger>>
 
 note bottom
 Portée actuelle (post-MVP) :
