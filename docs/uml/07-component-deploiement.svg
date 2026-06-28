@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="980px" preserveAspectRatio="none" style="width:1422px;height:980px;background:#FFFFFF;"
-version="1.1" viewBox="0 0 1422 980" width="1422px" zoomAndPan="magnify">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="951px" preserveAspectRatio="none" style="width:1422px;height:951px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1422 951" width="1422px" zoomAndPan="magnify">
 <title>WIM - Diagramme de composants / d&#233;ploiement</title>
 <defs/>
 <g>
@@ -8,197 +8,199 @@ version="1.1" viewBox="0 0 1422 980" width="1422px" zoomAndPan="magnify">
 </g>
 <!--cluster WebHost-->
 <g class="cluster" data-entity="WebHost" data-source-line="15" data-uid="ent0003" id="cluster_WebHost">
-<polygon fill="#FFFFFF" points="16,208.3869,26,198.3869,573,198.3869,573,457.5769,563,467.5769,16,467.5769,16,208.3869" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="563" x2="573" y1="208.3869" y2="198.3869"/>
-<line style="stroke:#555555;stroke-width:1;" x1="16" x2="563" y1="208.3869" y2="208.3869"/>
-<line style="stroke:#555555;stroke-width:1;" x1="563" x2="563" y1="208.3869" y2="467.5769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="173.6123" x="203.6938" y="224.382">Render - Site statique</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="186.0947" x="197.4526" y="240.6789">wim-web.onrender.com</text>
+<polygon fill="#FFFFFF" points="16,178.8869,26,168.8869,573,168.8869,573,428.0769,563,438.0769,16,438.0769,16,178.8869" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="563" x2="573" y1="178.8869" y2="168.8869"/>
+<line style="stroke:#555555;stroke-width:1;" x1="16" x2="563" y1="178.8869" y2="178.8869"/>
+<line style="stroke:#555555;stroke-width:1;" x1="563" x2="563" y1="178.8869" y2="438.0769"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="173.6123" x="203.6938" y="194.882">Render - Site statique</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="186.0947" x="197.4526" y="211.1789">wim-web.onrender.com</text>
 </g>
 <!--cluster ApiHost-->
 <g class="cluster" data-entity="ApiHost" data-source-line="21" data-uid="ent0007" id="cluster_ApiHost">
-<polygon fill="#FFFFFF" points="439,541.5769,449,531.5769,792,531.5769,792,646.1669,782,656.1669,439,656.1669,439,541.5769" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="782" x2="792" y1="541.5769" y2="531.5769"/>
-<line style="stroke:#555555;stroke-width:1;" x1="439" x2="782" y1="541.5769" y2="541.5769"/>
-<line style="stroke:#555555;stroke-width:1;" x1="782" x2="782" y1="541.5769" y2="656.1669"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="176.1484" x="523.4258" y="557.572">Render - Service Node</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="172.1016" x="525.4492" y="573.8689">wimapi.onrender.com</text>
+<polygon fill="#FFFFFF" points="439,512.0769,449,502.0769,792,502.0769,792,616.6669,782,626.6669,439,626.6669,439,512.0769" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="782" x2="792" y1="512.0769" y2="502.0769"/>
+<line style="stroke:#555555;stroke-width:1;" x1="439" x2="782" y1="512.0769" y2="512.0769"/>
+<line style="stroke:#555555;stroke-width:1;" x1="782" x2="782" y1="512.0769" y2="626.6669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="176.1484" x="523.4258" y="528.072">Render - Service Node</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="172.1016" x="525.4492" y="544.3689">wimapi.onrender.com</text>
 </g>
 <!--entity Web-->
 <g class="entity" data-entity="Web" data-source-line="16" data-uid="ent0004" id="entity_Web">
-<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="141.4951" x="90.25" y="254.3869"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67.3135" x="100.25" y="277.382">apps/web</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.4951" x="100.25" y="293.6789">(Vite + React 19)</text>
+<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="141.4951" x="90.25" y="224.8869"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67.3135" x="100.25" y="247.882">apps/web</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121.4951" x="100.25" y="264.1789">(Vite + React 19)</text>
 </g>
 <!--entity SW-->
 <g class="entity" data-entity="SW" data-source-line="17" data-uid="ent0005" id="entity_SW">
-<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="126.832" x="31.58" y="398.9869"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="106.832" x="41.58" y="421.982">Service Worker</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="45.3018" x="41.58" y="438.2789">(sw.js)</text>
+<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="126.832" x="31.58" y="369.4869"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="106.832" x="41.58" y="392.482">Service Worker</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="45.3018" x="41.58" y="408.7789">(sw.js)</text>
 </g>
 <!--entity Proxy-->
 <g class="entity" data-entity="Proxy" data-source-line="18" data-uid="ent0006" id="entity_Proxy">
-<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="116.2637" x="193.87" y="398.9869"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.5732" x="203.87" y="421.982">Proxy /api/*</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96.2637" x="203.87" y="438.2789">(render.yaml)</text>
+<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="116.2637" x="193.87" y="369.4869"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.5732" x="203.87" y="392.482">Proxy /api/*</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96.2637" x="203.87" y="408.7789">(render.yaml)</text>
 </g>
 <!--entity Api-->
 <g class="entity" data-entity="Api" data-source-line="22" data-uid="ent0008" id="entity_Api">
-<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="154.1279" x="454.94" y="587.5769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.7188" x="464.94" y="610.572">apps/api</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="134.1279" x="464.94" y="626.8689">(Express + Prisma)</text>
+<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="154.1279" x="454.94" y="558.0769"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.7188" x="464.94" y="581.072">apps/api</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="134.1279" x="464.94" y="597.3689">(Express + Prisma)</text>
 </g>
 <!--entity Workers-->
 <g class="entity" data-entity="Workers" data-source-line="23" data-uid="ent0009" id="entity_Workers">
-<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="131.7402" x="644.13" y="587.5769"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.7402" x="654.13" y="610.572">Workers BullMQ</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82.8447" x="654.13" y="626.8689">(in-process)</text>
+<rect fill="#F1F1F1" height="52.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="131.7402" x="644.13" y="558.0769"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.7402" x="654.13" y="581.072">Workers BullMQ</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82.8447" x="654.13" y="597.3689">(in-process)</text>
 </g>
 <!--entity Browser-->
 <g class="entity" data-entity="Browser" data-source-line="13" data-uid="ent0002" id="entity_Browser">
-<ellipse cx="161.0047" cy="51.2969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M161.0047,59.2969 L161.0047,86.2969 M148.0047,67.2969 L174.0047,67.2969 M161.0047,86.2969 L148.0047,101.2969 M161.0047,86.2969 L174.0047,101.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="77.4238" x="101.45" y="115.792">Navigateur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="119.1094" x="101.45" y="132.0889">(PWA installable)</text>
+<polygon fill="#FFFFFF" points="40.51,53.2969,50.51,43.2969,281.4934,43.2969,281.4934,95.8906,271.4934,105.8906,40.51,105.8906,40.51,53.2969" style="stroke:#555555;stroke-width:0.5;"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="271.4934" x2="281.4934" y1="53.2969" y2="43.2969"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="40.51" x2="271.4934" y1="53.2969" y2="53.2969"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="271.4934" x2="271.4934" y1="53.2969" y2="105.8906"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.9805" x="55.51" y="76.292">Appareil client</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="200.9834" x="55.51" y="92.5889">Navigateur (PWA installable)</text>
 </g>
 <!--entity PG-->
 <g class="entity" data-entity="PG" data-source-line="26" data-uid="ent0010" id="entity_PG">
-<path d="M529.62,729.6669 C529.62,719.6669 579.9965,719.6669 579.9965,719.6669 C579.9965,719.6669 630.3729,719.6669 630.3729,729.6669 L630.3729,771.2606 C630.3729,781.2606 579.9965,781.2606 579.9965,781.2606
-C579.9965,781.2606 529.62,781.2606 529.62,771.2606 L529.62,729.6669" fill="#FFFFFF" style="stroke:#555555;stroke-width:0.5;"/>
-<path d="M529.62,729.6669 C529.62,739.6669 579.9965,739.6669 579.9965,739.6669 C579.9965,739.6669 630.3729,739.6669 630.3729,729.6669" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="539.62" y="756.662">PostgreSQL</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61.3936" x="539.62" y="772.9589">(Render)</text>
+<path d="M529.62,700.1669 C529.62,690.1669 579.9965,690.1669 579.9965,690.1669 C579.9965,690.1669 630.3729,690.1669 630.3729,700.1669 L630.3729,741.7606 C630.3729,751.7606 579.9965,751.7606 579.9965,751.7606
+C579.9965,751.7606 529.62,751.7606 529.62,741.7606 L529.62,700.1669" fill="#FFFFFF" style="stroke:#555555;stroke-width:0.5;"/>
+<path d="M529.62,700.1669 C529.62,710.1669 579.9965,710.1669 579.9965,710.1669 C579.9965,710.1669 630.3729,710.1669 630.3729,700.1669" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80.7529" x="539.62" y="727.162">PostgreSQL</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61.3936" x="539.62" y="743.4589">(Render)</text>
 </g>
 <!--entity Redis-->
 <g class="entity" data-entity="Redis" data-source-line="27" data-uid="ent0011" id="entity_Redis">
-<path d="M313.93,729.6669 C313.93,719.6669 391.9954,719.6669 391.9954,719.6669 C391.9954,719.6669 470.0609,719.6669 470.0609,729.6669 L470.0609,771.2606 C470.0609,781.2606 391.9954,781.2606 391.9954,781.2606
-C391.9954,781.2606 313.93,781.2606 313.93,771.2606 L313.93,729.6669" fill="#FFFFFF" style="stroke:#555555;stroke-width:0.5;"/>
-<path d="M313.93,729.6669 C313.93,739.6669 391.9954,739.6669 391.9954,739.6669 C391.9954,739.6669 470.0609,739.6669 470.0609,729.6669" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="38.4111" x="323.93" y="756.662">Redis</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="136.1309" x="323.93" y="772.9589">(denylist + BullMQ)</text>
+<path d="M313.93,700.1669 C313.93,690.1669 391.9954,690.1669 391.9954,690.1669 C391.9954,690.1669 470.0609,690.1669 470.0609,700.1669 L470.0609,741.7606 C470.0609,751.7606 391.9954,751.7606 391.9954,751.7606
+C391.9954,751.7606 313.93,751.7606 313.93,741.7606 L313.93,700.1669" fill="#FFFFFF" style="stroke:#555555;stroke-width:0.5;"/>
+<path d="M313.93,700.1669 C313.93,710.1669 391.9954,710.1669 391.9954,710.1669 C391.9954,710.1669 470.0609,710.1669 470.0609,700.1669" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="38.4111" x="323.93" y="727.162">Redis</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="136.1309" x="323.93" y="743.4589">(denylist + BullMQ)</text>
 </g>
 <!--entity Stripe-->
 <g class="entity" data-entity="Stripe" data-source-line="29" data-uid="ent0012" id="entity_Stripe">
-<path d="M697.7459,411.112 C701.2679,404.9532 707.479,405.0423 711.4018,410.6467 C713.1218,402.8788 719.5564,402.844 724.4437,407.2549 C729.899,401.7246 737.2474,401.3347 739.9803,410.1942 C744.29,402.8557
-749.5045,403.5013 753.705,410.3003 C763.2204,414.1412 763.8767,421.6137 755.3771,427.2335 C761.988,432.7778 759.3783,438.3104 752.5797,441.1614 C749.8215,448.8663 744.2018,451.3309 737.9808,444.6837 C734.9595,451.0018
-730.7623,451.99 725.169,447.8278 C719.1936,452.4218 714.5717,452.1295 711.4912,444.5698 C706.4621,452.0072 699.399,449.9433 696.5423,442.4018 C685.2079,441.2622 683.5389,435.5448 688.3893,426.2405 C683.1834,417.4036
-688.7118,411.1418 697.7459,411.112" fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.5215" x="703.24" y="430.122">Stripe</text>
+<path d="M697.7459,381.612 C701.2679,375.4532 707.479,375.5423 711.4018,381.1467 C713.1218,373.3788 719.5564,373.344 724.4437,377.7549 C729.899,372.2246 737.2474,371.8347 739.9803,380.6942 C744.29,373.3557
+749.5045,374.0013 753.705,380.8003 C763.2204,384.6412 763.8767,392.1137 755.3771,397.7335 C761.988,403.2778 759.3783,408.8104 752.5797,411.6614 C749.8215,419.3663 744.2018,421.8309 737.9808,415.1837 C734.9595,421.5018
+730.7623,422.49 725.169,418.3278 C719.1936,422.9218 714.5717,422.6295 711.4912,415.0698 C706.4621,422.5072 699.399,420.4433 696.5423,412.9018 C685.2079,411.7622 683.5389,406.0448 688.3893,396.7405 C683.1834,387.9036
+688.7118,381.6418 697.7459,381.612" fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="41.5215" x="703.24" y="400.622">Stripe</text>
 </g>
 <!--entity Resend-->
 <g class="entity" data-entity="Resend" data-source-line="30" data-uid="ent0013" id="entity_Resend">
-<path d="M1240.7461,728.5166 C1244.6831,722.9539 1249.5365,722.0359 1253.6894,728.2798 C1256.4188,721.489 1261.1661,720.6777 1265.7347,726.5273 C1269.0821,721.1724 1272.8164,722.0721 1276.1796,726.5104
-C1280.6415,722.3691 1284.4632,721.4256 1287.6826,727.8616 C1290.8968,722.8119 1295.2459,724.0019 1297.9184,728.4456 C1301.5191,723.4279 1306.3201,723.881 1309.3101,729.1237 C1315.24,731.6468 1315.8401,734.9698
-1310.8618,739.1767 C1318.4183,741.0761 1318.7342,747.6662 1313.5286,752.1824 C1317.4891,755.5632 1317.165,760.1736 1312.0542,762.2223 C1317.2112,767.014 1317.9963,772.2856 1310.7646,775.9101 C1307.5492,782.4358
-1302.4424,782.6593 1298.5777,776.5357 C1295.1372,782.8999 1291.4756,782.0207 1287.2856,777.2992 C1284.9132,784.6148 1280.3,784.832 1275.0849,780.2028 C1270.9727,784.9241 1267.6682,783.253 1265.3705,778.3679
-C1261.4671,784.0131 1256.1751,783.8612 1253.0122,777.5994 C1248.4566,782.0052 1243.2997,779.87 1242.0853,774.0345 C1237.142,772.2541 1236.1671,767.3733 1239.872,763.7346 C1233.8193,760.4423 1232.5231,756.0651
-1238.6546,751.555 C1232.8434,747.2989 1233.2226,743.1665 1239.7186,740.0484 C1234.1841,736.2879 1234.8823,731.2615 1240.7461,728.5166" fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52.0078" x="1247.71" y="747.162">Resend</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="54.585" x="1247.71" y="763.4589">(e-mail)</text>
+<path d="M1240.7461,699.0166 C1244.6831,693.4539 1249.5365,692.5359 1253.6894,698.7798 C1256.4188,691.989 1261.1661,691.1777 1265.7347,697.0273 C1269.0821,691.6724 1272.8164,692.5721 1276.1796,697.0104
+C1280.6415,692.8691 1284.4632,691.9256 1287.6826,698.3616 C1290.8968,693.3119 1295.2459,694.5019 1297.9184,698.9456 C1301.5191,693.9279 1306.3201,694.381 1309.3101,699.6237 C1315.24,702.1468 1315.8401,705.4698
+1310.8618,709.6767 C1318.4183,711.5761 1318.7342,718.1662 1313.5286,722.6824 C1317.4891,726.0632 1317.165,730.6736 1312.0542,732.7223 C1317.2112,737.514 1317.9963,742.7856 1310.7646,746.4101 C1307.5492,752.9358
+1302.4424,753.1593 1298.5777,747.0357 C1295.1372,753.3999 1291.4756,752.5207 1287.2856,747.7992 C1284.9132,755.1148 1280.3,755.332 1275.0849,750.7028 C1270.9727,755.4241 1267.6682,753.753 1265.3705,748.8679
+C1261.4671,754.5131 1256.1751,754.3612 1253.0122,748.0994 C1248.4566,752.5052 1243.2997,750.37 1242.0853,744.5345 C1237.142,742.7541 1236.1671,737.8733 1239.872,734.2346 C1233.8193,730.9423 1232.5231,726.5651
+1238.6546,722.055 C1232.8434,717.7989 1233.2226,713.6665 1239.7186,710.5484 C1234.1841,706.7879 1234.8823,701.7615 1240.7461,699.0166" fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52.0078" x="1247.71" y="717.662">Resend</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="54.585" x="1247.71" y="733.9589">(e-mail)</text>
 </g>
 <!--entity Push-->
 <g class="entity" data-entity="Push" data-source-line="31" data-uid="ent0014" id="entity_Push">
-<path d="M1077.8189,728.7039 C1081.8937,720.9383 1086.8252,722.328 1091.5596,728.0309 C1095.3315,721.3194 1100.6752,722.3648 1104.7807,727.6635 C1108.2444,721.2345 1114.982,720.0995 1118.5285,727.5816
-C1122.4951,720.1895 1127.4208,720.5768 1132.6587,726.2015 C1137.1465,720.2444 1142.8702,719.6965 1146.1397,727.4034 C1151.4149,722.2317 1156.0824,723.1677 1159.7178,729.3624 C1166.9254,730.0036 1167.3054,733.8933
-1164.7586,739.4223 C1171.0184,741.1755 1172.0098,746.518 1168.0926,751.1615 C1171.8394,755.999 1170.7884,760.3657 1165.049,762.7013 C1169.3173,767.8589 1168.8893,772.3872 1161.7411,774.2844 C1158.8668,781.3787
-1152.3323,782.2703 1147.4812,776.4706 C1144.771,784.9572 1138.5982,786.4921 1132.5228,779.7832 C1129.4907,787.4968 1123.4165,787.4012 1118.5518,781.6904 C1113.9628,788.6127 1107.4719,787.1658 1104.993,779.7017
-C1098.752,785.7763 1094.4539,785.0732 1090.9103,777.014 C1086.6724,783.375 1080.697,782.2826 1077.7774,775.6786 C1070.0648,774.2754 1067.5805,767.6821 1073.7188,762.1297 C1067.3478,759.0433 1067.2021,755.3856
-1072.4512,750.9784 C1068.2722,746.7446 1067.6402,742.2108 1074.2263,739.6662 C1069.8352,734.911 1071.7509,730.0314 1077.8189,728.7039" fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="69.2754" x="1083.36" y="747.162">Web Push</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53.4297" x="1083.36" y="763.4589">(VAPID)</text>
+<path d="M1077.8189,699.2039 C1081.8937,691.4383 1086.8252,692.828 1091.5596,698.5309 C1095.3315,691.8194 1100.6752,692.8648 1104.7807,698.1635 C1108.2444,691.7345 1114.982,690.5995 1118.5285,698.0816
+C1122.4951,690.6895 1127.4208,691.0768 1132.6587,696.7015 C1137.1465,690.7444 1142.8702,690.1965 1146.1397,697.9034 C1151.4149,692.7317 1156.0824,693.6677 1159.7178,699.8624 C1166.9254,700.5036 1167.3054,704.3933
+1164.7586,709.9223 C1171.0184,711.6755 1172.0098,717.018 1168.0926,721.6615 C1171.8394,726.499 1170.7884,730.8657 1165.049,733.2013 C1169.3173,738.3589 1168.8893,742.8872 1161.7411,744.7844 C1158.8668,751.8787
+1152.3323,752.7703 1147.4812,746.9706 C1144.771,755.4572 1138.5982,756.9921 1132.5228,750.2832 C1129.4907,757.9968 1123.4165,757.9012 1118.5518,752.1904 C1113.9628,759.1127 1107.4719,757.6658 1104.993,750.2017
+C1098.752,756.2763 1094.4539,755.5732 1090.9103,747.514 C1086.6724,753.875 1080.697,752.7826 1077.7774,746.1786 C1070.0648,744.7754 1067.5805,738.1821 1073.7188,732.6297 C1067.3478,729.5433 1067.2021,725.8856
+1072.4512,721.4784 C1068.2722,717.2446 1067.6402,712.7108 1074.2263,710.1662 C1069.8352,705.411 1071.7509,700.5314 1077.8189,699.2039" fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="69.2754" x="1083.36" y="717.662">Web Push</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53.4297" x="1083.36" y="733.9589">(VAPID)</text>
 </g>
 <g class="entity" data-entity="GMN27" data-source-line="49" data-uid="ent0028" id="entity_GMN27">
-<path d="M858.61,842.7669 L858.61,973.8294 A0,0 0 0 0 858.61,973.8294 L1377.3932,973.8294 A0,0 0 0 0 1377.3932,973.8294 L1377.3932,852.7669 L1367.3932,842.7669 L1122,842.7669 L1118,782.2569 L1114,842.7669
-L858.61,842.7669 A0,0 0 0 0 858.61,842.7669" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<path d="M1367.3932,842.7669 L1367.3932,852.7669 L1377.3932,852.7669 L1367.3932,842.7669" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="460.2178" x="864.61" y="859.8338">Fronti&#232;re de s&#233;curit&#233; : en prod, le proxy /api/* de render.yaml
+<path d="M858.61,813.2669 L858.61,944.3294 A0,0 0 0 0 858.61,944.3294 L1377.3932,944.3294 A0,0 0 0 0 1377.3932,944.3294 L1377.3932,823.2669 L1367.3932,813.2669 L1122,813.2669 L1118,752.7569 L1114,813.2669
+L858.61,813.2669 A0,0 0 0 0 858.61,813.2669" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1367.3932,813.2669 L1367.3932,823.2669 L1377.3932,823.2669 L1367.3932,813.2669" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="460.2178" x="864.61" y="830.3338">Fronti&#232;re de s&#233;curit&#233; : en prod, le proxy /api/* de render.yaml
 garde le</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="491.9497" x="864.61" y="874.9666">navigateur sur une seule origine (wim-web) &#8212; indispensable sur Safari/iOS,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="453.0513" x="864.61" y="890.0994">dont l'ITP bloque les Set-Cookie cross-site. L'API pose quand m&#234;me
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="491.9497" x="864.61" y="845.4666">navigateur sur une seule origine (wim-web) &#8212; indispensable sur Safari/iOS,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="453.0513" x="864.61" y="860.5994">dont l'ITP bloque les Set-Cookie cross-site. L'API pose quand m&#234;me
 le</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="480.5938" x="864.61" y="905.2322">cookie wim_token en httpOnly + SameSite=none (acc&#232;s direct possible)
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="480.5938" x="864.61" y="875.7322">cookie wim_token en httpOnly + SameSite=none (acc&#232;s direct possible)
 ;</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="479.1909" x="864.61" y="920.365">les mutations exigent un Origin/Referer autoris&#233; (csrfGuard). Le webhook</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="450.7979" x="864.61" y="935.4978">Stripe est mont&#233; AVANT express.json() et s'authentifie par signature,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="497.7832" x="864.61" y="950.6306">hors du chemin cookie/CSRF. Les workers tournent dans le m&#234;me processus</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="60.5059" x="864.61" y="965.7635">que l'API.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="479.1909" x="864.61" y="890.865">les mutations exigent un Origin/Referer autoris&#233; (csrfGuard). Le webhook</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="450.7979" x="864.61" y="905.9978">Stripe est mont&#233; AVANT express.json() et s'authentifie par signature,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="497.7832" x="864.61" y="921.1306">hors du chemin cookie/CSRF. Les workers tournent dans le m&#234;me processus</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="60.5059" x="864.61" y="936.2635">que l'API.</text>
 </g>
 <!--link Browser to Web-->
 <g class="link" data-entity-1="Browser" data-entity-2="Web" data-source-line="33" data-uid="lnk15" id="link_Browser_Web">
-<path d="M161,135.5069 C161,172.6469 161,217.8069 161,248.1469" fill="none" id="Browser-to-Web" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="161,254.1469,165,245.1469,161,249.1469,157,245.1469,161,254.1469" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="41.7485" x="162" y="178.4538">HTTPS</text>
+<path d="M161,106.0069 C161,139.6169 161,187.1469 161,218.6569" fill="none" id="Browser-to-Web" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="161,224.6569,165,215.6569,161,219.6569,157,215.6569,161,224.6569" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="41.7485" x="162" y="148.9538">HTTPS</text>
 </g>
 <!--link Web to SW-->
 <g class="link" data-entity-1="Web" data-entity-2="SW" data-source-line="34" data-uid="lnk16" id="link_Web_SW">
-<path d="M94.06,307.2969 C82.05,314.9969 71.11,324.7469 64,336.9869 C52.69,356.4469 59.7533,375.7041 71.4433,393.7141" fill="none" id="Web-to-SW" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/>
-<polygon fill="#181818" points="74.71,398.7469,73.1651,389.0199,71.9878,394.5529,66.4548,393.3755,74.71,398.7469" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="110.7349" x="65" y="357.5538">enregistre (prod)</text>
+<path d="M94.06,277.7969 C82.05,285.4969 71.11,295.2469 64,307.4869 C52.69,326.9469 59.7533,346.2041 71.4433,364.2141" fill="none" id="Web-to-SW" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#181818" points="74.71,369.2469,73.1651,359.5199,71.9878,365.0529,66.4548,363.8755,74.71,369.2469" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="110.7349" x="65" y="328.0538">enregistre (prod)</text>
 </g>
 <!--link Web to Proxy-->
 <g class="link" data-entity-1="Web" data-entity-2="Proxy" data-source-line="35" data-uid="lnk17" id="link_Web_Proxy">
-<path d="M177.27,307.1769 C193.73,332.9769 215.8112,367.5797 232.3412,393.4697" fill="none" id="Web-to-Proxy" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="235.57,398.5269,234.0982,388.7886,232.8793,394.3126,227.3553,393.0937,235.57,398.5269" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="232.064" x="267.8087" y="350.0538">fetch("/api/...", credentials: include)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="336.3813" x="215.65" y="365.1866">cookie httpOnly wim_token + CSRF (Origin/Referer)</text>
+<path d="M177.27,277.6769 C193.73,303.4769 215.8112,338.0797 232.3412,363.9697" fill="none" id="Web-to-Proxy" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="235.57,369.0269,234.0982,359.2886,232.8793,364.8126,227.3553,363.5937,235.57,369.0269" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="232.064" x="267.8087" y="320.5538">fetch("/api/...", credentials: include)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="336.3813" x="215.65" y="335.6866">cookie httpOnly wim_token + CSRF (Origin/Referer)</text>
 </g>
 <!--link Proxy to Api-->
 <g class="link" data-entity-1="Proxy" data-entity-2="Api" data-source-line="36" data-uid="lnk18" id="link_Proxy_Api">
-<path d="M248.47,451.6969 C247.2,471.2069 248.78,497.7469 263,515.5769 C309.13,573.4369 386.7598,595.9842 448.5498,605.4942" fill="none" id="Proxy-to-Api" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="454.48,606.4069,446.1932,601.0844,449.5382,605.6463,444.9763,608.9913,454.48,606.4069" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="117.6475" x="324.6042" y="496.6438">r&#233;&#233;criture serveur</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="238.856" x="264" y="511.7766">(le navigateur reste sur UNE origine)</text>
+<path d="M248.47,422.1969 C247.2,441.7069 248.78,468.2469 263,486.0769 C309.13,543.9369 386.7598,566.4842 448.5498,575.9942" fill="none" id="Proxy-to-Api" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="454.48,576.9069,446.1932,571.5844,449.5382,576.1463,444.9763,579.4913,454.48,576.9069" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="117.6475" x="324.6042" y="467.1438">r&#233;&#233;criture serveur</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="238.856" x="264" y="482.2766">(le navigateur reste sur UNE origine)</text>
 </g>
 <!--link Api to PG-->
 <g class="link" data-entity-1="Api" data-entity-2="PG" data-source-line="38" data-uid="lnk19" id="link_Api_PG">
-<path d="M454.7,637.0969 C426.34,649.4169 404.53,666.8169 420,689.1669 C423.35,694.0069 478.2192,713.9782 523.8492,730.0082" fill="none" id="Api-to-PG" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="529.51,731.9969,522.3445,725.24,524.7926,730.3396,519.6929,732.7878,529.51,731.9969" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="84.2017" x="421" y="685.2338">Prisma (SQL)</text>
+<path d="M454.7,607.5969 C426.34,619.9169 404.53,637.3169 420,659.6669 C423.35,664.5069 478.2192,684.4782 523.8492,700.5082" fill="none" id="Api-to-PG" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="529.51,702.4969,522.3445,695.74,524.7926,700.8396,519.6929,703.2878,529.51,702.4969" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="84.2017" x="421" y="655.7338">Prisma (SQL)</text>
 </g>
 <!--link Api to Redis-->
 <g class="link" data-entity-1="Api" data-entity-2="Redis" data-source-line="39" data-uid="lnk20" id="link_Api_Redis">
-<path d="M454.61,618.8069 C375.56,624.6469 260.61,638.7669 233,672.1669 C204.4,706.7669 254.4949,725.8488 307.7449,736.8888" fill="none" id="Api-to-Redis" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="313.62,738.1069,305.6194,732.3631,308.7241,737.0918,303.9954,740.1965,313.62,738.1069" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="172.5166" x="234" y="685.2338">jti denylist + tokenVersion</text>
+<path d="M454.61,589.3069 C375.56,595.1469 260.61,609.2669 233,642.6669 C204.4,677.2669 254.4949,696.3488 307.7449,707.3888" fill="none" id="Api-to-Redis" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="313.62,708.6069,305.6194,702.8631,308.7241,707.5918,303.9954,710.6965,313.62,708.6069" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="172.5166" x="234" y="655.7338">jti denylist + tokenVersion</text>
 </g>
 <!--link Workers to Redis-->
 <g class="link" data-entity-1="Workers" data-entity-2="Redis" data-source-line="40" data-uid="lnk21" id="link_Workers_Redis">
-<path d="M674.49,640.6669 C660.38,649.6269 643.57,658.7769 627,664.1669 C590.92,675.9269 578.35,661.2769 542,672.1669 C526.57,676.7969 524.28,681.7269 510,689.1669 C491.03,699.0569 475.6141,706.9892 456.8641,716.5592"
+<path d="M674.49,611.1669 C660.38,620.1269 643.57,629.2769 627,634.6669 C590.92,646.4269 578.35,631.7769 542,642.6669 C526.57,647.2969 524.28,652.2269 510,659.6669 C491.03,669.5569 475.6141,677.4892 456.8641,687.0592"
 fill="none" id="Workers-to-Redis" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="451.52,719.2869,461.3547,718.7582,455.9735,717.0138,457.7178,711.6326,451.52,719.2869" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="228.5029" x="543" y="685.2338">files wim-alerts / wim-maintenance</text>
+<polygon fill="#181818" points="451.52,689.7869,461.3547,689.2582,455.9735,687.5138,457.7178,682.1326,451.52,689.7869" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="228.5029" x="543" y="655.7338">files wim-alerts / wim-maintenance</text>
 </g>
 <!--link Workers to PG-->
 <g class="link" data-entity-1="Workers" data-entity-2="PG" data-source-line="41" data-uid="lnk22" id="link_Workers_PG">
-<path d="M758.06,640.3669 C777.6,654.1269 792.89,671.8169 780,689.1669 C762.1,713.2569 689.6604,730.318 636.5004,740.128" fill="none" id="Workers-to-PG" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="630.6,741.2169,640.1765,743.5172,635.517,740.3095,638.7247,735.65,630.6,741.2169" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="257.6704" x="785.76" y="685.2338">lecture/&#233;criture (rappels, purge, digest)</text>
+<path d="M758.06,610.8669 C777.6,624.6269 792.89,642.3169 780,659.6669 C762.1,683.7569 689.6604,700.818 636.5004,710.628" fill="none" id="Workers-to-PG" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="630.6,711.7169,640.1765,714.0172,635.517,710.8095,638.7247,706.15,630.6,711.7169" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="257.6704" x="785.76" y="655.7338">lecture/&#233;criture (rappels, purge, digest)</text>
 </g>
 <!--link Api to Stripe-->
 <g class="link" data-entity-1="Api" data-entity-2="Stripe" data-source-line="43" data-uid="lnk23" id="link_Api_Stripe">
-<path d="M550.63,587.3169 C567.79,566.0169 595.35,537.0669 627,523.5769 C642.97,516.7769 771.05,528.1569 783,515.5769 C802.33,495.2369 782.9439,471.6624 760.0039,452.5924" fill="none" id="Api-to-Stripe"
+<path d="M550.63,557.8169 C567.79,536.5169 595.35,507.5669 627,494.0769 C642.97,487.2769 771.05,498.6569 783,486.0769 C802.33,465.7369 782.9439,442.1624 760.0039,423.0924" fill="none" id="Api-to-Stripe"
 style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="755.39,448.7569,759.7539,457.5862,759.235,451.9532,764.868,451.4343,755.39,448.7569" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="154.2354" x="791.05" y="504.1438">Checkout / Portal / sync</text>
+<polygon fill="#181818" points="755.39,419.2569,759.7539,428.0862,759.235,422.4532,764.868,421.9343,755.39,419.2569" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="154.2354" x="791.05" y="474.6438">Checkout / Portal / sync</text>
 </g>
 <!--link Stripe to Api-->
 <g class="link" data-entity-1="Stripe" data-entity-2="Api" data-source-line="44" data-uid="lnk24" id="link_Stripe_Api">
-<path d="M687.83,439.7869 C657.51,450.6969 612.91,465.7969 573,475.5769 C562.5,478.1469 531.99,475.3269 525,483.5769 C500.73,512.2269 509.1131,552.8589 519.2531,581.5889" fill="none" id="Stripe-to-Api"
+<path d="M687.83,410.2869 C657.51,421.1969 612.91,436.2969 573,446.0769 C562.5,448.6469 531.99,445.8269 525,454.0769 C500.73,482.7269 509.1131,523.3589 519.2531,552.0889" fill="none" id="Stripe-to-Api"
 style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="521.25,587.2469,522.0266,577.4287,519.5859,582.5319,514.4827,580.0912,521.25,587.2469" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="248.1616" x="526" y="504.1438">Webhook (raw body, signature HMAC)</text>
+<polygon fill="#181818" points="521.25,557.7469,522.0266,547.9287,519.5859,553.0319,514.4827,550.5912,521.25,557.7469" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="248.1616" x="526" y="474.6438">Webhook (raw body, signature HMAC)</text>
 </g>
 <!--link Workers to Resend-->
 <g class="link" data-entity-1="Workers" data-entity-2="Resend" data-source-line="45" data-uid="lnk25" id="link_Workers_Resend">
-<path d="M776.21,617.2169 C892.03,622.1969 1126.07,636.4669 1199,672.1669 C1220.64,682.7669 1235.8501,697.4353 1249.4401,714.1153" fill="none" id="Workers-to-Resend" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="1253.23,718.7669,1250.6463,709.263,1250.0718,714.8906,1244.4442,714.3161,1253.23,718.7669" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="189.9727" x="1224.52" y="685.2338">rappels + digest (best-effort)</text>
+<path d="M776.21,587.7169 C892.03,592.6969 1126.07,606.9669 1199,642.6669 C1220.64,653.2669 1235.8501,667.9353 1249.4401,684.6153" fill="none" id="Workers-to-Resend" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="1253.23,689.2669,1250.6463,679.763,1250.0718,685.3906,1244.4442,684.8161,1253.23,689.2669" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="189.9727" x="1224.52" y="655.7338">rappels + digest (best-effort)</text>
 </g>
 <!--link Workers to Push-->
 <g class="link" data-entity-1="Workers" data-entity-2="Push" data-source-line="46" data-uid="lnk26" id="link_Workers_Push">
-<path d="M776.18,620.5569 C861.95,628.8269 1005.96,646.1169 1052,672.1669 C1071.5,683.2069 1084.4496,697.4082 1096.0196,713.8682" fill="none" id="Workers-to-Push" style="stroke:#181818;stroke-width:1;"/>
-<polygon fill="#181818" points="1099.47,718.7769,1097.5669,709.1136,1096.5947,714.6863,1091.022,713.7141,1099.47,718.7769" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115.5146" x="1074.96" y="685.2338">notifications push</text>
+<path d="M776.18,591.0569 C861.95,599.3269 1005.96,616.6169 1052,642.6669 C1071.5,653.7069 1084.4496,667.9082 1096.0196,684.3682" fill="none" id="Workers-to-Push" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="1099.47,689.2769,1097.5669,679.6136,1096.5947,685.1863,1091.022,684.2141,1099.47,689.2769" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115.5146" x="1074.96" y="655.7338">notifications push</text>
 </g>
 </g>
 </svg>

@@ -1,180 +1,189 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="ACTIVITY" height="1334px" preserveAspectRatio="none" style="width:835px;height:1334px;background:#FFFFFF;"
-version="1.1" viewBox="0 0 835 1334" width="835px" zoomAndPan="magnify">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="ACTIVITY" height="1718px" preserveAspectRatio="none" style="width:1340px;height:1718px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1340 1718" width="1340px" zoomAndPan="magnify">
 <title>WIM - Diagramme d'activit&#233;s (Ajout &amp; rappels)</title>
 <defs/>
 <g>
 <g class="title" data-source-line="1">
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="368.4775" x="231.9989" y="32.9951">WIM - Diagramme d'activit&#233;s (Ajout &amp; rappels)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="368.4775" x="484.5801" y="32.9951">WIM - Diagramme d'activit&#233;s (Ajout &amp; rappels)</text>
 </g>
-<ellipse cx="410.4143" cy="57.2969" fill="#222222" rx="10" ry="10" style="stroke:#222222;stroke-width:1;"/>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="282.2773" x="269.2756" y="87.2969"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="262.2773" x="279.2756" y="108.4355">Ajouter un article (nom, mod&#232;le, desc, prix)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="275.4688" x="272.6799" y="141.2656"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="255.4688" x="282.6799" y="162.4043">Associer tags &amp; emplacements (optionnel)</text>
-<polygon fill="#FFFFFF" points="334.835,195.2344,485.9937,195.2344,497.9937,207.2344,485.9937,219.2344,334.835,219.2344,322.835,207.2344,334.835,195.2344" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="151.1587" x="334.835" y="211.0425">Facture / pi&#232;ce disponible ?</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="18.686" x="304.1489" y="204.6401">Oui</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="21.9302" x="497.9937" y="204.6401">Non</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="322.5078" x="111.3708" y="229.2344"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="302.5078" x="121.3708" y="250.373">T&#233;l&#233;verser PDF/JPEG (v&#233;rif. signature + miniature)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="188.6504" x="453.8787" y="229.2344"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="168.6504" x="463.8787" y="250.373">Poursuivre sans pi&#232;ce jointe</text>
-<polygon fill="#FFFFFF" points="410.4143,269.2031,422.4143,281.2031,410.4143,293.2031,398.4143,281.2031,410.4143,269.2031" style="stroke:#555555;stroke-width:0.5;"/>
-<polygon fill="#FFFFFF" points="348.9045,313.2031,471.9241,313.2031,483.9241,325.2031,471.9241,337.2031,348.9045,337.2031,336.9045,325.2031,348.9045,313.2031" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="123.0195" x="348.9045" y="329.0112">Ajouter une garantie ?</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="18.686" x="318.2185" y="322.6089">Oui</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="21.9302" x="483.9241" y="322.6089">Non</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="228.4766" x="146.812" y="347.2031"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="208.4766" x="156.812" y="368.3418">Saisir date d'achat et dur&#233;e (mois)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="260.8496" x="130.6255" y="401.1719"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="240.8496" x="140.6255" y="422.3105">API calcule garantieFin = achat + dur&#233;e</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="239.7676" x="141.1665" y="455.1406"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="219.7676" x="151.1665" y="476.2793">Enregistrer la garantie li&#233;e &#224; l'article</text>
-<polygon fill="#FFFFFF" points="206.6465,509.1094,315.4541,509.1094,327.4541,521.1094,315.4541,533.1094,206.6465,533.1094,194.6465,521.1094,206.6465,509.1094" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="108.8076" x="206.6465" y="524.9175">Configurer alertes ?</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="18.686" x="175.9604" y="518.5151">Oui</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="21.9302" x="327.4541" y="518.5151">Non</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="222.5" x="33.0898" y="543.1094"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="202.5" x="43.0898" y="564.248">Proposer J-30 / J-7 / J-1 (&#233;ditables)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="266.6797" x="11" y="597.0781"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="246.6797" x="21" y="618.2168">Planifier des jobs BullMQ (file wim-alerts)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="160.1621" x="297.6797" y="543.1094"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="140.1621" x="307.6797" y="564.248">Poursuivre sans alertes</text>
-<polygon fill="#FFFFFF" points="261.0503,637.0469,273.0503,649.0469,261.0503,661.0469,249.0503,649.0469,261.0503,637.0469" style="stroke:#555555;stroke-width:0.5;"/>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="143.873" x="487.8418" y="347.2031"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="123.873" x="497.8418" y="368.3418">Article sans garantie</text>
-<polygon fill="#FFFFFF" points="410.4143,667.0469,422.4143,679.0469,410.4143,691.0469,398.4143,679.0469,410.4143,667.0469" style="stroke:#555555;stroke-width:0.5;"/>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="381.9863" x="219.4211" y="711.0469"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="361.9863" x="229.4211" y="732.1855">Sauvegarder (Article / Garantie / Alerte) + journaliser l'audit</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="246.0078" x="287.4104" y="765.0156"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="226.0078" x="297.4104" y="786.1543">[Plus tard] &#201;ch&#233;ance d'un job d'alerte</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="252.1484" x="284.3401" y="818.9844"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="232.1484" x="294.3401" y="840.123">Charger le contexte (garantie / article)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="370.9883" x="224.9202" y="872.9531"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="350.9883" x="234.9202" y="894.0918">Envoyer la notification push (obligatoire, rejou&#233;e si &#233;chec)</text>
-<polygon fill="#FFFFFF" points="304.9529,926.9219,515.8757,926.9219,527.8757,938.9219,515.8757,950.9219,304.9529,950.9219,292.9529,938.9219,304.9529,926.9219" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="210.9229" x="304.9529" y="942.73">E-mail configur&#233; ET opt-in utilisateur ?</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="18.686" x="274.2668" y="936.3276">Oui</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="21.9302" x="527.8757" y="936.3276">Non</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="335.416" x="115.2449" y="960.9219"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="315.416" x="125.2449" y="982.0605">Envoyer l'e-mail (best-effort, n'&#233;choue jamais le job)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="111.2246" x="482.2634" y="960.9219"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="91.2246" x="492.2634" y="982.0605">Ignorer l'e-mail</text>
-<polygon fill="#FFFFFF" points="410.4143,1000.8906,422.4143,1012.8906,410.4143,1024.8906,398.4143,1012.8906,410.4143,1000.8906" style="stroke:#555555;stroke-width:0.5;"/>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="151.0391" x="334.8948" y="1044.8906"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="131.0391" x="344.8948" y="1066.0293">Marquer l'alerte SENT</text>
-<polygon fill="#FFFFFF" points="336.4329,1098.8594,484.3958,1098.8594,496.3958,1110.8594,484.3958,1122.8594,336.4329,1122.8594,324.4329,1110.8594,336.4329,1098.8594" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="147.9629" x="336.4329" y="1114.6675">Alerte custom r&#233;currente ?</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="18.686" x="305.7468" y="1108.2651">Oui</text>
-<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="21.9302" x="496.3958" y="1108.2651">Non</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="298.3613" x="130.6394" y="1132.8594"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="278.3613" x="140.6394" y="1153.998">Replanifier la prochaine occurrence (+N mois)</text>
-<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="184.0156" x="449.0007" y="1132.8594"/>
-<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="164.0156" x="459.0007" y="1153.998">Fin du cycle de cette alerte</text>
-<polygon fill="#FFFFFF" points="410.4143,1172.8281,422.4143,1184.8281,410.4143,1196.8281,398.4143,1184.8281,410.4143,1172.8281" style="stroke:#555555;stroke-width:0.5;"/>
-<path d="M441.4143,1206.8281 L441.4143,1260.793 L421.4143,1264.793 L441.4143,1268.793 L441.4143,1322.7578 A0,0 0 0 0 441.4143,1322.7578 L823.4753,1322.7578 A0,0 0 0 0 823.4753,1322.7578 L823.4753,1216.8281
-L813.4753,1206.8281 L441.4143,1206.8281 A0,0 0 0 0 441.4143,1206.8281" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
-<path d="M813.4753,1206.8281 L813.4753,1216.8281 L823.4753,1216.8281 L813.4753,1206.8281" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="169.6919" x="447.4143" y="1223.895">Hypoth&#232;ses (&#233;tat actuel) :</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="361.061" x="447.4143" y="1239.0278">- Push (VAPID) + e-mail (Resend), tous deux best-effort</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="241.4712" x="447.4143" y="1254.1606">- Ordre : push -&gt; e-mail -&gt; markSent</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="338.4126" x="455.679" y="1269.2935">(un push en &#233;chec ne marque PAS l'alerte envoy&#233;e)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="247.2095" x="447.4143" y="1284.4263">- Planification via jobs BullMQ + Redis</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="223.5073" x="447.4143" y="1299.5591">- garantieFin calcul&#233;e c&#244;t&#233; service</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="229.6138" x="447.4143" y="1314.6919">- Import/Export CSV hors de ce flux</text>
-<ellipse cx="410.4143" cy="1264.793" fill="none" rx="11" ry="11" style="stroke:#222222;stroke-width:1;"/>
-<ellipse cx="410.4143" cy="1264.793" fill="#222222" rx="6" ry="6" style="stroke:#222222;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="67.2969" y2="87.2969"/>
-<polygon fill="#555555" points="406.4143,77.2969,410.4143,87.2969,414.4143,77.2969,410.4143,81.2969" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="121.2656" y2="141.2656"/>
-<polygon fill="#555555" points="406.4143,131.2656,410.4143,141.2656,414.4143,131.2656,410.4143,135.2656" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="322.835" x2="272.6248" y1="207.2344" y2="207.2344"/>
-<line style="stroke:#555555;stroke-width:1;" x1="272.6248" x2="272.6248" y1="207.2344" y2="229.2344"/>
-<polygon fill="#555555" points="268.6248,219.2344,272.6248,229.2344,276.6248,219.2344,272.6248,223.2344" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="497.9937" x2="548.2039" y1="207.2344" y2="207.2344"/>
-<line style="stroke:#555555;stroke-width:1;" x1="548.2039" x2="548.2039" y1="207.2344" y2="229.2344"/>
-<polygon fill="#555555" points="544.2039,219.2344,548.2039,229.2344,552.2039,219.2344,548.2039,223.2344" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="272.6248" x2="272.6248" y1="263.2031" y2="281.2031"/>
-<line style="stroke:#555555;stroke-width:1;" x1="272.6248" x2="398.4143" y1="281.2031" y2="281.2031"/>
-<polygon fill="#555555" points="388.4143,277.2031,398.4143,281.2031,388.4143,285.2031,392.4143,281.2031" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="548.2039" x2="548.2039" y1="263.2031" y2="281.2031"/>
-<line style="stroke:#555555;stroke-width:1;" x1="548.2039" x2="422.4143" y1="281.2031" y2="281.2031"/>
-<polygon fill="#555555" points="432.4143,277.2031,422.4143,281.2031,432.4143,285.2031,428.4143,281.2031" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="175.2344" y2="195.2344"/>
-<polygon fill="#555555" points="406.4143,185.2344,410.4143,195.2344,414.4143,185.2344,410.4143,189.2344" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="261.0503" x2="261.0503" y1="381.1719" y2="401.1719"/>
-<polygon fill="#555555" points="257.0503,391.1719,261.0503,401.1719,265.0503,391.1719,261.0503,395.1719" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="261.0503" x2="261.0503" y1="435.1406" y2="455.1406"/>
-<polygon fill="#555555" points="257.0503,445.1406,261.0503,455.1406,265.0503,445.1406,261.0503,449.1406" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="144.3398" x2="144.3398" y1="577.0781" y2="597.0781"/>
-<polygon fill="#555555" points="140.3398,587.0781,144.3398,597.0781,148.3398,587.0781,144.3398,591.0781" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="194.6465" x2="144.3398" y1="521.1094" y2="521.1094"/>
-<line style="stroke:#555555;stroke-width:1;" x1="144.3398" x2="144.3398" y1="521.1094" y2="543.1094"/>
-<polygon fill="#555555" points="140.3398,533.1094,144.3398,543.1094,148.3398,533.1094,144.3398,537.1094" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="327.4541" x2="377.7607" y1="521.1094" y2="521.1094"/>
-<line style="stroke:#555555;stroke-width:1;" x1="377.7607" x2="377.7607" y1="521.1094" y2="543.1094"/>
-<polygon fill="#555555" points="373.7607,533.1094,377.7607,543.1094,381.7607,533.1094,377.7607,537.1094" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="144.3398" x2="144.3398" y1="631.0469" y2="649.0469"/>
-<line style="stroke:#555555;stroke-width:1;" x1="144.3398" x2="249.0503" y1="649.0469" y2="649.0469"/>
-<polygon fill="#555555" points="239.0503,645.0469,249.0503,649.0469,239.0503,653.0469,243.0503,649.0469" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="377.7607" x2="377.7607" y1="577.0781" y2="649.0469"/>
-<line style="stroke:#555555;stroke-width:1;" x1="377.7607" x2="273.0503" y1="649.0469" y2="649.0469"/>
-<polygon fill="#555555" points="283.0503,645.0469,273.0503,649.0469,283.0503,653.0469,279.0503,649.0469" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="261.0503" x2="261.0503" y1="489.1094" y2="509.1094"/>
-<polygon fill="#555555" points="257.0503,499.1094,261.0503,509.1094,265.0503,499.1094,261.0503,503.1094" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="336.9045" x2="261.0503" y1="325.2031" y2="325.2031"/>
-<line style="stroke:#555555;stroke-width:1;" x1="261.0503" x2="261.0503" y1="325.2031" y2="347.2031"/>
-<polygon fill="#555555" points="257.0503,337.2031,261.0503,347.2031,265.0503,337.2031,261.0503,341.2031" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="483.9241" x2="559.7783" y1="325.2031" y2="325.2031"/>
-<line style="stroke:#555555;stroke-width:1;" x1="559.7783" x2="559.7783" y1="325.2031" y2="347.2031"/>
-<polygon fill="#555555" points="555.7783,337.2031,559.7783,347.2031,563.7783,337.2031,559.7783,341.2031" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="261.0503" x2="261.0503" y1="661.0469" y2="679.0469"/>
-<line style="stroke:#555555;stroke-width:1;" x1="261.0503" x2="398.4143" y1="679.0469" y2="679.0469"/>
-<polygon fill="#555555" points="388.4143,675.0469,398.4143,679.0469,388.4143,683.0469,392.4143,679.0469" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="559.7783" x2="559.7783" y1="381.1719" y2="679.0469"/>
-<line style="stroke:#555555;stroke-width:1;" x1="559.7783" x2="422.4143" y1="679.0469" y2="679.0469"/>
-<polygon fill="#555555" points="432.4143,675.0469,422.4143,679.0469,432.4143,683.0469,428.4143,679.0469" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="293.2031" y2="313.2031"/>
-<polygon fill="#555555" points="406.4143,303.2031,410.4143,313.2031,414.4143,303.2031,410.4143,307.2031" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="691.0469" y2="711.0469"/>
-<polygon fill="#555555" points="406.4143,701.0469,410.4143,711.0469,414.4143,701.0469,410.4143,705.0469" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="745.0156" y2="765.0156"/>
-<polygon fill="#555555" points="406.4143,755.0156,410.4143,765.0156,414.4143,755.0156,410.4143,759.0156" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="798.9844" y2="818.9844"/>
-<polygon fill="#555555" points="406.4143,808.9844,410.4143,818.9844,414.4143,808.9844,410.4143,812.9844" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="852.9531" y2="872.9531"/>
-<polygon fill="#555555" points="406.4143,862.9531,410.4143,872.9531,414.4143,862.9531,410.4143,866.9531" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="292.9529" x2="282.9529" y1="938.9219" y2="938.9219"/>
-<line style="stroke:#555555;stroke-width:1;" x1="282.9529" x2="282.9529" y1="938.9219" y2="960.9219"/>
-<polygon fill="#555555" points="278.9529,950.9219,282.9529,960.9219,286.9529,950.9219,282.9529,954.9219" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="527.8757" x2="537.8757" y1="938.9219" y2="938.9219"/>
-<line style="stroke:#555555;stroke-width:1;" x1="537.8757" x2="537.8757" y1="938.9219" y2="960.9219"/>
-<polygon fill="#555555" points="533.8757,950.9219,537.8757,960.9219,541.8757,950.9219,537.8757,954.9219" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="282.9529" x2="282.9529" y1="994.8906" y2="1012.8906"/>
-<line style="stroke:#555555;stroke-width:1;" x1="282.9529" x2="398.4143" y1="1012.8906" y2="1012.8906"/>
-<polygon fill="#555555" points="388.4143,1008.8906,398.4143,1012.8906,388.4143,1016.8906,392.4143,1012.8906" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="537.8757" x2="537.8757" y1="994.8906" y2="1012.8906"/>
-<line style="stroke:#555555;stroke-width:1;" x1="537.8757" x2="422.4143" y1="1012.8906" y2="1012.8906"/>
-<polygon fill="#555555" points="432.4143,1008.8906,422.4143,1012.8906,432.4143,1016.8906,428.4143,1012.8906" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="906.9219" y2="926.9219"/>
-<polygon fill="#555555" points="406.4143,916.9219,410.4143,926.9219,414.4143,916.9219,410.4143,920.9219" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="1024.8906" y2="1044.8906"/>
-<polygon fill="#555555" points="406.4143,1034.8906,410.4143,1044.8906,414.4143,1034.8906,410.4143,1038.8906" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="324.4329" x2="279.8201" y1="1110.8594" y2="1110.8594"/>
-<line style="stroke:#555555;stroke-width:1;" x1="279.8201" x2="279.8201" y1="1110.8594" y2="1132.8594"/>
-<polygon fill="#555555" points="275.8201,1122.8594,279.8201,1132.8594,283.8201,1122.8594,279.8201,1126.8594" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="496.3958" x2="541.0085" y1="1110.8594" y2="1110.8594"/>
-<line style="stroke:#555555;stroke-width:1;" x1="541.0085" x2="541.0085" y1="1110.8594" y2="1132.8594"/>
-<polygon fill="#555555" points="537.0085,1122.8594,541.0085,1132.8594,545.0085,1122.8594,541.0085,1126.8594" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="279.8201" x2="279.8201" y1="1166.8281" y2="1184.8281"/>
-<line style="stroke:#555555;stroke-width:1;" x1="279.8201" x2="398.4143" y1="1184.8281" y2="1184.8281"/>
-<polygon fill="#555555" points="388.4143,1180.8281,398.4143,1184.8281,388.4143,1188.8281,392.4143,1184.8281" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="541.0085" x2="541.0085" y1="1166.8281" y2="1184.8281"/>
-<line style="stroke:#555555;stroke-width:1;" x1="541.0085" x2="422.4143" y1="1184.8281" y2="1184.8281"/>
-<polygon fill="#555555" points="432.4143,1180.8281,422.4143,1184.8281,432.4143,1188.8281,428.4143,1184.8281" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="1078.8594" y2="1098.8594"/>
-<polygon fill="#555555" points="406.4143,1088.8594,410.4143,1098.8594,414.4143,1088.8594,410.4143,1092.8594" style="stroke:#555555;stroke-width:1;"/>
-<line style="stroke:#555555;stroke-width:1;" x1="410.4143" x2="410.4143" y1="1196.8281" y2="1253.793"/>
-<polygon fill="#555555" points="406.4143,1243.793,410.4143,1253.793,414.4143,1243.793,410.4143,1247.793" style="stroke:#555555;stroke-width:1;"/>
+<rect fill="none" height="20.9531" style="stroke:none;stroke-width:1;" width="1307.6377" x="15" y="50.042"/>
+<ellipse cx="189.9639" cy="85.9951" fill="#222222" rx="10" ry="10" style="stroke:#222222;stroke-width:1;"/>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="282.2773" x="48.8252" y="115.9951"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="262.2773" x="58.8252" y="137.1338">Ajouter un article (nom, mod&#232;le, desc, prix)</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="275.4688" x="52.2295" y="169.9639"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="255.4688" x="62.2295" y="191.1025">Associer tags &amp; emplacements (optionnel)</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="142.3086" x="118.8096" y="272.335"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="122.3086" x="128.8096" y="293.4736">T&#233;l&#233;verser PDF/JPEG</text>
+<polygon fill="#FFFFFF" points="114.3845,223.9326,265.5432,223.9326,277.5432,235.9326,265.5432,247.9326,114.3845,247.9326,102.3845,235.9326,114.3845,223.9326" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="16.7578" x="193.9639" y="258.1431">oui</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="151.1587" x="114.3845" y="239.7407">Facture / pi&#232;ce disponible ?</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="20.6733" x="81.7112" y="233.3384">non</text>
+<polygon fill="#FFFFFF" points="189.9639,434.2412,201.9639,446.2412,189.9639,458.2412,177.9639,446.2412,189.9639,434.2412" style="stroke:#555555;stroke-width:0.5;"/>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="226.4434" x="76.7422" y="526.6436"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="206.4434" x="86.7422" y="547.7822">Saisir date d'achat + dur&#233;e (mois)</text>
+<polygon fill="#FFFFFF" points="128.4541,478.2412,251.4736,478.2412,263.4736,490.2412,251.4736,502.2412,128.4541,502.2412,116.4541,490.2412,128.4541,478.2412" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="16.7578" x="193.9639" y="512.4517">oui</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="123.0195" x="128.4541" y="494.0493">Ajouter une garantie ?</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="20.6733" x="95.7808" y="487.647">non</text>
+<polygon fill="#FFFFFF" points="189.9639,852.8076,201.9639,864.8076,189.9639,876.8076,177.9639,864.8076,189.9639,852.8076" style="stroke:#555555;stroke-width:0.5;"/>
+<line style="stroke:#000000;stroke-width:1.5;" x1="15" x2="15" y1="50.042" y2="1706.4248"/>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="291.9277" x="386.1318" y="326.3037"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="271.9277" x="396.1318" y="347.4424">V&#233;rifier la signature + g&#233;n&#233;rer une miniature</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="233.5039" x="415.3438" y="380.2725"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="213.5039" x="425.3438" y="401.4111">Stocker la pi&#232;ce jointe (/uploads/...)</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="233.8203" x="415.1855" y="580.6123"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="213.8203" x="425.1855" y="601.751">garantieFin = date d'achat + dur&#233;e</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="239.7676" x="412.2119" y="634.5811"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="219.7676" x="422.2119" y="655.7197">Enregistrer la garantie li&#233;e &#224; l'article</text>
+<rect fill="#FFFFFF" height="47.9375" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="249.5879" x="407.3018" y="740.8701"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="229.5879" x="417.3018" y="762.0088">Planifier des jobs BullMQ J-30 / J-7 / J-1</text>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="94.582" x="417.3018" y="775.9775">(file wim-alerts)</text>
+<polygon fill="#FFFFFF" points="466.2031,692.4678,597.9883,692.4678,609.9883,704.4678,597.9883,716.4678,466.2031,716.4678,454.2031,704.4678,466.2031,692.4678" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="16.7578" x="536.0957" y="726.6782">oui</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="131.7852" x="466.2031" y="708.2759">Configurer des alertes ?</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="20.6733" x="609.9883" y="701.8735">non</text>
+<polygon fill="#FFFFFF" points="532.0957,808.8076,544.0957,820.8076,532.0957,832.8076,520.0957,820.8076,532.0957,808.8076" style="stroke:#555555;stroke-width:0.5;"/>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="381.9863" x="341.1025" y="896.8076"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="361.9863" x="351.1025" y="917.9463">Sauvegarder (Article / Garantie / Alerte) + journaliser l'audit</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="156.5059" x="453.8428" y="950.7764"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="136.5059" x="463.8428" y="971.915">R&#233;pondre 201 Created</text>
+<ellipse cx="532.0957" cy="1015.7451" fill="none" rx="11" ry="11" style="stroke:#222222;stroke-width:1;"/>
+<ellipse cx="532.0957" cy="1015.7451" fill="#222222" rx="6" ry="6" style="stroke:#222222;stroke-width:1;"/>
+<line style="stroke:#000000;stroke-width:1.5;" x1="335.1025" x2="335.1025" y1="50.042" y2="1706.4248"/>
+<ellipse cx="902.7158" cy="1046.7451" fill="#222222" rx="10" ry="10" style="stroke:#222222;stroke-width:1;"/>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="244.1621" x="780.6348" y="1076.7451"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="224.1621" x="790.6348" y="1097.8838">R&#233;ception du job d'alerte &#224; &#233;ch&#233;ance</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="252.1484" x="776.6416" y="1130.7139"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="232.1484" x="786.6416" y="1151.8525">Charger le contexte (garantie / article)</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="339.2539" x="733.0889" y="1184.6826"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="319.2539" x="743.0889" y="1205.8213">Envoyer la notification push (await, rejou&#233;e si &#233;chec)</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="335.416" x="735.0078" y="1287.0537"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="315.416" x="745.0078" y="1308.1924">Envoyer l'e-mail (best-effort, n'&#233;choue jamais le job)</text>
+<polygon fill="#FFFFFF" points="797.2544,1238.6514,1008.1772,1238.6514,1020.1772,1250.6514,1008.1772,1262.6514,797.2544,1262.6514,785.2544,1250.6514,797.2544,1238.6514" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="16.7578" x="906.7158" y="1272.8618">oui</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="210.9229" x="797.2544" y="1254.4595">E-mail configur&#233; ET opt-in utilisateur ?</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="20.6733" x="1020.1772" y="1248.0571">non</text>
+<polygon fill="#FFFFFF" points="902.7158,1341.0225,914.7158,1353.0225,902.7158,1365.0225,890.7158,1353.0225,902.7158,1341.0225" style="stroke:#555555;stroke-width:0.5;"/>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="151.0391" x="827.1963" y="1385.0225"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="131.0391" x="837.1963" y="1406.1611">Marquer l'alerte SENT</text>
+<rect fill="#FFFFFF" height="33.9688" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="298.3613" x="753.5352" y="1487.3936"/>
+<text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacing" textLength="278.3613" x="763.5352" y="1508.5322">Replanifier la prochaine occurrence (+N mois)</text>
+<polygon fill="#FFFFFF" points="828.7344,1438.9912,976.6973,1438.9912,988.6973,1450.9912,976.6973,1462.9912,828.7344,1462.9912,816.7344,1450.9912,828.7344,1438.9912" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="16.7578" x="906.7158" y="1473.2017">oui</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="147.9629" x="828.7344" y="1454.7993">Alerte custom r&#233;currente ?</text>
+<text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="20.6733" x="988.6973" y="1448.397">non</text>
+<polygon fill="#FFFFFF" points="902.7158,1541.3623,914.7158,1553.3623,902.7158,1565.3623,890.7158,1553.3623,902.7158,1541.3623" style="stroke:#555555;stroke-width:0.5;"/>
+<path d="M933.7158,1575.3623 L933.7158,1636.8936 L913.7158,1640.8936 L933.7158,1644.8936 L933.7158,1706.4248 A0,0 0 0 0 933.7158,1706.4248 L1315.7769,1706.4248 A0,0 0 0 0 1315.7769,1706.4248 L1315.7769,1585.3623
+L1305.7769,1575.3623 L933.7158,1575.3623 A0,0 0 0 0 933.7158,1575.3623" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
+<path d="M1305.7769,1575.3623 L1305.7769,1585.3623 L1315.7769,1585.3623 L1305.7769,1575.3623" fill="#F5F7FF" style="stroke:#6B7280;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="169.6919" x="939.7158" y="1592.4292">Hypoth&#232;ses (&#233;tat actuel) :</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="361.061" x="939.7158" y="1607.562">- Push (VAPID) + e-mail (Resend), tous deux best-effort</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="302.7515" x="939.7158" y="1622.6948">- Ordre du flux 2 : push -&gt; e-mail -&gt; markSent</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="338.4126" x="947.9805" y="1637.8276">(un push en &#233;chec ne marque PAS l'alerte envoy&#233;e)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="347.4834" x="939.7158" y="1652.9604">- Le flux 2 est un flux DISTINCT, d&#233;clench&#233; par un job</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="334.604" x="947.9805" y="1668.0933">BullMQ &#224; l'&#233;ch&#233;ance (pas la suite lin&#233;aire du flux
+1)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="223.5073" x="939.7158" y="1683.2261">- garantieFin calcul&#233;e c&#244;t&#233; service</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="236.3867" x="939.7158" y="1698.3589">- Import/Export CSV hors de ces flux</text>
+<ellipse cx="902.7158" cy="1640.8936" fill="none" rx="11" ry="11" style="stroke:#222222;stroke-width:1;"/>
+<ellipse cx="902.7158" cy="1640.8936" fill="#222222" rx="6" ry="6" style="stroke:#222222;stroke-width:1;"/>
+<line style="stroke:#000000;stroke-width:1.5;" x1="727.0889" x2="727.0889" y1="50.042" y2="1706.4248"/>
+<line style="stroke:#000000;stroke-width:1.5;" x1="1320.7769" x2="1320.7769" y1="50.042" y2="1706.4248"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="95.9951" y2="115.9951"/>
+<polygon fill="#555555" points="185.9639,105.9951,189.9639,115.9951,193.9639,105.9951,189.9639,109.9951" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="149.9639" y2="169.9639"/>
+<polygon fill="#555555" points="185.9639,159.9639,189.9639,169.9639,193.9639,159.9639,189.9639,163.9639" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="247.9326" y2="272.335"/>
+<polygon fill="#555555" points="185.9639,262.335,189.9639,272.335,193.9639,262.335,189.9639,266.335" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="102.3845" x2="34" y1="235.9326" y2="235.9326"/>
+<polygon fill="#555555" points="30,333.2881,34,343.2881,38,333.2881,34,337.2881" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="34" x2="34" y1="235.9326" y2="446.2412"/>
+<line style="stroke:#555555;stroke-width:1;" x1="34" x2="177.9639" y1="446.2412" y2="446.2412"/>
+<polygon fill="#555555" points="167.9639,442.2412,177.9639,446.2412,167.9639,450.2412,171.9639,446.2412" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="203.9326" y2="223.9326"/>
+<polygon fill="#555555" points="185.9639,213.9326,189.9639,223.9326,193.9639,213.9326,189.9639,217.9326" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="502.2412" y2="526.6436"/>
+<polygon fill="#555555" points="185.9639,516.6436,189.9639,526.6436,193.9639,516.6436,189.9639,520.6436" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="116.4541" x2="45.1699" y1="490.2412" y2="490.2412"/>
+<polygon fill="#555555" points="41.1699,662.4678,45.1699,672.4678,49.1699,662.4678,45.1699,666.4678" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="45.1699" x2="45.1699" y1="490.2412" y2="864.8076"/>
+<line style="stroke:#555555;stroke-width:1;" x1="45.1699" x2="177.9639" y1="864.8076" y2="864.8076"/>
+<polygon fill="#555555" points="167.9639,860.8076,177.9639,864.8076,167.9639,868.8076,171.9639,864.8076" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="458.2412" y2="478.2412"/>
+<polygon fill="#555555" points="185.9639,468.2412,189.9639,478.2412,193.9639,468.2412,189.9639,472.2412" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="360.2725" y2="380.2725"/>
+<polygon fill="#555555" points="528.0957,370.2725,532.0957,380.2725,536.0957,370.2725,532.0957,374.2725" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="614.5811" y2="634.5811"/>
+<polygon fill="#555555" points="528.0957,624.5811,532.0957,634.5811,536.0957,624.5811,532.0957,628.5811" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="716.4678" y2="740.8701"/>
+<polygon fill="#555555" points="528.0957,730.8701,532.0957,740.8701,536.0957,730.8701,532.0957,734.8701" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="609.9883" x2="666.8896" y1="704.4678" y2="704.4678"/>
+<polygon fill="#555555" points="662.8896,754.8389,666.8896,764.8389,670.8896,754.8389,666.8896,758.8389" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="666.8896" x2="666.8896" y1="704.4678" y2="820.8076"/>
+<line style="stroke:#555555;stroke-width:1;" x1="666.8896" x2="544.0957" y1="820.8076" y2="820.8076"/>
+<polygon fill="#555555" points="554.0957,816.8076,544.0957,820.8076,554.0957,824.8076,550.0957,820.8076" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="788.8076" y2="808.8076"/>
+<polygon fill="#555555" points="528.0957,798.8076,532.0957,808.8076,536.0957,798.8076,532.0957,802.8076" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="668.5498" y2="692.4678"/>
+<polygon fill="#555555" points="528.0957,682.4678,532.0957,692.4678,536.0957,682.4678,532.0957,686.4678" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="930.7764" y2="950.7764"/>
+<polygon fill="#555555" points="528.0957,940.7764,532.0957,950.7764,536.0957,940.7764,532.0957,944.7764" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="984.7451" y2="1004.7451"/>
+<polygon fill="#555555" points="528.0957,994.7451,532.0957,1004.7451,536.0957,994.7451,532.0957,998.7451" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1056.7451" y2="1076.7451"/>
+<polygon fill="#555555" points="898.7158,1066.7451,902.7158,1076.7451,906.7158,1066.7451,902.7158,1070.7451" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1110.7139" y2="1130.7139"/>
+<polygon fill="#555555" points="898.7158,1120.7139,902.7158,1130.7139,906.7158,1120.7139,902.7158,1124.7139" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1164.6826" y2="1184.6826"/>
+<polygon fill="#555555" points="898.7158,1174.6826,902.7158,1184.6826,906.7158,1174.6826,902.7158,1178.6826" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1262.6514" y2="1287.0537"/>
+<polygon fill="#555555" points="898.7158,1277.0537,902.7158,1287.0537,906.7158,1277.0537,902.7158,1281.0537" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="1020.1772" x2="1080.4238" y1="1250.6514" y2="1250.6514"/>
+<polygon fill="#555555" points="1076.4238,1294.0381,1080.4238,1304.0381,1084.4238,1294.0381,1080.4238,1298.0381" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="1080.4238" x2="1080.4238" y1="1250.6514" y2="1353.0225"/>
+<line style="stroke:#555555;stroke-width:1;" x1="1080.4238" x2="914.7158" y1="1353.0225" y2="1353.0225"/>
+<polygon fill="#555555" points="924.7158,1349.0225,914.7158,1353.0225,924.7158,1357.0225,920.7158,1353.0225" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1321.0225" y2="1341.0225"/>
+<polygon fill="#555555" points="898.7158,1331.0225,902.7158,1341.0225,906.7158,1331.0225,902.7158,1335.0225" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1218.6514" y2="1238.6514"/>
+<polygon fill="#555555" points="898.7158,1228.6514,902.7158,1238.6514,906.7158,1228.6514,902.7158,1232.6514" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1365.0225" y2="1385.0225"/>
+<polygon fill="#555555" points="898.7158,1375.0225,902.7158,1385.0225,906.7158,1375.0225,902.7158,1379.0225" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1462.9912" y2="1487.3936"/>
+<polygon fill="#555555" points="898.7158,1477.3936,902.7158,1487.3936,906.7158,1477.3936,902.7158,1481.3936" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="988.6973" x2="1061.8965" y1="1450.9912" y2="1450.9912"/>
+<polygon fill="#555555" points="1057.8965,1494.3779,1061.8965,1504.3779,1065.8965,1494.3779,1061.8965,1498.3779" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="1061.8965" x2="1061.8965" y1="1450.9912" y2="1553.3623"/>
+<line style="stroke:#555555;stroke-width:1;" x1="1061.8965" x2="914.7158" y1="1553.3623" y2="1553.3623"/>
+<polygon fill="#555555" points="924.7158,1549.3623,914.7158,1553.3623,924.7158,1557.3623,920.7158,1553.3623" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1521.3623" y2="1541.3623"/>
+<polygon fill="#555555" points="898.7158,1531.3623,902.7158,1541.3623,906.7158,1531.3623,902.7158,1535.3623" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1418.9912" y2="1438.9912"/>
+<polygon fill="#555555" points="898.7158,1428.9912,902.7158,1438.9912,906.7158,1428.9912,902.7158,1432.9912" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="902.7158" x2="902.7158" y1="1565.3623" y2="1629.8936"/>
+<polygon fill="#555555" points="898.7158,1619.8936,902.7158,1629.8936,906.7158,1619.8936,902.7158,1623.8936" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="306.3037" y2="311.3037"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="532.0957" y1="311.3037" y2="311.3037"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="311.3037" y2="326.3037"/>
+<polygon fill="#555555" points="528.0957,316.3037,532.0957,326.3037,536.0957,316.3037,532.0957,320.3037" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="414.2412" y2="422.04"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="189.9639" y1="422.04" y2="422.04"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="422.04" y2="434.2412"/>
+<polygon fill="#555555" points="185.9639,424.2412,189.9639,434.2412,193.9639,424.2412,189.9639,428.2412" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="560.6123" y2="565.6123"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="532.0957" y1="565.6123" y2="565.6123"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="565.6123" y2="580.6123"/>
+<polygon fill="#555555" points="528.0957,570.6123,532.0957,580.6123,536.0957,570.6123,532.0957,574.6123" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="832.8076" y2="840.6064"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="189.9639" y1="840.6064" y2="840.6064"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="840.6064" y2="852.8076"/>
+<polygon fill="#555555" points="185.9639,842.8076,189.9639,852.8076,193.9639,842.8076,189.9639,846.8076" style="stroke:#555555;stroke-width:1;"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="189.9639" y1="876.8076" y2="881.8076"/>
+<line style="stroke:#555555;stroke-width:1;" x1="189.9639" x2="532.0957" y1="881.8076" y2="881.8076"/>
+<line style="stroke:#555555;stroke-width:1;" x1="532.0957" x2="532.0957" y1="881.8076" y2="896.8076"/>
+<polygon fill="#555555" points="528.0957,886.8076,532.0957,896.8076,536.0957,886.8076,532.0957,890.8076" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="151.0576" x="99.5225" y="66.75">Utilisateur / PWA</text>
+<text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="28.4766" x="516.8574" y="66.75">API</text>
+<text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="148.333" x="949.7664" y="66.75">Worker (BullMQ)</text>
 </g>
 </svg>

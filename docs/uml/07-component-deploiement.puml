@@ -11,7 +11,7 @@ skinparam database {
   BorderColor #555555
 }
 
-actor "Navigateur\n(PWA installable)" as Browser
+node "Appareil client\nNavigateur (PWA installable)" as Browser
 
 node "Render – Site statique\nwim-web.onrender.com" as WebHost {
   component "apps/web\n(Vite + React 19)" as Web

@@ -9,57 +9,67 @@ skinparam activity {
 skinparam noteBackgroundColor #F5F7FF
 skinparam noteBorderColor #6B7280
 
+' ─────────────────────────────────────────────────────────────
+' Flux 1 — synchrone : ajout d'un article (+ garantie + alertes)
+' Couloirs (swimlanes) = responsabilités.
+' ─────────────────────────────────────────────────────────────
+|Utilisateur / PWA|
 start
-
 :Ajouter un article (nom, modèle, desc, prix);
 :Associer tags & emplacements (optionnel);
-if (Facture / pièce disponible ?) then (Oui)
-  :Téléverser PDF/JPEG (vérif. signature + miniature);
-else (Non)
-  :Poursuivre sans pièce jointe;
+if (Facture / pièce disponible ?) then (oui)
+  :Téléverser PDF/JPEG;
+  |API|
+  :Vérifier la signature + générer une miniature;
+  :Stocker la pièce jointe (/uploads/...);
+else (non)
 endif
-
-if (Ajouter une garantie ?) then (Oui)
-  :Saisir date d'achat et durée (mois);
-  :API calcule garantieFin = achat + durée;
+|Utilisateur / PWA|
+if (Ajouter une garantie ?) then (oui)
+  :Saisir date d'achat + durée (mois);
+  |API|
+  :garantieFin = date d'achat + durée;
   :Enregistrer la garantie liée à l'article;
-  if (Configurer alertes ?) then (Oui)
-    :Proposer J-30 / J-7 / J-1 (éditables);
-    :Planifier des jobs BullMQ (file wim-alerts);
-  else (Non)
-    :Poursuivre sans alertes;
+  if (Configurer des alertes ?) then (oui)
+    :Planifier des jobs BullMQ J-30 / J-7 / J-1\n(file wim-alerts);
+  else (non)
   endif
-else (Non)
-  :Article sans garantie;
+else (non)
+  |API|
 endif
-
 :Sauvegarder (Article / Garantie / Alerte) + journaliser l'audit;
+:Répondre 201 Created;
+stop
 
-' Déclenchement asynchrone d'un rappel planifié
-:[Plus tard] Échéance d'un job d'alerte;
+' ─────────────────────────────────────────────────────────────
+' Flux 2 — asynchrone : déclenché PLUS TARD par un job planifié
+' (séparé du flux 1 : il peut ne jamais s'exécuter s'il n'y a pas
+'  d'alerte, et survient à l'échéance, pas après la sauvegarde).
+' ─────────────────────────────────────────────────────────────
+|Worker (BullMQ)|
+start
+:Réception du job d'alerte à échéance;
 :Charger le contexte (garantie / article);
-:Envoyer la notification push (obligatoire, rejouée si échec);
-if (E-mail configuré ET opt-in utilisateur ?) then (Oui)
+:Envoyer la notification push (await, rejouée si échec);
+if (E-mail configuré ET opt-in utilisateur ?) then (oui)
   :Envoyer l'e-mail (best-effort, n'échoue jamais le job);
-else (Non)
-  :Ignorer l'e-mail;
+else (non)
 endif
 :Marquer l'alerte SENT;
-if (Alerte custom récurrente ?) then (Oui)
+if (Alerte custom récurrente ?) then (oui)
   :Replanifier la prochaine occurrence (+N mois);
-else (Non)
-  :Fin du cycle de cette alerte;
+else (non)
 endif
-
 stop
 
 note right
 Hypothèses (état actuel) :
 - Push (VAPID) + e-mail (Resend), tous deux best-effort
-- Ordre : push -> e-mail -> markSent
+- Ordre du flux 2 : push -> e-mail -> markSent
   (un push en échec ne marque PAS l'alerte envoyée)
-- Planification via jobs BullMQ + Redis
+- Le flux 2 est un flux DISTINCT, déclenché par un job
+  BullMQ à l'échéance (pas la suite linéaire du flux 1)
 - garantieFin calculée côté service
-- Import/Export CSV hors de ce flux
+- Import/Export CSV hors de ces flux
 end note
 @enduml
