@@ -10,6 +10,19 @@ import helmet from "helmet";
 import cors from "cors";
 import { rateLimit } from "express-rate-limit";
 
+// Read a numeric env var, falling back to `fallback` when it's unset OR set to
+// something that doesn't parse (e.g. a typo like `RATE_LIMIT_MAX=abc`). The
+// `?? fallback` shorthand only catches `undefined`, so a non-numeric value would
+// otherwise become `NaN` and leave express-rate-limit with no effective cap —
+// the exact silent failure validate-env.ts warns about. Mirrors the
+// `Number.isFinite(n) ? n : default` guard in workers.ts and the Stripe webhook.
+function numEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 // Browsers send the Origin header WITHOUT a trailing slash, so any trailing
 // slash on CORS_ORIGIN values would silently break the match (and thereby
 // reject the auth cookie). Be lenient and strip them.
@@ -51,8 +64,8 @@ export const security = {
     credentials: true,
   }),
   rateLimiter: rateLimit({
-    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60000),
-    max: Number(process.env.RATE_LIMIT_MAX ?? 100),
+    windowMs: numEnv("RATE_LIMIT_WINDOW_MS", 60000),
+    max: numEnv("RATE_LIMIT_MAX", 100),
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: "Too many requests, please try again later." },
@@ -65,7 +78,7 @@ export const security = {
   // brute-forcer's attempts all fail and still burn the bucket.
   authRateLimiter: rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 20),
+    max: numEnv("AUTH_RATE_LIMIT_MAX", 20),
     skipSuccessfulRequests: true,
     standardHeaders: true,
     legacyHeaders: false,
@@ -92,7 +105,7 @@ export const security = {
   // to bloat the DB. Sits under the global 100/min as a per-resource guard.
   createRateLimiter: rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
-    max: Number(process.env.CREATE_RATE_LIMIT_MAX ?? 40),
+    max: numEnv("CREATE_RATE_LIMIT_MAX", 40),
     standardHeaders: true,
     legacyHeaders: false,
     message: {
