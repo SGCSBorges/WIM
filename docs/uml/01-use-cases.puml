@@ -34,6 +34,13 @@ rectangle "WIM (PWA)" {
   usecase "Corbeille : supprimer / restaurer / purger" as UC_Trash
   usecase "Partager l'inventaire" as UC_Sharing
   usecase "Transférer la propriété d'un article" as UC_Transfer
+  usecase "Négocier (messagerie + offres)" as UC_Messaging
+  usecase "Prêter un article (suivi d'emprunt)" as UC_Loans
+  usecase "Gérer des polices d'assurance" as UC_Insurance
+  usecase "Journal d'entretien / maintenance" as UC_Service
+  usecase "Page publique d'article (QR)" as UC_Public
+  usecase "Définir un budget de dépenses" as UC_Budget
+  usecase "Analyser les dépenses (analytics)" as UC_Analytics
   usecase "Souscrire l'offre Power User (Stripe)" as UC_Billing
   usecase "Administrer : utilisateurs, audit, jobs, sauvegarde" as UC_Admin
 }
@@ -61,6 +68,13 @@ User --> UC_Billing
 PowerUser --|> User
 PowerUser --> UC_Sharing
 PowerUser --> UC_Transfer
+PowerUser --> UC_Messaging
+PowerUser --> UC_Loans
+PowerUser --> UC_Insurance
+PowerUser --> UC_Service
+PowerUser --> UC_Public
+PowerUser --> UC_Budget
+PowerUser --> UC_Analytics
 
 Admin --> UC_Admin
 
@@ -72,6 +86,7 @@ UC_Warranty ..> UC_Claim : <<extend>> ouvrir une réclamation
 UC_Alerts ..> UC_Notify : <<include>> envoi de notification
 UC_Billing ..> UC_Sharing : <<include>> débloque le partage
 UC_Billing ..> UC_Transfer : <<include>> débloque le transfert
+UC_Messaging ..> UC_Transfer : <<include>> offre acceptée → transfert (PUSH)
 
 note bottom
 Portée actuelle (post-MVP) :
@@ -85,9 +100,12 @@ Portée actuelle (post-MVP) :
   assurance), flux iCal
 - Corbeille (soft-delete) + purge planifiée
 - Sécurité du compte : 2FA TOTP, sessions par appareil, historique
-- Partage + transfert de propriété = option "Power User"
-  (ADMIN en hérite sans abonnement)
+- Tableau de bord, budgets de dépenses, analytics (dépenses/valeur)
+- Page publique d'article (jeton + QR), lecture seule sans auth
+- Options "Power User" (paywall, ADMIN en hérite sans abonnement) :
+  partage, transfert, messagerie/offres, prêts, assurance, entretien,
+  budgets, analytics, page publique
 - Facturation Stripe (mensuel/annuel)
-- Admin : utilisateurs, logs d'audit, jobs, export/import BDD
+- Admin : utilisateurs, logs d'audit, jobs, export/import BDD, feature flags
 end note
 @enduml

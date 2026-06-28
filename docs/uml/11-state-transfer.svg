@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="STATE" height="632px" preserveAspectRatio="none" style="width:1333px;height:632px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1333 632" width="1333px" zoomAndPan="magnify">
+<title>WIM - Diagramme d'&#233;tats (Transfert de propri&#233;t&#233; d'un article)</title>
+<defs/>
+<g>
+<g class="title" data-source-line="1">
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="489.5898" x="415.0659" y="22.9951">WIM - Diagramme d'&#233;tats (Transfert de propri&#233;t&#233;
+d'un article)</text>
+</g>
+<ellipse cx="664.3" cy="53.2969" fill="#222222" rx="10" ry="10" style="stroke:#222222;stroke-width:1;"/>
+<g id="PENDING">
+<rect fill="#FFFFFF" height="50" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="83.9912" x="622.3" y="165.5669"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="622.3" x2="706.2912" y1="191.8637" y2="191.8637"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63.9912" x="632.3" y="183.562">PENDING</text>
+</g>
+<g id="ACCEPTED">
+<rect fill="#FFFFFF" height="50" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="94.5938" x="7" y="380.9269"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="7" x2="101.5938" y1="407.2238" y2="407.2238"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74.5938" x="17" y="398.922">ACCEPTED</text>
+</g>
+<g id="REJECTED">
+<rect fill="#FFFFFF" height="50" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="89.501" x="654.55" y="380.9269"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="654.55" x2="744.051" y1="407.2238" y2="407.2238"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="69.501" x="664.55" y="398.922">REJECTED</text>
+</g>
+<g id="REVOKED">
+<rect fill="#FFFFFF" height="50" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="87.9766" x="779.31" y="380.9269"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="779.31" x2="867.2866" y1="407.2238" y2="407.2238"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67.9766" x="789.31" y="398.922">REVOKED</text>
+</g>
+<g id="EXPIRED">
+<rect fill="#FFFFFF" height="50" rx="12.5" ry="12.5" style="stroke:#555555;stroke-width:0.5;" width="80.3613" x="1037.12" y="380.9269"/>
+<line style="stroke:#555555;stroke-width:0.5;" x1="1037.12" x2="1117.4813" y1="407.2238" y2="407.2238"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="60.3613" x="1047.12" y="398.922">EXPIRED</text>
+</g>
+<ellipse cx="761.3" cy="582.8569" fill="none" rx="11" ry="11" style="stroke:#222222;stroke-width:1;"/>
+<ellipse cx="761.3" cy="582.8569" fill="#222222" rx="6" ry="6" style="stroke:#222222;stroke-width:1;"/>
+<g class="entity" data-entity="GMN2" data-source-line="21" data-uid="ent0003" id="entity_GMN2">
+<path d="M741.45,155.2969 L741.45,186.5569 L706.58,190.5569 L741.45,194.5569 L741.45,225.8281 A0,0 0 0 0 741.45,225.8281 L1079.1409,225.8281 A0,0 0 0 0 1079.1409,225.8281 L1079.1409,165.2969 L1069.1409,155.2969
+L741.45,155.2969 A0,0 0 0 0 741.45,155.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1069.1409,155.2969 L1069.1409,165.2969 L1079.1409,165.2969 L1069.1409,155.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="285.5176" x="747.45" y="172.3638">Direction PUSH = l'owner offre &#224; un e-mail ;</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="313.2061" x="747.45" y="187.4966">PULL = un Power User r&#233;clame un article visible</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="307.4932" x="747.45" y="202.6294">(partag&#233; publiquement ou via InventoryShare).</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="316.6909" x="747.45" y="217.7622">Le jeton est envoy&#233; &#224; la partie qui doit accepter.</text>
+</g>
+<g class="entity" data-entity="GMN5" data-source-line="28" data-uid="ent0006" id="entity_GMN5">
+<path d="M136.95,332.8269 L136.95,479.0222 L619.6531,479.0222 L619.6531,342.8269 L609.6531,332.8269 L136.95,332.8269" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M609.6531,332.8269 L609.6531,342.8269 L619.6531,342.8269 L609.6531,332.8269" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="294.2012" x="142.95" y="349.8938">Acceptation = une seule transaction Prisma :</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="357.7476" x="142.95" y="365.0266">- r&#244;le du receveur re-v&#233;rifi&#233; share-capable DANS la tx ;</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="388.3369" x="142.95" y="380.1594">- transition atomique updateMany WHERE status=PENDING</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="221.5776" x="151.2146" y="395.2922">(count===0 &#8594; 409, anti-course) ;</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="351.0825" x="142.95" y="410.425">- r&#233;-attribution : Article + Garantie + WarrantyHistory</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="362.2163" x="151.2146" y="425.5578">+ Alerte + Attachment + ArticleNote au nouvel owner ;</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="380.1167" x="142.95" y="440.6906">- ArticleLocation + ArticleTag supprim&#233;s (scoping owner) ;</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="461.7031" x="142.95" y="455.8235">- toutes les AUTRES demandes PENDING du m&#234;me article &#8594; REVOKED.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="400.5308" x="142.95" y="470.9563">Audit : ARTICLE_TRANSFER_ACCEPT (+ INIT/REJECT/REVOKE).</text>
+</g>
+<g class="entity" data-entity="GMN8" data-source-line="40" data-uid="ent0009" id="entity_GMN8">
+<path d="M129.99,540.0269 L129.99,625.6909 L626.6135,625.6909 L626.6135,550.0269 L616.6135,540.0269 L129.99,540.0269" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M616.6135,540.0269 L616.6135,550.0269 L626.6135,550.0269 L616.6135,540.0269" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="284.4067" x="135.99" y="557.0938">status est un VarChar(20), pas un enum DB</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="475.6235" x="135.99" y="572.2266">(PENDING|ACCEPTED|REJECTED|REVOKED|EXPIRED) &#8212; valid&#233; au service.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="422.7856" x="135.99" y="587.3594">reject + revoke restent sur authGuard seul (pas requireFeature),</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="449.9727" x="135.99" y="602.4922">pour qu'une demande en attente reste toujours d&#233;clinable/annulable</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="366.8882" x="135.99" y="617.625">m&#234;me si la feature &#171; transfers &#187; est restreinte plus tard.</text>
+</g>
+<!--link *start* to PENDING-->
+<g class="link" data-entity-1=".start." data-entity-2="PENDING" data-source-line="8" data-uid="lnk4" id="link_.start._PENDING">
+<path d="M664.3,63.5969 C664.3,84.3069 664.3,128.8069 664.3,159.1969" fill="none" id="*start*-to-PENDING" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="664.3,165.1969,668.3,156.1969,664.3,160.1969,660.3,156.1969,664.3,165.1969" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="33.833" x="792.2404" y="106.3638">cr&#233;er</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="287.7139" x="665.3" y="121.4966">(PUSH par l'owner / PULL par le demandeur)</text>
+</g>
+<!--link PENDING to ACCEPTED-->
+<g class="link" data-entity-1="PENDING" data-entity-2="ACCEPTED" data-source-line="10" data-uid="lnk6" id="link_PENDING_ACCEPTED">
+<path d="M622.07,192.9269 C524.88,197.9669 281.28,221.6569 119.3,332.8269 C100.54,345.6969 87.163,360.3025 75.233,375.7125" fill="none" id="PENDING-to-ACCEPTED" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="71.56,380.4569,80.2324,375.7889,74.6208,376.5032,73.9065,370.8916,71.56,380.4569" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="130.1206" x="322.3209" y="276.3938">la 2e partie accepte</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="233.4224" x="270.67" y="291.5266">(PUSH : destinataire / PULL : owner)</text>
+</g>
+<!--link PENDING to REJECTED-->
+<g class="link" data-entity-1="PENDING" data-entity-2="REJECTED" data-source-line="11" data-uid="lnk8" id="link_PENDING_REJECTED">
+<path d="M622.22,209.3069 C603,219.8069 582.14,235.1469 571.3,255.8269 C561.59,274.3269 559.99,285.2669 571.3,302.8269 C588.74,329.9169 611.52,313.4969 637.3,332.8269 C654.99,346.1069 667.5571,360.4316
+678.9371,375.6516" fill="none" id="PENDING-to-REJECTED" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="682.53,380.4569,680.3441,370.8536,679.5359,376.4525,673.9371,375.6442,682.53,380.4569" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="119.4438" x="582.507" y="276.3938">la 2e partie refuse</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="139.8579" x="572.3" y="291.5266">(PULL : owner refuse)</text>
+</g>
+<!--link PENDING to REVOKED-->
+<g class="link" data-entity-1="PENDING" data-entity-2="REVOKED" data-source-line="12" data-uid="lnk10" id="link_PENDING_REVOKED">
+<path d="M684.64,216.0169 C694.38,227.9069 706.12,242.4769 716.3,255.8269 C749.23,299.0269 782.3332,345.8917 803.0532,375.6717" fill="none" id="PENDING-to-REVOKED" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="806.48,380.5969,804.6233,370.9246,803.6244,376.4926,798.0564,375.4936,806.48,380.5969" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="114.4292" x="867.099" y="268.8938">l'initiateur annule</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="232.9336" x="807.8468" y="284.0266">ou r&#233;trogradation Power User&#8594;User</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="347.8071" x="750.41" y="299.1594">ou une autre demande du m&#234;me article est accept&#233;e</text>
+</g>
+<!--link PENDING to EXPIRED-->
+<g class="link" data-entity-1="PENDING" data-entity-2="EXPIRED" data-source-line="13" data-uid="lnk12" id="link_PENDING_EXPIRED">
+<path d="M701.23,215.9769 C708.61,219.8869 716.5,223.4269 724.3,225.8269 C764.88,238.3269 1076.47,224.6469 1105.3,255.8269 C1136.85,289.9669 1114.574,342.7015 1095.834,375.3915" fill="none" id="PENDING-to-EXPIRED"
+style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="1092.85,380.5969,1100.7963,374.7782,1095.3367,376.2591,1093.8558,370.7995,1092.85,380.5969" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="182.2349" x="1132.3784" y="276.3938">fen&#234;tre de 7 jours d&#233;pass&#233;e</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="204.4517" x="1121.27" y="291.5266">(stamp&#233;e EXPIRED &#224; la lecture)</text>
+</g>
+<!--link ACCEPTED to *end*-->
+<g class="link" data-entity-1="ACCEPTED" data-entity-2=".end." data-source-line="15" data-uid="lnk14" id="link_ACCEPTED_.end.">
+<path d="M69.33,431.2569 C80.86,447.6569 98.33,468.2069 119.3,479.0269 C328.04,586.7469 415.55,486.5769 644.3,540.0269 C685.05,549.5469 725.7293,566.2605 745.6993,574.9605" fill="none" id="ACCEPTED-to-*end*"
+style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="751.2,577.3569,744.5466,570.0952,746.6161,575.3599,741.3514,577.4294,751.2,577.3569" style="stroke:#181818;stroke-width:1;"/>
+</g>
+<!--link REJECTED to *end*-->
+<g class="link" data-entity-1="REJECTED" data-entity-2=".end." data-source-line="16" data-uid="lnk15" id="link_REJECTED_.end.">
+<path d="M707.92,431.2469 C721.76,470.3069 746.3464,539.6613 755.8264,566.4213" fill="none" id="REJECTED-to-*end*" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="757.83,572.0769,758.5951,562.2578,756.1604,567.3639,751.0543,564.9292,757.83,572.0769" style="stroke:#181818;stroke-width:1;"/>
+</g>
+<!--link REVOKED to *end*-->
+<g class="link" data-entity-1="REVOKED" data-entity-2=".end." data-source-line="17" data-uid="lnk16" id="link_REVOKED_.end.">
+<path d="M814.68,431.2469 C800.83,470.3069 776.2554,539.6619 766.7654,566.4219" fill="none" id="REVOKED-to-*end*" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="764.76,572.0769,771.5381,564.9314,766.4312,567.3644,763.9982,562.2575,764.76,572.0769" style="stroke:#181818;stroke-width:1;"/>
+</g>
+<!--link EXPIRED to *end*-->
+<g class="link" data-entity-1="EXPIRED" data-entity-2=".end." data-source-line="18" data-uid="lnk17" id="link_EXPIRED_.end.">
+<path d="M1036.63,429.4369 C962.62,470.4069 815.1695,552.0313 775.9095,573.7613" fill="none" id="EXPIRED-to-*end*" style="stroke:#181818;stroke-width:1;"/>
+<polygon fill="#181818" points="770.66,576.6669,780.4714,575.8082,775.0346,574.2456,776.5973,568.8088,770.66,576.6669" style="stroke:#181818;stroke-width:1;"/>
+</g>
+<!--link ACCEPTED to GMN5-->
+<g class="link" data-entity-1="ACCEPTED" data-entity-2="GMN5" data-source-line="28" data-uid="lnk7" id="link_ACCEPTED_GMN5">
+<path d="M102.07,405.9269 C113.58,405.9269 125.09,405.9269 136.6,405.9269" fill="none" id="ACCEPTED-GMN5" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/>
+</g>
+<!--link GMN5 to GMN8-->
+<g class="link" data-entity-1="GMN5" data-entity-2="GMN8" data-source-line="40" data-uid="lnk10" id="link_GMN5_GMN8">
+<path d="M378.3,479.3369 C378.3,499.8269 378.3,521.4569 378.3,539.5369" fill="none" id="GMN5-GMN8" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/>
+</g>
+</g>
+</svg>

@@ -256,8 +256,8 @@ the mobile browser chrome and installed-PWA status bar match it, and
 The PlantUML sources under [`docs/uml/`](./uml/) cover the use cases, the
 class model (entities + relations), the core add/reminder flows, the sharing
 sequence, the warranty-claim and trash state machines, a component/deployment
-view, the alert lifecycle, and the two security-critical sequences —
-authentication/session (`09`) and Stripe billing (`10`). They're written in
-French; each one has a written analysis in
+view, the alert lifecycle, the ownership-transfer state machine (`11`), and the
+two security-critical sequences — authentication/session (`09`) and Stripe
+billing (`10`). They're written in French; each one has a written analysis in
 [`docs/uml/README.md`](./uml/README.md), and that README explains how to
 render them locally.

@@ -32,15 +32,16 @@ Les `.svg` versionnés à côté de chaque `.puml` sont la version **rendue**
 Cartographie les fonctionnalités offertes et **qui** y accède. Trois acteurs :
 l'`Utilisateur` (socle — y compris la sécurité du compte 2FA/sessions, les
 modèles d'articles et le renouvellement de garantie), le `Power User` qui en
-hérite (`--|>`) et débloque le **partage** et le **transfert de propriété**
-via l'abonnement Stripe, et l'`Administrateur` (utilisateurs, audit, jobs,
-sauvegarde BDD). Les relations `<<include>>` / `<<extend>>` encodent les
-dépendances réelles : une garantie *étend* un article, des alertes
-*étendent* une garantie, l'envoi d'une alerte *inclut* une notification,
-l'abonnement *inclut* le déblocage du partage et du transfert. La note de
-portée distingue l'état actuel (tags/emplacements, réclamations,
-dépréciation, push + e-mail, corbeille, 2FA, facturation) du MVP d'origine,
-beaucoup plus restreint.
+hérite (`--|>`) et débloque le **paywall** : partage, transfert de propriété,
+messagerie/offres, prêts, assurance, entretien, budgets, analytics et page
+publique d'article. L'`Administrateur` (utilisateurs, audit, jobs, sauvegarde
+BDD, feature flags) hérite du tout sans abonnement. Les relations
+`<<include>>` / `<<extend>>` encodent les dépendances réelles : une garantie
+*étend* un article, des alertes *étendent* une garantie, l'envoi d'une alerte
+*inclut* une notification, l'abonnement *inclut* le déblocage du partage/
+transfert, et une **offre acceptée** dans la messagerie *inclut* un transfert
+PUSH. La note de portée liste l'état actuel (lifecycle add-ons, messagerie,
+budgets/analytics, page publique) face au MVP d'origine, beaucoup plus restreint.
 
 ### `02-activity-core-flows.puml` — Activités (ajout & rappels)
 
@@ -190,6 +191,26 @@ atomique** avec le rôle. Le diagramme montre aussi le **repli `POST
 dépassant souvent la fenêtre de retry de Stripe, on interroge Stripe en direct
 pour ne pas laisser l'utilisateur bloqué en attendant le webhook.
 
+### `11-state-transfer.puml` — États (transfert de propriété)
+
+![États (transfert de propriété)](./11-state-transfer.svg)
+
+La machine à états d'`ArticleTransferRequest`
+(`PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED`, fenêtre de 7 jours) — le
+flux le plus complexe du domaine, jusqu'ici uniquement décrit en prose. Une
+demande naît `PENDING` en **PUSH** (l'owner offre à un e-mail) ou **PULL** (un
+Power User réclame un article qui lui est visible) ; la **2e partie** doit
+accepter. L'acceptation est une **seule transaction Prisma** : re-vérification
+du rôle share-capable du receveur *dans* la tx, transition atomique
+`updateMany WHERE status=PENDING` (anti-course, `count===0` → 409),
+ré-attribution de l'article et de toutes ses données liées (garantie, historique,
+alertes, pièces jointes, notes), suppression des liens emplacements/tags
+(owner-scoped), puis **révocation de toutes les autres demandes PENDING** du même
+article. La rétrogradation Power User→User révoque aussi les demandes en attente.
+`reject`/`revoke` restent sur `authGuard` seul (sans `requireFeature`) pour
+qu'une demande reste toujours déclinable/annulable. Complète le diagramme de
+séquence du partage (`06`) côté transfert.
+
 ## Correspondance fichiers
 
 | Fichier | Type | Sujet |
@@ -204,3 +225,4 @@ pour ne pas laisser l'utilisateur bloqué en attendant le webhook.
 | `08-state-alerte.puml` | États | Cycle de vie d'une alerte |
 | `09-sequence-auth.puml` | Séquence | Connexion, requête protégée, révocation |
 | `10-sequence-billing.puml` | Séquence | Checkout Stripe, webhook, sync, rôle |
+| `11-state-transfer.puml` | États | Transfert de propriété (PENDING→ACCEPTED/REJECTED/REVOKED/EXPIRED) |

@@ -1,0 +1,47 @@
+@startuml
+title WIM – Diagramme d'états (Transfert de propriété d'un article)
+
+skinparam state {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+
+[*] --> PENDING : créer\n(PUSH par l'owner / PULL par le demandeur)
+
+PENDING --> ACCEPTED : la 2e partie accepte\n(PUSH : destinataire / PULL : owner)
+PENDING --> REJECTED : la 2e partie refuse\n(PULL : owner refuse)
+PENDING --> REVOKED : l'initiateur annule\nou rétrogradation Power User→User\nou une autre demande du même article est acceptée
+PENDING --> EXPIRED : fenêtre de 7 jours dépassée\n(stampée EXPIRED à la lecture)
+
+ACCEPTED --> [*]
+REJECTED --> [*]
+REVOKED  --> [*]
+EXPIRED  --> [*]
+
+note right of PENDING
+Direction PUSH = l'owner offre à un e-mail ;
+PULL = un Power User réclame un article visible
+(partagé publiquement ou via InventoryShare).
+Le jeton est envoyé à la partie qui doit accepter.
+end note
+
+note right of ACCEPTED
+Acceptation = une seule transaction Prisma :
+- rôle du receveur re-vérifié share-capable DANS la tx ;
+- transition atomique updateMany WHERE status=PENDING
+  (count===0 → 409, anti-course) ;
+- ré-attribution : Article + Garantie + WarrantyHistory
+  + Alerte + Attachment + ArticleNote au nouvel owner ;
+- ArticleLocation + ArticleTag supprimés (scoping owner) ;
+- toutes les AUTRES demandes PENDING du même article → REVOKED.
+Audit : ARTICLE_TRANSFER_ACCEPT (+ INIT/REJECT/REVOKE).
+end note
+
+note bottom
+status est un VarChar(20), pas un enum DB
+(PENDING|ACCEPTED|REJECTED|REVOKED|EXPIRED) — validé au service.
+reject + revoke restent sur authGuard seul (pas requireFeature),
+pour qu'une demande en attente reste toujours déclinable/annulable
+même si la feature « transfers » est restreinte plus tard.
+end note
+@enduml
