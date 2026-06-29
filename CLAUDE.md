@@ -684,6 +684,14 @@ On acceptance the transfer is fully atomic (Prisma transaction):
     rows all re-owned to the new owner
   - `ArticleLocation` + `ArticleTag` junction rows **deleted** (locations
     and tags are owner-scoped; new owner re-assigns from their own lists)
+  - `Loan` + `ServiceRecord` rows and `ArticleInsurance` policy-links for the
+    article are **deleted** for the same reason — a borrower record, repair
+    log, and insurance link are personal to the giver, not the item. The
+    `InsurancePolicy` itself is left intact (it may cover the giver's other
+    items); only its join to this article is severed. The loan/service
+    **reminder alerts** those rows scheduled are deleted too — the blanket
+    `Alerte` re-own moved them to the new owner, where they'd otherwise fire
+    against a record the new owner can't see.
   - All other PENDING transfer requests for the same article are REVOKED
 
 Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day

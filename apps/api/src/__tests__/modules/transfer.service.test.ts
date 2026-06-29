@@ -309,6 +309,10 @@ describe("TransferService.acceptTransfer", () => {
   it("runs the transfer transaction and returns request for valid PUSH", async () => {
     mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
     const transferRequestUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const loanDeleteMany = vi.fn();
+    const serviceDeleteMany = vi.fn();
+    const articleInsuranceDeleteMany = vi.fn();
+    const alerteDeleteMany = vi.fn();
     mockPrisma.$transaction.mockImplementation(
       async (fn: (tx: unknown) => Promise<unknown>) => {
         const tx = {
@@ -325,11 +329,20 @@ describe("TransferService.acceptTransfer", () => {
             update: vi.fn(),
           },
           warrantyHistory: { updateMany: vi.fn() },
-          alerte: { updateMany: vi.fn() },
+          alerte: { updateMany: vi.fn(), deleteMany: alerteDeleteMany },
           attachment: { updateMany: vi.fn() },
           articleNote: { updateMany: vi.fn() },
           articleLocation: { deleteMany: vi.fn() },
           articleTag: { deleteMany: vi.fn() },
+          loan: {
+            findMany: vi.fn().mockResolvedValue([]),
+            deleteMany: loanDeleteMany,
+          },
+          serviceRecord: {
+            findMany: vi.fn().mockResolvedValue([]),
+            deleteMany: serviceDeleteMany,
+          },
+          articleInsurance: { deleteMany: articleInsuranceDeleteMany },
         };
         return fn(tx);
       }
@@ -338,6 +351,19 @@ describe("TransferService.acceptTransfer", () => {
     const result = await TransferService.acceptTransfer("tok", 2);
     expect(result).toEqual(baseReq);
     expect(mockPrisma.$transaction).toHaveBeenCalled();
+    // Owner-scoped lifecycle add-ons don't follow the item — the loan,
+    // service-record, and insurance-link rows for the article are deleted.
+    expect(loanDeleteMany).toHaveBeenCalledWith({
+      where: { articleId: baseReq.articleId },
+    });
+    expect(serviceDeleteMany).toHaveBeenCalledWith({
+      where: { articleId: baseReq.articleId },
+    });
+    expect(articleInsuranceDeleteMany).toHaveBeenCalledWith({
+      where: { articleId: baseReq.articleId },
+    });
+    // No loan/service reminders to clean up in this case.
+    expect(alerteDeleteMany).not.toHaveBeenCalled();
     // Cascade-revoke of other PENDING requests for the same article must
     // stamp usedAt — same terminal-transition contract as reject/revoke.
     expect(transferRequestUpdateMany).toHaveBeenCalledWith({
@@ -347,6 +373,50 @@ describe("TransferService.acceptTransfer", () => {
         id: { not: baseReq.id },
       },
       data: { status: "REVOKED", usedAt: expect.any(Date) },
+    });
+  });
+
+  it("deletes the loan/service reminder alerts that were re-owned to the new owner", async () => {
+    mockPrisma.articleTransferRequest.findUnique.mockResolvedValue(baseReq);
+    const alerteDeleteMany = vi.fn();
+    mockPrisma.$transaction.mockImplementation(
+      async (fn: (tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          user: {
+            findUnique: vi.fn().mockResolvedValue({ role: "POWER_USER" }),
+          },
+          articleTransferRequest: {
+            updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+            update: vi.fn(),
+          },
+          article: { update: vi.fn() },
+          garantie: {
+            findFirst: vi.fn().mockResolvedValue(null),
+            update: vi.fn(),
+          },
+          warrantyHistory: { updateMany: vi.fn() },
+          alerte: { updateMany: vi.fn(), deleteMany: alerteDeleteMany },
+          attachment: { updateMany: vi.fn() },
+          articleNote: { updateMany: vi.fn() },
+          articleLocation: { deleteMany: vi.fn() },
+          articleTag: { deleteMany: vi.fn() },
+          loan: {
+            findMany: vi.fn().mockResolvedValue([{ reminderAlerteId: 11 }]),
+            deleteMany: vi.fn(),
+          },
+          serviceRecord: {
+            findMany: vi.fn().mockResolvedValue([{ reminderAlerteId: 22 }]),
+            deleteMany: vi.fn(),
+          },
+          articleInsurance: { deleteMany: vi.fn() },
+        };
+        return fn(tx);
+      }
+    );
+
+    await TransferService.acceptTransfer("tok", 2);
+    expect(alerteDeleteMany).toHaveBeenCalledWith({
+      where: { alerteId: { in: [11, 22] } },
     });
   });
 

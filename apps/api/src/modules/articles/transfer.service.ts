@@ -245,6 +245,39 @@ export const TransferService = {
       });
       await tx.articleTag.deleteMany({ where: { articleId: req.articleId } });
 
+      // Owner-scoped lifecycle add-ons don't follow the item to the new owner
+      // — a borrower record, a repair log, and an insurance-policy link are
+      // personal to the giver (same rationale as locations/tags, which are
+      // also owner-scoped and deleted above). The new owner starts these
+      // fresh. We also drop the reminder alerts those loan/service rows
+      // scheduled: the blanket alert re-own above moved them to the new owner,
+      // where they'd otherwise fire against a record the new owner can't see.
+      // The InsurancePolicy itself is left intact (it may cover the giver's
+      // other items) — only its join to this article is severed.
+      const reminderRows = await tx.loan.findMany({
+        where: { articleId: req.articleId, reminderAlerteId: { not: null } },
+        select: { reminderAlerteId: true },
+      });
+      const serviceReminderRows = await tx.serviceRecord.findMany({
+        where: { articleId: req.articleId, reminderAlerteId: { not: null } },
+        select: { reminderAlerteId: true },
+      });
+      const reminderAlerteIds = [...reminderRows, ...serviceReminderRows]
+        .map((r) => r.reminderAlerteId)
+        .filter((id): id is number => id !== null);
+
+      await tx.loan.deleteMany({ where: { articleId: req.articleId } });
+      await tx.serviceRecord.deleteMany({
+        where: { articleId: req.articleId },
+      });
+      await tx.articleInsurance.deleteMany({
+        where: { articleId: req.articleId },
+      });
+      if (reminderAlerteIds.length > 0)
+        await tx.alerte.deleteMany({
+          where: { alerteId: { in: reminderAlerteIds } },
+        });
+
       await tx.articleTransferRequest.updateMany({
         where: {
           articleId: req.articleId,
