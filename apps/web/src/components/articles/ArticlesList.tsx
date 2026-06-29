@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Lock,
+  Check,
 } from "lucide-react";
 import ArticleForm from "./ArticleForm";
 import ArticlesFilterBar from "./ArticlesFilterBar";
@@ -89,6 +90,11 @@ const ArticlesList: React.FC = () => {
   const [exporting, setExporting] = useState<"csv" | "pdf" | "labels" | null>(
     null
   );
+  // Briefly swaps the export icon for a Check after a successful download, so
+  // the user gets a completion confirmation beyond the file landing.
+  const [justExported, setJustExported] = useState<
+    "csv" | "pdf" | "labels" | null
+  >(null);
   const runExport = async (
     kind: "csv" | "pdf" | "labels",
     job: () => Promise<void>
@@ -97,6 +103,8 @@ const ArticlesList: React.FC = () => {
     setExporting(kind);
     try {
       await job();
+      setJustExported(kind);
+      setTimeout(() => setJustExported(null), 2000);
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
         kind: "error",
@@ -694,7 +702,13 @@ const ArticlesList: React.FC = () => {
               onClick={() => void runExport("csv", exportToCsv)}
               loading={exporting === "csv"}
               disabled={articles.length === 0 || exporting !== null}
-              leftIcon={<FileDown className="h-4 w-4" />}
+              leftIcon={
+                justExported === "csv" ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <FileDown className="h-4 w-4" />
+                )
+              }
             >
               {t("articles.export.csv")}
             </Button>
@@ -724,7 +738,13 @@ const ArticlesList: React.FC = () => {
             }
             loading={exporting === "pdf"}
             disabled={exporting !== null}
-            leftIcon={<FileText className="h-4 w-4" />}
+            leftIcon={
+              justExported === "pdf" ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <FileText className="h-4 w-4" />
+              )
+            }
           >
             {t("articles.export.pdf")}
           </Button>
@@ -741,7 +761,13 @@ const ArticlesList: React.FC = () => {
             }
             loading={exporting === "labels"}
             disabled={articles.length === 0 || exporting !== null}
-            leftIcon={<FileText className="h-4 w-4" />}
+            leftIcon={
+              justExported === "labels" ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <FileText className="h-4 w-4" />
+              )
+            }
           >
             {t("articles.export.labels")}
           </Button>

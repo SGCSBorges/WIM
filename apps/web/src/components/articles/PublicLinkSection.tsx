@@ -113,7 +113,19 @@ export default function PublicLinkSection({
         title={t("publicLink.title")}
       />
     );
-  if (loading) return null;
+  if (loading)
+    return (
+      <Section
+        icon={<QrCode className="h-5 w-5" />}
+        title={t("publicLink.title")}
+        className="mb-6"
+      >
+        <div className="space-y-2" aria-hidden="true">
+          <div className="h-4 w-2/3 animate-pulse rounded ui-panel" />
+          <div className="h-9 w-full animate-pulse rounded ui-panel" />
+        </div>
+      </Section>
+    );
 
   return (
     <Section
