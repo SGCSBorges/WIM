@@ -386,9 +386,10 @@ All routes require ADMIN.
 Admins control which **role** each named feature requires, overriding hardcoded
 defaults. **POWER_USER is the paywall** — gating a feature at POWER_USER means
 "paid"; ADMIN inherits everything via the `USER < POWER_USER < ADMIN` hierarchy.
-By default every feature except `cmd_palette` (ADMIN) requires POWER_USER, so the
-full feature set is paid out of the box; an admin can lower a specific bar to
-USER. **Temp grants** let a USER try a POWER_USER-gated feature until an expiry
+By default every feature except `cmd_palette` (USER — global search ships open to
+everyone) requires POWER_USER, so the rest of the feature set is paid out of the
+box; an admin can lower a specific bar to USER, or raise any bar to ADMIN.
+**Temp grants** let a USER try a POWER_USER-gated feature until an expiry
 date. Server-side, `requireFeature(key)` gates each toggleable route (denied →
 **403**); a 60-second snapshot cache backs both the gate and the access map via
 one shared `isAllowed` helper, so they can't disagree.

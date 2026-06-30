@@ -214,13 +214,15 @@ the mobile browser chrome and installed-PWA status bar match it, and
   to clear the unseen badge; rows expose 1d/7d/30d snooze via the
   existing `/alerts/:id/snooze` endpoint. The bell hides silently if the
   endpoint errors (client/server skew safety).
-- **Preferences**: cross-device prefs (`theme`/`language`/`dateFormat`)
-  live on the `User` row. The auth `/me` payload carries them, so the SPA
-  hydrates the correct theme/language/date format before the first
-  paint. Providers in `theme/theme.tsx`, `i18n/i18n.tsx`, and
-  `preferences/preferences.tsx` expose `hydrate*` (apply server value
+- **Preferences**: cross-device prefs (`theme`/`language`/`dateFormat`/
+  `currency`) live on the `User` row. The auth `/me` payload carries them,
+  so the SPA hydrates the correct theme/language/date format/currency
+  before the first paint. Providers in `theme/theme.tsx`, `i18n/i18n.tsx`,
+  and `preferences/preferences.tsx` expose `hydrate*` (apply server value
   without echoing back) and write user-initiated changes through to
-  `PUT /api/profile/me/preferences` (debounced, best-effort).
+  `PUT /api/profile/me/preferences` (debounced, best-effort); `currency`
+  rides on the `preferences` provider too, so money views read it from
+  context instead of each refetching `/profile/me`.
   `localStorage` is the pre-auth cache + logged-out fallback. UI
   `density` (`comfortable | compact`) is per-device only (cosmetic),
   driving `data-density` on `<html>`.
