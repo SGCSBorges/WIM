@@ -15,6 +15,7 @@ export const extras = {
     "dashboard.empty.title": "Your dashboard is ready when you are",
     "dashboard.empty.subtitle":
       "Add your first item to start tracking its value, warranty, and reminders here.",
+    "home.recentlyViewed.title": "Recently viewed",
     "upgrade.title": "Unlock with Power User",
     "share.site": "Share WIM",
     "share.text": "Track your warranties and inventory with WIM",
@@ -955,6 +956,7 @@ export const extras = {
     "dashboard.empty.title": "Votre tableau de bord est prêt quand vous l'êtes",
     "dashboard.empty.subtitle":
       "Ajoutez votre premier article pour suivre ici sa valeur, sa garantie et ses rappels.",
+    "home.recentlyViewed.title": "Vus récemment",
     "upgrade.title": "Débloquer avec Power User",
     "share.site": "Partager WIM",
     "share.text": "Gérez vos garanties et votre inventaire avec WIM",
@@ -1924,6 +1926,7 @@ export const extras = {
     "dashboard.empty.title": "O seu painel está pronto quando você estiver",
     "dashboard.empty.subtitle":
       "Adicione o seu primeiro artigo para começar a acompanhar aqui o seu valor, garantia e lembretes.",
+    "home.recentlyViewed.title": "Vistos recentemente",
     "upgrade.title": "Desbloquear com Power User",
     "share.site": "Partilhar o WIM",
     "share.text": "Faça a gestão das suas garantias e inventário com o WIM",
@@ -2887,6 +2890,7 @@ export const extras = {
     "dashboard.empty.title": "Tu panel está listo cuando tú lo estés",
     "dashboard.empty.subtitle":
       "Añade tu primer artículo para empezar a seguir aquí su valor, garantía y recordatorios.",
+    "home.recentlyViewed.title": "Vistos recientemente",
     "upgrade.title": "Desbloquear con Power User",
     "share.site": "Compartir WIM",
     "share.text": "Gestiona tus garantías e inventario con WIM",
@@ -3855,6 +3859,7 @@ export const extras = {
     "dashboard.empty.title": "Je dashboard staat klaar wanneer jij dat bent",
     "dashboard.empty.subtitle":
       "Voeg je eerste item toe om hier de waarde, garantie en herinneringen te volgen.",
+    "home.recentlyViewed.title": "Onlangs bekeken",
     "upgrade.title": "Ontgrendelen met Power User",
     "share.site": "WIM delen",
     "share.text": "Beheer je garanties en inventaris met WIM",

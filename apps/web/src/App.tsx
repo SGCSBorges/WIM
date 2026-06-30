@@ -65,6 +65,7 @@ function isStripeUrl(url: string): boolean {
   }
 }
 import OnboardingChecklist from "./components/onboarding/OnboardingChecklist";
+import RecentlyViewed from "./components/common/RecentlyViewed";
 import { Button, Card } from "./components/ui";
 import { NAV_ITEMS, type NavKey } from "./lib/navItems";
 import UpgradeTeaser from "./components/common/UpgradeTeaser";
@@ -269,6 +270,8 @@ function Home({
       </section>
 
       <OnboardingChecklist />
+
+      <RecentlyViewed />
 
       {/* Upgrade (USER only) */}
       {role === "USER" && (

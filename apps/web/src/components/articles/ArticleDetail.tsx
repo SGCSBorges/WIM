@@ -57,6 +57,7 @@ import PublicLinkSection from "./PublicLinkSection";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { currentValue } from "../../utils/depreciation";
+import { recordRecentlyViewed } from "../../utils/recentlyViewed";
 import { downloadBlob } from "../../utils/csv";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -266,6 +267,12 @@ export default function ArticleDetail() {
           .catch(() => []),
       ]);
       setArticle(a);
+      recordRecentlyViewed({
+        articleId: a.articleId,
+        name: a.articleNom,
+        model: a.articleModele,
+        image: a.productImageUrl ?? null,
+      });
       setAttachments(atts as Attachment[]);
       setNotes(ns);
       setArticleAlerts(al as typeof articleAlerts);
