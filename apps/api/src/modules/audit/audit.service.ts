@@ -8,7 +8,9 @@
  * jobs/workers.ts). Deletion is chunked-safe via a single
  * `deleteMany({ where: { createdAt: { lt: cutoff } } })`.
  */
-import { Prisma } from "@prisma/client";
+// Type-only: `Prisma.InputJsonValue` is used purely as a type, so importing it
+// as a type keeps this module from loading the generated client at runtime.
+import type { Prisma } from "@prisma/client";
 import type { AuditAction, AuditEntity } from "@wim/types";
 import { prisma } from "../../libs/prisma";
 
