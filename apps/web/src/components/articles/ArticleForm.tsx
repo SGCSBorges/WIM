@@ -29,6 +29,7 @@ import {
 import { useFileDrop } from "../../hooks/useFileDrop";
 import { usePreferences } from "../../preferences/preferences";
 import {
+  articlesAPI,
   attachmentsAPI,
   locationsAPI,
   tagsAPI,
@@ -123,6 +124,14 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [locCreateError, setLocCreateError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Create-mode only: surface a soft, non-blocking "you may already own this"
+  // hint when the typed name matches existing items, so re-adding a duplicate
+  // is a deliberate choice rather than an accident.
+  const isEdit = Boolean(article);
+  const [possibleDuplicates, setPossibleDuplicates] = useState<
+    Array<{ articleId: number; articleNom: string; articleModele: string }>
+  >([]);
 
   const deriveInitialTagIds = (a?: Article): number[] =>
     Array.isArray(a?.tags)
@@ -237,6 +246,36 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setDirty(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [article?.articleId]);
+
+  // Debounced duplicate lookup. Best-effort: a failed/empty search just hides
+  // the hint. Skipped in edit mode (the item itself would always "match").
+  useEffect(() => {
+    if (isEdit) {
+      setPossibleDuplicates([]);
+      return;
+    }
+    const name = formData.articleNom.trim();
+    if (name.length < 2) {
+      setPossibleDuplicates([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      try {
+        const res = await articlesAPI.getAll({ q: name, limit: 4 });
+        if (!mountedRef.current) return;
+        setPossibleDuplicates(
+          res.items.slice(0, 3).map((a) => ({
+            articleId: a.articleId,
+            articleNom: a.articleNom,
+            articleModele: a.articleModele,
+          }))
+        );
+      } catch {
+        // Best-effort hint — never surface a search error on the create form.
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [formData.articleNom, isEdit]);
 
   useUnsavedChangesGuard(dirty);
 
@@ -623,6 +662,38 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
             maxLength={100}
           />
         </Field>
+
+        {!isEdit && possibleDuplicates.length > 0 && (
+          <div
+            role="status"
+            className="rounded-lg border ui-alert-warning px-3 py-2 text-sm"
+          >
+            <p className="font-medium ui-text-warn">
+              {t("articleForm.duplicate.notice")}
+            </p>
+            <ul className="mt-1 space-y-0.5">
+              {possibleDuplicates.map((d) => (
+                <li key={d.articleId}>
+                  <a
+                    href={`/articles/${d.articleId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`${d.articleNom} — ${d.articleModele}`}
+                    className="ui-action-primary inline-flex max-w-full items-center gap-1 hover:underline"
+                  >
+                    <ExternalLink
+                      className="h-3.5 w-3.5 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">
+                      {d.articleNom} — {d.articleModele}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <Field label={t("articleForm.model")} htmlFor="articleModele" required>
           <div className="flex gap-2">

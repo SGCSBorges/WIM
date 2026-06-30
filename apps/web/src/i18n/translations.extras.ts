@@ -9,6 +9,8 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "articleForm.duplicate.notice":
+      "You may already have this item — check before adding a duplicate:",
     "upgrade.title": "Unlock with Power User",
     "share.site": "Share WIM",
     "share.text": "Track your warranties and inventory with WIM",
@@ -943,6 +945,8 @@ export const extras = {
     "features.csv_export": "CSV export",
   },
   fr: {
+    "articleForm.duplicate.notice":
+      "Vous possédez peut-être déjà cet article — vérifiez avant d'ajouter un doublon :",
     "upgrade.title": "Débloquer avec Power User",
     "share.site": "Partager WIM",
     "share.text": "Gérez vos garanties et votre inventaire avec WIM",
@@ -1906,6 +1910,8 @@ export const extras = {
     "features.csv_export": "Export CSV",
   },
   pt: {
+    "articleForm.duplicate.notice":
+      "Pode já ter este artigo — verifique antes de adicionar um duplicado:",
     "upgrade.title": "Desbloquear com Power User",
     "share.site": "Partilhar o WIM",
     "share.text": "Faça a gestão das suas garantias e inventário com o WIM",
@@ -2863,6 +2869,8 @@ export const extras = {
     "features.csv_export": "Exportação CSV",
   },
   es: {
+    "articleForm.duplicate.notice":
+      "Puede que ya tengas este artículo — comprueba antes de añadir un duplicado:",
     "upgrade.title": "Desbloquear con Power User",
     "share.site": "Compartir WIM",
     "share.text": "Gestiona tus garantías e inventario con WIM",
@@ -3825,6 +3833,8 @@ export const extras = {
     "features.csv_export": "Exportación CSV",
   },
   nl: {
+    "articleForm.duplicate.notice":
+      "Je hebt dit item mogelijk al — controleer dit voordat je een duplicaat toevoegt:",
     "upgrade.title": "Ontgrendelen met Power User",
     "share.site": "WIM delen",
     "share.text": "Beheer je garanties en inventaris met WIM",
