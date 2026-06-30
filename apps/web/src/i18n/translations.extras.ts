@@ -11,6 +11,7 @@ export const extras = {
   en: {
     "articleForm.duplicate.notice":
       "You may already have this item — check before adding a duplicate:",
+    "articleDetail.valueOverTime": "Value over time",
     "upgrade.title": "Unlock with Power User",
     "share.site": "Share WIM",
     "share.text": "Track your warranties and inventory with WIM",
@@ -947,6 +948,7 @@ export const extras = {
   fr: {
     "articleForm.duplicate.notice":
       "Vous possédez peut-être déjà cet article — vérifiez avant d'ajouter un doublon :",
+    "articleDetail.valueOverTime": "Valeur dans le temps",
     "upgrade.title": "Débloquer avec Power User",
     "share.site": "Partager WIM",
     "share.text": "Gérez vos garanties et votre inventaire avec WIM",
@@ -1912,6 +1914,7 @@ export const extras = {
   pt: {
     "articleForm.duplicate.notice":
       "Pode já ter este artigo — verifique antes de adicionar um duplicado:",
+    "articleDetail.valueOverTime": "Valor ao longo do tempo",
     "upgrade.title": "Desbloquear com Power User",
     "share.site": "Partilhar o WIM",
     "share.text": "Faça a gestão das suas garantias e inventário com o WIM",
@@ -2871,6 +2874,7 @@ export const extras = {
   es: {
     "articleForm.duplicate.notice":
       "Puede que ya tengas este artículo — comprueba antes de añadir un duplicado:",
+    "articleDetail.valueOverTime": "Valor a lo largo del tiempo",
     "upgrade.title": "Desbloquear con Power User",
     "share.site": "Compartir WIM",
     "share.text": "Gestiona tus garantías e inventario con WIM",
@@ -3835,6 +3839,7 @@ export const extras = {
   nl: {
     "articleForm.duplicate.notice":
       "Je hebt dit item mogelijk al — controleer dit voordat je een duplicaat toevoegt:",
+    "articleDetail.valueOverTime": "Waarde in de tijd",
     "upgrade.title": "Ontgrendelen met Power User",
     "share.site": "WIM delen",
     "share.text": "Beheer je garanties en inventaris met WIM",

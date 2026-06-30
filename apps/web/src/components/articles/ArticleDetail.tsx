@@ -114,6 +114,111 @@ const TIMELINE_ICON: Record<TimelineEntry["kind"], React.ReactNode> = {
   alert: <Bell className="h-3 w-3" />,
 };
 
+// Dependency-free depreciation sparkline: straight-line value from the
+// purchase basis, with a dashed "today" marker and a short forward projection.
+// Only rendered for items that actually depreciate (positive price + rate).
+function ValueOverTime({
+  purchasePrice,
+  depreciationRate,
+  basis,
+  currency,
+  language,
+  title,
+}: {
+  purchasePrice: string | number | null | undefined;
+  depreciationRate: string | number | null | undefined;
+  basis: string | null | undefined;
+  currency: string;
+  language: string;
+  title: string;
+}) {
+  const price = purchasePrice == null ? NaN : Number(purchasePrice);
+  const rate = depreciationRate == null ? NaN : Number(depreciationRate);
+  if (
+    !Number.isFinite(price) ||
+    price <= 0 ||
+    !Number.isFinite(rate) ||
+    rate <= 0
+  )
+    return null;
+  const basisDate = basis ? new Date(basis) : null;
+  if (!basisDate || Number.isNaN(basisDate.getTime())) return null;
+
+  const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const startMs = Math.min(basisDate.getTime(), now);
+  // Run the curve to full depreciation, but cap a few years past today so a
+  // tiny rate doesn't draw a decades-long flat tail.
+  const zeroMs = basisDate.getTime() + (100 / rate) * MS_PER_YEAR;
+  const endMs = Math.max(
+    now + MS_PER_YEAR / 12,
+    Math.min(zeroMs, now + 3 * MS_PER_YEAR)
+  );
+  const span = endMs - startMs;
+
+  const valueAt = (ms: number) => {
+    const ageYears = (ms - basisDate.getTime()) / MS_PER_YEAR;
+    if (ageYears <= 0) return price;
+    return Math.max(0, price * (1 - (rate / 100) * ageYears));
+  };
+
+  const N = 24;
+  const W = 100;
+  const H = 32;
+  const pts: string[] = [];
+  for (let i = 0; i <= N; i++) {
+    const ms = startMs + (span * i) / N;
+    const x = (i / N) * W;
+    const y = H - (valueAt(ms) / price) * H;
+    pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  const line = pts.join(" ");
+  const todayX = (((now - startMs) / span) * W).toFixed(1);
+
+  return (
+    <div className="mt-4">
+      <p className="mb-1 text-xs ui-text-muted">{title}</p>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        className="h-16 w-full"
+        role="img"
+        aria-label={title}
+      >
+        <polygon
+          points={`0,${H} ${line} ${W},${H}`}
+          fill="var(--primary)"
+          opacity="0.12"
+        />
+        <polyline
+          points={line}
+          fill="none"
+          stroke="var(--primary)"
+          strokeWidth="1.5"
+          vectorEffect="non-scaling-stroke"
+        />
+        <line
+          x1={todayX}
+          y1="0"
+          x2={todayX}
+          y2={H}
+          stroke="var(--accent)"
+          strokeWidth="1"
+          strokeDasharray="2 2"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <div className="mt-1 flex justify-between text-[10px] ui-text-muted tabular-nums">
+        <span>{formatMoney(price, currency, language)}</span>
+        <span className="ui-text-warn">
+          {formatMoney(valueAt(now), currency, language)}
+        </span>
+        <span>{formatMoney(valueAt(endMs), currency, language)}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function ArticleDetail() {
   const { t, language } = useI18n();
   const { formatDate, formatDateTime } = usePreferences();
@@ -540,6 +645,15 @@ export default function ArticleDetail() {
               </p>
             </div>
           </div>
+
+          <ValueOverTime
+            purchasePrice={article.purchasePrice}
+            depreciationRate={article.depreciationRate}
+            basis={article.garantie?.garantieDateAchat ?? article.createdAt}
+            currency={currency}
+            language={language}
+            title={t("articleDetail.valueOverTime")}
+          />
 
           {article.tags && article.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
