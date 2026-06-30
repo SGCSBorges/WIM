@@ -13,7 +13,10 @@
  */
 import { Router } from "express";
 import { z } from "zod";
-import { Prisma, SharePermission } from "@prisma/client";
+// Type-only: `Prisma` (select/where shapes) and `SharePermission` are used
+// purely in type positions, so importing them as types keeps this module from
+// loading the generated client at runtime.
+import type { Prisma, SharePermission } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
