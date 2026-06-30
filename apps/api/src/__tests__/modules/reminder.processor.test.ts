@@ -250,6 +250,70 @@ describe("ReminderProcessor", () => {
     expect(svc.markSent).toHaveBeenCalledWith(22);
   });
 
+  it("rebuilds warranty-specific push text for a snoozed warranty reminder", async () => {
+    // Snooze re-enqueues every alert as a generic custom job, so a snoozed
+    // warranty reminder reaches handleCustom with kind=WARRANTY + a garantie
+    // link. The push must use the warranty name/end date, not the raw label
+    // ("Rappel garantie J-30") + the generic "Maintenance reminder." body.
+    mockPrisma.alerte.findUnique.mockResolvedValue({
+      alerteId: 31,
+      status: "SCHEDULED",
+      kind: "WARRANTY",
+      ownerUserId: 1,
+      alerteNom: "Rappel garantie J-30",
+      alerteDescription: null,
+      alerteArticleId: 7,
+      alerteGarantieId: 99,
+      recurrenceMonths: null,
+    });
+    mockPrisma.garantie.findUnique.mockResolvedValue({
+      garantieNom: "Sony TV",
+      garantieFin: new Date("2026-08-01T00:00:00.000Z"),
+    });
+    await ReminderProcessor.handle(
+      job({
+        type: "custom_alert",
+        ownerUserId: 1,
+        alerteId: 31,
+        executeAt: new Date().toISOString(),
+      })
+    );
+    expect(push.sendToUser).toHaveBeenCalledWith(1, {
+      title: "Warranty reminder: Sony TV",
+      body: "Warranty expires 2026-08-01.",
+      url: "/articles/7",
+    });
+    expect(svc.markSent).toHaveBeenCalledWith(31);
+  });
+
+  it("keeps the row's own text for a genuine custom alert (no warranty lookup)", async () => {
+    mockPrisma.alerte.findUnique.mockResolvedValue({
+      alerteId: 32,
+      status: "SCHEDULED",
+      kind: "CUSTOM",
+      ownerUserId: 1,
+      alerteNom: "Change smoke detector battery",
+      alerteDescription: "Annual",
+      alerteArticleId: null,
+      alerteGarantieId: null,
+      recurrenceMonths: null,
+    });
+    await ReminderProcessor.handle(
+      job({
+        type: "custom_alert",
+        ownerUserId: 1,
+        alerteId: 32,
+        executeAt: new Date().toISOString(),
+      })
+    );
+    expect(mockPrisma.garantie.findUnique).not.toHaveBeenCalled();
+    expect(push.sendToUser).toHaveBeenCalledWith(1, {
+      title: "Change smoke detector battery",
+      body: "Annual",
+      url: "/alerts",
+    });
+  });
+
   it("skips a custom alert that is no longer scheduled", async () => {
     mockPrisma.alerte.findUnique.mockResolvedValue({
       alerteId: 14,

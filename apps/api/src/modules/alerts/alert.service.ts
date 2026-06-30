@@ -104,8 +104,10 @@ export const AlertService = {
     for (const { reminderKind, executeAt } of schedule) {
       const executeMs = executeAt.getTime();
 
-      // NOTE: we can't rely on regenerated Prisma Client in Windows right now (prisma generate EPERM).
-      // So we use createMany (skipDuplicates) + findFirst to get an alerteId deterministically.
+      // createMany(skipDuplicates) + findFirst, rather than create, so a
+      // re-schedule that lands on an existing (garantieId, alerteDate) row
+      // no-ops at the unique constraint instead of throwing — then we read
+      // the row back to get its alerteId deterministically.
       await prisma.alerte.createMany({
         data: [
           {

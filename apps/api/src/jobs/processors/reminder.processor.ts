@@ -171,18 +171,33 @@ export const ReminderProcessor = {
         ? `/articles/${alerte.alerteArticleId}`
         : "/alerts";
 
+      // Default to the row's own copy (genuine CUSTOM alerts). A *snoozed
+      // warranty* reminder is re-enqueued as a custom job (snooze re-keys every
+      // alert to the generic id), so it arrives here with kind=WARRANTY and a
+      // garantie link — rebuild the warranty-specific text instead of pushing
+      // the raw label ("Rappel garantie J-30") + a misleading
+      // "Maintenance reminder." body.
+      let title = alerte.alerteNom;
+      let body = alerte.alerteDescription ?? "Maintenance reminder.";
+      if (alerte.kind === "WARRANTY" && alerte.alerteGarantieId) {
+        const g = await prisma.garantie.findUnique({
+          where: { garantieId: alerte.alerteGarantieId },
+          select: { garantieNom: true, garantieFin: true },
+        });
+        if (g) {
+          title = `Warranty reminder: ${g.garantieNom}`;
+          body = `Warranty expires ${shortDate(g.garantieFin)}.`;
+        }
+      }
+
       // Deliver BEFORE markSent (see warranty branch comment above) so a
       // failed push triggers a retry instead of dropping the notification.
       await PushService.sendToUser(alerte.ownerUserId, {
-        title: alerte.alerteNom,
-        body: alerte.alerteDescription ?? "Maintenance reminder.",
+        title,
+        body,
         url: path,
       });
-      await emailReminder(alerte.ownerUserId, {
-        subject: alerte.alerteNom,
-        body: alerte.alerteDescription ?? "Maintenance reminder.",
-        path,
-      });
+      await emailReminder(alerte.ownerUserId, { subject: title, body, path });
 
       await AlertService.markSent(alerteId);
 
