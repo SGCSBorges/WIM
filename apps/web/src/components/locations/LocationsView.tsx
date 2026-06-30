@@ -6,8 +6,9 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { MapPin, Plus, Pencil, Trash2, RotateCw, Check } from "lucide-react";
-import { locationsAPI, profileAPI } from "../../services/api";
+import { locationsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -28,10 +29,10 @@ type LocationRow = {
 
 export default function LocationsView() {
   const { t, language } = useI18n();
+  const { currency } = usePreferences();
   const toast = useToast();
 
   const [items, setItems] = useState<LocationRow[]>([]);
-  const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,10 +61,6 @@ export default function LocationsView() {
 
   useEffect(() => {
     fetchAll();
-    profileAPI
-      .getMe()
-      .then((me) => me.currency && setCurrency(me.currency))
-      .catch(() => {});
   }, [fetchAll]);
 
   const create = async () => {

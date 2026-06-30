@@ -184,13 +184,18 @@ npm --workspace apps/web run test:e2e
   `POST /api/alerts/mark-seen` when opened to clear the badge. Each row
   offers 1d/7d/30d quick snooze and a "view article" link. Hidden if
   the endpoint errors so a client/server skew doesn't render broken.
-- **Preferences**: cross-device prefs (`theme`/`language`/`dateFormat`)
-  live on the `User` row. The auth `/me` payload carries them; client
-  providers (`theme/theme.tsx`, `i18n/i18n.tsx`,
+- **Preferences**: cross-device prefs (`theme`/`language`/`dateFormat`/
+  `currency`) live on the `User` row. The auth `/me` payload carries them;
+  client providers (`theme/theme.tsx`, `i18n/i18n.tsx`,
   `preferences/preferences.tsx`) expose `hydrate*` to apply them on
   login without echoing back, and write user-initiated changes through
   to `PUT /api/profile/me/preferences` (debounced, best-effort).
-  `localStorage` is the pre-auth cache + logged-out fallback. UI
+  `currency` lives on the `preferences` provider too (hydrated from `/me`
+  at login), so money views read it from context instead of each
+  refetching `/profile/me` — the Profile currency change writes via
+  `updateCurrency` and `hydrateCurrency`s the provider so every view
+  updates without a reload. `localStorage` is the pre-auth cache +
+  logged-out fallback. UI
   `density` (`comfortable | compact`) is per-device — purely cosmetic,
   no backend — toggled in Profile → Appearance, driving `data-density`
   on `<html>`.

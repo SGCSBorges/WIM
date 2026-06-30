@@ -24,7 +24,6 @@ import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import {
   messagesAPI,
-  profileAPI,
   type MessageThreadSummary,
   type MessageThreadDetail,
   type ChatMessage,
@@ -48,7 +47,7 @@ function otherEmail(t: MessageThreadSummary): string {
 export default function MessagesView() {
   const { t, language } = useI18n();
   const toast = useToast();
-  const { formatDateTime } = usePreferences();
+  const { formatDateTime, currency } = usePreferences();
   const { refresh: refreshUnread } = useMessagesUnread();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -71,7 +70,7 @@ export default function MessagesView() {
   const [showTransfer, setShowTransfer] = useState(false);
 
   // Offers
-  const [currency, setCurrency] = useState("USD");
+
   const [offerOpen, setOfferOpen] = useState(false);
   const [offerAmount, setOfferAmount] = useState("");
   const [offerBusy, setOfferBusy] = useState(false);
@@ -100,16 +99,6 @@ export default function MessagesView() {
   useEffect(() => {
     void loadThreads();
   }, [loadThreads]);
-
-  // Currency for rendering offer amounts (best-effort).
-  useEffect(() => {
-    void profileAPI
-      .getMe()
-      .then((me) => {
-        if (me?.currency) setCurrency(me.currency);
-      })
-      .catch(() => {});
-  }, []);
 
   const loadDetail = useCallback(
     async (id: number) => {

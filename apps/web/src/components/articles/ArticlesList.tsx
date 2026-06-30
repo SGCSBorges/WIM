@@ -41,12 +41,12 @@ import {
   articlesAPI,
   attachmentsAPI,
   locationsAPI,
-  profileAPI,
   tagsAPI,
   savedViewsAPI,
   type SavedView,
 } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import type { Article, FetchedArticle, Location, Tag } from "../../types";
 import { getErrorMessage } from "../../utils/error";
 import { formatCount } from "../../utils/number";
@@ -74,7 +74,7 @@ const ArticlesList: React.FC = () => {
   const canCsvExport = useFeature("csv_export");
   const { loaded: featuresLoaded } = useFeatures();
   const { promptUpgrade } = useUpgrade();
-  const [currency, setCurrency] = useState("USD");
+  const { currency } = usePreferences();
 
   const getDaysUntilExpiry = (
     garantieFin: string | Date | null | undefined
@@ -527,13 +527,6 @@ const ArticlesList: React.FC = () => {
   useEffect(() => {
     fetchLocations();
     loadTags();
-    // Load the user's display currency for the value column (best-effort).
-    profileAPI
-      .getMe()
-      .then((me) => {
-        if (me.currency) setCurrency(me.currency);
-      })
-      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

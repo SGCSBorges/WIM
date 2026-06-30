@@ -36,7 +36,6 @@ import {
   articlesAPI,
   attachmentsAPI,
   notesAPI,
-  profileAPI,
   warrantiesAPI,
   type ArticleNote,
 } from "../../services/api";
@@ -221,7 +220,7 @@ function ValueOverTime({
 
 export default function ArticleDetail() {
   const { t, language } = useI18n();
-  const { formatDate, formatDateTime } = usePreferences();
+  const { formatDate, formatDateTime, currency } = usePreferences();
   const safeDate = (iso: string | null | undefined) => formatDate(iso) || "—";
   const safeDateTime = (iso: string | null | undefined) =>
     formatDateTime(iso) || "—";
@@ -235,7 +234,6 @@ export default function ArticleDetail() {
   const [article, setArticle] = useState<FetchedArticle | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [notes, setNotes] = useState<ArticleNote[]>([]);
-  const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [noteInput, setNoteInput] = useState("");
@@ -280,10 +278,6 @@ export default function ArticleDetail() {
 
   useEffect(() => {
     load();
-    profileAPI
-      .getMe()
-      .then((me) => me.currency && setCurrency(me.currency))
-      .catch(() => {});
   }, [load]);
 
   const addNote = async () => {

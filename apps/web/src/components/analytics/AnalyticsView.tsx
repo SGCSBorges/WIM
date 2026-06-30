@@ -23,9 +23,10 @@ import {
   Cell,
 } from "recharts";
 import { TrendingUp, Wallet, Package } from "lucide-react";
-import { statisticsAPI, profileAPI } from "../../services/api";
+import { statisticsAPI } from "../../services/api";
 import type { PortfolioAnalytics, ArticleCategory } from "../../types";
 import { useI18n } from "../../i18n/i18n";
+import { usePreferences } from "../../preferences/preferences";
 import { formatMoney } from "../../utils/money";
 import { getErrorMessage } from "../../utils/error";
 import { PageHeader, Section, Stat } from "../ui";
@@ -79,8 +80,8 @@ function ChartCard({
 
 export default function AnalyticsView() {
   const { t, language } = useI18n();
+  const { currency } = usePreferences();
   const [data, setData] = useState<PortfolioAnalytics | null>(null);
-  const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,13 +91,9 @@ export default function AnalyticsView() {
       setLoading(true);
       setError(null);
       try {
-        const [analytics, me] = await Promise.all([
-          statisticsAPI.getAnalytics(),
-          profileAPI.getMe().catch(() => null),
-        ]);
+        const analytics = await statisticsAPI.getAnalytics();
         if (!alive) return;
         setData(analytics);
-        if (me?.currency) setCurrency(me.currency);
       } catch (e) {
         if (alive) setError(getErrorMessage(e, t("common.errorOccurred")));
       } finally {

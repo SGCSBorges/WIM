@@ -6,7 +6,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { Wrench, Plus, Trash2, Check, CalendarClock } from "lucide-react";
-import { serviceRecordsAPI, profileAPI } from "../../services/api";
+import { serviceRecordsAPI } from "../../services/api";
 import type { ServiceRecordItem } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
@@ -27,7 +27,7 @@ export default function MaintenanceSection({
   articleId: number;
 }) {
   const { t, language } = useI18n();
-  const { formatDate } = usePreferences();
+  const { formatDate, currency } = usePreferences();
   const toast = useToast();
   const allowed = useFeature("maintenance");
   const { loaded: featuresLoaded } = useFeatures();
@@ -35,7 +35,6 @@ export default function MaintenanceSection({
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
-  const [currency, setCurrency] = useState("USD");
 
   const [performedAt, setPerformedAt] = useState(todayISO());
   const [description, setDescription] = useState("");
@@ -58,10 +57,6 @@ export default function MaintenanceSection({
   useEffect(() => {
     if (!allowed) return;
     void load();
-    profileAPI
-      .getMe()
-      .then((me) => me.currency && setCurrency(me.currency))
-      .catch(() => {});
   }, [load, allowed]);
 
   const create = async () => {

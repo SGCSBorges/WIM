@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Umbrella, Plus, Pencil, Trash2, Check, Package } from "lucide-react";
-import { insuranceAPI, profileAPI } from "../../services/api";
+import { insuranceAPI } from "../../services/api";
 import type { InsurancePolicyItem } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
@@ -66,12 +66,11 @@ function renewalBadge(renewalAt: string | null): RenewalBadge | null {
 
 export default function InsuranceView() {
   const { t, language } = useI18n();
-  const { formatDate } = usePreferences();
+  const { formatDate, currency } = usePreferences();
   const toast = useToast();
 
   const [policies, setPolicies] = useState<InsurancePolicyItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currency, setCurrency] = useState("USD");
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -95,10 +94,6 @@ export default function InsuranceView() {
 
   useEffect(() => {
     void load();
-    profileAPI
-      .getMe()
-      .then((me) => me.currency && setCurrency(me.currency))
-      .catch(() => {});
   }, [load]);
 
   const openCreate = () => {

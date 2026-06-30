@@ -257,6 +257,7 @@ export const authAPI = {
     theme?: ThemePref | null;
     language?: LanguagePref | null;
     dateFormat?: DateFormatPref | null;
+    currency?: string | null;
   }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/auth/me`);
     if (!response.ok) throw new Error("Not authenticated");

@@ -108,7 +108,12 @@ function disconnectAndRedirect() {
 
 export default function ProfileView() {
   const { t, language } = useI18n();
-  const { density, setDensity, formatDate: fmtDate } = usePreferences();
+  const {
+    density,
+    setDensity,
+    formatDate: fmtDate,
+    hydrateCurrency,
+  } = usePreferences();
   const formatBillingDate = (unixSeconds: number | null) =>
     unixSeconds ? fmtDate(new Date(unixSeconds * 1000)) || "—" : "—";
   const toast = useToast();
@@ -292,6 +297,9 @@ export default function ProfileView() {
     try {
       const updated = await profileAPI.updateCurrency(currency);
       setMe((prev) => (prev ? { ...prev, currency: updated.currency } : prev));
+      // Sync the app-wide preferences provider so every money view reflects the
+      // new currency immediately (hydrate = no second server write).
+      hydrateCurrency(updated.currency);
       showSuccess(t("profile.currency.success"));
     } catch (e: unknown) {
       showFailure(getErrorMessage(e, t("common.errorOccurred")));

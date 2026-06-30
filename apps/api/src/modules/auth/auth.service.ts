@@ -92,6 +92,7 @@ export const AuthService = {
         theme: true,
         language: true,
         dateFormat: true,
+        currency: true,
       },
     });
   },

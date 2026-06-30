@@ -353,7 +353,7 @@ function Home({
 export default function App() {
   const { t, language, hydrateLanguage } = useI18n();
   const { hydrateTheme } = useTheme();
-  const { hydrateDateFormat } = usePreferences();
+  const { hydrateDateFormat, hydrateCurrency } = usePreferences();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -378,10 +378,12 @@ export default function App() {
     theme?: string | null;
     language?: string | null;
     dateFormat?: string | null;
+    currency?: string | null;
   }) => {
     if (user.theme) hydrateTheme(user.theme);
     if (user.language) hydrateLanguage(user.language);
     if (user.dateFormat) hydrateDateFormat(user.dateFormat);
+    if (user.currency) hydrateCurrency(user.currency);
   };
 
   useEffect(() => {
