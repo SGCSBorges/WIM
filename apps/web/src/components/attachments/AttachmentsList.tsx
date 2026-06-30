@@ -25,6 +25,7 @@ import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
+import { Skeleton } from "../common/Skeleton";
 import { Button, Input, Select, Badge, type BadgeTone } from "../ui";
 import type { AttachmentItem as Attachment } from "@wim/types";
 
@@ -230,9 +231,28 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     });
 
   if (isLoading) {
+    // Skeleton mirrors the header + card grid so there's no layout shift when
+    // the real attachments resolve (convention: skeleton, not a bare spinner).
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="ui-spinner h-12 w-12 animate-spin rounded-full border-b-2" />
+      <div
+        className="space-y-6"
+        role="status"
+        aria-busy="true"
+        aria-label={t("attachments.title")}
+      >
+        <div className="flex items-center gap-3">
+          <Skeleton width={44} height={44} rounded="lg" />
+          <Skeleton width="35%" height={28} />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="ui-card space-y-3 p-4">
+              <Skeleton height={160} />
+              <Skeleton width="70%" height={16} />
+              <Skeleton width="40%" height={12} />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
