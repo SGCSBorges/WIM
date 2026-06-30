@@ -12,6 +12,9 @@ export const extras = {
     "articleForm.duplicate.notice":
       "You may already have this item — check before adding a duplicate:",
     "articleDetail.valueOverTime": "Value over time",
+    "dashboard.empty.title": "Your dashboard is ready when you are",
+    "dashboard.empty.subtitle":
+      "Add your first item to start tracking its value, warranty, and reminders here.",
     "upgrade.title": "Unlock with Power User",
     "share.site": "Share WIM",
     "share.text": "Track your warranties and inventory with WIM",
@@ -949,6 +952,9 @@ export const extras = {
     "articleForm.duplicate.notice":
       "Vous possédez peut-être déjà cet article — vérifiez avant d'ajouter un doublon :",
     "articleDetail.valueOverTime": "Valeur dans le temps",
+    "dashboard.empty.title": "Votre tableau de bord est prêt quand vous l'êtes",
+    "dashboard.empty.subtitle":
+      "Ajoutez votre premier article pour suivre ici sa valeur, sa garantie et ses rappels.",
     "upgrade.title": "Débloquer avec Power User",
     "share.site": "Partager WIM",
     "share.text": "Gérez vos garanties et votre inventaire avec WIM",
@@ -1915,6 +1921,9 @@ export const extras = {
     "articleForm.duplicate.notice":
       "Pode já ter este artigo — verifique antes de adicionar um duplicado:",
     "articleDetail.valueOverTime": "Valor ao longo do tempo",
+    "dashboard.empty.title": "O seu painel está pronto quando você estiver",
+    "dashboard.empty.subtitle":
+      "Adicione o seu primeiro artigo para começar a acompanhar aqui o seu valor, garantia e lembretes.",
     "upgrade.title": "Desbloquear com Power User",
     "share.site": "Partilhar o WIM",
     "share.text": "Faça a gestão das suas garantias e inventário com o WIM",
@@ -2875,6 +2884,9 @@ export const extras = {
     "articleForm.duplicate.notice":
       "Puede que ya tengas este artículo — comprueba antes de añadir un duplicado:",
     "articleDetail.valueOverTime": "Valor a lo largo del tiempo",
+    "dashboard.empty.title": "Tu panel está listo cuando tú lo estés",
+    "dashboard.empty.subtitle":
+      "Añade tu primer artículo para empezar a seguir aquí su valor, garantía y recordatorios.",
     "upgrade.title": "Desbloquear con Power User",
     "share.site": "Compartir WIM",
     "share.text": "Gestiona tus garantías e inventario con WIM",
@@ -3840,6 +3852,9 @@ export const extras = {
     "articleForm.duplicate.notice":
       "Je hebt dit item mogelijk al — controleer dit voordat je een duplicaat toevoegt:",
     "articleDetail.valueOverTime": "Waarde in de tijd",
+    "dashboard.empty.title": "Je dashboard staat klaar wanneer jij dat bent",
+    "dashboard.empty.subtitle":
+      "Voeg je eerste item toe om hier de waarde, garantie en herinneringen te volgen.",
     "upgrade.title": "Ontgrendelen met Power User",
     "share.site": "WIM delen",
     "share.text": "Beheer je garanties en inventaris met WIM",

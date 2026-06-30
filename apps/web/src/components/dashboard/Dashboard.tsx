@@ -6,7 +6,7 @@
  * adapt across light/dark/ocean/cyber.
  */
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Wallet,
   TrendingDown,
@@ -16,6 +16,7 @@ import {
   Inbox,
   Activity,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -37,8 +38,8 @@ import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { formatCount } from "../../utils/number";
 import { DashboardStatsSkeleton, Skeleton } from "../common/Skeleton";
-import { ErrorBanner } from "../common/States";
-import { PageHeader, Stat, Section, type StatTone } from "../ui";
+import { ErrorBanner, EmptyState } from "../common/States";
+import { PageHeader, Stat, Section, Button, type StatTone } from "../ui";
 import NeedsAttention from "./NeedsAttention";
 import BudgetCard from "./BudgetCard";
 import AttentionExtraCard from "./AttentionExtraCard";
@@ -127,6 +128,7 @@ function DetailCard({
 
 const Dashboard: React.FC = () => {
   const { t, language } = useI18n();
+  const navigate = useNavigate();
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(
     null
   );
@@ -193,6 +195,33 @@ const Dashboard: React.FC = () => {
       <div className="flex items-center gap-2 rounded-xl border ui-alert-warning p-4">
         <AlertTriangle className="h-4 w-4 ui-text-warn" aria-hidden="true" />
         <p className="text-sm ui-text-warn">{t("dashboard.noStats")}</p>
+      </div>
+    );
+  }
+
+  // A brand-new (or fully-emptied) inventory has nothing to chart — show a
+  // welcoming call-to-action instead of a wall of zeros and "no data" panels.
+  if (statistics.articles.total === 0) {
+    return (
+      <div>
+        <PageHeader
+          icon={<Activity className="h-5 w-5" />}
+          title={t("dashboard.title")}
+          subtitle={t("dashboard.subtitle")}
+        />
+        <EmptyState
+          icon={<Package className="h-8 w-8" />}
+          title={t("dashboard.empty.title")}
+          description={t("dashboard.empty.subtitle")}
+          action={
+            <Button
+              onClick={() => navigate("/articles?new=1")}
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              {t("articles.create")}
+            </Button>
+          }
+        />
       </div>
     );
   }

@@ -105,6 +105,24 @@ describe("<Dashboard />", () => {
     expect(mockedGet).toHaveBeenCalledTimes(1);
   });
 
+  it("shows a welcoming empty state (not a wall of zeros) for an empty inventory", async () => {
+    mockedGet.mockResolvedValueOnce({
+      ...STATS,
+      articles: { total: 0, withWarranty: 0, withoutWarranty: 0 },
+    });
+    renderDashboard();
+    await waitFor(() => {
+      expect(
+        screen.getByText("Your dashboard is ready when you are")
+      ).toBeInTheDocument();
+    });
+    // The CTA to add the first item is present; the KPI/charts are not.
+    expect(
+      screen.getByRole("button", { name: /create article/i })
+    ).toBeInTheDocument();
+    expect(screen.queryByText("42")).not.toBeInTheDocument();
+  });
+
   it("shows an alert with a working retry on error", async () => {
     mockedGet.mockRejectedValueOnce(new Error("boom"));
     renderDashboard();
