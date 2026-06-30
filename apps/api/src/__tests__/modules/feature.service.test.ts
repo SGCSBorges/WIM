@@ -47,22 +47,21 @@ beforeEach(() => {
 });
 
 describe("FeatureService.getAccessMap — defaults", () => {
-  it("USER clears no feature gates by default (all are POWER_USER or ADMIN)", async () => {
+  it("USER clears only the USER-default cmd_palette; every paid gate stays shut", async () => {
     seed([]);
     const map = await FeatureService.getAccessMap("USER");
-    // Every former-USER feature now defaults to POWER_USER.
+    // Global search ships open to everyone.
+    expect(map.cmd_palette).toBe(true);
+    // Every other feature defaults to POWER_USER (paid).
     expect(map.reports).toBe(false);
     expect(map.csv_export).toBe(false);
     expect(map.bulk_edit).toBe(false);
     expect(map.notifications).toBe(false);
-    // POWER_USER defaults
     expect(map.sharing).toBe(false);
     expect(map.transfers).toBe(false);
-    // ADMIN default
-    expect(map.cmd_palette).toBe(false);
   });
 
-  it("POWER_USER clears every POWER_USER gate but not cmd_palette", async () => {
+  it("POWER_USER clears every POWER_USER gate (and the USER-default cmd_palette)", async () => {
     seed([]);
     const map = await FeatureService.getAccessMap("POWER_USER");
     expect(map.sharing).toBe(true);
@@ -71,7 +70,7 @@ describe("FeatureService.getAccessMap — defaults", () => {
     expect(map.reports).toBe(true);
     expect(map.csv_export).toBe(true);
     expect(map.bulk_edit).toBe(true);
-    expect(map.cmd_palette).toBe(false);
+    expect(map.cmd_palette).toBe(true);
   });
 
   it("ADMIN inherits everything via the role hierarchy", async () => {
@@ -94,10 +93,10 @@ describe("FeatureService.getAccessMap — overrides", () => {
     expect(adminMap.reports).toBe(true);
   });
 
-  it("a DB row can also lower a default (cmd_palette → USER)", async () => {
-    seed([{ featureKey: "cmd_palette", requiredRole: "USER" }]);
+  it("a DB row can also lower a default (sharing → USER)", async () => {
+    seed([{ featureKey: "sharing", requiredRole: "USER" }]);
     const map = await FeatureService.getAccessMap("USER");
-    expect(map.cmd_palette).toBe(true);
+    expect(map.sharing).toBe(true);
   });
 });
 
@@ -110,11 +109,15 @@ describe("FeatureService.getAccessMap — temp grants", () => {
     expect(map.sharing).toBe(true);
   });
 
-  it("a grant does NOT lift a USER into an ADMIN-gated feature", async () => {
-    // cmd_palette defaults to ADMIN; a grant must not open it to USER.
-    seed([], [{ featureKey: "cmd_palette", expiresAt: future() }]);
+  it("a grant does NOT lift a USER into an admin-raised feature", async () => {
+    // No feature is hardcoded ADMIN now; an admin raises one via a FeatureFlag.
+    // A temp grant only ever lifts USER → POWER_USER, so an ADMIN gate stays shut.
+    seed(
+      [{ featureKey: "reports", requiredRole: "ADMIN" }],
+      [{ featureKey: "reports", expiresAt: future() }]
+    );
     const map = await FeatureService.getAccessMap("USER");
-    expect(map.cmd_palette).toBe(false);
+    expect(map.reports).toBe(false);
   });
 
   it("a grant for a feature raised to ADMIN is ignored", async () => {
@@ -206,9 +209,9 @@ describe("requireFeature middleware", () => {
     expect(next).toHaveBeenCalledWith();
   });
 
-  it("ADMIN clears a cmd_palette (ADMIN-default) gate", async () => {
-    seed([]);
-    const { next, invoke } = run("ADMIN", "cmd_palette");
+  it("ADMIN clears an admin-raised gate", async () => {
+    seed([{ featureKey: "reports", requiredRole: "ADMIN" }]);
+    const { next, invoke } = run("ADMIN", "reports");
     await invoke();
     expect(next).toHaveBeenCalledWith();
   });

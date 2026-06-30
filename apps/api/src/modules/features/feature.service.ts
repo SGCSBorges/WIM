@@ -41,7 +41,10 @@ export type FeatureKey = (typeof FEATURE_KEYS)[number];
 type RoleName = "USER" | "POWER_USER" | "ADMIN";
 
 const DEFAULTS: Record<FeatureKey, RoleName> = {
-  cmd_palette: "ADMIN",
+  // Global search / command palette is a basic find-my-item affordance, so it
+  // ships open to every authenticated user (an admin can still raise the bar
+  // via a FeatureFlag row). No feature is hardcoded ADMIN-only anymore.
+  cmd_palette: "USER",
   sharing: "POWER_USER",
   transfers: "POWER_USER",
   messaging: "POWER_USER",

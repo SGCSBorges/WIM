@@ -252,6 +252,7 @@ export default function ArticlesFilterBar({
 
           <Input
             type="number"
+            inputMode="decimal"
             min="0"
             value={priceMin}
             onChange={(e) => updateParams({ priceMin: e.target.value })}
@@ -261,6 +262,7 @@ export default function ArticlesFilterBar({
           />
           <Input
             type="number"
+            inputMode="decimal"
             min="0"
             value={priceMax}
             onChange={(e) => updateParams({ priceMax: e.target.value })}

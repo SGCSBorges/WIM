@@ -27,6 +27,7 @@ vi.mock("../../libs/prisma", () => ({
     user: {
       count: vi.fn(),
       groupBy: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -96,6 +97,8 @@ function setupDashboardMocks({
     .mockResolvedValueOnce(warrantiesExpiringSoon)
     .mockResolvedValueOnce(warrantiesWithAttachment);
   mockPrisma.alerte.count.mockResolvedValue(alertsTotal);
+  // Display-currency lookup carried on the dashboard payload.
+  mockPrisma.user.findUnique.mockResolvedValue({ currency: "USD" });
   // Time-series queries used by the forecasting buckets default to empty.
   mockPrisma.garantie.findMany.mockResolvedValue([]);
 }

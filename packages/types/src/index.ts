@@ -557,6 +557,9 @@ export interface MonthlyBucket {
  *  Prisma queries. Counts here are *owner-scoped* — shared-in
  *  articles are excluded so the dashboard reflects what the user owns. */
 export interface DashboardStatistics {
+  /** The owner's display currency (e.g. "USD"), carried on the payload so the
+   *  client can format money without a second /profile/me round-trip. */
+  currency: string;
   articles: {
     total: number;
     withWarranty: number;

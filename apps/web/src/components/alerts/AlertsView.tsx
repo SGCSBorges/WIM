@@ -281,6 +281,7 @@ export default function AlertsView() {
               />
               <Input
                 type="number"
+                inputMode="numeric"
                 min="1"
                 max="120"
                 value={newRecurrence}

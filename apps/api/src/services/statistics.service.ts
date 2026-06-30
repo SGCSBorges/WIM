@@ -112,6 +112,7 @@ export async function getDashboardStatistics(
       locationValueRows,
       tagValueRows,
       valueArticles,
+      userRow,
     ] = await Promise.all([
       prisma.article.count({ where: { ownerUserId, deletedAt: null } }),
       prisma.article.count({
@@ -201,6 +202,13 @@ export async function getDashboardStatistics(
           createdAt: true,
           garantie: { select: { garantieDateAchat: true } },
         },
+      }),
+      // Carry the user's display currency on the dashboard payload so the
+      // client doesn't need a second round-trip to /profile/me just to format
+      // money figures.
+      prisma.user.findUnique({
+        where: { userId: ownerUserId },
+        select: { currency: true },
       }),
     ]);
 
@@ -356,6 +364,7 @@ export async function getDashboardStatistics(
       Array.from(m.entries()).map(([month, count]) => ({ month, count }));
 
     return {
+      currency: userRow?.currency ?? "USD",
       articles: {
         total: articlesTotal,
         withWarranty: articlesWithWarranty,

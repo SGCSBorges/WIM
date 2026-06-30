@@ -31,7 +31,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { statisticsAPI, profileAPI } from "../../services/api";
+import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
@@ -139,6 +139,8 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       const data = await statisticsAPI.getDashboard();
       setStatistics(data);
+      // Currency rides on the dashboard payload (no separate /profile/me call).
+      if (data.currency) setCurrency(data.currency);
       setError(null);
     } catch (err) {
       setError(getErrorMessage(err, t("common.errorOccurred")));
@@ -149,12 +151,6 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchStatistics();
-    profileAPI
-      .getMe()
-      .then((me) => {
-        if (me.currency) setCurrency(me.currency);
-      })
-      .catch(() => {});
   }, [fetchStatistics]);
 
   if (loading) {

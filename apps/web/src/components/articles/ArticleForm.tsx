@@ -881,6 +881,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                 >
                   <Input
                     type="number"
+                    inputMode="numeric"
                     min={1}
                     max={120}
                     value={warrantyDuration}

@@ -6,7 +6,7 @@
  */
 import { forwardRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut, Search } from "lucide-react";
+import { Menu, X, User, LogOut, Search, Plus } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { useFeature } from "../../features/features";
 import { isActivePath } from "../../lib/navItems";
@@ -75,12 +75,25 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
 
         <div className="flex-1" />
 
+        {/* Global quick-add — the primary action in an inventory app, reachable
+            from any page (label collapses to an icon on phones). */}
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => navigate("/articles?new=1")}
+          aria-label={t("articles.create")}
+          title={t("articles.create")}
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">{t("articles.create")}</span>
+        </Button>
+
         {showSearch && (
           <button
             type="button"
             onClick={onOpenSearch}
             aria-label={t("cmdk.open")}
-            className="hidden h-10 items-center gap-2 rounded-lg border border-line bg-surface-muted px-3 text-sm ui-text-muted hover:ui-title sm:inline-flex"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-line bg-surface-muted px-3 text-sm ui-text-muted hover:ui-title"
           >
             <Search className="h-4 w-4" aria-hidden="true" />
             <span className="hidden md:inline">{t("cmdk.open")}</span>

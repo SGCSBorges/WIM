@@ -789,7 +789,9 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   overrides.
 - **Service** (`apps/api/src/modules/features/feature.service.ts`):
   `FEATURE_KEYS` + `DEFAULTS` are the source of truth. Defaults:
-  `cmd_palette=ADMIN`; **every other feature (`sharing`, `transfers`,
+  `cmd_palette=USER` (global search/command palette ships open to everyone —
+  no feature is hardcoded ADMIN-only; an admin can still raise any bar to
+  ADMIN via a `FeatureFlag` row); **every other feature (`sharing`, `transfers`,
   `messaging`, `reports`, `analytics`, `templates`, `bulk_edit`,
   `saved_views`, `notifications`, `calendar_feed`, `csv_import`,
   `csv_export`, `insurance`, `loans`, `maintenance`, `budget`,
@@ -834,10 +836,10 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   stay open" rule mirrors the transfer reject/revoke + calendar-DELETE
   pattern: a downgraded user can always wind a thing down even when the
   feature is later restricted. `cmd_palette` is frontend-only (it reuses the
-  shared article-search endpoint, so there's no dedicated route to gate).
-  Every gate except `cmd_palette` (ADMIN) defaults to POWER_USER, so by
-  default these are all paid features; an admin can lower a bar to USER per
-  feature to make one free.
+  shared article-search endpoint, so there's no dedicated route to gate) and
+  defaults to USER (global search for everyone). Every *other* gate defaults
+  to POWER_USER, so by default those are all paid features; an admin can lower
+  a bar to USER per feature to make one free (or raise any bar to ADMIN).
 - **Admin endpoints** (`admin.routes.ts`): `GET /api/admin/features`
   (flags + active grants), `PUT /api/admin/features/:key` (set required
   role), `POST /api/admin/features/grants` (rejects non-POWER_USER keys),

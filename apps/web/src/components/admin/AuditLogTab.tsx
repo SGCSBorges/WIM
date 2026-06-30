@@ -90,6 +90,7 @@ export default function AuditLogTab() {
           <Input
             id="al-user"
             type="number"
+            inputMode="numeric"
             value={filterUserId}
             onChange={(e) => setFilterUserId(e.target.value)}
             placeholder="123"

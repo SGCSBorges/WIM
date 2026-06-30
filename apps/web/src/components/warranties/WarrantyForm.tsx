@@ -201,6 +201,7 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
           </label>
           <input
             type="number"
+            inputMode="numeric"
             id="garantieDuration"
             value={formData.garantieDuration}
             onChange={(e) =>
