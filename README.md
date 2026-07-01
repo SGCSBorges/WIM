@@ -1,5 +1,7 @@
 # WIM — Warranty & Inventory Manager
 
+> 🇫🇷 Version française : [`README.fr.md`](./README.fr.md) · 📚 Documentation index: [`docs/README.md`](./docs/README.md)
+
 WIM is a full-stack SaaS application for tracking physical assets, their warranties, attachments, and alerts. Built with a React frontend and a Node.js/Express API backed by PostgreSQL and Redis.
 
 > **New chat?** Read [`CLAUDE.md`](./CLAUDE.md) at the repo root — it has the internal context (deploy quirks, conventions, open items) the README intentionally doesn't repeat.

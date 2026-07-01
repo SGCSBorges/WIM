@@ -1,5 +1,7 @@
 # WIM architecture
 
+> 🇫🇷 Version française : [`architecture.fr.md`](./architecture.fr.md) · 📚 Index: [`README.md`](./README.md)
+
 A map of how the pieces fit together. This is the "how it all flows" view —
 the canonical detail lives elsewhere and is linked from here:
 
