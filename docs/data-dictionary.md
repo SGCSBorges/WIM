@@ -1,5 +1,8 @@
 # WIM data dictionary
 
+> 🇫🇷 Version française : [`data-dictionary.fr.md`](./data-dictionary.fr.md) ·
+> 📚 Index : [`README.md`](./README.md)
+
 A field-level reference for every table and enum in the database. It is the
 **written companion** to the visual [`docs/uml/03-class-diagram.puml`](./uml/03-class-diagram.svg):
 the diagram shows the relationships at a glance, this document is the exhaustive
