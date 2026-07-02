@@ -35,6 +35,7 @@ export const FEATURE_KEYS = [
   "maintenance",
   "budget",
   "public_page",
+  "wishlist",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -62,6 +63,7 @@ const DEFAULTS: Record<FeatureKey, RoleName> = {
   maintenance: "POWER_USER",
   budget: "POWER_USER",
   public_page: "POWER_USER",
+  wishlist: "POWER_USER",
 };
 
 export { DEFAULTS as FEATURE_DEFAULTS };

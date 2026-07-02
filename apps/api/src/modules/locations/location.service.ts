@@ -8,6 +8,43 @@ import { prisma } from "../../libs/prisma";
 import { LocationCreateInput, LocationUpdateInput } from "./location.schemas";
 import { createHttpError } from "../../utils/http-error";
 
+// Guard for the parent link: the parent must exist and belong to the same
+// owner, and (on update) the proposed parent must not be the location itself
+// or one of its descendants — walking up the ancestor chain from the parent
+// must never reach `locationId`. The walk is capped so a corrupted chain
+// can't loop forever.
+async function assertValidParent(
+  ownerUserId: number,
+  parentLocationId: number,
+  locationId?: number
+) {
+  if (locationId !== undefined && parentLocationId === locationId)
+    throw createHttpError(400, "A location cannot be its own parent");
+
+  const parent = await prisma.location.findFirst({
+    where: { locationId: parentLocationId, ownerUserId },
+    select: { locationId: true, parentLocationId: true },
+  });
+  if (!parent) throw createHttpError(404, "Parent location not found");
+
+  if (locationId === undefined) return;
+
+  let cursor = parent.parentLocationId;
+  for (let depth = 0; cursor !== null && depth < 50; depth++) {
+    if (cursor === locationId)
+      throw createHttpError(
+        400,
+        "Cannot move a location under one of its own sub-locations"
+      );
+    const next: { parentLocationId: number | null } | null =
+      await prisma.location.findFirst({
+        where: { locationId: cursor, ownerUserId },
+        select: { parentLocationId: true },
+      });
+    cursor = next?.parentLocationId ?? null;
+  }
+}
+
 export const LocationService = {
   // The list response carries each location's article count and the sum of
   // its articles' purchase prices, so the Locations page can render
@@ -99,10 +136,13 @@ export const LocationService = {
     };
   },
 
-  create: (data: LocationCreateInput) =>
-    prisma.location.create({
+  create: async (data: LocationCreateInput) => {
+    if (data.parentLocationId != null)
+      await assertValidParent(data.ownerUserId, data.parentLocationId);
+    return prisma.location.create({
       data,
-    }),
+    });
+  },
 
   update: async (
     locationId: number,
@@ -113,6 +153,8 @@ export const LocationService = {
       where: { locationId, ownerUserId },
     });
     if (!existing) throw createHttpError(404, "Location not found");
+    if (data.parentLocationId != null)
+      await assertValidParent(ownerUserId, data.parentLocationId, locationId);
     return prisma.location.update({
       where: { locationId },
       data,

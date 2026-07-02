@@ -15,6 +15,7 @@ import {
   UpdateEmailSchema,
   UpdatePasswordSchema,
   UpdatePreferencesSchema,
+  UpdateReminderDaysSchema,
   UpdateWeeklyDigestSchema,
 } from "./profile.schemas";
 import { ProfileService } from "./profile.service";
@@ -318,6 +319,25 @@ router.put(
 );
 
 router.put(
+  "/me/reminder-days",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { days } = UpdateReminderDaysSchema.parse(req.body);
+    const updated = await ProfileService.updateReminderDays(
+      req.user!.sub,
+      days
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: req.user!.sub,
+      metadata: { field: "warrantyReminderDays", days },
+    });
+    res.json(updated);
+  })
+);
+
+router.put(
   "/me/weekly-digest",
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -387,6 +407,122 @@ router.put(
       userId: updated.userId,
       email: updated.email,
       role: updated.role,
+    });
+  })
+);
+
+/**
+ * GET /api/profile/me/export — full personal data export (data portability).
+ * One JSON document with every record the account owns: profile settings,
+ * articles (warranty + history + notes + locations + tags + attachment
+ * metadata), loans, insurance, service records, alerts, saved views,
+ * templates, wishlist. Deliberately NOT feature-gated — exporting your own
+ * data is a right, not a paid feature. Message threads are excluded (they
+ * contain the counterparty's words). Rate-limited + audited as DB_EXPORT.
+ */
+router.get(
+  "/me/export",
+  security.destructiveRateLimiter,
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.sub;
+    const [
+      profile,
+      articles,
+      warrantyHistory,
+      alerts,
+      loans,
+      insurancePolicies,
+      serviceRecords,
+      locations,
+      tags,
+      savedViews,
+      templates,
+      wishlist,
+    ] = await Promise.all([
+      prisma.user.findUniqueOrThrow({
+        where: { userId },
+        select: {
+          userId: true,
+          email: true,
+          role: true,
+          currency: true,
+          monthlyBudget: true,
+          annualBudget: true,
+          emailReminders: true,
+          weeklyDigest: true,
+          warrantyReminderDays: true,
+          emailVerifiedAt: true,
+          theme: true,
+          language: true,
+          dateFormat: true,
+          createdAt: true,
+        },
+      }),
+      prisma.article.findMany({
+        where: { ownerUserId: userId },
+        include: {
+          garantie: true,
+          notes: true,
+          locations: {
+            select: { location: { select: { name: true } }, assignedAt: true },
+          },
+          tags: { select: { tag: { select: { name: true } } } },
+          attachments: {
+            select: {
+              attachmentId: true,
+              type: true,
+              fileName: true,
+              mimeType: true,
+              fileSize: true,
+              fileUrl: true,
+              createdAt: true,
+            },
+          },
+        },
+      }),
+      prisma.warrantyHistory.findMany({ where: { ownerUserId: userId } }),
+      prisma.alerte.findMany({ where: { ownerUserId: userId } }),
+      prisma.loan.findMany({ where: { ownerUserId: userId } }),
+      prisma.insurancePolicy.findMany({
+        where: { ownerUserId: userId },
+        include: { articles: { select: { articleId: true } } },
+      }),
+      prisma.serviceRecord.findMany({ where: { ownerUserId: userId } }),
+      prisma.location.findMany({ where: { ownerUserId: userId } }),
+      prisma.tag.findMany({ where: { ownerUserId: userId } }),
+      prisma.savedView.findMany({ where: { ownerUserId: userId } }),
+      prisma.articleTemplate.findMany({ where: { ownerUserId: userId } }),
+      prisma.wishlistItem.findMany({ where: { ownerUserId: userId } }),
+    ]);
+
+    await auditAction(req, {
+      userId,
+      action: "DB_EXPORT",
+      entity: "User",
+      entityId: userId,
+      metadata: { report: "account", articles: articles.length },
+    });
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="wim-account-export-${userId}.json"`
+    );
+    res.json({
+      exportedAt: new Date().toISOString(),
+      format: "wim-account-export/v1",
+      profile,
+      articles,
+      warrantyHistory,
+      alerts,
+      loans,
+      insurancePolicies,
+      serviceRecords,
+      locations,
+      tags,
+      savedViews,
+      templates,
+      wishlist,
     });
   })
 );

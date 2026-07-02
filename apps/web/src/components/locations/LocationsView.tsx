@@ -15,12 +15,13 @@ import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
 import { useUndoableDelete } from "../../hooks/useUndoableDelete";
 import { formatMoney } from "../../utils/money";
-import { PageHeader, Section, Button, Input, Badge } from "../ui";
+import { PageHeader, Section, Button, Input, Select, Badge } from "../ui";
 
 type LocationRow = {
   locationId: number;
   name: string;
   description?: string | null;
+  parentLocationId?: number | null;
   totalValue?: number;
   // Live article count, returned by GET /api/locations via Prisma `_count`.
   // Reading it from the list response avoids an N+1 (one extra request per
@@ -40,11 +41,13 @@ export default function LocationsView() {
 
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [newParentId, setNewParentId] = useState("");
   const [creating, setCreating] = useState(false);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editParentId, setEditParentId] = useState("");
   const [busy, setBusy] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
@@ -65,6 +68,41 @@ export default function LocationsView() {
     fetchAll();
   }, [fetchAll]);
 
+  // Hierarchy helpers. `pathOf` renders the ancestor chain ("Home › Garage");
+  // `descendantIds` powers the edit select's exclusion list so a location
+  // can't be moved under itself or its own subtree (the server enforces the
+  // same invariant — this just keeps the picker honest).
+  const byId = new Map(items.map((l) => [l.locationId, l]));
+  const pathOf = (row: LocationRow): string => {
+    const parts: string[] = [];
+    let cursor = row.parentLocationId ?? null;
+    for (let depth = 0; cursor != null && depth < 10; depth++) {
+      const parent = byId.get(cursor);
+      if (!parent) break;
+      parts.unshift(parent.name);
+      cursor = parent.parentLocationId ?? null;
+    }
+    return parts.join(" › ");
+  };
+  const descendantIds = (rootId: number): Set<number> => {
+    const out = new Set<number>([rootId]);
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const l of items) {
+        if (
+          l.parentLocationId != null &&
+          out.has(l.parentLocationId) &&
+          !out.has(l.locationId)
+        ) {
+          out.add(l.locationId);
+          grew = true;
+        }
+      }
+    }
+    return out;
+  };
+
   const create = async () => {
     const name = newName.trim();
     if (!name) return;
@@ -73,9 +111,11 @@ export default function LocationsView() {
       await locationsAPI.create({
         name,
         description: newDescription.trim() || null,
+        parentLocationId: newParentId ? Number(newParentId) : null,
       });
       setNewName("");
       setNewDescription("");
+      setNewParentId("");
       toast.show(t("locations.created"), { kind: "success" });
       await fetchAll();
     } catch (e) {
@@ -91,12 +131,16 @@ export default function LocationsView() {
     setEditingId(row.locationId);
     setEditName(row.name);
     setEditDescription(row.description ?? "");
+    setEditParentId(
+      row.parentLocationId != null ? String(row.parentLocationId) : ""
+    );
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditName("");
     setEditDescription("");
+    setEditParentId("");
   };
 
   const saveEdit = async (id: number) => {
@@ -107,6 +151,7 @@ export default function LocationsView() {
       await locationsAPI.update(id, {
         name,
         description: editDescription.trim() || null,
+        parentLocationId: editParentId ? Number(editParentId) : null,
       });
       cancelEdit();
       toast.show(t("locations.updated"), { kind: "success" });
@@ -186,6 +231,18 @@ export default function LocationsView() {
               maxLength={255}
               aria-label={t("locations.placeholder.description")}
             />
+            <Select
+              value={newParentId}
+              onChange={(e) => setNewParentId(e.target.value)}
+              aria-label={t("locations.parent.label")}
+            >
+              <option value="">{t("locations.parent.none")}</option>
+              {items.map((p) => (
+                <option key={p.locationId} value={p.locationId}>
+                  {pathOf(p) ? `${pathOf(p)} › ${p.name}` : p.name}
+                </option>
+              ))}
+            </Select>
           </div>
           <div className="mt-3">
             <Button
@@ -224,8 +281,15 @@ export default function LocationsView() {
                           <div className="flex flex-wrap items-center gap-2">
                             <span
                               className="truncate font-medium ui-title"
-                              title={l.name}
+                              title={
+                                pathOf(l) ? `${pathOf(l)} › ${l.name}` : l.name
+                              }
                             >
+                              {pathOf(l) && (
+                                <span className="font-normal ui-text-muted">
+                                  {pathOf(l)} ›{" "}
+                                </span>
+                              )}
                               {l.name}
                             </span>
                             {l.totalValue !== undefined && l.totalValue > 0 && (
@@ -318,6 +382,27 @@ export default function LocationsView() {
                             maxLength={255}
                             aria-label={t("locations.placeholder.description")}
                           />
+                          <Select
+                            value={editParentId}
+                            onChange={(e) => setEditParentId(e.target.value)}
+                            aria-label={t("locations.parent.label")}
+                          >
+                            <option value="">
+                              {t("locations.parent.none")}
+                            </option>
+                            {items
+                              .filter(
+                                (p) =>
+                                  !descendantIds(l.locationId).has(p.locationId)
+                              )
+                              .map((p) => (
+                                <option key={p.locationId} value={p.locationId}>
+                                  {pathOf(p)
+                                    ? `${pathOf(p)} › ${p.name}`
+                                    : p.name}
+                                </option>
+                              ))}
+                          </Select>
                         </div>
                         <div className="flex gap-2">
                           <Button

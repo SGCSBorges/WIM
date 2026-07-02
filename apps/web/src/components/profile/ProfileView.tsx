@@ -34,6 +34,8 @@ import {
   Eye,
   EyeOff,
   Wallet,
+  MailCheck,
+  Loader2,
 } from "lucide-react";
 import {
   profileAPI,
@@ -41,6 +43,7 @@ import {
   articlesAPI,
   sharesAPI,
   calendarAPI,
+  authAPI,
   type BillingSubscription,
   type ShareItem,
   type ShareInviteItem,
@@ -91,7 +94,12 @@ type Me = {
   annualBudget?: string | number | null;
   emailReminders?: boolean;
   weeklyDigest?: boolean;
+  warrantyReminderDays?: string | null;
+  emailVerifiedAt?: string | null;
 };
+
+// Default warranty reminder offsets (mirrors the server's J-30/J-7/J-1).
+const DEFAULT_REMINDER_DAYS = "30, 7, 1";
 
 // A small curated list keeps the selector usable; the API accepts any ISO code.
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF", "JPY", "BRL"];
@@ -136,6 +144,14 @@ export default function ProfileView() {
   const [monthlyBudget, setMonthlyBudget] = useState("");
   const [annualBudget, setAnnualBudget] = useState("");
   const [budgetSaving, setBudgetSaving] = useState(false);
+
+  const [reminderDaysInput, setReminderDaysInput] = useState("");
+  const [reminderDaysSaving, setReminderDaysSaving] = useState(false);
+  const [reminderDaysError, setReminderDaysError] = useState<string | null>(
+    null
+  );
+  const [verifySending, setVerifySending] = useState(false);
+  const [verifySent, setVerifySent] = useState(false);
 
   const [email, setEmail] = useState("");
   const [currentPasswordForEmail, setCurrentPasswordForEmail] = useState("");
@@ -214,6 +230,11 @@ export default function ProfileView() {
       setAnnualBudget(
         data.annualBudget != null ? String(data.annualBudget) : ""
       );
+      setReminderDaysInput(
+        data.warrantyReminderDays
+          ? data.warrantyReminderDays.split(",").join(", ")
+          : DEFAULT_REMINDER_DAYS
+      );
       // Pull subscription details from the billing endpoint in parallel —
       // it's a separate Stripe round-trip on the server and we don't want
       // to block first paint of the profile on it.
@@ -235,6 +256,58 @@ export default function ProfileView() {
   useEffect(() => {
     loadMe();
   }, [loadMe]);
+
+  // Parse the "90, 30, 7" input into validated day offsets, save, and let the
+  // server re-arm every live warranty. An input equal to the default resets
+  // the stored preference to null.
+  const saveReminderDays = async () => {
+    setReminderDaysError(null);
+    const parts = reminderDaysInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const days = parts.map(Number);
+    if (
+      parts.length === 0 ||
+      parts.length > 5 ||
+      days.some((n) => !Number.isInteger(n) || n < 1 || n > 365)
+    ) {
+      setReminderDaysError(t("reminderDays.invalid"));
+      return;
+    }
+    const unique = [...new Set(days)].sort((a, b) => b - a);
+    const isDefault = unique.join(",") === "30,7,1";
+    setReminderDaysSaving(true);
+    try {
+      const updated = await profileAPI.updateReminderDays(
+        isDefault ? null : unique
+      );
+      setMe(updated);
+      setReminderDaysInput(
+        updated.warrantyReminderDays
+          ? updated.warrantyReminderDays.split(",").join(", ")
+          : DEFAULT_REMINDER_DAYS
+      );
+      showSuccess(t("reminderDays.success"));
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setReminderDaysSaving(false);
+    }
+  };
+
+  const resendVerification = async () => {
+    setVerifySending(true);
+    try {
+      await authAPI.resendVerificationEmail();
+      setVerifySent(true);
+      setTimeout(() => setVerifySent(false), 4000);
+    } catch (e: unknown) {
+      showFailure(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setVerifySending(false);
+    }
+  };
 
   const updateEmail = async () => {
     setError(null);
@@ -585,6 +658,38 @@ export default function ProfileView() {
                 )}
               </p>
             </div>
+            {me?.emailVerifiedAt ? (
+              <Badge tone="success" icon={<MailCheck className="h-3 w-3" />}>
+                {t("verifyEmail.verifiedBadge")}
+              </Badge>
+            ) : (
+              me && (
+                <div className="shrink-0 text-right">
+                  {verifySent ? (
+                    <p role="status" className="text-xs ui-text-success">
+                      {t("verifyEmail.resent")}
+                    </p>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resendVerification}
+                      loading={verifySending}
+                      aria-busy={verifySending}
+                      leftIcon={
+                        verifySending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )
+                      }
+                    >
+                      {t("verifyEmail.resendButton")}
+                    </Button>
+                  )}
+                </div>
+              )
+            )}
           </div>
         </Section>
 
@@ -811,6 +916,44 @@ export default function ProfileView() {
               />
               {t("weeklyDigest.toggle")}
             </label>
+          </div>
+          <div className="mt-3 border-t ui-divider pt-3">
+            <p className="text-sm font-medium ui-title">
+              {t("reminderDays.title")}
+            </p>
+            <p className="mt-0.5 mb-2 text-xs ui-text-muted">
+              {t("reminderDays.subtitle")}
+            </p>
+            <div className="flex flex-wrap items-end gap-2">
+              <Field
+                label={t("reminderDays.label")}
+                htmlFor="profile-reminder-days"
+                className="max-w-[14rem]"
+              >
+                <Input
+                  id="profile-reminder-days"
+                  type="text"
+                  inputMode="numeric"
+                  value={reminderDaysInput}
+                  onChange={(e) => setReminderDaysInput(e.target.value)}
+                  placeholder={DEFAULT_REMINDER_DAYS}
+                />
+              </Field>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={saveReminderDays}
+                loading={reminderDaysSaving}
+                aria-busy={reminderDaysSaving}
+              >
+                {t("common.save")}
+              </Button>
+            </div>
+            {reminderDaysError && (
+              <p role="alert" className="mt-1 text-sm ui-text-error">
+                {reminderDaysError}
+              </p>
+            )}
           </div>
         </Section>
 

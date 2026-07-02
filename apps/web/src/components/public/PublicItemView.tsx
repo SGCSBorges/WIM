@@ -3,14 +3,116 @@
  * privacy-safe card (name / brand / model / description / photo / category +
  * a coarse warranty flag) for anyone with the link; no auth, no app shell.
  * Sensitive fields (price, serial, owner, location) are never sent here.
+ *
+ * Lost & found: while the owner has the item marked LOST the page shows a
+ * banner + an anonymous "notify the owner" form. The finder's message (and
+ * optional contact) is relayed to the owner as a notification — neither
+ * party learns anything about the other beyond what they type.
  */
 import { useEffect, useState } from "react";
-import { Package, ShieldCheck, ShieldX } from "lucide-react";
+import {
+  Loader2,
+  Package,
+  SearchCheck,
+  ShieldCheck,
+  ShieldX,
+} from "lucide-react";
 import { publicAPI } from "../../services/api";
 import type { PublicItem, ArticleCategory } from "../../types";
 import { useI18n } from "../../i18n/i18n";
+import { getErrorMessage } from "../../utils/error";
 import ArticleThumb from "../articles/ArticleThumb";
-import { Badge } from "../ui";
+import { Badge, Button, Field, Input, Textarea } from "../ui";
+
+const MESSAGE_MAX = 500;
+
+function FoundReportForm({ token }: { token: string }) {
+  const { t } = useI18n();
+  const [message, setMessage] = useState("");
+  const [contact, setContact] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!message.trim()) {
+      setError(t("publicItem.found.messageRequired"));
+      return;
+    }
+    setSending(true);
+    try {
+      await publicAPI.reportFound(token, message.trim(), contact.trim());
+      setSent(true);
+    } catch (err) {
+      setError(getErrorMessage(err, t("common.errorOccurred")));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <p
+        role="status"
+        className="rounded-lg border ui-alert-success p-3 text-center text-sm ui-text-success"
+      >
+        {t("publicItem.found.sent")}
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="space-y-3">
+      <Field label={t("publicItem.found.messageLabel")} htmlFor="found-message">
+        <Textarea
+          id="found-message"
+          rows={3}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          maxLength={MESSAGE_MAX}
+          placeholder={t("publicItem.found.messagePlaceholder")}
+        />
+      </Field>
+      <p className="text-right text-xs ui-text-muted tabular-nums">
+        {message.length} / {MESSAGE_MAX}
+      </p>
+      <Field label={t("publicItem.found.contactLabel")} htmlFor="found-contact">
+        <Input
+          id="found-contact"
+          type="text"
+          value={contact}
+          onChange={(e) => setContact(e.target.value)}
+          maxLength={120}
+          autoComplete="email"
+          placeholder={t("publicItem.found.contactPlaceholder")}
+        />
+      </Field>
+      {error && (
+        <p role="alert" className="text-sm ui-text-error">
+          {error}
+        </p>
+      )}
+      <Button
+        type="submit"
+        variant="primary"
+        className="w-full"
+        loading={sending}
+        aria-busy={sending}
+        leftIcon={
+          sending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <SearchCheck className="h-4 w-4" />
+          )
+        }
+      >
+        {t("publicItem.found.submit")}
+      </Button>
+    </form>
+  );
+}
 
 export default function PublicItemView({ token }: { token: string }) {
   const { t } = useI18n();
@@ -96,6 +198,15 @@ export default function PublicItemView({ token }: { token: string }) {
               <p className="whitespace-pre-line break-words text-center text-sm">
                 {item.articleDescription}
               </p>
+            )}
+
+            {item.isLost && (
+              <div className="space-y-3 rounded-lg border ui-alert-warning p-4">
+                <p className="text-center text-sm font-medium" role="alert">
+                  {t("publicItem.found.banner")}
+                </p>
+                <FoundReportForm token={token} />
+              </div>
             )}
           </div>
         )}

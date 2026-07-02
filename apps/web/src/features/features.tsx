@@ -31,7 +31,8 @@ export type FeatureKey =
   | "loans"
   | "maintenance"
   | "budget"
-  | "public_page";
+  | "public_page"
+  | "wishlist";
 
 type FeatureMap = Record<FeatureKey, boolean>;
 
@@ -54,6 +55,7 @@ const EMPTY: FeatureMap = {
   maintenance: false,
   budget: false,
   public_page: false,
+  wishlist: false,
 };
 
 interface FeatureContextValue {

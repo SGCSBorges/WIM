@@ -9,6 +9,69 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "nav.wishlist": "Wishlist",
+    "features.wishlist": "Wishlist & planned purchases",
+    "wishlist.title": "Wishlist",
+    "wishlist.subtitle":
+      "Planned purchases — checked against your monthly budget",
+    "wishlist.form.name": "Item",
+    "wishlist.form.targetPrice": "Target price",
+    "wishlist.form.url": "Link",
+    "wishlist.form.note": "Note",
+    "wishlist.form.add": "Add to wishlist",
+    "wishlist.nameRequired": "Give the wish a name",
+    "wishlist.priceInvalid": "Target price must be a positive number",
+    "wishlist.urlInvalid": "Link must be an http(s) URL",
+    "wishlist.deleted": "Wishlist item deleted",
+    "wishlist.markPurchased": "Bought it",
+    "wishlist.unmarkPurchased": "Not bought",
+    "wishlist.openLink": "Open product link",
+    "wishlist.empty.title": "Nothing on your wishlist yet",
+    "wishlist.empty.subtitle":
+      "Add items you plan to buy and see how they fit your budget.",
+    "wishlist.budget.over":
+      "Open wishes total {total} — that's {over} over what's left of this month's budget.",
+    "wishlist.budget.fits":
+      "Open wishes total {total} — fits within this month's remaining budget.",
+    "verifyEmail.working": "Verifying your email…",
+    "verifyEmail.success": "Your email address is verified. Thanks!",
+    "verifyEmail.failed":
+      "This verification link is invalid or has expired. You can request a new one from your Profile.",
+    "verifyEmail.goToApp": "Go to WIM",
+    "verifyEmail.verifiedBadge": "Email verified",
+    "verifyEmail.resendButton": "Verify email",
+    "verifyEmail.resent": "Verification link sent — check your inbox",
+    "reminderDays.title": "Warranty reminder schedule",
+    "reminderDays.subtitle":
+      "How many days before a warranty expires you want reminders (up to 5 values, comma-separated). Applies to all your warranties.",
+    "reminderDays.label": "Days before expiry",
+    "reminderDays.invalid":
+      "Enter 1–5 whole numbers between 1 and 365, separated by commas",
+    "reminderDays.success": "Reminder schedule updated",
+    "export.target.account": "Full account export (all data)",
+    "export.account.button": "Download JSON",
+    "articleForm.purchasedFrom": "Purchased from",
+    "articleForm.placeholder.purchasedFrom": "Store or website",
+    "articleForm.orderRef": "Order / receipt no.",
+    "articleForm.placeholder.orderRef": "Order or receipt reference",
+    "articleDetail.purchasedFrom": "Purchased from",
+    "articleDetail.orderRef": "Order no.",
+    "locations.parent.label": "Parent location",
+    "locations.parent.none": "No parent (top level)",
+    "service.intervalMonths": "Repeat every (months)",
+    "service.intervalHint":
+      "With a repeat interval, the next service is scheduled automatically from the service date.",
+    "service.intervalBadge": "Every {months} mo",
+    "publicItem.found.banner":
+      "The owner reported this item lost. Found it? Let them know.",
+    "publicItem.found.messageLabel": "Your message",
+    "publicItem.found.messagePlaceholder":
+      "Where you found it, how to arrange pickup…",
+    "publicItem.found.contactLabel": "How can the owner reach you? (optional)",
+    "publicItem.found.contactPlaceholder": "Email or phone",
+    "publicItem.found.submit": "Notify the owner",
+    "publicItem.found.sent": "Thank you! The owner has been notified.",
+    "publicItem.found.messageRequired": "Please write a short message",
     "articleForm.duplicate.notice":
       "You may already have this item — check before adding a duplicate:",
     "articleDetail.valueOverTime": "Value over time",
@@ -950,6 +1013,70 @@ export const extras = {
     "features.csv_export": "CSV export",
   },
   fr: {
+    "nav.wishlist": "Liste d'envies",
+    "features.wishlist": "Liste d'envies et achats prévus",
+    "wishlist.title": "Liste d'envies",
+    "wishlist.subtitle": "Achats prévus — comparés à votre budget mensuel",
+    "wishlist.form.name": "Article",
+    "wishlist.form.targetPrice": "Prix visé",
+    "wishlist.form.url": "Lien",
+    "wishlist.form.note": "Note",
+    "wishlist.form.add": "Ajouter à la liste",
+    "wishlist.nameRequired": "Donnez un nom à cette envie",
+    "wishlist.priceInvalid": "Le prix visé doit être un nombre positif",
+    "wishlist.urlInvalid": "Le lien doit être une URL http(s)",
+    "wishlist.deleted": "Élément supprimé de la liste",
+    "wishlist.markPurchased": "Acheté",
+    "wishlist.unmarkPurchased": "Non acheté",
+    "wishlist.openLink": "Ouvrir le lien produit",
+    "wishlist.empty.title": "Votre liste d'envies est vide",
+    "wishlist.empty.subtitle":
+      "Ajoutez les articles que vous prévoyez d'acheter et voyez s'ils rentrent dans votre budget.",
+    "wishlist.budget.over":
+      "Les envies ouvertes totalisent {total} — soit {over} au-dessus du budget restant ce mois-ci.",
+    "wishlist.budget.fits":
+      "Les envies ouvertes totalisent {total} — dans le budget restant ce mois-ci.",
+    "verifyEmail.working": "Vérification de votre e-mail…",
+    "verifyEmail.success": "Votre adresse e-mail est vérifiée. Merci !",
+    "verifyEmail.failed":
+      "Ce lien de vérification est invalide ou a expiré. Vous pouvez en demander un nouveau depuis votre profil.",
+    "verifyEmail.goToApp": "Aller à WIM",
+    "verifyEmail.verifiedBadge": "E-mail vérifié",
+    "verifyEmail.resendButton": "Vérifier l'e-mail",
+    "verifyEmail.resent":
+      "Lien de vérification envoyé — vérifiez votre boîte mail",
+    "reminderDays.title": "Calendrier des rappels de garantie",
+    "reminderDays.subtitle":
+      "Combien de jours avant l'expiration d'une garantie vous souhaitez être rappelé (jusqu'à 5 valeurs, séparées par des virgules). S'applique à toutes vos garanties.",
+    "reminderDays.label": "Jours avant expiration",
+    "reminderDays.invalid":
+      "Saisissez 1 à 5 nombres entiers entre 1 et 365, séparés par des virgules",
+    "reminderDays.success": "Calendrier des rappels mis à jour",
+    "export.target.account": "Export complet du compte (toutes les données)",
+    "export.account.button": "Télécharger le JSON",
+    "articleForm.purchasedFrom": "Acheté chez",
+    "articleForm.placeholder.purchasedFrom": "Magasin ou site web",
+    "articleForm.orderRef": "N° de commande / reçu",
+    "articleForm.placeholder.orderRef": "Référence de commande ou de reçu",
+    "articleDetail.purchasedFrom": "Acheté chez",
+    "articleDetail.orderRef": "N° de commande",
+    "locations.parent.label": "Emplacement parent",
+    "locations.parent.none": "Aucun parent (niveau racine)",
+    "service.intervalMonths": "Répéter tous les (mois)",
+    "service.intervalHint":
+      "Avec un intervalle de répétition, le prochain entretien est planifié automatiquement à partir de la date d'entretien.",
+    "service.intervalBadge": "Tous les {months} mois",
+    "publicItem.found.banner":
+      "Le propriétaire a signalé cet objet comme perdu. Vous l'avez trouvé ? Prévenez-le.",
+    "publicItem.found.messageLabel": "Votre message",
+    "publicItem.found.messagePlaceholder":
+      "Où vous l'avez trouvé, comment organiser la remise…",
+    "publicItem.found.contactLabel":
+      "Comment le propriétaire peut-il vous joindre ? (facultatif)",
+    "publicItem.found.contactPlaceholder": "E-mail ou téléphone",
+    "publicItem.found.submit": "Prévenir le propriétaire",
+    "publicItem.found.sent": "Merci ! Le propriétaire a été prévenu.",
+    "publicItem.found.messageRequired": "Veuillez écrire un court message",
     "articleForm.duplicate.notice":
       "Vous possédez peut-être déjà cet article — vérifiez avant d'ajouter un doublon :",
     "articleDetail.valueOverTime": "Valeur dans le temps",
@@ -1920,6 +2047,72 @@ export const extras = {
     "features.csv_export": "Export CSV",
   },
   pt: {
+    "nav.wishlist": "Lista de desejos",
+    "features.wishlist": "Lista de desejos e compras planeadas",
+    "wishlist.title": "Lista de desejos",
+    "wishlist.subtitle":
+      "Compras planeadas — comparadas com o seu orçamento mensal",
+    "wishlist.form.name": "Artigo",
+    "wishlist.form.targetPrice": "Preço-alvo",
+    "wishlist.form.url": "Link",
+    "wishlist.form.note": "Nota",
+    "wishlist.form.add": "Adicionar à lista",
+    "wishlist.nameRequired": "Dê um nome ao desejo",
+    "wishlist.priceInvalid": "O preço-alvo deve ser um número positivo",
+    "wishlist.urlInvalid": "O link deve ser um URL http(s)",
+    "wishlist.deleted": "Item removido da lista",
+    "wishlist.markPurchased": "Comprado",
+    "wishlist.unmarkPurchased": "Não comprado",
+    "wishlist.openLink": "Abrir link do produto",
+    "wishlist.empty.title": "A sua lista de desejos está vazia",
+    "wishlist.empty.subtitle":
+      "Adicione artigos que planeia comprar e veja se cabem no seu orçamento.",
+    "wishlist.budget.over":
+      "Os desejos em aberto totalizam {total} — {over} acima do que resta do orçamento deste mês.",
+    "wishlist.budget.fits":
+      "Os desejos em aberto totalizam {total} — cabe no orçamento restante deste mês.",
+    "verifyEmail.working": "A verificar o seu e-mail…",
+    "verifyEmail.success":
+      "O seu endereço de e-mail está verificado. Obrigado!",
+    "verifyEmail.failed":
+      "Este link de verificação é inválido ou expirou. Pode pedir um novo no seu perfil.",
+    "verifyEmail.goToApp": "Ir para o WIM",
+    "verifyEmail.verifiedBadge": "E-mail verificado",
+    "verifyEmail.resendButton": "Verificar e-mail",
+    "verifyEmail.resent":
+      "Link de verificação enviado — verifique a sua caixa de entrada",
+    "reminderDays.title": "Calendário de lembretes de garantia",
+    "reminderDays.subtitle":
+      "Quantos dias antes de uma garantia expirar quer ser lembrado (até 5 valores, separados por vírgulas). Aplica-se a todas as suas garantias.",
+    "reminderDays.label": "Dias antes de expirar",
+    "reminderDays.invalid":
+      "Introduza 1 a 5 números inteiros entre 1 e 365, separados por vírgulas",
+    "reminderDays.success": "Calendário de lembretes atualizado",
+    "export.target.account": "Exportação completa da conta (todos os dados)",
+    "export.account.button": "Transferir JSON",
+    "articleForm.purchasedFrom": "Comprado em",
+    "articleForm.placeholder.purchasedFrom": "Loja ou site",
+    "articleForm.orderRef": "N.º de encomenda / recibo",
+    "articleForm.placeholder.orderRef": "Referência de encomenda ou recibo",
+    "articleDetail.purchasedFrom": "Comprado em",
+    "articleDetail.orderRef": "N.º de encomenda",
+    "locations.parent.label": "Localização principal",
+    "locations.parent.none": "Sem principal (nível de topo)",
+    "service.intervalMonths": "Repetir a cada (meses)",
+    "service.intervalHint":
+      "Com um intervalo de repetição, a próxima manutenção é agendada automaticamente a partir da data do serviço.",
+    "service.intervalBadge": "A cada {months} meses",
+    "publicItem.found.banner":
+      "O proprietário reportou este item como perdido. Encontrou-o? Avise-o.",
+    "publicItem.found.messageLabel": "A sua mensagem",
+    "publicItem.found.messagePlaceholder":
+      "Onde o encontrou, como combinar a entrega…",
+    "publicItem.found.contactLabel":
+      "Como pode o proprietário contactá-lo? (opcional)",
+    "publicItem.found.contactPlaceholder": "E-mail ou telefone",
+    "publicItem.found.submit": "Avisar o proprietário",
+    "publicItem.found.sent": "Obrigado! O proprietário foi avisado.",
+    "publicItem.found.messageRequired": "Escreva uma mensagem curta",
     "articleForm.duplicate.notice":
       "Pode já ter este artigo — verifique antes de adicionar um duplicado:",
     "articleDetail.valueOverTime": "Valor ao longo do tempo",
@@ -2884,6 +3077,72 @@ export const extras = {
     "features.csv_export": "Exportação CSV",
   },
   es: {
+    "nav.wishlist": "Lista de deseos",
+    "features.wishlist": "Lista de deseos y compras planificadas",
+    "wishlist.title": "Lista de deseos",
+    "wishlist.subtitle":
+      "Compras planificadas — comparadas con tu presupuesto mensual",
+    "wishlist.form.name": "Artículo",
+    "wishlist.form.targetPrice": "Precio objetivo",
+    "wishlist.form.url": "Enlace",
+    "wishlist.form.note": "Nota",
+    "wishlist.form.add": "Añadir a la lista",
+    "wishlist.nameRequired": "Ponle un nombre al deseo",
+    "wishlist.priceInvalid": "El precio objetivo debe ser un número positivo",
+    "wishlist.urlInvalid": "El enlace debe ser una URL http(s)",
+    "wishlist.deleted": "Elemento eliminado de la lista",
+    "wishlist.markPurchased": "Comprado",
+    "wishlist.unmarkPurchased": "No comprado",
+    "wishlist.openLink": "Abrir enlace del producto",
+    "wishlist.empty.title": "Tu lista de deseos está vacía",
+    "wishlist.empty.subtitle":
+      "Añade artículos que planeas comprar y comprueba si encajan en tu presupuesto.",
+    "wishlist.budget.over":
+      "Los deseos abiertos suman {total} — {over} por encima de lo que queda del presupuesto de este mes.",
+    "wishlist.budget.fits":
+      "Los deseos abiertos suman {total} — encaja en el presupuesto restante de este mes.",
+    "verifyEmail.working": "Verificando tu correo…",
+    "verifyEmail.success": "Tu dirección de correo está verificada. ¡Gracias!",
+    "verifyEmail.failed":
+      "Este enlace de verificación no es válido o ha caducado. Puedes solicitar uno nuevo desde tu perfil.",
+    "verifyEmail.goToApp": "Ir a WIM",
+    "verifyEmail.verifiedBadge": "Correo verificado",
+    "verifyEmail.resendButton": "Verificar correo",
+    "verifyEmail.resent":
+      "Enlace de verificación enviado — revisa tu bandeja de entrada",
+    "reminderDays.title": "Calendario de recordatorios de garantía",
+    "reminderDays.subtitle":
+      "Cuántos días antes de que caduque una garantía quieres recibir recordatorios (hasta 5 valores, separados por comas). Se aplica a todas tus garantías.",
+    "reminderDays.label": "Días antes de caducar",
+    "reminderDays.invalid":
+      "Introduce de 1 a 5 números enteros entre 1 y 365, separados por comas",
+    "reminderDays.success": "Calendario de recordatorios actualizado",
+    "export.target.account":
+      "Exportación completa de la cuenta (todos los datos)",
+    "export.account.button": "Descargar JSON",
+    "articleForm.purchasedFrom": "Comprado en",
+    "articleForm.placeholder.purchasedFrom": "Tienda o sitio web",
+    "articleForm.orderRef": "N.º de pedido / recibo",
+    "articleForm.placeholder.orderRef": "Referencia de pedido o recibo",
+    "articleDetail.purchasedFrom": "Comprado en",
+    "articleDetail.orderRef": "N.º de pedido",
+    "locations.parent.label": "Ubicación superior",
+    "locations.parent.none": "Sin superior (nivel raíz)",
+    "service.intervalMonths": "Repetir cada (meses)",
+    "service.intervalHint":
+      "Con un intervalo de repetición, el próximo mantenimiento se programa automáticamente a partir de la fecha del servicio.",
+    "service.intervalBadge": "Cada {months} meses",
+    "publicItem.found.banner":
+      "El propietario ha marcado este objeto como perdido. ¿Lo encontraste? Avísale.",
+    "publicItem.found.messageLabel": "Tu mensaje",
+    "publicItem.found.messagePlaceholder":
+      "Dónde lo encontraste, cómo organizar la entrega…",
+    "publicItem.found.contactLabel":
+      "¿Cómo puede contactarte el propietario? (opcional)",
+    "publicItem.found.contactPlaceholder": "Correo o teléfono",
+    "publicItem.found.submit": "Avisar al propietario",
+    "publicItem.found.sent": "¡Gracias! El propietario ha sido avisado.",
+    "publicItem.found.messageRequired": "Escribe un mensaje corto",
     "articleForm.duplicate.notice":
       "Puede que ya tengas este artículo — comprueba antes de añadir un duplicado:",
     "articleDetail.valueOverTime": "Valor a lo largo del tiempo",
@@ -3853,6 +4112,69 @@ export const extras = {
     "features.csv_export": "Exportación CSV",
   },
   nl: {
+    "nav.wishlist": "Verlanglijst",
+    "features.wishlist": "Verlanglijst en geplande aankopen",
+    "wishlist.title": "Verlanglijst",
+    "wishlist.subtitle": "Geplande aankopen — vergeleken met je maandbudget",
+    "wishlist.form.name": "Artikel",
+    "wishlist.form.targetPrice": "Richtprijs",
+    "wishlist.form.url": "Link",
+    "wishlist.form.note": "Notitie",
+    "wishlist.form.add": "Toevoegen aan lijst",
+    "wishlist.nameRequired": "Geef de wens een naam",
+    "wishlist.priceInvalid": "De richtprijs moet een positief getal zijn",
+    "wishlist.urlInvalid": "De link moet een http(s)-URL zijn",
+    "wishlist.deleted": "Item verwijderd van de lijst",
+    "wishlist.markPurchased": "Gekocht",
+    "wishlist.unmarkPurchased": "Niet gekocht",
+    "wishlist.openLink": "Productlink openen",
+    "wishlist.empty.title": "Je verlanglijst is nog leeg",
+    "wishlist.empty.subtitle":
+      "Voeg artikelen toe die je wilt kopen en zie of ze in je budget passen.",
+    "wishlist.budget.over":
+      "Openstaande wensen samen {total} — dat is {over} boven wat er deze maand nog over is van je budget.",
+    "wishlist.budget.fits":
+      "Openstaande wensen samen {total} — past binnen het resterende budget van deze maand.",
+    "verifyEmail.working": "Je e-mail wordt geverifieerd…",
+    "verifyEmail.success": "Je e-mailadres is geverifieerd. Bedankt!",
+    "verifyEmail.failed":
+      "Deze verificatielink is ongeldig of verlopen. Je kunt een nieuwe aanvragen via je profiel.",
+    "verifyEmail.goToApp": "Naar WIM",
+    "verifyEmail.verifiedBadge": "E-mail geverifieerd",
+    "verifyEmail.resendButton": "E-mail verifiëren",
+    "verifyEmail.resent": "Verificatielink verzonden — check je inbox",
+    "reminderDays.title": "Schema garantieherinneringen",
+    "reminderDays.subtitle":
+      "Hoeveel dagen vóór het verlopen van een garantie je herinneringen wilt (maximaal 5 waarden, gescheiden door komma's). Geldt voor al je garanties.",
+    "reminderDays.label": "Dagen vóór verloop",
+    "reminderDays.invalid":
+      "Voer 1 tot 5 hele getallen in tussen 1 en 365, gescheiden door komma's",
+    "reminderDays.success": "Herinneringsschema bijgewerkt",
+    "export.target.account": "Volledige accountexport (alle gegevens)",
+    "export.account.button": "JSON downloaden",
+    "articleForm.purchasedFrom": "Gekocht bij",
+    "articleForm.placeholder.purchasedFrom": "Winkel of website",
+    "articleForm.orderRef": "Bestel-/bonnummer",
+    "articleForm.placeholder.orderRef": "Bestel- of bonreferentie",
+    "articleDetail.purchasedFrom": "Gekocht bij",
+    "articleDetail.orderRef": "Bestelnr.",
+    "locations.parent.label": "Bovenliggende locatie",
+    "locations.parent.none": "Geen bovenliggende (hoofdniveau)",
+    "service.intervalMonths": "Herhaal elke (maanden)",
+    "service.intervalHint":
+      "Met een herhaalinterval wordt het volgende onderhoud automatisch ingepland vanaf de servicedatum.",
+    "service.intervalBadge": "Elke {months} mnd",
+    "publicItem.found.banner":
+      "De eigenaar heeft dit item als verloren gemeld. Gevonden? Laat het weten.",
+    "publicItem.found.messageLabel": "Je bericht",
+    "publicItem.found.messagePlaceholder":
+      "Waar je het vond, hoe de overdracht te regelen…",
+    "publicItem.found.contactLabel":
+      "Hoe kan de eigenaar je bereiken? (optioneel)",
+    "publicItem.found.contactPlaceholder": "E-mail of telefoon",
+    "publicItem.found.submit": "Eigenaar informeren",
+    "publicItem.found.sent": "Bedankt! De eigenaar is geïnformeerd.",
+    "publicItem.found.messageRequired": "Schrijf een kort bericht",
     "articleForm.duplicate.notice":
       "Je hebt dit item mogelijk al — controleer dit voordat je een duplicaat toevoegt:",
     "articleDetail.valueOverTime": "Waarde in de tijd",

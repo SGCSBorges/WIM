@@ -59,6 +59,8 @@ const ImportSchema = z.object({
         model: z.string().trim().min(1).max(100),
         description: z.string().trim().max(255).optional().nullable(),
         price: z.coerce.number().nonnegative().max(1e10).optional().nullable(),
+        purchasedFrom: z.string().trim().max(150).optional().nullable(),
+        orderRef: z.string().trim().max(100).optional().nullable(),
         locations: z.array(z.string().trim().max(120)).default([]),
         tags: z.array(z.string().trim().max(40)).default([]),
       })

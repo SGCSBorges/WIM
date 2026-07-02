@@ -196,7 +196,7 @@ describe("ArticleService.list — search", () => {
     mockPrisma.article.count.mockResolvedValue(0);
   });
 
-  it("requires every search term to match name, model, description, brand, or serial", async () => {
+  it("requires every search term to match name, model, description, brand, serial, or a note", async () => {
     await ArticleService.list(7, { q: "cordless drill" });
 
     const arg = mockPrisma.article.findMany.mock.calls[0][0];
@@ -209,6 +209,11 @@ describe("ArticleService.list — search", () => {
         { articleDescription: { contains: "cordless", mode: "insensitive" } },
         { brand: { contains: "cordless", mode: "insensitive" } },
         { serialNumber: { contains: "cordless", mode: "insensitive" } },
+        {
+          notes: {
+            some: { content: { contains: "cordless", mode: "insensitive" } },
+          },
+        },
       ],
     });
     expect(arg.where.AND[1].OR[0]).toEqual({

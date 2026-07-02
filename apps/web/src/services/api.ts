@@ -42,6 +42,7 @@ import type {
   ServiceDueItem,
   PortfolioAnalytics,
   PublicItem,
+  WishlistItemRow,
   ClaimStatus,
   DateFormatPref,
   FetchedArticle,
@@ -241,6 +242,35 @@ export const authAPI = {
     const data = await response.json();
     _cachedRole = data.user?.role ?? null;
     return data;
+  },
+
+  // Consume an email-verification token from the mailed link. Works without
+  // a session (the token is the credential).
+  async verifyEmail(token: string): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/verify-email`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ token }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Email verification failed")
+      );
+  },
+
+  // Signed-in re-send of the verification link (Profile button).
+  async resendVerificationEmail(): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/verify-email/request`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to send verification email")
+      );
   },
 
   async logout() {
@@ -449,6 +479,8 @@ export const articlesAPI = {
       model: string;
       description?: string | null;
       price?: number | null;
+      purchasedFrom?: string | null;
+      orderRef?: string | null;
       locations: string[];
       tags: string[];
     }>,
@@ -791,7 +823,11 @@ export const locationsAPI = {
     return response.json();
   },
 
-  async create(data: { name: string; description?: string | null }) {
+  async create(data: {
+    name: string;
+    description?: string | null;
+    parentLocationId?: number | null;
+  }) {
     const response = await fetchWithTimeout(`${API_BASE_URL}/locations`, {
       method: "POST",
       headers: getHeaders(),
@@ -809,7 +845,11 @@ export const locationsAPI = {
 
   async update(
     locationId: number,
-    data: { name?: string; description?: string | null }
+    data: {
+      name?: string;
+      description?: string | null;
+      parentLocationId?: number | null;
+    }
   ) {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/locations/${locationId}`,
@@ -1400,6 +1440,25 @@ export const publicAPI = {
       throw new Error(await extractError(response, "Item not found"));
     return response.json();
   },
+
+  // Anonymous "I found this item" report — only accepted while the owner has
+  // the item marked LOST. Unauthenticated (the token is the credential).
+  async reportFound(
+    token: string,
+    message: string,
+    contact?: string
+  ): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/public/items/${token}/found-report`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, contact: contact || null }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to send report"));
+  },
 };
 
 // Profile API
@@ -1413,6 +1472,8 @@ export const profileAPI = {
     annualBudget?: string | number | null;
     emailReminders?: boolean;
     weeklyDigest?: boolean;
+    warrantyReminderDays?: string | null;
+    emailVerifiedAt?: string | null;
     theme?: ThemePref | null;
     language?: LanguagePref | null;
     dateFormat?: DateFormatPref | null;
@@ -1584,6 +1645,37 @@ export const profileAPI = {
         await extractError(response, "Failed to update weekly digest")
       );
     return response.json();
+  },
+
+  // Custom warranty reminder offsets (days before expiry). null = reset to
+  // the J-30/J-7/J-1 default. The server re-arms every live warranty.
+  async updateReminderDays(days: number[] | null) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/reminder-days`,
+      {
+        method: "PUT",
+        headers: getHeaders(),
+        body: JSON.stringify({ days }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update reminder days")
+      );
+    return response.json();
+  },
+
+  // Full personal data export — one JSON blob for downloadBlob().
+  async exportAccount(): Promise<Blob> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/export`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to export account data")
+      );
+    return response.blob();
   },
 
   async updateCurrency(currency: string) {
@@ -2617,6 +2709,7 @@ export const serviceRecordsAPI = {
     cost?: number | null;
     provider?: string | null;
     nextDueAt?: string | null;
+    intervalMonths?: number | null;
   }): Promise<ServiceRecordItem> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/service-records`, {
       method: "POST",
@@ -2652,6 +2745,64 @@ export const serviceRecordsAPI = {
       );
     const data = await response.json();
     return data.items as ServiceDueItem[];
+  },
+};
+
+// Wishlist / planned purchases (feature-gated: `wishlist`).
+export const wishlistAPI = {
+  async list(): Promise<WishlistItemRow[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/wishlist`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load wishlist"));
+    const data = await response.json();
+    return data.items as WishlistItemRow[];
+  },
+
+  async create(input: {
+    name: string;
+    url?: string | null;
+    targetPrice?: number | null;
+    note?: string | null;
+  }): Promise<WishlistItemRow> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/wishlist`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(input),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to add wishlist item")
+      );
+    return response.json();
+  },
+
+  async setPurchased(id: number, purchased: boolean): Promise<WishlistItemRow> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/wishlist/${id}/purchased`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ purchased }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update wishlist item")
+      );
+    return response.json();
+  },
+
+  async remove(id: number): Promise<void> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/wishlist/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to delete wishlist item")
+      );
   },
 };
 

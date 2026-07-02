@@ -19,6 +19,7 @@ import Stripe from "stripe";
 import { createHttpError } from "../../utils/http-error";
 import { logger } from "../../config/logger";
 import { AlertService } from "../alerts/alert.service";
+import { EmailVerificationService } from "../auth/email-verification.service";
 
 type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -64,6 +65,8 @@ const PROFILE_SELECT = {
   annualBudget: true,
   emailReminders: true,
   weeklyDigest: true,
+  warrantyReminderDays: true,
+  emailVerifiedAt: true,
   theme: true,
   language: true,
   dateFormat: true,
@@ -135,6 +138,53 @@ export const ProfileService = {
     });
   },
 
+  // Persist custom warranty reminder offsets (null = back to the J-30/J-7/J-1
+  // default), then re-arm every live warranty so the change applies to the
+  // user's existing inventory, not just future warranties. Rescheduling is
+  // best-effort per warranty: a Redis hiccup logs and moves on rather than
+  // failing the preference save (the stored pref still applies at the next
+  // natural reschedule).
+  async updateReminderDays(userId: number, days: number[] | null) {
+    const normalized =
+      days === null
+        ? null
+        : [...new Set(days)]
+            .sort((a, b) => b - a)
+            .slice(0, 5)
+            .join(",");
+    const updated = await prisma.user.update({
+      where: { userId },
+      data: { warrantyReminderDays: normalized },
+      select: PROFILE_SELECT,
+    });
+
+    const warranties = await prisma.garantie.findMany({
+      where: {
+        ownerUserId: userId,
+        garantieFin: { gt: new Date() },
+        OR: [{ article: null }, { article: { deletedAt: null } }],
+      },
+      select: { garantieId: true, garantieArticleId: true, garantieFin: true },
+    });
+    for (const w of warranties) {
+      try {
+        await AlertService.rescheduleForWarranty({
+          ownerUserId: userId,
+          garantieId: w.garantieId,
+          articleId: w.garantieArticleId,
+          garantieFin: w.garantieFin,
+        });
+      } catch (err) {
+        logger.warn(
+          { err, userId, garantieId: w.garantieId },
+          "[profile] reminder-days reschedule failed"
+        );
+      }
+    }
+
+    return updated;
+  },
+
   async updateEmail(userId: number, email: string, currentPassword: string) {
     const user = await prisma.user.findUnique({ where: { userId } });
     if (!user) throw createHttpError(404, "User not found");
@@ -150,11 +200,15 @@ export const ProfileService = {
     // same rationale as updatePassword: changing the primary identity
     // credential (email) should kill all other sessions. The route layer
     // reissues a fresh token to the calling device so the user stays logged in.
-    return prisma.user.update({
+    // The new address is unproven, so emailVerifiedAt resets; a fresh
+    // verification link goes out best-effort.
+    const updated = await prisma.user.update({
       where: { userId },
-      data: { email, tokenVersion: { increment: 1 } },
+      data: { email, tokenVersion: { increment: 1 }, emailVerifiedAt: null },
       select: { userId: true, email: true, role: true, tokenVersion: true },
     });
+    void EmailVerificationService.request(userId);
+    return updated;
   },
 
   async updatePassword(

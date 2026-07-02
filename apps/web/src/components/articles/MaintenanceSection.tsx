@@ -41,6 +41,7 @@ export default function MaintenanceSection({
   const [cost, setCost] = useState("");
   const [provider, setProvider] = useState("");
   const [nextDueAt, setNextDueAt] = useState("");
+  const [intervalMonths, setIntervalMonths] = useState("");
   const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
@@ -70,11 +71,13 @@ export default function MaintenanceSection({
         cost: cost.trim() ? Number(cost) : null,
         provider: provider.trim() || null,
         nextDueAt: nextDueAt ? new Date(nextDueAt).toISOString() : null,
+        intervalMonths: intervalMonths.trim() ? Number(intervalMonths) : null,
       });
       setDescription("");
       setCost("");
       setProvider("");
       setNextDueAt("");
+      setIntervalMonths("");
       setPerformedAt(todayISO());
       setShowForm(false);
       await load();
@@ -178,7 +181,20 @@ export default function MaintenanceSection({
               aria-label={t("service.nextDue")}
               title={t("service.nextDue")}
             />
+            <Input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={120}
+              step="1"
+              value={intervalMonths}
+              onChange={(e) => setIntervalMonths(e.target.value)}
+              placeholder={t("service.intervalMonths")}
+              aria-label={t("service.intervalMonths")}
+              title={t("service.intervalHint")}
+            />
           </div>
+          <p className="text-xs ui-text-muted">{t("service.intervalHint")}</p>
           <div>
             <Textarea
               rows={2}
@@ -237,6 +253,14 @@ export default function MaintenanceSection({
                   )}
                 </div>
                 <p className="break-words">{r.description}</p>
+                {r.intervalMonths != null && (
+                  <Badge tone="neutral">
+                    {t("service.intervalBadge").replace(
+                      "{months}",
+                      String(r.intervalMonths)
+                    )}
+                  </Badge>
+                )}
                 {r.nextDueAt && (
                   <p className="mt-0.5 inline-flex items-center gap-1 text-xs ui-text-muted">
                     <CalendarClock className="h-3 w-3" aria-hidden="true" />

@@ -152,6 +152,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     articleDescription: article?.articleDescription || "",
     brand: article?.brand || "",
     serialNumber: article?.serialNumber || "",
+    purchasedFrom: article?.purchasedFrom || "",
+    orderRef: article?.orderRef || "",
     productImageUrl: article?.productImageUrl || "",
   });
   const [purchasePrice, setPurchasePrice] = useState<string>(
@@ -212,6 +214,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       articleDescription: article?.articleDescription || "",
       brand: article?.brand || "",
       serialNumber: article?.serialNumber || "",
+      purchasedFrom: article?.purchasedFrom || "",
+      orderRef: article?.orderRef || "",
       productImageUrl: article?.productImageUrl || "",
     });
     setPurchasePrice(
@@ -481,6 +485,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       articleDescription: formData.articleDescription?.trim() || null,
       brand: formData.brand?.toString().trim() || null,
       serialNumber: formData.serialNumber?.toString().trim() || null,
+      purchasedFrom: formData.purchasedFrom?.toString().trim() || null,
+      orderRef: formData.orderRef?.toString().trim() || null,
       productImageUrl: formData.productImageUrl?.trim() || null,
       purchasePrice: priceVal,
       depreciationRate: depVal,
@@ -779,6 +785,50 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               onChange={handleChange}
               maxLength={120}
               placeholder={t("articleForm.placeholder.serialNumber")}
+              className="font-mono"
+            />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field
+            label={
+              <PrivateLabel
+                text={t("articleForm.purchasedFrom")}
+                label={t("articleForm.private.badge")}
+              />
+            }
+            htmlFor="purchasedFrom"
+            hint={t("articleForm.private.hint")}
+          >
+            <Input
+              type="text"
+              id="purchasedFrom"
+              name="purchasedFrom"
+              value={formData.purchasedFrom?.toString() ?? ""}
+              onChange={handleChange}
+              maxLength={150}
+              placeholder={t("articleForm.placeholder.purchasedFrom")}
+            />
+          </Field>
+          <Field
+            label={
+              <PrivateLabel
+                text={t("articleForm.orderRef")}
+                label={t("articleForm.private.badge")}
+              />
+            }
+            htmlFor="orderRef"
+            hint={t("articleForm.private.hint")}
+          >
+            <Input
+              type="text"
+              id="orderRef"
+              name="orderRef"
+              value={formData.orderRef?.toString() ?? ""}
+              onChange={handleChange}
+              maxLength={100}
+              placeholder={t("articleForm.placeholder.orderRef")}
               className="font-mono"
             />
           </Field>

@@ -11,6 +11,10 @@ export const ArticleCreateSchema = z.object({
   // Identity fields — optional, folded into the substring search.
   serialNumber: z.string().trim().max(120).optional().nullable(),
   brand: z.string().trim().max(120).optional().nullable(),
+  // Purchase provenance — retailer/store + the order or receipt reference,
+  // the two facts a warranty claim or insurance filing always asks for.
+  purchasedFrom: z.string().trim().max(150).optional().nullable(),
+  orderRef: z.string().trim().max(100).optional().nullable(),
   productImageUrl: z
     .string()
     .url()

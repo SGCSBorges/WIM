@@ -56,7 +56,9 @@ describe("<LocationsView />", () => {
       { locationId: 1, name: "Garage", description: null },
     ]);
     renderView();
-    expect(await screen.findByText("Garage")).toBeInTheDocument();
+    // The name renders both as a list row and as a parent-select option.
+    const hits = await screen.findAllByText("Garage");
+    expect(hits.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders the article count from the list `_count` without a per-location request", async () => {

@@ -55,6 +55,18 @@ export const UpdateWeeklyDigestSchema = z.object({
 });
 export type UpdateWeeklyDigestInput = z.infer<typeof UpdateWeeklyDigestSchema>;
 
+// Custom warranty reminder offsets (days before the end date). `null` resets
+// to the coded J-30/J-7/J-1 default. Bounds mirror alert.scheduler's
+// parseReminderDays so the stored CSV always round-trips.
+export const UpdateReminderDaysSchema = z.object({
+  days: z
+    .array(z.coerce.number().int().min(1).max(365))
+    .min(1)
+    .max(5)
+    .nullable(),
+});
+export type UpdateReminderDaysInput = z.infer<typeof UpdateReminderDaysSchema>;
+
 // Cross-device UI preferences. Every field is optional so the client can
 // PATCH just the one that changed; `null` explicitly clears a preference
 // back to "follow the device default". The enums mirror the client's theme

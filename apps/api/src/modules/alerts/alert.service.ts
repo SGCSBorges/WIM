@@ -21,10 +21,15 @@ import { alertQueue } from "../../jobs/queues";
 import { logger } from "../../config/logger";
 import { addMonths } from "../common/date";
 import { createHttpError } from "../../utils/http-error";
-import { computeWarrantyReminderSchedule } from "./alert.scheduler";
+import {
+  computeWarrantyReminderSchedule,
+  parseReminderDays,
+  DEFAULT_REMINDER_DAYS,
+} from "./alert.scheduler";
 
 import {
   reminderKindLabel,
+  reminderKindForDays,
   WarrantyReminderJobPayload,
   WarrantyReminderKind,
   CustomAlertJobPayload,
@@ -46,6 +51,15 @@ function buildJobId(
   executeAt: Date
 ) {
   return `warranty:${garantieId}:${reminderKind}:${formatYYYYMMDD(executeAt)}`;
+}
+
+// Candidate reminder kinds for a stored alert row when removing its queue
+// job. Rows written since custom offsets landed carry their own
+// `reminderDays`; legacy rows predate the column, so fall back to trying
+// the three historical defaults.
+function candidateKinds(reminderDays: number | null): WarrantyReminderKind[] {
+  if (reminderDays != null) return [reminderKindForDays(reminderDays)];
+  return DEFAULT_REMINDER_DAYS.map(reminderKindForDays);
 }
 
 export const AlertService = {
@@ -95,13 +109,22 @@ export const AlertService = {
     garantieFin: Date;
   }) => {
     const now = new Date();
+    // Per-user offsets (null column = the J-30/J-7/J-1 default). A read
+    // failure falls back to the default rather than skipping reminders.
+    const owner = await prisma.user
+      .findUnique({
+        where: { userId: input.ownerUserId },
+        select: { warrantyReminderDays: true },
+      })
+      .catch(() => null);
     const schedule = computeWarrantyReminderSchedule({
       garantieFin: input.garantieFin,
       now,
       includePast: false,
+      offsets: parseReminderDays(owner?.warrantyReminderDays),
     });
 
-    for (const { reminderKind, executeAt } of schedule) {
+    for (const { reminderKind, executeAt, days } of schedule) {
       const executeMs = executeAt.getTime();
 
       // createMany(skipDuplicates) + findFirst, rather than create, so a
@@ -117,6 +140,7 @@ export const AlertService = {
             alerteGarantieId: input.garantieId,
             alerteArticleId: input.articleId ?? null,
             status: AlerteStatus.SCHEDULED,
+            reminderDays: days,
           },
         ],
         skipDuplicates: true,
@@ -203,8 +227,9 @@ export const AlertService = {
     });
 
     for (const a of alerts) {
-      // attempt to remove corresponding jobs; we don't know exact kind, so compute 3 candidates
-      for (const reminderKind of ["J30", "J7", "J1"] as const) {
+      // Rows carry their own reminderDays since custom offsets landed; for
+      // legacy rows fall back to trying the three historical default kinds.
+      for (const reminderKind of candidateKinds(a.reminderDays)) {
         const jobId = buildJobId(input.garantieId, reminderKind, a.alerteDate);
         const job = await alertQueue.getJob(jobId);
         if (job) {
@@ -232,12 +257,17 @@ export const AlertService = {
   cancelForUser: async (ownerUserId: number) => {
     const alerts = await prisma.alerte.findMany({
       where: { ownerUserId, status: AlerteStatus.SCHEDULED },
-      select: { alerteId: true, alerteGarantieId: true, alerteDate: true },
+      select: {
+        alerteId: true,
+        alerteGarantieId: true,
+        alerteDate: true,
+        reminderDays: true,
+      },
     });
 
     for (const a of alerts) {
       if (a.alerteGarantieId) {
-        for (const reminderKind of ["J30", "J7", "J1"] as const) {
+        for (const reminderKind of candidateKinds(a.reminderDays)) {
           const jobId = buildJobId(
             a.alerteGarantieId,
             reminderKind,
@@ -281,16 +311,18 @@ export const AlertService = {
   },
 
   // Remove any BullMQ job(s) backing an alert. Warranty alerts are keyed by
-  // (garantieId, kind, date) so we try all three reminder kinds; custom and
-  // snoozed alerts use the generic per-alert id.
+  // (garantieId, kind, date) — the row's own reminderDays pins the kind
+  // (legacy rows try the three historical defaults); custom and snoozed
+  // alerts use the generic per-alert id.
   removeJobsForAlert: async (alert: {
     alerteId: number;
     alerteGarantieId: number | null;
     alerteDate: Date;
     kind: AlerteKind;
+    reminderDays?: number | null;
   }) => {
     if (alert.kind === AlerteKind.WARRANTY && alert.alerteGarantieId) {
-      for (const reminderKind of ["J30", "J7", "J1"] as const) {
+      for (const reminderKind of candidateKinds(alert.reminderDays ?? null)) {
         const jobId = buildJobId(
           alert.alerteGarantieId,
           reminderKind,

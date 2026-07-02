@@ -9,6 +9,7 @@ import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { logger } from "../../config/logger";
 import { AlertService } from "../alerts/alert.service";
+import { addMonths } from "../common/date";
 import type { ServiceCreateInput } from "./service-record.schemas";
 
 async function assertArticleOwned(articleId: number, ownerUserId: number) {
@@ -65,6 +66,15 @@ export const ServiceRecordService = {
   async create(ownerUserId: number, data: ServiceCreateInput) {
     const article = await assertArticleOwned(data.articleId, ownerUserId);
 
+    // Recurring cadence: an explicit nextDueAt wins; otherwise derive it from
+    // performedAt + intervalMonths so a routine job re-arms itself on every
+    // log entry without the user re-picking a date each time.
+    const nextDueAt =
+      data.nextDueAt ??
+      (data.intervalMonths
+        ? addMonths(new Date(data.performedAt), data.intervalMonths)
+        : null);
+
     const record = await prisma.serviceRecord.create({
       data: {
         ownerUserId,
@@ -73,17 +83,18 @@ export const ServiceRecordService = {
         description: data.description,
         cost: data.cost ?? null,
         provider: data.provider ?? null,
-        nextDueAt: data.nextDueAt ?? null,
+        nextDueAt,
+        intervalMonths: data.intervalMonths ?? null,
       },
     });
 
     // Optional next-service reminder (best-effort — never fail the log on it).
-    if (data.nextDueAt) {
+    if (nextDueAt) {
       try {
         const alert = await AlertService.createCustom({
           ownerUserId,
           alerteNom: `Service due: ${article.articleNom}`,
-          alerteDate: data.nextDueAt,
+          alerteDate: nextDueAt,
           alerteArticleId: data.articleId,
         });
         await prisma.serviceRecord.update({

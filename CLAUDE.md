@@ -563,6 +563,57 @@ flag-gated (skips its fetch when not entitled).
   under `/api/articles` **before** the `/:id` catch-all (POST gated; GET
   status + DELETE stay open for cleanup).
 
+## Feature pack (2026-07)
+
+Smaller features added in one batch; each follows the existing patterns.
+
+- **Custom warranty reminder offsets**: `User.warrantyReminderDays` (CSV,
+  e.g. "90,30,7"; null = J-30/J-7/J-1 default). `alert.scheduler.ts` exposes
+  `parseReminderDays` + takes an `offsets` param; `Alerte.reminderDays` pins
+  each row's offset so job-cancellation can rebuild the exact BullMQ job id
+  (legacy rows fall back to trying the three default kinds). `PUT
+  /api/profile/me/reminder-days` saves + re-arms every live warranty
+  (best-effort per warranty). Profile → Notifications hosts the editor.
+- **Notes in search**: the article `q` filter also matches `ArticleNote`
+  content (no trigram index on notes — acceptable, notes tables are small).
+- **Purchase provenance**: `Article.purchasedFrom` + `orderRef` (optional,
+  private — never crosses the sharing boundary). In the form, detail header,
+  CSV export/import round-trip.
+- **Email verification (soft)**: `User.emailVerifiedAt` +
+  `EmailVerificationToken` (sha256, mirrors PasswordResetToken).
+  Registration + email-change send best-effort links; `POST
+  /auth/verify-email` consumes (open; token is the credential), `POST
+  /auth/verify-email/request` re-sends (authed). NOTHING hard-gates on it
+  (email transport is optional). Web: `/verify-email` renders pre-auth-gate;
+  Profile shows a verified badge / re-send button.
+- **Personal data export**: `GET /api/profile/me/export` — full-account JSON
+  (articles + warranty/history/notes/attachment-metadata, loans, insurance,
+  service records, alerts, locations, tags, saved views, templates,
+  wishlist). Not feature-gated (data portability); rate-limited + audited as
+  DB_EXPORT. Profile → Export panel row.
+- **Nested locations**: `Location.parentLocationId` self-relation (SetNull on
+  parent delete — children float to root). `assertValidParent` walks the
+  ancestor chain to block cycles. Web: parent select in create/edit +
+  "Home › Garage" path prefix in the list.
+- **Recurring maintenance**: `ServiceRecord.intervalMonths`; when set and no
+  explicit `nextDueAt` is given the service derives it (`performedAt` +
+  interval), so routine jobs re-arm on every log entry.
+- **Lost & found**: public item payload carries `isLost` (coarse boolean,
+  only when status=LOST). `POST /api/public/items/:token/found-report`
+  (unauthenticated, destructive-rate-limited, 1-per-article-per-hour dedupe)
+  records a SCHEDULED CUSTOM alert due now (visible in the bell until
+  dismissed) + best-effort push/email. Finder and owner stay mutually
+  anonymous.
+- **Wishlist** (`WishlistItem`, `modules/wishlist/`): planned purchases with
+  optional target price/link/note; `purchasedAt` strikes through instead of
+  deleting. List/create/update gated on `wishlist`; mark-purchased + delete
+  stay open (cleanup rule). Web: lazy `/wishlist` route + nav item (Gift),
+  budget-fit hint line when the `budget` flag is on and a monthly budget is
+  set.
+- **Barcode lookup**: still client-side by design (see barcodeLookup.ts
+  comment), now tries Open *Products* Facts (general goods) before Open Food
+  Facts. Still opt-in via `VITE_FEATURE_BARCODE_LOOKUP=1`.
+
 ## Account security (login history → sessions → 2FA)
 
 Three independent slices; the password-only login path is byte-for-byte
@@ -800,7 +851,7 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   `messaging`, `reports`, `analytics`, `templates`, `bulk_edit`,
   `saved_views`, `notifications`, `calendar_feed`, `csv_import`,
   `csv_export`, `insurance`, `loans`, `maintenance`, `budget`,
-  `public_page`) defaults to `POWER_USER`** —
+  `public_page`, `wishlist`) defaults to `POWER_USER`** —
   i.e. they are all paid features by default, and an admin can lower a bar
   (e.g. to USER) per feature when desired. A **60-second
   process-level snapshot cache** (`getSnapshot`) holds both tables so gated

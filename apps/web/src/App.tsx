@@ -116,6 +116,12 @@ const InsuranceView = React.lazy(
 const PublicItemView = React.lazy(
   () => import("./components/public/PublicItemView")
 );
+const VerifyEmailView = React.lazy(
+  () => import("./components/auth/VerifyEmailView")
+);
+const WishlistView = React.lazy(
+  () => import("./components/wishlist/WishlistView")
+);
 const AnalyticsView = React.lazy(
   () => import("./components/analytics/AnalyticsView")
 );
@@ -371,6 +377,7 @@ export default function App() {
   const canReports = useFeature("reports");
   const canAnalytics = useFeature("analytics");
   const canInsurance = useFeature("insurance");
+  const canWishlist = useFeature("wishlist");
   const { loaded: featuresLoaded, refresh: refreshFeatures } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
@@ -494,6 +501,15 @@ export default function App() {
       </React.Suspense>
     );
 
+  // Email-verification landing (mailed link). Also pre-auth-gate: the token
+  // in the query string is the credential, so it must work from any device.
+  if (location.pathname === "/verify-email")
+    return (
+      <React.Suspense fallback={null}>
+        <VerifyEmailView />
+      </React.Suspense>
+    );
+
   if (authStatus === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg">
@@ -604,6 +620,10 @@ export default function App() {
             <Route
               path="/insurance"
               element={gatedRoute(canInsurance, <InsuranceView />, "insurance")}
+            />
+            <Route
+              path="/wishlist"
+              element={gatedRoute(canWishlist, <WishlistView />, "wishlist")}
             />
             <Route
               path="/reports"

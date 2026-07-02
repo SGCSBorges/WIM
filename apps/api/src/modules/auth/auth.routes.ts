@@ -21,6 +21,7 @@ import { denyToken } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
 import { cookieOptsFor } from "./cookies";
 import { PasswordResetService } from "./password-reset.service";
+import { EmailVerificationService } from "./email-verification.service";
 import { SessionService } from "./session.service";
 import { TotpService } from "./totp.service";
 import { z } from "zod";
@@ -50,6 +51,9 @@ router.post(
       ip: req.ip ?? null,
       userAgent: req.get("user-agent") ?? null,
     }).catch(() => {});
+    // Prove-your-email link. Best-effort and non-blocking: registration
+    // must succeed identically whether or not email transport is set up.
+    void EmailVerificationService.request(result.user.userId);
     await auditAction(req, {
       userId: result.user.userId,
       action: "CREATE",
@@ -349,6 +353,44 @@ router.post(
       entity: "User",
       metadata: { field: "password", via: "reset" },
     });
+    res.status(204).send();
+  })
+);
+
+/**
+ * POST /auth/verify-email
+ *
+ * Consume an email-verification token (the token IS the credential, so no
+ * auth cookie is required — the link must work from any device/mail app).
+ * Rate-limited like the reset endpoints so tokens can't be brute-forced.
+ */
+router.post(
+  "/verify-email",
+  security.destructiveRateLimiter,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { token } = z
+      .object({ token: z.string().trim().min(32).max(128) })
+      .parse(req.body);
+    await EmailVerificationService.consume(token);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      metadata: { field: "emailVerifiedAt", via: "verification-link" },
+    });
+    res.status(204).send();
+  })
+);
+
+/**
+ * POST /auth/verify-email/request — signed-in re-send (Profile button).
+ * No-ops silently when already verified; always 204.
+ */
+router.post(
+  "/verify-email/request",
+  security.destructiveRateLimiter,
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    await EmailVerificationService.request(req.user!.sub);
     res.status(204).send();
   })
 );

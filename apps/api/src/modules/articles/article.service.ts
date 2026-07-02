@@ -119,6 +119,13 @@ function buildArticleWhere(
         { articleDescription: { contains: term, mode: "insensitive" } },
         { brand: { contains: term, mode: "insensitive" } },
         { serialNumber: { contains: term, mode: "insensitive" } },
+        // Notes are where users write "receipt is in the blue folder" — a
+        // find-my-item search should surface those items too.
+        {
+          notes: {
+            some: { content: { contains: term, mode: "insensitive" } },
+          },
+        },
       ],
     }));
   }
@@ -328,6 +335,8 @@ export const ArticleService = {
       articleDescription: source.articleDescription,
       brand: source.brand,
       serialNumber: source.serialNumber,
+      purchasedFrom: source.purchasedFrom,
+      orderRef: source.orderRef,
       productImageUrl: source.productImageUrl,
       purchasePrice:
         source.purchasePrice != null ? Number(source.purchasePrice) : null,

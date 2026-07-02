@@ -18,6 +18,7 @@ import {
   ArrowRightLeft,
   MessagesSquare,
   Umbrella,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 export type NavKey =
@@ -29,6 +30,7 @@ export type NavKey =
   | "locations"
   | "alerts"
   | "insurance"
+  | "wishlist"
   | "reports"
   | "analytics"
   | "sharing"
@@ -60,6 +62,12 @@ export const NAV_ITEMS: NavItem[] = [
     path: "/insurance",
     icon: Umbrella,
     feature: "insurance",
+  },
+  {
+    key: "wishlist",
+    path: "/wishlist",
+    icon: Gift,
+    feature: "wishlist",
   },
   { key: "reports", path: "/reports", icon: FileText, feature: "reports" },
   {

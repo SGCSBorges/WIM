@@ -1,6 +1,9 @@
 export type AlertJobType = "warranty_reminder" | "custom_alert";
 
-export type WarrantyReminderKind = "J30" | "J7" | "J1";
+// "J30" / "J7" / "J1" by default, but users can configure their own offsets
+// (e.g. "J90") — the kind is derived from the day count, and feeds the BullMQ
+// job id, so it must stay a pure function of the offset.
+export type WarrantyReminderKind = `J${number}`;
 
 export type WarrantyReminderJobPayload = {
   type: "warranty_reminder";
@@ -25,13 +28,10 @@ export type AlertJobPayload =
   | WarrantyReminderJobPayload
   | CustomAlertJobPayload;
 
+export function reminderKindForDays(days: number): WarrantyReminderKind {
+  return `J${days}`;
+}
+
 export function reminderKindLabel(kind: WarrantyReminderKind) {
-  switch (kind) {
-    case "J30":
-      return "Rappel garantie J-30";
-    case "J7":
-      return "Rappel garantie J-7";
-    case "J1":
-      return "Rappel garantie J-1";
-  }
+  return `Rappel garantie J-${kind.slice(1)}`;
 }

@@ -46,6 +46,7 @@ describe("GET /api/public/items/:token", () => {
       articleDescription: "Mirrorless",
       productImageUrl: null,
       category: "ELECTRONICS",
+      status: "ACTIVE",
       garantie: { garantieFin: new Date(Date.now() + 86_400_000) },
     });
     const res = await request(makeApp()).get(`/api/public/items/${TOKEN}`);
@@ -58,6 +59,7 @@ describe("GET /api/public/items/:token", () => {
       productImageUrl: null,
       category: "ELECTRONICS",
       warrantyActive: true,
+      isLost: false,
     });
     // The privacy contract: sensitive fields must never be present.
     expect(res.body).not.toHaveProperty("purchasePrice");

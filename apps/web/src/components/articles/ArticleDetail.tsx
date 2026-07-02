@@ -603,6 +603,27 @@ export default function ArticleDetail() {
               {t("articleDetail.serialNumber")}: {article.serialNumber}
             </p>
           )}
+          {(article.purchasedFrom || article.orderRef) && (
+            <p className="text-xs ui-text-muted">
+              {article.purchasedFrom && (
+                <>
+                  {t("articleDetail.purchasedFrom")}:{" "}
+                  <span title={article.purchasedFrom}>
+                    {article.purchasedFrom}
+                  </span>
+                </>
+              )}
+              {article.purchasedFrom && article.orderRef && " · "}
+              {article.orderRef && (
+                <>
+                  {t("articleDetail.orderRef")}:{" "}
+                  <span className="select-all font-mono">
+                    {article.orderRef}
+                  </span>
+                </>
+              )}
+            </p>
+          )}
           {article.articleDescription && (
             <p className="text-sm">{article.articleDescription}</p>
           )}

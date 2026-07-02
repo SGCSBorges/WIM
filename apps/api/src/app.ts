@@ -34,6 +34,7 @@ import messageRoutes from "./modules/messages/message.routes";
 import loanRoutes from "./modules/loans/loan.routes";
 import insuranceRoutes from "./modules/insurance/insurance.routes";
 import serviceRecordRoutes from "./modules/service-records/service-record.routes";
+import wishlistRoutes from "./modules/wishlist/wishlist.routes";
 import publicLinkRoutes from "./modules/articles/public-link.routes";
 import publicRoutes from "./modules/public/public.routes";
 import authRoutes from "./modules/auth/auth.routes";
@@ -269,6 +270,7 @@ export function createApp() {
   app.use("/api/loans", loanRoutes);
   app.use("/api/insurance", insuranceRoutes);
   app.use("/api/service-records", serviceRecordRoutes);
+  app.use("/api/wishlist", wishlistRoutes);
   app.use("/api/public", publicRoutes);
   app.use("/api/profile", profileRoutes);
   app.use("/api/reports", reportRoutes);

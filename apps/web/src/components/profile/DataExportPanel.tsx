@@ -6,12 +6,17 @@
  * keep that file scannable.
  */
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { articlesAPI, warrantiesAPI, attachmentsAPI } from "../../services/api";
+import { DatabaseBackup, Loader2 } from "lucide-react";
+import {
+  articlesAPI,
+  warrantiesAPI,
+  attachmentsAPI,
+  profileAPI,
+} from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
-import { toCSV, downloadFile } from "../../utils/csv";
+import { toCSV, downloadFile, downloadBlob } from "../../utils/csv";
 
 type ExportFormat = "csv" | "json";
 type ExportTarget = "articles" | "warranties" | "attachments";
@@ -28,6 +33,29 @@ export default function DataExportPanel() {
   const { t } = useI18n();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
+
+  // Server-side full-account export — every owned record in one JSON file
+  // (not capped like the per-target client-side exports below).
+  const exportFullAccount = async () => {
+    setBusy("account:json");
+    try {
+      const blob = await profileAPI.exportAccount();
+      const stamp = formatDateForFilename(new Date());
+      downloadBlob(`wim-account-export-${stamp}.json`, blob);
+      toast.show(
+        t("export.success")
+          .replace("{target}", t("export.target.account"))
+          .replace("{format}", "JSON"),
+        { kind: "success" }
+      );
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const exportData = async (target: ExportTarget, format: ExportFormat) => {
     setBusy(`${target}:${format}`);
@@ -251,6 +279,28 @@ export default function DataExportPanel() {
         </div>
         <div className="pt-2">
           <Row target="attachments" />
+        </div>
+        <div className="pt-2 flex flex-wrap items-center gap-2">
+          <span className="text-sm flex-1 min-w-0">
+            {t("export.target.account")}
+          </span>
+          <button
+            type="button"
+            onClick={exportFullAccount}
+            disabled={busy !== null}
+            aria-busy={busy === "account:json"}
+            className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+          >
+            {busy === "account:json" ? (
+              <Loader2
+                className="h-3.5 w-3.5 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <DatabaseBackup className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+            {t("export.account.button")}
+          </button>
         </div>
       </div>
     </div>

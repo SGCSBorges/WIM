@@ -32,6 +32,7 @@ export type {
   SavedView,
   ServiceRecordItem,
   ServiceDueItem,
+  WishlistItemRow,
   ShareInviteItem,
   ShareItem,
   SharedArticleRow,

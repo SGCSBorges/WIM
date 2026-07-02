@@ -26,6 +26,8 @@ type ParsedRow = {
   model: string;
   description: string;
   price: number | null;
+  purchasedFrom: string;
+  orderRef: string;
   locations: string[];
   tags: string[];
   valid: boolean;
@@ -51,6 +53,13 @@ function toRow(rec: Record<string, string>): ParsedRow {
     model: model.trim(),
     description: (rec["description"] ?? "").trim(),
     price: price !== null && Number.isFinite(price) ? price : null,
+    purchasedFrom: (rec["purchasedfrom"] ?? rec["purchased from"] ?? "").trim(),
+    orderRef: (
+      rec["orderref"] ??
+      rec["order ref"] ??
+      rec["ordernumber"] ??
+      ""
+    ).trim(),
     locations,
     tags,
     valid: name.trim() !== "" && model.trim() !== "" && locations.length > 0,
@@ -105,6 +114,8 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
         model: r.model,
         description: r.description || null,
         price: r.price,
+        purchasedFrom: r.purchasedFrom || null,
+        orderRef: r.orderRef || null,
         locations: r.locations,
         tags: r.tags,
       }));

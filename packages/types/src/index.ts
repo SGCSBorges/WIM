@@ -28,6 +28,9 @@ export interface Location {
   locationId: number;
   name: string;
   description?: string | null;
+  // Optional parent for a hierarchy (Home → Garage → Red toolbox). Null/absent
+  // = a root location.
+  parentLocationId?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -80,6 +83,7 @@ export const AUDIT_ENTITIES = [
   "Loan",
   "InsurancePolicy",
   "ServiceRecord",
+  "WishlistItem",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 
@@ -130,6 +134,10 @@ export interface Article {
   articleDescription?: string | null;
   serialNumber?: string | null;
   brand?: string | null;
+  // Purchase provenance: retailer/store + order/receipt reference — what a
+  // warranty claim or insurance filing asks for.
+  purchasedFrom?: string | null;
+  orderRef?: string | null;
   productImageUrl?: string | null;
   // Purchase price for inventory-value tracking. Serialized as a string
   // (Prisma Decimal) on reads; accepts number on writes.
@@ -642,6 +650,10 @@ export interface PublicItem {
   productImageUrl: string | null;
   category: ArticleCategory | null;
   warrantyActive: boolean | null;
+  // True while the owner has the item marked LOST — unlocks the anonymous
+  // "notify the owner" form on the public page. A coarse boolean, never the
+  // raw status enum.
+  isLost: boolean;
 }
 
 /** A service / maintenance log entry as returned by `/api/service-records`.
@@ -654,7 +666,24 @@ export interface ServiceRecordItem {
   cost: string | number | null;
   provider: string | null;
   nextDueAt: string | null;
+  // Recurring cadence in months (null = one-shot). When set, the server
+  // derives nextDueAt from performedAt when no explicit date is given.
+  intervalMonths?: number | null;
   createdAt: string;
+}
+
+/** A wishlist / planned-purchase row from `/api/wishlist`. `targetPrice` is
+ *  a Decimal string on reads; `purchasedAt` non-null = bought (kept as
+ *  struck-through history rather than deleted). */
+export interface WishlistItemRow {
+  id: number;
+  name: string;
+  url: string | null;
+  targetPrice: string | number | null;
+  note: string | null;
+  purchasedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /** A "service coming due" row from `/api/service-records/due` — the latest

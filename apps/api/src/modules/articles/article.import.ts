@@ -17,6 +17,8 @@ export type ImportRow = {
   model: string;
   description?: string | null;
   price?: number | null;
+  purchasedFrom?: string | null;
+  orderRef?: string | null;
   locations: string[];
   tags?: string[];
 };
@@ -192,6 +194,8 @@ export async function importArticles(
         articleModele: row.model.trim(),
         articleDescription: row.description?.trim() || null,
         purchasePrice: row.price ?? null,
+        purchasedFrom: row.purchasedFrom?.trim() || null,
+        orderRef: row.orderRef?.trim() || null,
         locationIds,
         tagIds,
       });

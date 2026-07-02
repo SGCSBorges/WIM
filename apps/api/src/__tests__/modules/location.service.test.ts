@@ -165,3 +165,53 @@ describe("LocationService.addArticle", () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// nested locations — parent validation + cycle guard
+// ---------------------------------------------------------------------------
+
+describe("LocationService parent hierarchy", () => {
+  it("create rejects a parent owned by someone else", async () => {
+    mockPrisma.location.findFirst.mockResolvedValue(null);
+    await expect(
+      LocationService.create({
+        ownerUserId: 1,
+        name: "Shelf",
+        parentLocationId: 99,
+      })
+    ).rejects.toMatchObject({ status: 404 });
+    expect(mockPrisma.location.create).not.toHaveBeenCalled();
+  });
+
+  it("update rejects making a location its own parent", async () => {
+    mockPrisma.location.findFirst.mockResolvedValueOnce({ locationId: 5 });
+    await expect(
+      LocationService.update(5, 1, { parentLocationId: 5 })
+    ).rejects.toMatchObject({ status: 400 });
+    expect(mockPrisma.location.update).not.toHaveBeenCalled();
+  });
+
+  it("update rejects moving a location under its own descendant", async () => {
+    // Tree: 5 → 6 → 7. Moving 5 under 7 must fail: walking up from 7 hits 5.
+    mockPrisma.location.findFirst
+      .mockResolvedValueOnce({ locationId: 5 }) // ownership check for id=5
+      .mockResolvedValueOnce({ locationId: 7, parentLocationId: 6 }) // parent row
+      .mockResolvedValueOnce({ parentLocationId: 5 }); // walk: 6 → 5
+    await expect(
+      LocationService.update(5, 1, { parentLocationId: 7 })
+    ).rejects.toMatchObject({ status: 400 });
+    expect(mockPrisma.location.update).not.toHaveBeenCalled();
+  });
+
+  it("update accepts a valid re-parent", async () => {
+    mockPrisma.location.findFirst
+      .mockResolvedValueOnce({ locationId: 5 }) // ownership check
+      .mockResolvedValueOnce({ locationId: 2, parentLocationId: null }); // root parent
+    mockPrisma.location.update.mockResolvedValue({ locationId: 5 });
+    await LocationService.update(5, 1, { parentLocationId: 2 });
+    expect(mockPrisma.location.update).toHaveBeenCalledWith({
+      where: { locationId: 5 },
+      data: { parentLocationId: 2 },
+    });
+  });
+});
