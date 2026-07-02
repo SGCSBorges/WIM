@@ -9,7 +9,7 @@ import { MessagesSquare } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { messagesAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
-import { Button } from "../ui";
+import { Button, Textarea } from "../ui";
 import Modal from "../common/Modal";
 import ArticleThumb from "../articles/ArticleThumb";
 import { MESSAGE_BODY_MAX } from "./constants";
@@ -126,10 +126,10 @@ export default function MessageComposeDialog({
           >
             {t("messages.compose.label")}
           </label>
-          <textarea
+          <Textarea
             ref={textareaRef}
             id="message-compose-body"
-            className="w-full resize-none rounded-md border border-line bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="resize-none"
             rows={4}
             value={body}
             onChange={(e) => setBody(e.target.value)}

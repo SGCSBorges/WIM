@@ -16,7 +16,7 @@
  * is already URL-driven so a split would be mechanical.
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Package,
@@ -28,8 +28,6 @@ import {
   Tag as TagIcon,
   Trash2,
   X,
-  ChevronLeft,
-  ChevronRight,
   Lock,
   Check,
 } from "lucide-react";
@@ -57,16 +55,18 @@ import BulkEditDialog from "./BulkEditDialog";
 import CsvImportModal from "./CsvImportModal";
 import TagsManager from "./TagsManager";
 import { useToast } from "../common/Toast";
+import { useUndoableDelete } from "../../hooks/useUndoableDelete";
 import { consumeSharedDraft } from "../../utils/shareTarget";
 import { useFeature, useFeatures } from "../../features/features";
 import { useUpgrade } from "../../features/upgrade";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import type { ArticleStatus, ArticleCategory } from "@wim/types";
-import { PageHeader, Button, Input } from "../ui";
+import { PageHeader, Button, Input, Pagination } from "../ui";
 
 const ArticlesList: React.FC = () => {
   const { t, language } = useI18n();
   const toast = useToast();
+  const undoableDelete = useUndoableDelete();
   const isPowerUser = useFeature("sharing");
   const canBulkEdit = useFeature("bulk_edit");
   const canSavedViews = useFeature("saved_views");
@@ -229,7 +229,13 @@ const ArticlesList: React.FC = () => {
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [showBulkEdit, setShowBulkEdit] = useState(false);
 
+  // Monotonic request id so a slow, superseded fetch (rapid filter/search/page
+  // changes, or a manual refetch racing the debounced one) can't overwrite the
+  // results of a newer request — only the latest-issued request applies state.
+  const requestSeqRef = useRef(0);
+
   const fetchArticles = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     try {
       setLoading(true);
       const { items, total: t0 } = await articlesAPI.getAll({
@@ -260,6 +266,7 @@ const ArticlesList: React.FC = () => {
         page,
         limit: LIMIT,
       });
+      if (seq !== requestSeqRef.current) return;
       setArticles(items);
       setTotal(t0);
       setError(null);
@@ -274,9 +281,10 @@ const ArticlesList: React.FC = () => {
         return next.size === prev.size ? prev : next;
       });
     } catch (err) {
+      if (seq !== requestSeqRef.current) return;
       setError(getErrorMessage(err, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (seq === requestSeqRef.current) setLoading(false);
     }
   }, [
     locationFilterId,
@@ -472,41 +480,20 @@ const ArticlesList: React.FC = () => {
 
   const handleDelete = (article: FetchedArticle) => {
     setError(null);
-    setArticles((prev) =>
-      prev.filter((a) => a.articleId !== article.articleId)
-    );
-    setTotal((t0) => Math.max(0, t0 - 1));
-
-    // fired/undone flags close the hover-pause edge: the toast's auto-dismiss
-    // pauses while hovered, so Undo can remain clickable after the 5s timer
-    // has already sent the DELETE.
-    const state = { fired: false, undone: false };
-    const timer = setTimeout(() => {
-      if (state.undone) return;
-      state.fired = true;
-      articlesAPI.delete(article.articleId).catch((err) => {
-        restoreArticle(article);
-        toast.show(getErrorMessage(err, t("common.errorOccurred")), {
-          kind: "error",
-        });
-      });
-    }, 5000);
-
-    toast.show(
-      t("articles.delete.deleted").replace("{name}", article.articleNom),
-      {
-        ttl: 5000,
-        action: {
-          label: t("common.undo"),
-          onClick: () => {
-            if (state.fired) return;
-            state.undone = true;
-            clearTimeout(timer);
-            restoreArticle(article);
-          },
-        },
-      }
-    );
+    undoableDelete({
+      message: t("articles.delete.deleted").replace(
+        "{name}",
+        article.articleNom
+      ),
+      remove: () => {
+        setArticles((prev) =>
+          prev.filter((a) => a.articleId !== article.articleId)
+        );
+        setTotal((t0) => Math.max(0, t0 - 1));
+      },
+      restore: () => restoreArticle(article),
+      commit: () => articlesAPI.delete(article.articleId),
+    });
   };
 
   const loadSavedViews = () =>
@@ -1123,41 +1110,27 @@ const ArticlesList: React.FC = () => {
         )}
 
         {!loading && total > 0 && (
-          <div className="flex items-center justify-between gap-3 border-t ui-divider p-4 text-sm">
-            <span className="ui-text-muted tabular-nums">
-              {t("articles.results.count").replace(
-                "{total}",
-                formatCount(total, language)
-              )}
-            </span>
-            {total > LIMIT && (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    updateParams({ page: String(page - 1) }, false)
-                  }
-                  disabled={page <= 1}
-                  leftIcon={<ChevronLeft className="h-4 w-4" />}
-                >
-                  {t("common.prev")}
-                </Button>
-                <span className="px-1 tabular-nums ui-text-muted">
-                  {page} / {Math.max(1, Math.ceil(total / LIMIT))}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    updateParams({ page: String(page + 1) }, false)
-                  }
-                  disabled={page >= Math.ceil(total / LIMIT)}
-                  rightIcon={<ChevronRight className="h-4 w-4" />}
-                >
-                  {t("common.next")}
-                </Button>
-              </div>
+          <div className="border-t ui-divider p-4 text-sm">
+            {total > LIMIT ? (
+              <Pagination
+                page={page}
+                limit={LIMIT}
+                total={total}
+                onPage={(p) => updateParams({ page: String(p) }, false)}
+                prevLabel={t("common.prev")}
+                nextLabel={t("common.next")}
+                rangeLabel={t("articles.results.count").replace(
+                  "{total}",
+                  formatCount(total, language)
+                )}
+              />
+            ) : (
+              <span className="ui-text-muted tabular-nums">
+                {t("articles.results.count").replace(
+                  "{total}",
+                  formatCount(total, language)
+                )}
+              </span>
             )}
           </div>
         )}

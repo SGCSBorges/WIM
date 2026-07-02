@@ -468,15 +468,27 @@ export const MessageService = {
     };
   },
 
-  /** Stamp an offer's outcome and surface it to the requester (unread bump). */
+  /**
+   * Atomically claim an offer's terminal outcome. The PENDING precondition
+   * lives in the WHERE clause so two racing responders (double-clicked Accept,
+   * or Accept vs Decline across tabs) can't both win — the loser gets 0 rows
+   * and a 409, instead of silently overwriting the winner's status. Returns
+   * the updated DTO once the transition lands.
+   */
   async resolveOffer(
     messageId: number,
     status: "ACCEPTED" | "DECLINED" | "WITHDRAWN"
   ) {
     const now = new Date();
-    const updated = await prisma.message.update({
-      where: { id: messageId },
+    const { count } = await prisma.message.updateMany({
+      where: { id: messageId, offerStatus: "PENDING" },
       data: { offerStatus: status },
+    });
+    if (count === 0)
+      throw createHttpError(409, "This offer has already been resolved");
+
+    const updated = await prisma.message.findUniqueOrThrow({
+      where: { id: messageId },
       select: { ...messageSelect, threadId: true },
     });
     await prisma.messageThread.update({
@@ -484,6 +496,15 @@ export const MessageService = {
       data: { lastMessageAt: now, requesterUnread: true, ownerUnread: false },
     });
     return toMessageDto(updated);
+  },
+
+  /** Revert an offer to PENDING — used to roll back an accept whose downstream
+   * transfer creation failed, so the owner can retry cleanly. */
+  async reopenOffer(messageId: number) {
+    await prisma.message.updateMany({
+      where: { id: messageId, kind: "OFFER" },
+      data: { offerStatus: "PENDING" },
+    });
   },
 
   /** Number of threads with something unread for this user — the nav badge. */

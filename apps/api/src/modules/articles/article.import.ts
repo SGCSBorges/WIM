@@ -34,41 +34,55 @@ const MAX_NEW_PER_IMPORT = 50;
 
 // Resolve a list of location names to owned ids, creating any that don't
 // exist yet. Upsert leans on the (ownerUserId, name) unique constraint so
-// repeated names within one import don't duplicate.
+// repeated names within one import don't duplicate. The per-import `cache`
+// memoizes a resolved name so a value shared by many rows (e.g. 500 articles
+// all in "Garage") costs one upsert, not one per row.
 async function resolveLocationIds(
   ownerUserId: number,
-  names: string[]
+  names: string[],
+  cache: Map<string, number>
 ): Promise<number[]> {
   const ids: number[] = [];
   for (const raw of names) {
     const name = raw.trim();
     if (!name) continue;
-    const loc = await prisma.location.upsert({
-      where: { ownerUserId_name: { ownerUserId, name } },
-      create: { ownerUserId, name },
-      update: {},
-      select: { locationId: true },
-    });
-    ids.push(loc.locationId);
+    let id = cache.get(name);
+    if (id === undefined) {
+      const loc = await prisma.location.upsert({
+        where: { ownerUserId_name: { ownerUserId, name } },
+        create: { ownerUserId, name },
+        update: {},
+        select: { locationId: true },
+      });
+      id = loc.locationId;
+      cache.set(name, id);
+    }
+    ids.push(id);
   }
   return ids;
 }
 
 async function resolveTagIds(
   ownerUserId: number,
-  names: string[]
+  names: string[],
+  cache: Map<string, number>
 ): Promise<number[]> {
   const ids: number[] = [];
   for (const raw of names) {
     const name = raw.trim();
     if (!name) continue;
-    const tag = await prisma.tag.upsert({
-      where: { ownerUserId_name: { ownerUserId, name } },
-      create: { ownerUserId, name },
-      update: {},
-      select: { tagId: true },
-    });
-    ids.push(tag.tagId);
+    let id = cache.get(name);
+    if (id === undefined) {
+      const tag = await prisma.tag.upsert({
+        where: { ownerUserId_name: { ownerUserId, name } },
+        create: { ownerUserId, name },
+        update: {},
+        select: { tagId: true },
+      });
+      id = tag.tagId;
+      cache.set(name, id);
+    }
+    ids.push(id);
   }
   return ids;
 }
@@ -143,6 +157,11 @@ export async function importArticles(
 
   await assertNewEntityCap(ownerUserId, rows);
 
+  // Name→id caches shared across rows so a location/tag referenced by many
+  // rows is upserted once, not once per row.
+  const locationCache = new Map<string, number>();
+  const tagCache = new Map<string, number>();
+
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     try {
@@ -162,9 +181,10 @@ export async function importArticles(
 
       const locationIds = await resolveLocationIds(
         ownerUserId,
-        row.locations ?? []
+        row.locations ?? [],
+        locationCache
       );
-      const tagIds = await resolveTagIds(ownerUserId, row.tags ?? []);
+      const tagIds = await resolveTagIds(ownerUserId, row.tags ?? [], tagCache);
 
       await ArticleService.create({
         ownerUserId,

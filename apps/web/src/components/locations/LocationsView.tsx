@@ -13,6 +13,7 @@ import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
+import { useUndoableDelete } from "../../hooks/useUndoableDelete";
 import { formatMoney } from "../../utils/money";
 import { PageHeader, Section, Button, Input, Badge } from "../ui";
 
@@ -31,6 +32,7 @@ export default function LocationsView() {
   const { t, language } = useI18n();
   const { currency } = usePreferences();
   const toast = useToast();
+  const undoableDelete = useUndoableDelete();
 
   const [items, setItems] = useState<LocationRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,47 +121,21 @@ export default function LocationsView() {
   };
 
   // Optimistic delete with a 5s undo window: hide the row immediately,
-  // schedule the API call, and let the user cancel from the toast. Same
-  // pattern as ArticlesList — no restore endpoint needed because the
-  // delete simply never fires if undo wins.
+  // schedule the API call, and let the user cancel from the toast. No restore
+  // endpoint needed because the delete simply never fires if undo wins.
   const remove = (id: number) => {
     setConfirmDeleteId(null);
     const snapshot = items.find((l) => l.locationId === id);
     if (!snapshot) return;
-    setItems((prev) => prev.filter((l) => l.locationId !== id));
-
-    // The toast ttl must match the delete timer: the default undo-toast ttl
-    // (8s, pausable on hover) outlives the 5s window, leaving a clickable
-    // Undo after the DELETE has already been sent. The fired/undone flags
-    // close the remaining hover-pause edge.
-    const state = { fired: false, undone: false };
-    const timer = window.setTimeout(() => {
-      if (state.undone) return;
-      state.fired = true;
-      void locationsAPI.delete(id).catch((e) => {
+    undoableDelete({
+      message: t("locations.deleted"),
+      kind: "success",
+      remove: () => setItems((prev) => prev.filter((l) => l.locationId !== id)),
+      restore: () =>
         setItems((prev) =>
           prev.some((l) => l.locationId === id) ? prev : [...prev, snapshot]
-        );
-        toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-          kind: "error",
-        });
-      });
-    }, 5000);
-
-    toast.show(t("locations.deleted"), {
-      kind: "success",
-      ttl: 5000,
-      action: {
-        label: t("common.undo"),
-        onClick: () => {
-          if (state.fired) return;
-          state.undone = true;
-          window.clearTimeout(timer);
-          setItems((prev) =>
-            prev.some((l) => l.locationId === id) ? prev : [...prev, snapshot]
-          );
-        },
-      },
+        ),
+      commit: () => locationsAPI.delete(id),
     });
   };
 

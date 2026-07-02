@@ -21,6 +21,7 @@ import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
+import { useUndoableDelete } from "../../hooks/useUndoableDelete";
 import {
   PageHeader,
   Section,
@@ -50,6 +51,7 @@ export default function AlertsView() {
   const { t } = useI18n();
   const { formatDateTime } = usePreferences();
   const toast = useToast();
+  const undoableDelete = useUndoableDelete();
   const [items, setItems] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -210,37 +212,21 @@ export default function AlertsView() {
   };
 
   // Optimistic cancel with a 5s undo window: drop the row immediately and
-  // delay the API call so the user can recover from a misclick (same shape
-  // as the ArticlesList delete pattern).
+  // delay the API call so the user can recover from a misclick.
   const cancelAlert = (alerteId: number) => {
     const snapshot = items.find((a) => a.alerteId === alerteId);
     if (!snapshot) return;
-    setItems((prev) => prev.filter((a) => a.alerteId !== alerteId));
-
-    const timer = window.setTimeout(() => {
-      void alertsAPI.cancel(alerteId).catch((e) => {
-        setItems((prev) =>
-          prev.some((a) => a.alerteId === alerteId) ? prev : [...prev, snapshot]
-        );
-        toast.show(getErrorMessage(e, t("common.errorOccurred")), {
-          kind: "error",
-        });
-      });
-    }, 5000);
-
-    toast.show(t("alerts.cancel.success"), {
+    const restore = () =>
+      setItems((prev) =>
+        prev.some((a) => a.alerteId === alerteId) ? prev : [...prev, snapshot]
+      );
+    undoableDelete({
+      message: t("alerts.cancel.success"),
       kind: "success",
-      action: {
-        label: t("common.undo"),
-        onClick: () => {
-          window.clearTimeout(timer);
-          setItems((prev) =>
-            prev.some((a) => a.alerteId === alerteId)
-              ? prev
-              : [...prev, snapshot]
-          );
-        },
-      },
+      remove: () =>
+        setItems((prev) => prev.filter((a) => a.alerteId !== alerteId)),
+      restore,
+      commit: () => alertsAPI.cancel(alerteId),
     });
   };
 

@@ -5,7 +5,7 @@
  * stretches to 23:59:59.999Z so a single-day filter actually includes
  * that day's events.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { adminAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
@@ -43,8 +43,15 @@ export default function AuditLogTab() {
   const [filterFrom, setFilterFrom] = useState<string>("");
   const [filterTo, setFilterTo] = useState<string>("");
 
+  // Monotonic request id: a filter-change reset and an in-flight "load more"
+  // append can resolve out of order — without this guard a slow append would
+  // tack old-filter rows onto the freshly-reset list. Only the latest request
+  // applies its results.
+  const requestSeqRef = useRef(0);
+
   const load = useCallback(
     async (reset: boolean) => {
+      const seq = ++requestSeqRef.current;
       setLoading(true);
       setError(null);
       try {
@@ -57,14 +64,16 @@ export default function AuditLogTab() {
           limit: 50,
           cursor: reset ? undefined : (nextCursor ?? undefined),
         });
+        if (seq !== requestSeqRef.current) return;
         setEntries((prev) =>
           reset ? data.entries : [...prev, ...data.entries]
         );
         setNextCursor(data.nextCursor);
       } catch (e) {
+        if (seq !== requestSeqRef.current) return;
         setError(getErrorMessage(e, t("admin.error.fetchAuditLog")));
       } finally {
-        setLoading(false);
+        if (seq === requestSeqRef.current) setLoading(false);
       }
     },
     [

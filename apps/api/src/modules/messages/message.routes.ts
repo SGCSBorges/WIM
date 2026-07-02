@@ -189,12 +189,25 @@ router.post(
     const ownerId = req.user!.sub;
     const offer = await MessageService.loadPendingOffer(messageId, ownerId);
 
-    const transfer = await TransferService.createPush(
-      offer.articleId,
-      ownerId,
-      offer.requesterEmail,
-      `Accepted offer${offer.amount ? `: ${offer.amount}` : ""}`
-    );
+    // Claim the PENDING→ACCEPTED transition atomically *before* firing the
+    // transfer so a double-clicked accept can't create two transfers — the
+    // loser 409s here. If createPush then rejects (e.g. a pending transfer
+    // already exists), reopen the offer so the owner can retry cleanly,
+    // preserving the original "offer and transfer stay consistent" invariant.
+    const message = await MessageService.resolveOffer(messageId, "ACCEPTED");
+
+    let transfer;
+    try {
+      transfer = await TransferService.createPush(
+        offer.articleId,
+        ownerId,
+        offer.requesterEmail,
+        `Accepted offer${offer.amount ? `: ${offer.amount}` : ""}`
+      );
+    } catch (err) {
+      await MessageService.reopenOffer(messageId);
+      throw err;
+    }
 
     void EmailService.sendReminderEmail({
       to: offer.requesterEmail,
@@ -202,8 +215,6 @@ router.post(
       body: `Your offer on "${offer.articleNom}" was accepted. Complete the transfer to your inventory.\n\nUse token: ${transfer.token}\n\nThis transfer expires in 7 days.`,
       path: `/transfers?token=${transfer.token}`,
     });
-
-    const message = await MessageService.resolveOffer(messageId, "ACCEPTED");
 
     await auditAction(req, {
       action: "ARTICLE_TRANSFER_INIT",

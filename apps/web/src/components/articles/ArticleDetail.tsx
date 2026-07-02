@@ -6,7 +6,7 @@
  * immediately on save. "Duplicate" copies identity + locations + tags
  * (not warranty / attachments) — see article.service.ts duplicate().
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { usePreferences } from "../../preferences/preferences";
 import {
@@ -254,7 +254,13 @@ export default function ArticleDetail() {
     }>
   >([]);
 
+  // Monotonic request id so navigating between article-detail pages in quick
+  // succession (this route component stays mounted across :id changes) can't
+  // let a slow response for the previous article overwrite the newer one.
+  const requestSeqRef = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -266,6 +272,7 @@ export default function ArticleDetail() {
           .getAll(undefined, undefined, undefined, undefined, articleId)
           .catch(() => []),
       ]);
+      if (seq !== requestSeqRef.current) return;
       setArticle(a);
       recordRecentlyViewed({
         articleId: a.articleId,
@@ -277,9 +284,10 @@ export default function ArticleDetail() {
       setNotes(ns);
       setArticleAlerts(al as typeof articleAlerts);
     } catch (e) {
+      if (seq !== requestSeqRef.current) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (seq === requestSeqRef.current) setLoading(false);
     }
   }, [articleId, t]);
 

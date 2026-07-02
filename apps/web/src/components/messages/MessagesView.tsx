@@ -32,7 +32,14 @@ import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { useToast } from "../common/Toast";
 import { useMessagesUnread } from "../../messages/unread";
-import { PageHeader, Section, Button, Input, ConfirmDialog } from "../ui";
+import {
+  PageHeader,
+  Section,
+  Button,
+  Input,
+  Textarea,
+  ConfirmDialog,
+} from "../ui";
 import { EmptyState, ErrorBanner } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import ArticleThumb from "../articles/ArticleThumb";
@@ -526,8 +533,8 @@ export default function MessagesView() {
                 {/* Composer */}
                 <form onSubmit={sendReply} className="border-t ui-divider p-3">
                   <div className="flex items-end gap-2">
-                    <textarea
-                      className="min-h-[2.5rem] flex-1 resize-none rounded-md border border-line bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    <Textarea
+                      className="min-h-[2.5rem] flex-1 resize-none"
                       rows={1}
                       value={reply}
                       onChange={(e) => setReply(e.target.value)}

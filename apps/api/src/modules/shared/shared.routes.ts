@@ -212,18 +212,12 @@ router.put(
     });
     if (count === 0) throw createHttpError(404, "Article not found");
 
+    // Same privacy-safe projection as GET — never echo the owner's private
+    // fields (serial/price/depreciation/warranty provider+claim) back to a
+    // WRITE recipient just because they touched a whitelisted field.
     const updated = await prisma.article.findUniqueOrThrow({
       where: { articleId: id },
-      include: {
-        owner: { select: { userId: true, email: true } },
-        garantie: true,
-        locations: {
-          select: {
-            locationId: true,
-            location: { select: { name: true } },
-          },
-        },
-      },
+      select: sharedArticleSelect,
     });
 
     await auditAction(req, {
