@@ -10,7 +10,7 @@
  * saving them they can re-enroll later (which rotates the secret).
  */
 import { useState } from "react";
-import { Copy, ShieldCheck, ShieldOff } from "lucide-react";
+import { Copy, RotateCcw, ShieldCheck, ShieldOff } from "lucide-react";
 import { profileAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { useToast } from "../common/Toast";
@@ -30,7 +30,7 @@ export default function TwoFactorPanel({
   const toast = useToast();
 
   const [phase, setPhase] = useState<
-    "idle" | "password" | "confirm" | "disablePassword"
+    "idle" | "password" | "confirm" | "disablePassword" | "regenPassword"
   >("idle");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -82,6 +82,23 @@ export default function TwoFactorPanel({
     }
   };
 
+  const regenerateCodes = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const { backupCodes: fresh } =
+        await profileAPI.regenerateBackupCodes(password);
+      setBackupCodes(fresh);
+      setPassword("");
+      setPhase("idle");
+      toast.show(t("twoFactor.codesRegenerated"), { kind: "success" });
+    } catch (e) {
+      setError(getErrorMessage(e, t("common.errorOccurred")));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const disable = async () => {
     setBusy(true);
     setError(null);
@@ -96,6 +113,42 @@ export default function TwoFactorPanel({
       setBusy(false);
     }
   };
+
+  // Shared between the setup-confirm step and the post-regeneration idle
+  // view — the plaintext codes are only ever held in state, shown once.
+  const renderBackupCodes = () =>
+    backupCodes.length > 0 ? (
+      <div className="rounded-md bg-surface-muted p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="flex items-center gap-1.5 text-sm font-medium ui-title">
+            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+            {t("twoFactor.backupTitle")}
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              void navigator.clipboard
+                .writeText(backupCodes.join("\n"))
+                .then(() => toast.show(t("alerts.copied"), { kind: "success" }))
+                .catch(() =>
+                  toast.show(t("twoFactor.urlCopyFailed"), { kind: "error" })
+                );
+            }}
+          >
+            {t("common.copy")}
+          </Button>
+        </div>
+        <p className="mb-2 text-xs ui-text-muted">
+          {t("twoFactor.backupHint")}
+        </p>
+        <ul className="grid grid-cols-2 gap-1 font-mono text-xs">
+          {backupCodes.map((c) => (
+            <li key={c}>{c}</li>
+          ))}
+        </ul>
+      </div>
+    ) : null;
 
   return (
     <div className="space-y-3">
@@ -118,15 +171,25 @@ export default function TwoFactorPanel({
           </Button>
         )}
         {phase === "idle" && enabled && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-auto text-danger"
-            leftIcon={<ShieldOff className="h-4 w-4" />}
-            onClick={() => setPhase("disablePassword")}
-          >
-            {t("twoFactor.disable")}
-          </Button>
+          <span className="ml-auto inline-flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<RotateCcw className="h-4 w-4" />}
+              onClick={() => setPhase("regenPassword")}
+            >
+              {t("twoFactor.regenCodes")}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-danger"
+              leftIcon={<ShieldOff className="h-4 w-4" />}
+              onClick={() => setPhase("disablePassword")}
+            >
+              {t("twoFactor.disable")}
+            </Button>
+          </span>
         )}
       </div>
 
@@ -166,6 +229,50 @@ export default function TwoFactorPanel({
               onClick={beginSetup}
             >
               {t("twoFactor.continue")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {phase === "idle" && enabled && renderBackupCodes()}
+
+      {phase === "regenPassword" && (
+        <div className="space-y-2 rounded-lg border ui-divider p-3">
+          <p className="text-sm ui-text-muted">{t("twoFactor.regenHint")}</p>
+          <Field
+            label={t("twoFactor.passwordLabel")}
+            htmlFor="totp-regen-password"
+          >
+            <Input
+              id="totp-regen-password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && password && !busy) {
+                  e.preventDefault();
+                  void regenerateCodes();
+                }
+              }}
+            />
+          </Field>
+          {error && (
+            <p role="alert" className="text-sm ui-text-error">
+              {error}
+            </p>
+          )}
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={reset} disabled={busy}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              size="sm"
+              loading={busy}
+              disabled={!password}
+              onClick={regenerateCodes}
+            >
+              {t("twoFactor.regenCodes")}
             </Button>
           </div>
         </div>
@@ -219,42 +326,7 @@ export default function TwoFactorPanel({
               placeholder="123456"
             />
           </Field>
-          {backupCodes.length > 0 && (
-            <div className="rounded-md bg-surface-muted p-3">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="flex items-center gap-1.5 text-sm font-medium ui-title">
-                  <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                  {t("twoFactor.backupTitle")}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    void navigator.clipboard
-                      .writeText(backupCodes.join("\n"))
-                      .then(() =>
-                        toast.show(t("alerts.copied"), { kind: "success" })
-                      )
-                      .catch(() =>
-                        toast.show(t("twoFactor.urlCopyFailed"), {
-                          kind: "error",
-                        })
-                      );
-                  }}
-                >
-                  {t("common.copy")}
-                </Button>
-              </div>
-              <p className="mb-2 text-xs ui-text-muted">
-                {t("twoFactor.backupHint")}
-              </p>
-              <ul className="grid grid-cols-2 gap-1 font-mono text-xs">
-                {backupCodes.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {renderBackupCodes()}
           {error && (
             <p role="alert" className="text-sm ui-text-error">
               {error}

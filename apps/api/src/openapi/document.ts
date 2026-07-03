@@ -1415,6 +1415,22 @@ export function buildOpenApiDocument() {
           responses: { "200": { description: "Updated" } },
         },
       },
+      "/api/profile/me/totp/backup-codes": {
+        post: {
+          tags: ["profile"],
+          summary:
+            "Regenerate the 10 single-use TOTP backup codes (password-gated; requires a verified enrollment). Plaintext returned once.",
+          security: [cookieAuth],
+          requestBody: {
+            ...json(z.object({ currentPassword: z.string().min(1) })),
+            required: true,
+          },
+          responses: {
+            "200": { description: "{ backupCodes: string[10] }" },
+            "403": { description: "Invalid password" },
+          },
+        },
+      },
       "/api/profile/me/reminder-days": {
         put: {
           tags: ["profile"],
@@ -1491,6 +1507,15 @@ export function buildOpenApiDocument() {
             "Spending & portfolio-value analytics (gated: analytics feature).",
           security: [cookieAuth],
           responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/statistics/household": {
+        get: {
+          tags: ["statistics"],
+          summary:
+            "Combined household inventory picture — per-member article counts + currently-owned value (gated: household). { household: null } when the caller isn't in one.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ household }" } },
         },
       },
       "/api/statistics/budget": {

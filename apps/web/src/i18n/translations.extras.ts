@@ -9,6 +9,18 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "cmdk.group.locations": "Locations",
+    "cmdk.group.tags": "Tags",
+    "cmdk.group.wishlist": "Wishlist",
+    "twoFactor.regenCodes": "New backup codes",
+    "twoFactor.regenHint":
+      "This replaces every remaining backup code with a fresh set of 10. Confirm your password to continue.",
+    "twoFactor.codesRegenerated":
+      "New backup codes generated — save them now, they won't be shown again",
+    "household.card.title": "Household — {name}",
+    "household.card.subtitle": "Combined inventory across all members",
+    "household.card.manage": "Manage",
+    "household.card.totalArticles": "{count} items",
     "features.household": "Household accounts",
     "household.title": "Household",
     "household.subtitle":
@@ -1044,6 +1056,18 @@ export const extras = {
     "features.csv_export": "CSV export",
   },
   fr: {
+    "cmdk.group.locations": "Emplacements",
+    "cmdk.group.tags": "Étiquettes",
+    "cmdk.group.wishlist": "Liste d'envies",
+    "twoFactor.regenCodes": "Nouveaux codes de secours",
+    "twoFactor.regenHint":
+      "Ceci remplace tous les codes de secours restants par un nouveau jeu de 10. Confirmez votre mot de passe pour continuer.",
+    "twoFactor.codesRegenerated":
+      "Nouveaux codes de secours générés — enregistrez-les maintenant, ils ne seront plus affichés",
+    "household.card.title": "Foyer — {name}",
+    "household.card.subtitle": "Inventaire combiné de tous les membres",
+    "household.card.manage": "Gérer",
+    "household.card.totalArticles": "{count} objets",
     "features.household": "Comptes foyer",
     "household.title": "Foyer",
     "household.subtitle":
@@ -2109,6 +2133,18 @@ export const extras = {
     "features.csv_export": "Export CSV",
   },
   pt: {
+    "cmdk.group.locations": "Localizações",
+    "cmdk.group.tags": "Etiquetas",
+    "cmdk.group.wishlist": "Lista de desejos",
+    "twoFactor.regenCodes": "Novos códigos de recuperação",
+    "twoFactor.regenHint":
+      "Isto substitui todos os códigos de recuperação restantes por um novo conjunto de 10. Confirme a sua palavra-passe para continuar.",
+    "twoFactor.codesRegenerated":
+      "Novos códigos gerados — guarde-os agora, não voltarão a ser mostrados",
+    "household.card.title": "Agregado — {name}",
+    "household.card.subtitle": "Inventário combinado de todos os membros",
+    "household.card.manage": "Gerir",
+    "household.card.totalArticles": "{count} itens",
     "features.household": "Contas de agregado",
     "household.title": "Agregado familiar",
     "household.subtitle":
@@ -3170,6 +3206,18 @@ export const extras = {
     "features.csv_export": "Exportação CSV",
   },
   es: {
+    "cmdk.group.locations": "Ubicaciones",
+    "cmdk.group.tags": "Etiquetas",
+    "cmdk.group.wishlist": "Lista de deseos",
+    "twoFactor.regenCodes": "Nuevos códigos de respaldo",
+    "twoFactor.regenHint":
+      "Esto sustituye todos los códigos de respaldo restantes por un juego nuevo de 10. Confirma tu contraseña para continuar.",
+    "twoFactor.codesRegenerated":
+      "Nuevos códigos generados — guárdalos ahora, no se volverán a mostrar",
+    "household.card.title": "Hogar — {name}",
+    "household.card.subtitle": "Inventario combinado de todos los miembros",
+    "household.card.manage": "Gestionar",
+    "household.card.totalArticles": "{count} objetos",
     "features.household": "Cuentas de hogar",
     "household.title": "Hogar",
     "household.subtitle":
@@ -4236,6 +4284,18 @@ export const extras = {
     "features.csv_export": "Exportación CSV",
   },
   nl: {
+    "cmdk.group.locations": "Locaties",
+    "cmdk.group.tags": "Labels",
+    "cmdk.group.wishlist": "Verlanglijst",
+    "twoFactor.regenCodes": "Nieuwe back-upcodes",
+    "twoFactor.regenHint":
+      "Dit vervangt alle resterende back-upcodes door een nieuwe set van 10. Bevestig je wachtwoord om door te gaan.",
+    "twoFactor.codesRegenerated":
+      "Nieuwe back-upcodes gegenereerd — bewaar ze nu, ze worden niet opnieuw getoond",
+    "household.card.title": "Huishouden — {name}",
+    "household.card.subtitle": "Gecombineerde inventaris van alle leden",
+    "household.card.manage": "Beheren",
+    "household.card.totalArticles": "{count} items",
     "features.household": "Huishoudaccounts",
     "household.title": "Huishouden",
     "household.subtitle":

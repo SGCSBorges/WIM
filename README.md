@@ -73,6 +73,8 @@ Set `VITE_API_BASE_URL=http://localhost:3000/api` in `apps/web/.env.local` so th
 
 ### Optional environment variables (API)
 
+| `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (+ optional `S3_REGION`, default `auto`) | Object storage for uploads (Cloudflare R2 / S3 / MinIO). **Strongly recommended in production** — without it files live on the ephemeral disk and are lost on every deploy. The API keeps serving bytes itself through the ACL'd `/uploads/*` route (never presigned URLs). |
+
 | Variable | Description |
 |---|---|
 | `PORT` | API port (default `3000`) |
@@ -564,8 +566,8 @@ The web service is provisioned from `render.yaml` at the repo root (SPA rewrite 
 
 ## Known limitations / roadmap
 
-- [ ] Move file uploads from ephemeral disk to S3-compatible storage (Cloudflare R2 or AWS S3)
-- [ ] Add per-user / per-route rate limits on top of the global one
+- [x] Move file uploads from ephemeral disk to S3-compatible storage — env-gated via `S3_*` vars (Cloudflare R2 / AWS S3 / MinIO); local-disk fallback for dev
+- [x] Per-user rate limits — the destructive + create limiters key on the hashed auth token (IP fallback for anonymous requests)
 - [ ] Expand test coverage to route-level integration tests
 - [ ] Add a data-caching layer (TanStack Query) on the web client to reduce duplicate fetches across routes
 - [ ] Replace the temporary `/auth/bootstrap-admin` with a proper one-time seed flow once the production DB is stable

@@ -25,6 +25,7 @@ import {
   getAdminStatistics,
   getPortfolioAnalytics,
   getBudgetStatus,
+  getHouseholdStatistics,
 } from "../services/statistics.service";
 
 const router = Router();
@@ -70,6 +71,19 @@ router.get(
     const userId = req.user!.sub;
     const statistics = await getBasicStatistics({ userId });
     res.json(statistics);
+  })
+);
+
+// Combined household inventory picture (gated: household). 200 with
+// { household: null } when the caller isn't in one — the dashboard card
+// self-hides rather than treating it as an error.
+router.get(
+  "/household",
+  authGuard,
+  requireFeature("household"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const household = await getHouseholdStatistics(req.user!.sub);
+    res.json({ household });
   })
 );
 

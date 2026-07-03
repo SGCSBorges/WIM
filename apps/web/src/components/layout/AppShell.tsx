@@ -7,13 +7,27 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Keyboard, Package, Palette, Plus, Rows3 } from "lucide-react";
+import {
+  Gift,
+  Keyboard,
+  MapPin,
+  Package,
+  Palette,
+  Plus,
+  Rows3,
+  Tag as TagIcon,
+} from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { useTheme, type Theme } from "../../theme/theme";
 import { usePreferences } from "../../preferences/preferences";
 import { useHotkeys } from "../../hooks/useHotkeys";
 import { useFeature, useFeatures } from "../../features/features";
-import { articlesAPI } from "../../services/api";
+import {
+  articlesAPI,
+  locationsAPI,
+  tagsAPI,
+  wishlistAPI,
+} from "../../services/api";
 import { visibleNavItems, type NavItem, type NavKey } from "../../lib/navItems";
 import OfflineBanner from "../common/OfflineBanner";
 import BackToTop from "../common/BackToTop";
@@ -92,21 +106,82 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
 
   useHotkeys(hotkeys);
 
-  // Article-search backing for the palette. Uses the existing list endpoint
-  // with `q` (server-side trigram-indexed); a small limit keeps it snappy.
-  const searchArticles = useCallback(
+  // Async search backing for the palette: articles (server-side trigram `q`)
+  // plus client-filtered locations, tags, and — when entitled — wishlist
+  // items. Every leg is best-effort so one failing endpoint can't blank the
+  // whole result list.
+  const canWishlist = useFeature("wishlist");
+  const searchPalette = useCallback(
     async (query: string): Promise<CommandItem[]> => {
-      const { items } = await articlesAPI.getAll({ q: query, limit: 8 });
-      return items.map((a) => ({
-        id: `article-${a.articleId}`,
-        label: a.articleNom,
-        group: t("cmdk.group.articles"),
-        hint: a.articleModele || undefined,
-        icon: <Package className="h-4 w-4" />,
-        perform: () => navigate(`/articles/${a.articleId}`),
-      }));
+      const q = query.toLowerCase();
+      const [articles, locations, tags, wishes] = await Promise.all([
+        articlesAPI
+          .getAll({ q: query, limit: 8 })
+          .then((r) => r.items)
+          .catch(() => []),
+        locationsAPI
+          .getAll()
+          .then((r) =>
+            (Array.isArray(r) ? r : (r.items ?? [])).filter(
+              (l: { name: string }) => l.name.toLowerCase().includes(q)
+            )
+          )
+          .catch(() => []),
+        tagsAPI
+          .getAll()
+          .then((r) =>
+            r.filter((tg: { name: string }) =>
+              tg.name.toLowerCase().includes(q)
+            )
+          )
+          .catch(() => []),
+        canWishlist
+          ? wishlistAPI
+              .list()
+              .then((rows) =>
+                rows.filter(
+                  (w) =>
+                    w.purchasedAt === null && w.name.toLowerCase().includes(q)
+                )
+              )
+              .catch(() => [])
+          : Promise.resolve([]),
+      ]);
+      return [
+        ...articles.map((a) => ({
+          id: `article-${a.articleId}`,
+          label: a.articleNom,
+          group: t("cmdk.group.articles"),
+          hint: a.articleModele || undefined,
+          icon: <Package className="h-4 w-4" />,
+          perform: () => navigate(`/articles/${a.articleId}`),
+        })),
+        ...locations
+          .slice(0, 5)
+          .map((l: { locationId: number; name: string }) => ({
+            id: `location-${l.locationId}`,
+            label: l.name,
+            group: t("cmdk.group.locations"),
+            icon: <MapPin className="h-4 w-4" />,
+            perform: () => navigate(`/articles?location=${l.locationId}`),
+          })),
+        ...tags.slice(0, 5).map((tg: { tagId: number; name: string }) => ({
+          id: `tag-${tg.tagId}`,
+          label: tg.name,
+          group: t("cmdk.group.tags"),
+          icon: <TagIcon className="h-4 w-4" />,
+          perform: () => navigate(`/articles?tag=${tg.tagId}`),
+        })),
+        ...wishes.slice(0, 5).map((w) => ({
+          id: `wish-${w.id}`,
+          label: w.name,
+          group: t("cmdk.group.wishlist"),
+          icon: <Gift className="h-4 w-4" />,
+          perform: () => navigate("/wishlist"),
+        })),
+      ];
     },
-    [navigate, t]
+    [navigate, t, canWishlist]
   );
 
   const navCommands: CommandItem[] = navItems.map((item: NavItem) => ({
@@ -202,7 +277,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
           open={paletteOpen}
           onClose={() => setPaletteOpen(false)}
           commands={[...navCommands, ...actionCommands]}
-          search={searchArticles}
+          search={searchPalette}
           placeholder={t("cmdk.placeholder")}
           emptyLabel={t("cmdk.empty")}
         />

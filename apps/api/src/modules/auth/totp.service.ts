@@ -116,6 +116,23 @@ export const TotpService = {
     return { ok: true };
   },
 
+  /** Mint a fresh set of 10 single-use backup codes, replacing whatever is
+   *  left of the old set (used or not). Requires a verified enrollment —
+   *  otherwise the user should just re-run setup. The route gates this on a
+   *  fresh password check, like setup/disable. Plaintext is returned ONCE. */
+  async regenerateBackupCodes(userId: number): Promise<string[]> {
+    const row = await prisma.totpSecret.findUnique({ where: { userId } });
+    if (!row || !row.verified)
+      throw createHttpError(400, "Two-factor is not enabled");
+    const codes = generateBackupCodes();
+    const hashes = await hashCodes(codes);
+    await prisma.totpSecret.update({
+      where: { userId },
+      data: { backupCodesHash: JSON.stringify(hashes) },
+    });
+    return codes;
+  },
+
   /** Drop the TOTP row and clear the fast-path flag. The route gates this
    *  on a fresh password check. */
   async disable(userId: number) {

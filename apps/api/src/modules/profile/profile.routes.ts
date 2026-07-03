@@ -175,6 +175,30 @@ router.post(
   })
 );
 
+// Replace the remaining backup codes with a fresh set of 10. Password-gated
+// like setup/disable; the plaintext codes are returned once and never stored.
+router.post(
+  "/me/totp/backup-codes",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { currentPassword } = TotpPasswordSchema.parse(req.body);
+    const user = await prisma.user.findUnique({
+      where: { userId: req.user!.sub },
+    });
+    if (!user) throw createHttpError(404, "User not found");
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) throw createHttpError(403, "Invalid password");
+    const backupCodes = await TotpService.regenerateBackupCodes(user.userId);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "User",
+      entityId: user.userId,
+      metadata: { field: "totpBackupCodes", regenerated: true },
+    });
+    res.json({ backupCodes });
+  })
+);
+
 router.delete(
   "/me/totp",
   authGuard,

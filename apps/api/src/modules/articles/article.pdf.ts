@@ -14,16 +14,13 @@
  * truth — same helper the web uses, same MS_PER_YEAR, so totals here
  * match what the user sees on screen.
  */
-import path from "path";
-import fs from "fs";
 import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
 import type { Response } from "express";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { currentValue } from "../common/depreciation";
-
-const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+import { readUploadBytes } from "../attachments/attachment.fs";
 
 function money(amount: unknown, currency: string): string {
   if (amount == null) return "—";
@@ -36,24 +33,15 @@ function fmtDate(d: Date | null | undefined): string {
   return d ? new Date(d).toISOString().slice(0, 10) : "—";
 }
 
-// Resolve a local /uploads image to an on-disk path — and ONLY a local upload.
-// We never server-fetch arbitrary remote URLs (SSRF guard); remote images are
-// simply omitted from the PDF.
-function localUploadImagePath(
+// Read an uploaded image's bytes for embedding — and ONLY our own uploads
+// (readUploadBytes rejects remote URLs and traversal: SSRF guard). Storage-
+// aware: bucket bytes when object storage is configured, disk otherwise.
+async function uploadImageBytes(
   fileUrl: string | null | undefined,
   mimeType: string | null | undefined
-): string | null {
+): Promise<Buffer | null> {
   if (!fileUrl || !mimeType || !mimeType.startsWith("image/")) return null;
-  const marker = "/uploads/";
-  const idx = fileUrl.indexOf(marker);
-  if (idx === -1) return null;
-  const name = path.basename(
-    decodeURIComponent(fileUrl.slice(idx + marker.length))
-  );
-  const abs = path.join(UPLOAD_DIR, name);
-  // Containment check: the resolved path must stay inside UPLOAD_DIR.
-  if (!abs.startsWith(UPLOAD_DIR + path.sep)) return null;
-  return fs.existsSync(abs) ? abs : null;
+  return readUploadBytes(fileUrl);
 }
 
 /** Stream a single-article insurance/claim PDF to the response. */
@@ -69,6 +57,12 @@ export async function streamArticleClaimPdf(
       garantie: { include: { garantieImageAttachment: true } },
       locations: { select: { location: { select: { name: true } } } },
       tags: { select: { tag: { select: { name: true } } } },
+      // Gallery photos for the dossier — newest first, capped below.
+      attachments: {
+        where: { mimeType: { startsWith: "image/" } },
+        orderBy: { createdAt: "desc" },
+        select: { fileUrl: true, mimeType: true },
+      },
     },
   });
   if (!article) throw createHttpError(404, "Article not found");
@@ -94,6 +88,10 @@ export async function streamArticleClaimPdf(
 
   if (article.articleDescription)
     row("Description:", article.articleDescription);
+  if (article.brand) row("Brand:", article.brand);
+  if (article.serialNumber) row("Serial number:", article.serialNumber);
+  if (article.purchasedFrom) row("Purchased from:", article.purchasedFrom);
+  if (article.orderRef) row("Order / receipt no.:", article.orderRef);
   row("Purchase price:", money(article.purchasePrice, currency));
   if (article.depreciationRate != null && article.purchasePrice != null) {
     const basis = article.garantie?.garantieDateAchat ?? article.createdAt;
@@ -151,7 +149,7 @@ export async function streamArticleClaimPdf(
         row("Web:", article.garantie.providerUrl);
     }
 
-    const proof = localUploadImagePath(
+    const proof = await uploadImageBytes(
       article.garantie.garantieImageAttachment?.fileUrl,
       article.garantie.garantieImageAttachment?.mimeType
     );
@@ -163,6 +161,36 @@ export async function streamArticleClaimPdf(
       } catch {
         // Unreadable/corrupt image — skip rather than fail the whole PDF.
       }
+    }
+  }
+
+  // Photo dossier: up to four gallery shots, two per row — what an insurer
+  // asks for alongside the claim details.
+  const photoBuffers: Buffer[] = [];
+  for (const att of article.attachments.slice(0, 4)) {
+    const bytes = await uploadImageBytes(att.fileUrl, att.mimeType);
+    if (bytes) photoBuffers.push(bytes);
+  }
+  if (photoBuffers.length > 0) {
+    doc.moveDown(0.5);
+    doc.fontSize(12).fillColor("#000").text("Photos");
+    doc.moveDown(0.25);
+    const photoW = 240;
+    const photoH = 180;
+    for (let i = 0; i < photoBuffers.length; i += 2) {
+      if (doc.y + photoH > doc.page.height - doc.page.margins.bottom)
+        doc.addPage();
+      const rowY = doc.y;
+      for (const [j, buf] of photoBuffers.slice(i, i + 2).entries()) {
+        try {
+          doc.image(buf, doc.page.margins.left + j * (photoW + 15), rowY, {
+            fit: [photoW, photoH],
+          });
+        } catch {
+          // Corrupt image — skip the slot.
+        }
+      }
+      doc.y = rowY + photoH + 10;
     }
   }
 

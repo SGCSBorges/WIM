@@ -8,7 +8,9 @@
  */
 import helmet from "helmet";
 import cors from "cors";
-import { rateLimit } from "express-rate-limit";
+import { createHash } from "crypto";
+import type { Request } from "express";
+import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 
 // Read a numeric env var, falling back to `fallback` when it's unset OR set to
 // something that doesn't parse (e.g. a typo like `RATE_LIMIT_MAX=abc`). The
@@ -41,6 +43,27 @@ const allowedOrigins =
 // "any origin" (dev convenience) and the CSRF middleware will likewise
 // accept anything.
 export const csrfAllowedOrigins = allowedOrigins;
+
+// Per-user (well, per-session-token) rate-limit key with an IP fallback.
+// Keying on the hashed auth credential means one abusive account can't hide
+// behind rotating IPs, and several legit users behind one CGNAT IP don't
+// share a bucket. Reads the raw Cookie/Authorization headers directly so it
+// works regardless of middleware order; anonymous requests fall back to the
+// IPv6-safe ipKeyGenerator. Applied to the destructive + create limiters —
+// the global limiter stays per-IP (it runs pre-cookie and covers anonymous
+// traffic), and the auth limiter is pre-auth by definition.
+function userOrIpKey(req: Request): string {
+  const cookie = req.headers.cookie ?? "";
+  const m = /(?:^|;\s*)wim_token=([^;]+)/.exec(cookie);
+  const bearer = req.headers.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.slice(7)
+    : null;
+  const token = m?.[1] ?? bearer;
+  if (token) {
+    return `tk:${createHash("sha256").update(token).digest("hex").slice(0, 32)}`;
+  }
+  return ipKeyGenerator(req.ip ?? "");
+}
 
 export const security = {
   helmet: helmet({
@@ -94,6 +117,7 @@ export const security = {
   destructiveRateLimiter: rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 10,
+    keyGenerator: userOrIpKey,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -106,6 +130,7 @@ export const security = {
   createRateLimiter: rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
     max: numEnv("CREATE_RATE_LIMIT_MAX", 40),
+    keyGenerator: userOrIpKey,
     standardHeaders: true,
     legacyHeaders: false,
     message: {

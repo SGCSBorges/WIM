@@ -1,14 +1,55 @@
 /**
- * On-disk helpers for attachment files. `unlinkAttachmentFiles` is the
+ * Storage helpers for attachment files. `unlinkAttachmentFiles` is the
  * canonical cleanup — best-effort (logs and continues on ENOENT) so a
  * missing file never blocks a DB delete. Used by single + bulk delete,
  * article hard-remove, and the maintenance trash purge.
+ *
+ * All helpers are storage-aware: when the S3_* env vars are set (see
+ * libs/object-storage.ts) the bytes live in a bucket keyed by the stored
+ * filename; otherwise they live under the local `uploads/` directory.
  */
 import fs from "fs";
 import path from "path";
 import { logger } from "../../config/logger";
+import {
+  storageEnabled,
+  deleteObject,
+  getObjectBuffer,
+} from "../../libs/object-storage";
 
 const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+
+/**
+ * Extract the stored object name from an attachment URL, or null for remote
+ * / malformed URLs. Same traversal guard as `resolveUploadPath`, minus the
+ * disk specifics — this is the S3 object key.
+ */
+export function storedNameFromUrl(
+  fileUrl: string | null | undefined
+): string | null {
+  const abs = resolveUploadPath(fileUrl);
+  if (!abs) return null;
+  return path.basename(abs);
+}
+
+/**
+ * Read an uploaded file's bytes regardless of backend — bucket when object
+ * storage is configured, local disk otherwise. Returns null for remote
+ * URLs, traversal attempts, or missing files. Used by the claim-PDF image
+ * embeds (PDFKit accepts Buffers directly).
+ */
+export async function readUploadBytes(
+  fileUrl: string | null | undefined
+): Promise<Buffer | null> {
+  const storedName = storedNameFromUrl(fileUrl);
+  if (!storedName) return null;
+  try {
+    if (storageEnabled()) return await getObjectBuffer(storedName);
+    return await fs.promises.readFile(path.resolve(UPLOAD_DIR, storedName));
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Resolve a stored attachment URL to its on-disk path inside `uploads/`, or
@@ -46,6 +87,10 @@ export async function unlinkAttachmentFiles(attachment: {
   for (const url of [attachment.fileUrl, attachment.thumbUrl]) {
     const abs = resolveUploadPath(url);
     if (!abs) continue;
+    if (storageEnabled()) {
+      await deleteObject(path.basename(abs));
+      continue;
+    }
     try {
       await fs.promises.unlink(abs);
     } catch (err) {

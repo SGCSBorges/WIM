@@ -107,3 +107,42 @@ describe("TotpService", () => {
     );
   });
 });
+
+describe("TotpService.regenerateBackupCodes", () => {
+  it("rejects when TOTP is not enabled (no row / unverified)", async () => {
+    p.totpSecret.findUnique.mockResolvedValue(null);
+    await expect(
+      TotpService.regenerateBackupCodes(7)
+    ).rejects.toMatchObject({ status: 400 });
+
+    p.totpSecret.findUnique.mockResolvedValue({
+      userId: 7,
+      verified: false,
+    });
+    await expect(
+      TotpService.regenerateBackupCodes(7)
+    ).rejects.toMatchObject({ status: 400 });
+    expect(p.totpSecret.update).not.toHaveBeenCalled();
+  });
+
+  it("replaces the stored hashes with 10 fresh bcrypt hashes and returns plaintext once", async () => {
+    p.totpSecret.findUnique.mockResolvedValue({
+      userId: 7,
+      verified: true,
+      backupCodesHash: "[]",
+    });
+    p.totpSecret.update.mockResolvedValue({});
+
+    const codes = await TotpService.regenerateBackupCodes(7);
+    expect(codes).toHaveLength(10);
+    expect(new Set(codes).size).toBe(10);
+    for (const c of codes) expect(c).toMatch(/^[a-f0-9]{10}$/);
+
+    const arg = p.totpSecret.update.mock.calls[0][0];
+    const stored: string[] = JSON.parse(arg.data.backupCodesHash);
+    expect(stored).toHaveLength(10);
+    // Hashes stored, never the plaintext.
+    for (const h of stored) expect(h.startsWith("$2")).toBe(true);
+    for (const c of codes) expect(stored).not.toContain(c);
+  });
+});

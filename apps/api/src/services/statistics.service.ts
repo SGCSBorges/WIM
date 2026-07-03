@@ -708,3 +708,79 @@ export async function getBudgetStatus(userId: number): Promise<BudgetStatus> {
     annualSpend,
   };
 }
+
+/**
+ * Combined household picture: the caller's household members with each
+ * member's live article count and currently-owned inventory value (sum of
+ * purchase prices, excluding NOT_OWNED_STATUSES — the dashboard value rule).
+ * Returns null when the caller isn't in a household. Visibility is safe by
+ * construction: households ARE a mutual WRITE-share mesh, so every member
+ * already sees every other member's inventory.
+ */
+export async function getHouseholdStatistics(userId: number): Promise<{
+  householdId: number;
+  name: string;
+  members: Array<{
+    userId: number;
+    email: string;
+    articles: number;
+    value: number;
+  }>;
+  totalArticles: number;
+  totalValue: number;
+} | null> {
+  const membership = await prisma.householdMember.findUnique({
+    where: { userId },
+    include: {
+      household: {
+        include: {
+          members: {
+            orderBy: { createdAt: "asc" },
+            include: { user: { select: { userId: true, email: true } } },
+          },
+        },
+      },
+    },
+  });
+  if (!membership) return null;
+
+  const memberIds = membership.household.members.map((m) => m.user.userId);
+  const [counts, sums] = await Promise.all([
+    prisma.article.groupBy({
+      by: ["ownerUserId"],
+      where: { ownerUserId: { in: memberIds }, deletedAt: null },
+      _count: { articleId: true },
+    }),
+    prisma.article.groupBy({
+      by: ["ownerUserId"],
+      where: {
+        ownerUserId: { in: memberIds },
+        deletedAt: null,
+        status: { notIn: NOT_OWNED_STATUSES },
+        purchasePrice: { not: null },
+      },
+      _sum: { purchasePrice: true },
+    }),
+  ]);
+  const countBy = new Map(
+    counts.map((c) => [c.ownerUserId, c._count.articleId])
+  );
+  const sumBy = new Map(
+    sums.map((c) => [c.ownerUserId, Number(c._sum.purchasePrice ?? 0)])
+  );
+
+  const members = membership.household.members.map((m) => ({
+    userId: m.user.userId,
+    email: m.user.email,
+    articles: countBy.get(m.user.userId) ?? 0,
+    value: sumBy.get(m.user.userId) ?? 0,
+  }));
+
+  return {
+    householdId: membership.household.id,
+    name: membership.household.name,
+    members,
+    totalArticles: members.reduce((s, m) => s + m.articles, 0),
+    totalValue: members.reduce((s, m) => s + m.value, 0),
+  };
+}

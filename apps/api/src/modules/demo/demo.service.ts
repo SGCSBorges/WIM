@@ -299,6 +299,20 @@ const SERVICE_PROVIDERS = [
   "Home Appliance Care",
   "Apple Store Genius Bar",
 ];
+
+// Purchase provenance for the demo articles — big-box + online retailers.
+const RETAILERS = [
+  "Amazon",
+  "Best Buy",
+  "MediaMarkt",
+  "Fnac",
+  "Darty",
+  "Coolblue",
+  "IKEA",
+  "Costco",
+  "Home Depot",
+  "Local dealer",
+];
 const NOTE_TEXTS = [
   "Bought on sale during Black Friday.",
   "Keep the original box for resale value.",
@@ -996,6 +1010,12 @@ export async function seedDemoData(
         dateFormat: pick(DATE_FORMATS),
         emailReminders: chance(0.85),
         weeklyDigest: chance(0.4),
+        warrantyReminderDays: chance(0.25)
+          ? pick(["90,30,7", "60,14,3", "45,7"])
+          : null,
+        emailVerifiedAt: chance(0.7)
+          ? new Date(accountCreatedAt.getTime() + randInt(1, 72) * 3_600_000)
+          : null,
         calendarToken: paid && chance(0.5) ? token() : null,
         monthlyBudget: paid && chance(0.6) ? jitter(800, 0.4) : null,
         annualBudget: paid && chance(0.6) ? jitter(9000, 0.4) : null,
@@ -1075,6 +1095,8 @@ export async function seedDemoData(
         productImageUrl: chance(0.9) ? imageUrl(s.item) : null,
         brand: s.item.brand.slice(0, 120),
         serialNumber: chance(0.8) ? serialFor(s.item.brand) : null,
+        purchasedFrom: chance(0.55) ? pick(RETAILERS) : null,
+        orderRef: chance(0.35) ? `ORD-${randInt(10000000, 99999999)}` : null,
         purchasePrice: s.price,
         depreciationRate: s.dep,
         category: s.item.category,
@@ -1532,6 +1554,7 @@ async function seedPaidAddOns(
         ? daysFromNow(randInt(2, 28))
         : daysFromNow(randInt(60, 300))
       : null;
+    const interval = chance(0.3) ? pick([3, 6, 12]) : null;
     serviceRows.push({
       ownerUserId: userId,
       articleId: a.articleId,
@@ -1539,11 +1562,30 @@ async function seedPaidAddOns(
       description: pick(SERVICE_DESCRIPTIONS),
       cost: chance(0.8) ? jitter(90, 0.7) : null,
       provider: chance(0.7) ? pick(SERVICE_PROVIDERS) : null,
-      nextDueAt: next,
+      // Recurring jobs derive their next due date from the cadence, exactly
+      // like the live create path does when nextDueAt is omitted.
+      nextDueAt: interval && !next ? addMonths(performedAt, interval) : next,
+      intervalMonths: interval,
     });
   }
   if (serviceRows.length)
     await prisma.serviceRecord.createMany({ data: serviceRows });
+
+  // Wishlist: a handful of planned purchases drawn from the same catalog,
+  // some already bought (struck-through history in the UI).
+  const wishes = pickN(CATALOG, randInt(3, 7));
+  await prisma.wishlistItem.createMany({
+    data: wishes.map((item) => ({
+      ownerUserId: userId,
+      name: `${item.brand} ${item.name}`.slice(0, 120),
+      targetPrice: jitter(item.price, 0.2),
+      url: chance(0.5)
+        ? `https://example.com/shop/${encodeURIComponent(item.model)}`
+        : null,
+      note: chance(0.3) ? "Waiting for a sale." : null,
+      purchasedAt: chance(0.25) ? daysAgo(randInt(1, 90)) : null,
+    })),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1557,6 +1599,46 @@ async function seedCrossUser(
   if (powerUsers.length < 2) return;
 
   const sharePairs = new Set<string>();
+
+  // Households: group the first few power users into 2-3 member households,
+  // building the WRITE mesh exactly like HouseholdService.linkPair does.
+  // Seeded before the random shares so the mesh pairs are reserved.
+  const householdPool = [...powerUsers];
+  const HOUSEHOLD_NAMES = ["The Martins", "Casa Silva", "Famille Dubois"];
+  for (const name of HOUSEHOLD_NAMES) {
+    const size = randInt(2, 3);
+    if (householdPool.length < size) break;
+    const members = householdPool.splice(0, size);
+    const household = await prisma.household.create({
+      data: { name, createdByUserId: members[0].userId },
+      select: { id: true },
+    });
+    await prisma.householdMember.createMany({
+      data: members.map((m, idx) => ({
+        householdId: household.id,
+        userId: m.userId,
+        role: idx === 0 ? ("OWNER" as const) : ("MEMBER" as const),
+      })),
+    });
+    const meshRows: Prisma.InventoryShareCreateManyInput[] = [];
+    for (const a of members) {
+      for (const b of members) {
+        if (a.userId === b.userId) continue;
+        sharePairs.add(`${a.userId}:${b.userId}`);
+        meshRows.push({
+          ownerUserId: a.userId,
+          targetUserId: b.userId,
+          permission: "WRITE",
+          viaHouseholdId: household.id,
+        });
+      }
+    }
+    await prisma.inventoryShare.createMany({
+      data: meshRows,
+      skipDuplicates: true,
+    });
+  }
+
   const shareRows: Prisma.InventoryShareCreateManyInput[] = [];
   for (let k = 0; k < 15; k++) {
     const owner = pick(powerUsers);

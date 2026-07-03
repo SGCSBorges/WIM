@@ -1419,6 +1419,32 @@ export const statisticsAPI = {
     return response.json();
   },
 
+  // Household roll-up (gated: household). { household: null } when the
+  // caller isn't in one.
+  async getHousehold(): Promise<{
+    householdId: number;
+    name: string;
+    members: Array<{
+      userId: number;
+      email: string;
+      articles: number;
+      value: number;
+    }>;
+    totalArticles: number;
+    totalValue: number;
+  } | null> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/statistics/household`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch household statistics")
+      );
+    const data = await response.json();
+    return data.household;
+  },
+
   async getBudget(): Promise<BudgetStatus> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/statistics/budget`,
@@ -1677,6 +1703,26 @@ export const profileAPI = {
         await extractError(response, "Failed to export account data")
       );
     return response.blob();
+  },
+
+  // Password-gated: replace the remaining TOTP backup codes with a fresh
+  // set of 10. Plaintext is returned once and never stored.
+  async regenerateBackupCodes(
+    currentPassword: string
+  ): Promise<{ backupCodes: string[] }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/profile/me/totp/backup-codes`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ currentPassword }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to regenerate backup codes")
+      );
+    return response.json();
   },
 
   async updateCurrency(currency: string) {

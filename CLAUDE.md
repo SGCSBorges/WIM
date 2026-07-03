@@ -56,6 +56,13 @@ loads into every new Claude Code session.
     SDK dependency — a plain `fetch`), respecting each user's
     `User.emailReminders` opt-out (Profile toggle). Unset = no-op + log,
     exactly like `PushService`.
+  - API (optional, Object storage — STRONGLY recommended in prod):
+    `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`
+    (+ optional `S3_REGION`, default `auto`). Uploads then live in the
+    bucket (R2 free tier works) instead of the EPHEMERAL Render disk that
+    is wiped on every deploy. `libs/object-storage.ts`; unset = local-disk
+    behavior unchanged. The `/uploads/:name` route still streams bytes
+    itself so the share-aware ACL applies — never presign.
   - API (optional, Audit retention): `AUDIT_RETENTION_DAYS` (default 90;
     `0` disables the schedule). Once a day at 03:00 UTC the maintenance
     worker deletes AuditLog rows older than the window via the
@@ -613,6 +620,17 @@ Smaller features added in one batch; each follows the existing patterns.
 - **Barcode lookup**: still client-side by design (see barcodeLookup.ts
   comment), now tries Open *Products* Facts (general goods) before Open Food
   Facts. Still opt-in via `VITE_FEATURE_BARCODE_LOOKUP=1`.
+- **Round 2 (2026-07)**: object storage for uploads (see env note above);
+  claim PDF embeds up to 4 gallery photos + provenance (storage-aware via
+  `readUploadBytes`); `GET /api/statistics/household` + dashboard
+  `HouseholdCard`; ⌘K palette also searches locations/tags/wishlist
+  (best-effort per leg, AppShell `searchPalette`); `POST
+  /profile/me/totp/backup-codes` regenerates backup codes
+  (password-gated); destructive/create rate limiters key on the hashed
+  auth token with IP fallback (`userOrIpKey` in config/security.ts); PWA
+  manifest ships app shortcuts; the demo seeder now covers wishlist/
+  households/provenance/recurring-maintenance/reminder-offsets/
+  emailVerifiedAt.
 
 ## Account security (login history → sessions → 2FA)
 

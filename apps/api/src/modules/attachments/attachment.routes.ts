@@ -26,6 +26,11 @@ import { logger } from "../../config/logger";
 import { verifyFileSignature } from "../../utils/file-signature";
 import { makeImageThumbnail, thumbnailName } from "./attachment.thumbnail";
 import { unlinkAttachmentFiles } from "./attachment.fs";
+import {
+  storageEnabled,
+  putObjectFromFile,
+  deleteObject,
+} from "../../libs/object-storage";
 import { security } from "../../config/security";
 const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
 
@@ -205,6 +210,36 @@ router.post(
       baseUrl,
     });
 
+    // Object storage configured → local files are only a staging area
+    // (multer + the signature check + sharp need a real path). Push the
+    // original + thumbnail to the bucket, then drop the staging copies; the
+    // URL shape and the ACL'd /uploads/:name serving route stay identical.
+    const localThumbPath = thumbUrl
+      ? path.join(UPLOAD_DIR, thumbnailName(file.filename))
+      : null;
+    if (storageEnabled()) {
+      try {
+        await putObjectFromFile(file.filename, file.path, file.mimetype);
+        if (localThumbPath)
+          await putObjectFromFile(
+            thumbnailName(file.filename),
+            localThumbPath,
+            "image/webp"
+          );
+      } catch (err) {
+        // A failed store IS a failed upload: without the bucket copy the DB
+        // row would point at bytes that vanish on the next deploy.
+        logger.error({ err }, "[attachment] object-storage upload failed");
+        for (const p of [file.path, localThumbPath]) {
+          if (p) await fs.promises.unlink(p).catch(() => {});
+        }
+        throw createHttpError(502, "File storage is unavailable, try again");
+      }
+      for (const p of [file.path, localThumbPath]) {
+        if (p) await fs.promises.unlink(p).catch(() => {});
+      }
+    }
+
     let created;
     try {
       created = await AttachmentService.create({
@@ -218,17 +253,21 @@ router.post(
         ownerUserId: req.user!.sub,
       });
     } catch (err) {
-      const orphans = [file.path];
-      if (thumbUrl)
-        orphans.push(path.join(UPLOAD_DIR, thumbnailName(file.filename)));
-      for (const p of orphans) {
-        try {
-          await fs.promises.unlink(p);
-        } catch (fsErr) {
-          logger.warn(
-            { err: fsErr, filePath: p },
-            "[attachment] failed to unlink orphaned file after DB error"
-          );
+      if (storageEnabled()) {
+        await deleteObject(file.filename);
+        if (thumbUrl) await deleteObject(thumbnailName(file.filename));
+      } else {
+        const orphans = [file.path];
+        if (localThumbPath) orphans.push(localThumbPath);
+        for (const p of orphans) {
+          try {
+            await fs.promises.unlink(p);
+          } catch (fsErr) {
+            logger.warn(
+              { err: fsErr, filePath: p },
+              "[attachment] failed to unlink orphaned file after DB error"
+            );
+          }
         }
       }
       throw err;

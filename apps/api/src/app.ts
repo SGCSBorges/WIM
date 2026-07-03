@@ -63,6 +63,7 @@ import { startWorkersOnce } from "./config/jobs";
 import { prisma } from "./libs/prisma";
 import { runHealthChecks } from "./health";
 import { authGuard, AuthRequest } from "./modules/auth/auth.middleware";
+import { storageEnabled, getObjectStream } from "./libs/object-storage";
 
 export function createApp() {
   const app = express();
@@ -214,9 +215,6 @@ export function createApp() {
 
       if (!allowed) return res.status(404).json({ error: "Not found" });
 
-      if (!fs.existsSync(fullPath)) {
-        return res.status(404).json({ error: "File missing on disk" });
-      }
       // The row's mimeType describes the original; thumbnails are always
       // webp (sharp output) regardless of the source format.
       const isThumb = attachment.thumbUrl?.endsWith(suffix) === true;
@@ -237,6 +235,20 @@ export function createApp() {
         "Content-Disposition",
         `inline; filename="${safeFileName}"`
       );
+
+      // Bucket-backed: stream from object storage (the ACL above already
+      // passed — never presign, that would bypass it). Disk otherwise.
+      if (storageEnabled()) {
+        const obj = await getObjectStream(storedName);
+        if (!obj) return res.status(404).json({ error: "File missing" });
+        if (obj.contentLength !== undefined)
+          res.setHeader("Content-Length", String(obj.contentLength));
+        obj.body.on("error", () => res.destroy());
+        return obj.body.pipe(res);
+      }
+      if (!fs.existsSync(fullPath)) {
+        return res.status(404).json({ error: "File missing on disk" });
+      }
       return res.sendFile(fullPath);
     }
   );

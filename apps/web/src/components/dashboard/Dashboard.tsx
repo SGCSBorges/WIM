@@ -42,6 +42,7 @@ import { ErrorBanner, EmptyState } from "../common/States";
 import { PageHeader, Stat, Section, Button, type StatTone } from "../ui";
 import NeedsAttention from "./NeedsAttention";
 import BudgetCard from "./BudgetCard";
+import HouseholdCard from "./HouseholdCard";
 import AttentionExtraCard from "./AttentionExtraCard";
 import type { DashboardStatistics } from "@wim/types";
 
@@ -340,6 +341,8 @@ const Dashboard: React.FC = () => {
       <AttentionExtraCard />
 
       <BudgetCard />
+
+      <HouseholdCard />
 
       {/* KPIs */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
