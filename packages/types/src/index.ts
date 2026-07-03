@@ -84,6 +84,7 @@ export const AUDIT_ENTITIES = [
   "InsurancePolicy",
   "ServiceRecord",
   "WishlistItem",
+  "Household",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 
@@ -670,6 +671,30 @@ export interface ServiceRecordItem {
   // derives nextDueAt from performedAt when no explicit date is given.
   intervalMonths?: number | null;
   createdAt: string;
+}
+
+/** A household member row inside `HouseholdInfo`. */
+export interface HouseholdMemberInfo {
+  userId: number;
+  email: string;
+  role: "OWNER" | "MEMBER";
+  joinedAt: string;
+}
+
+/** The caller's household as returned by `GET /api/household`. `invites`
+ *  is only populated for the OWNER (pending, unexpired). A household is an
+ *  auto-managed mesh of WRITE inventory shares between all members. */
+export interface HouseholdInfo {
+  id: number;
+  name: string;
+  myRole: "OWNER" | "MEMBER";
+  members: HouseholdMemberInfo[];
+  invites: Array<{
+    id: number;
+    email: string;
+    expiresAt: string;
+    createdAt: string;
+  }>;
 }
 
 /** A wishlist / planned-purchase row from `/api/wishlist`. `targetPrice` is

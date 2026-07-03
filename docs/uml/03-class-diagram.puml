@@ -24,6 +24,8 @@ class User {
   +currency: char(3)
   +emailReminders: bool
   +weeklyDigest: bool
+  +warrantyReminderDays: varchar(40)  ' CSV, null = J-30/7/1
+  +emailVerifiedAt: datetime
   +theme: varchar(16)
   +language: varchar(8)
   +dateFormat: varchar(16)
@@ -44,6 +46,8 @@ class Article {
   +productImageUrl: varchar(500)
   +serialNumber: varchar(120)
   +brand: varchar(120)
+  +purchasedFrom: varchar(150)
+  +orderRef: varchar(100)
   +purchasePrice: decimal(12,2)
   +depreciationRate: decimal(5,2)
   +sharedWithPowerUsers: bool
@@ -85,6 +89,7 @@ class Alerte {
   +status: AlerteStatus
   +kind: AlerteKind
   +recurrenceMonths: int
+  +reminderDays: int  ' décalage du rappel garantie
   +snoozedUntil: datetime
 }
 
@@ -101,6 +106,7 @@ class Location {
   +locationId: int
   +name: varchar(120)
   +description: varchar(255)
+  +parentLocationId: int  ' hiérarchie, SetNull
 }
 
 class Tag {
@@ -130,6 +136,7 @@ class InventoryShare {
   +inventoryShareId: int
   +permission: SharePermission
   +active: bool
+  +viaHouseholdId: int  ' maillage foyer, SetNull
 }
 
 class ShareInvite {
@@ -182,6 +189,22 @@ class PasswordResetToken {
   +consumedAt: datetime
 }
 
+class EmailVerificationToken {
+  +id: int
+  +tokenHash: varchar(64)  ' SHA-256, jamais le clair
+  +expiresAt: datetime
+  +consumedAt: datetime
+}
+
+class WishlistItem {
+  +id: int
+  +name: varchar(120)
+  +url: varchar(500)
+  +targetPrice: decimal(12,2)
+  +note: varchar(500)
+  +purchasedAt: datetime  ' non nul = acheté
+}
+
 class PushSubscription {
   +id: int
   +endpoint: varchar(500)
@@ -224,6 +247,7 @@ class ServiceRecord {
   +cost: decimal(12,2)
   +provider: varchar(150)
   +nextDueAt: datetime
+  +intervalMonths: int  ' cadence récurrente
   +reminderAlerteId: int  ' rappel prochain entretien
 }
 
@@ -242,6 +266,27 @@ class Message {
   +kind: MessageKind
   +offerAmount: decimal(12,2)
   +offerStatus: OfferStatus
+}
+
+' --- Foyer (maillage auto-géré de partages WRITE) ---
+
+class Household {
+  +id: int
+  +name: varchar(120)
+  +createdByUserId: int  ' informatif, sans FK
+}
+
+class HouseholdMember {
+  +id: int
+  +role: HouseholdRole  ' OWNER | MEMBER
+}
+
+class HouseholdInvite {
+  +id: int
+  +email: varchar(255)
+  +token: varchar(128)
+  +status: InviteStatus
+  +expiresAt: datetime
 }
 
 ' --- Feature gating (autonome, configuré par l'admin) ---
@@ -277,7 +322,12 @@ User "1" *-- "0..*" Alerte
 User "1" *-- "0..*" UserSession
 User "1" *-- "0..1" TotpSecret
 User "1" *-- "0..*" PasswordResetToken
+User "1" *-- "0..*" EmailVerificationToken
 User "1" *-- "0..*" PushSubscription
+User "1" *-- "0..*" WishlistItem
+User "1" *-- "0..1" HouseholdMember
+Household "1" *-- "1..*" HouseholdMember
+Household "1" *-- "0..*" HouseholdInvite
 
 ' Entités qui EXIGENT un article (articleId NOT NULL)
 Article "1" *-- "0..*" ArticleNote
@@ -311,6 +361,8 @@ User "1" --> "0..*" Message : expéditeur
 User "1" --> "0..*" ArticleTransferRequest : demandeur / owner
 User "1" --> "0..*" InventoryShare : owner
 User "1" --> "0..*" InventoryShare : target
+Household "0..1" --> "0..*" InventoryShare : viaHouseholdId (SetNull)
+Location "0..1" --> "0..*" Location : parent (SetNull)
 
 ' Relations M:N via tables de jonction (association)
 Article "0..*" -- "0..*" Location : ArticleLocation
@@ -338,9 +390,12 @@ Aligné sur prisma/schema.prisma :
 - Les noms français legacy (Alerte*, Garantie, articleNom...) sont
   intentionnellement conservés ; les unions @wim/types sont anglaises
   (AlertStatus) mais les valeurs littérales coïncident.
+- Un Household est un maillage auto-géré de lignes InventoryShare en WRITE
+  (marquées viaHouseholdId) entre tous ses membres (max 6, un foyer par
+  utilisateur) — les surfaces de partage existantes restent inchangées.
 - Enums : Role, ClaimStatus, AlerteStatus, AlerteKind, AttachmentType,
   ArticleNoteKind, ArticleStatus, ArticleCategory, SharePermission,
-  InviteStatus, TransferDirection, MessageKind, OfferStatus,
+  InviteStatus, HouseholdRole, TransferDirection, MessageKind, OfferStatus,
   WarrantyHistoryEvent.
 - Référence champ-par-champ exhaustive : ../data-dictionary.md.
 end note

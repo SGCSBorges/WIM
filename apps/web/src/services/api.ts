@@ -43,6 +43,7 @@ import type {
   PortfolioAnalytics,
   PublicItem,
   WishlistItemRow,
+  HouseholdInfo,
   ClaimStatus,
   DateFormatPref,
   FetchedArticle,
@@ -2803,6 +2804,88 @@ export const wishlistAPI = {
       throw new Error(
         await extractError(response, "Failed to delete wishlist item")
       );
+  },
+};
+
+// Household accounts (feature-gated: `household`). GET/leave/remove/revoke
+// stay open server-side so a downgraded member can still wind things down.
+export const householdAPI = {
+  async get(): Promise<HouseholdInfo | null> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/household`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load household"));
+    const data = await response.json();
+    return data.household as HouseholdInfo | null;
+  },
+
+  async create(name: string) {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/household`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to create household")
+      );
+    return response.json();
+  },
+
+  async invite(email: string) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/household/invites`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ email }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to send invite"));
+    return response.json();
+  },
+
+  async acceptInvite(token: string) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/household/invites/accept`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ token }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to accept invite"));
+    return response.json();
+  },
+
+  async revokeInvite(id: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/household/invites/${id}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to revoke invite"));
+  },
+
+  async leave(): Promise<void> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/household/leave`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to leave"));
+  },
+
+  async removeMember(userId: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/household/members/${userId}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to remove member"));
   },
 };
 

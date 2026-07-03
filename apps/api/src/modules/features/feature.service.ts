@@ -36,6 +36,7 @@ export const FEATURE_KEYS = [
   "budget",
   "public_page",
   "wishlist",
+  "household",
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -64,6 +65,7 @@ const DEFAULTS: Record<FeatureKey, RoleName> = {
   budget: "POWER_USER",
   public_page: "POWER_USER",
   wishlist: "POWER_USER",
+  household: "POWER_USER",
 };
 
 export { DEFAULTS as FEATURE_DEFAULTS };

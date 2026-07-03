@@ -10,7 +10,7 @@ column-by-column catalog. Both are kept aligned with the single source of truth,
 [`apps/api/prisma/schema.prisma`](../apps/api/prisma/schema.prisma) — when any of
 the three disagree, the schema wins.
 
-**Scope:** 30 models + 14 enums. Grouped by domain:
+**Scope:** 35 models + 15 enums. Grouped by domain:
 [Core inventory](#core-inventory) · [Lifecycle add-ons](#lifecycle-add-ons) ·
 [Sharing & transfer](#sharing--transfer) · [Messaging](#messaging) ·
 [Account security](#account-security) · [Platform & admin](#platform--admin) ·
@@ -67,6 +67,8 @@ preferences and Stripe billing identifiers.
 | `calendarToken` | String? VarChar(64) | null | **Unique**. iCal feed capability token; null = feed off. |
 | `emailReminders` | Boolean | `true` | Opt-out of emailed warranty reminders. |
 | `weeklyDigest` | Boolean | `false` | Opt-in weekly expirations digest. |
+| `warrantyReminderDays` | String? VarChar(40) | null | CSV of reminder offsets (e.g. `"90,30,7"`); null = J-30/J-7/J-1 default. |
+| `emailVerifiedAt` | DateTime? | null | Set when the mailed verification link is consumed; reset on email change. Soft — nothing hard-gates on it. |
 | `theme` | String? VarChar(16) | null | `light\|dark\|ocean\|cyber\|sunset`; null = device default. |
 | `language` | String? VarChar(8) | null | `en\|fr\|pt\|es\|nl`; null = device default. |
 | `dateFormat` | String? VarChar(16) | null | `system\|dd/MM/yyyy\|MM/dd/yyyy\|yyyy-MM-dd`. |
@@ -75,8 +77,9 @@ preferences and Stripe billing identifiers.
 
 **Relations:** owns `Article`, `Garantie`, `Alerte`, `Location`, `Tag`,
 `ArticleNote`, `SavedView`, `ArticleTemplate`, `Attachment`, `Loan`,
-`InsurancePolicy`, `ServiceRecord`, `UserSession`, `PushSubscription`,
-`PasswordResetToken`, `AuditLog`; 0..1 `TotpSecret`; participates in
+`InsurancePolicy`, `ServiceRecord`, `WishlistItem`, `UserSession`,
+`PushSubscription`, `PasswordResetToken`, `EmailVerificationToken`,
+`AuditLog`; 0..1 `TotpSecret`; 0..1 `HouseholdMember`; participates in
 `InventoryShare`/`ShareInvite`/`ArticleTransferRequest`/`MessageThread`/`Message`
 on both sides.
 
@@ -94,6 +97,8 @@ A physical item in the inventory. The hub everything else hangs off.
 | `productImageUrl` | String? VarChar(500) | null | External/owned image URL. |
 | `serialNumber` | String? VarChar(120) | null | Trigram-indexed; folded into the `q` search. |
 | `brand` | String? VarChar(120) | null | Trigram-indexed. |
+| `purchasedFrom` | String? VarChar(150) | null | Retailer/store. Private — never crosses the sharing boundary. |
+| `orderRef` | String? VarChar(100) | null | Order/receipt reference. Private, like `purchasedFrom`. |
 | `purchasePrice` | Decimal(12,2)? | null | Drives inventory value + depreciation. |
 | `depreciationRate` | Decimal(5,2)? | null | Annual straight-line %, 0–100. null = no depreciation. |
 | `sharedWithPowerUsers` | Boolean | `false` | Public (read-only) share flag. |
@@ -165,6 +170,7 @@ of `alerteGarantieId` / `alerteArticleId` is set.
 | `status` | `AlerteStatus` | `SCHEDULED` | |
 | `kind` | `AlerteKind` | `WARRANTY` | WARRANTY (auto) vs CUSTOM (user). |
 | `recurrenceMonths` | Int? | null | CUSTOM only: repeat every N months; null = one-shot. |
+| `reminderDays` | Int? | null | WARRANTY only: the day-offset this reminder fires at, so cancellation can rebuild the exact BullMQ job id. Null on legacy/CUSTOM rows. |
 | `snoozedUntil` | DateTime? | null | Set on snooze; `alerteDate` moves with it. |
 | `sentAt` | DateTime? | null | |
 | `failedAt` | DateTime? | null | |
@@ -198,7 +204,9 @@ A file (invoice, warranty proof, photo) linked to an article and/or a warranty.
 
 ### Location
 
-A storage place. Owner-scoped; unique name per owner.
+A storage place. Owner-scoped; unique name per owner. Optionally nested
+(Home → Garage → Red toolbox) via a self-relation; the service walks the
+ancestor chain to block cycles.
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
@@ -206,6 +214,7 @@ A storage place. Owner-scoped; unique name per owner.
 | `ownerUserId` | Int (FK→User) | — | Cascade. |
 | `name` | String VarChar(120) | — | **Unique per owner** (`uq_location_owner_name`). |
 | `description` | String? VarChar(255) | null | |
+| `parentLocationId` | Int? (FK→Location) | null | Self-relation; **SetNull** on parent delete (children float to root). |
 
 ### ArticleLocation *(junction)*
 
@@ -326,8 +335,24 @@ An append-only maintenance/service log entry. `createdAt` only.
 | `description` | String VarChar(300) | — | |
 | `cost` | Decimal(12,2)? | null | |
 | `provider` | String? VarChar(150) | null | |
-| `nextDueAt` | DateTime? | null | Schedules a "next service" reminder. |
+| `nextDueAt` | DateTime? | null | Schedules a "next service" reminder. Derived from `performedAt` + `intervalMonths` when not given explicitly. |
+| `intervalMonths` | Int? | null | Recurring cadence (1–120); null = one-shot. |
 | `reminderAlerteId` | Int? | null | |
+
+### WishlistItem
+
+A planned purchase. Marking it bought stamps `purchasedAt` (kept as
+struck-through history) instead of deleting.
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `ownerUserId` | Int (FK→User) | — | Cascade. |
+| `name` | String VarChar(120) | — | |
+| `url` | String? VarChar(500) | null | Product link (http/https only). |
+| `targetPrice` | Decimal(12,2)? | null | Drives the budget-fit hint. |
+| `note` | String? VarChar(500) | null | |
+| `purchasedAt` | DateTime? | null | Non-null = bought. |
 
 ---
 
@@ -344,6 +369,7 @@ An active, owner→target inventory-wide share (READ or WRITE).
 | `targetUserId` | Int (FK→User) | — | Cascade (`SharesReceived`). |
 | `permission` | `SharePermission` | `READ` | |
 | `active` | Boolean | `true` | Deactivated (not deleted) on downgrade. |
+| `viaHouseholdId` | Int? (FK→Household) | null | Set when the row is managed by a household mesh; **SetNull** on household delete. Household join/leave only touches tagged rows. |
 
 **Constraint:** unique `(ownerUserId, targetUserId)`.
 
@@ -363,6 +389,49 @@ A token-based invitation that materializes an `InventoryShare` on accept.
 | `usedAt` | DateTime? | null | |
 
 **Index:** compound `(ownerUserId, email, status)` for the duplicate-invite check.
+
+### Household
+
+A small group (max 6) of share-capable users whose inventories are mutually
+visible and editable — implemented as an auto-managed mesh of WRITE
+`InventoryShare` rows tagged `viaHouseholdId`, so every existing sharing
+surface works unchanged.
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `name` | String VarChar(120) | — | |
+| `createdByUserId` | Int | — | Informational — **no FK**, so the household survives its creator's account deletion while members remain. |
+
+### HouseholdMember
+
+Membership row. A user belongs to **at most one** household (`userId`
+unique — the DB arbitrates concurrent joins). The last member's departure
+deletes the household; an OWNER's departure promotes the oldest member.
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `householdId` | Int (FK→Household) | — | Cascade. |
+| `userId` | Int (FK→User) | — | **Unique.** Cascade. |
+| `role` | `HouseholdRole` | `MEMBER` | OWNER manages invites/removals. |
+
+Has `createdAt` only.
+
+### HouseholdInvite
+
+Token-based invitation to join a household. Mirrors `ShareInvite`
+(single-use atomic claim, 7-day expiry).
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `householdId` | Int (FK→Household) | — | Cascade. |
+| `email` | String VarChar(255) | — | Invitee (matched by email — no FK). |
+| `token` | String VarChar(128) | — | **Unique**. The capability credential. |
+| `status` | `InviteStatus` | `PENDING` | |
+| `expiresAt` | DateTime | — | 7 days. |
+| `usedAt` | DateTime? | null | |
 
 ### ArticleTransferRequest
 
@@ -468,6 +537,22 @@ A short-lived reset token. Only the SHA-256 hash is stored.
 
 Has `createdAt` only.
 
+### EmailVerificationToken
+
+Email-ownership proof. Mirrors `PasswordResetToken` (SHA-256 hash stored,
+plaintext emailed, single-use atomic claim) with a longer 3-day TTL.
+Consuming it stamps `User.emailVerifiedAt`.
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `userId` | Int (FK→User) | — | Cascade. |
+| `tokenHash` | String VarChar(64) | — | **Unique**. SHA-256 hex. |
+| `expiresAt` | DateTime | — | 3 days. |
+| `consumedAt` | DateTime? | null | Set on use. |
+
+Has `createdAt` only.
+
 ### PushSubscription
 
 A Web Push (VAPID) browser subscription.
@@ -563,7 +648,8 @@ the message service. The literal values still match the DB enum either way.
 |---|---|---|
 | `Role` | `USER` · `POWER_USER` · `ADMIN` | `User.role`, `FeatureFlag.requiredRole`. Hierarchy `USER < POWER_USER < ADMIN`. |
 | `SharePermission` | `READ` · `WRITE` | `InventoryShare`, `ShareInvite`. |
-| `InviteStatus` | `PENDING` · `ACCEPTED` · `REVOKED` · `EXPIRED` | `ShareInvite.status`. |
+| `InviteStatus` | `PENDING` · `ACCEPTED` · `REVOKED` · `EXPIRED` | `ShareInvite.status`, `HouseholdInvite.status`. |
+| `HouseholdRole` | `OWNER` · `MEMBER` | `HouseholdMember.role`. |
 | `AttachmentType` | `INVOICE` · `WARRANTY` · `OTHER` | `Attachment.type`. |
 | `AlerteStatus` | `SCHEDULED` · `SENT` · `CANCELLED` · `FAILED` | `Alerte.status`. |
 | `AlerteKind` | `WARRANTY` · `CUSTOM` | `Alerte.kind`. |

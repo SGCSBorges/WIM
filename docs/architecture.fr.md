@@ -77,8 +77,12 @@ C'est la colonne vertébrale du produit (voir l'activité UML `02` et la séquen
    calcule `garantieFin = garantieDateAchat + garantieDuration` mois — le client
    n'envoie jamais la date de fin.
 3. **`AlertService` planifie les rappels** — J-30 / J-7 / J-1 avant
-   `garantieFin`, mis en file comme jobs BullMQ sur la file `wim-alerts` (les
-   dates passées sont ignorées).
+   `garantieFin` par défaut, ou les décalages personnalisés de l'utilisateur
+   (`User.warrantyReminderDays`, modifiables dans Profil → Notifications),
+   mis en file comme jobs BullMQ sur la file `wim-alerts` (les dates passées
+   sont ignorées). Chaque ligne d'alerte épingle son propre décalage
+   (`Alerte.reminderDays`) pour que l'annulation reconstruise l'id de job
+   exact.
 4. **Le processeur de rappels délivre** au déclenchement d'un job : charger le
    contexte → **push (attendu ; lève en cas d'échec dur pour que BullMQ
    réessaie)** → **e-mail (au mieux ; ne lève jamais)** → **marquer l'alerte
@@ -108,7 +112,7 @@ Rapports et le panneau « À surveiller » du tableau de bord s'accordent toujou
 sur ce que signifie « expiré » ou « expire bientôt » (fenêtre de 30 jours
 alignée sur le rappel J-30).
 
-## Deux modèles de partage
+## Deux modèles de partage (+ foyers)
 
 Les deux exigent la **capacité de partage** (POWER_USER, ou ADMIN qui en hérite
 sans abonnement — `requireRole` s'appuie sur la hiérarchie
@@ -124,11 +128,22 @@ est dans la section « Sharing model » de [`CLAUDE.md`](../CLAUDE.md). Voir l'U
   aux deux bouts). Les destinataires WRITE éditent les champs de base via
   `PUT /api/shared/articles/:id`.
 
+**Les foyers** se superposent au modèle par utilisateur : un `Household`
+(max 6 membres, un foyer par utilisateur) est un **maillage auto-géré de
+lignes `InventoryShare` en WRITE** — chaque paire de membres reçoit une ligne
+dans les deux sens, marquée `viaHouseholdId`. Le maillage étant fait de
+lignes de partage ordinaires, toutes les surfaces existantes (vues partagées,
+éditions WRITE, visibilité des transferts PULL) fonctionnent sans changement
+sur les inventaires du foyer. Rejoindre construit le maillage ;
+quitter/retirer ne démonte que les lignes marquées. Voir la section
+« Household accounts » de [`docs/api.md`](./api.md) pour les endpoints.
+
 À chaque rétrogradation POWER_USER → USER (webhook d'annulation Stripe,
 `/api/billing/sync` manuel, rétrogradation admin),
-`ShareService.cleanupSharingForUser` repasse les articles publics en privé,
-désactive les partages sortants et révoque les invitations en attente — **dans
-la même transaction que le changement de rôle**. Le chemin
+`ShareService.cleanupSharingForUser` fait sortir l'utilisateur de son foyer
+(démontage du maillage + suppression de l'appartenance), repasse les articles
+publics en privé, désactive les partages sortants et révoque les invitations
+en attente — **dans la même transaction que le changement de rôle**. Le chemin
 d'abonnement/désabonnement Stripe (gardes du webhook + repli `sync`) est dessiné
 dans l'UML `10`.
 

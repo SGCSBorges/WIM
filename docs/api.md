@@ -114,6 +114,15 @@ UI density (`comfortable \| compact`) is intentionally **not** persisted
 server-side — it's a cosmetic per-device choice and lives in
 `localStorage["wim.density"]` only.
 
+Adjacent profile endpoints: `PUT /api/profile/me/reminder-days` (custom
+warranty reminder offsets — see Warranty lifecycle), `GET
+/api/profile/me/export` (full personal data export, one JSON document,
+ungated + rate-limited + audited `DB_EXPORT`), and the soft email
+verification pair `POST /api/auth/verify-email` (open; consumes the mailed
+token) / `POST /api/auth/verify-email/request` (authed re-send). Nothing
+hard-gates on a verified address — email transport is optional — the
+Profile page just shows the state.
+
 ## Notifications
 
 Two endpoints back the TopBar bell:
@@ -143,8 +152,11 @@ row forward (same `garantieId`) and snapshots the prior state into
 
 `Garantie.renewedAt` is stamped on the first renewal/extension (null =
 never renewed). Both `renew` and `extend` reuse
-`AlertService.rescheduleForWarranty` so the J-30/J-7/J-1 reminders
-re-fire against the new end date. Audit actions `WARRANTY_RENEW` /
+`AlertService.rescheduleForWarranty` so the reminders re-fire against the
+new end date. Reminder offsets default to J-30/J-7/J-1 and are
+user-configurable via `PUT /api/profile/me/reminder-days`
+(`{ days: [90,30,7] }`, 1–5 values of 1–365; `null` resets the default) —
+saving re-arms every live warranty. Audit actions `WARRANTY_RENEW` /
 `WARRANTY_EXTEND` are in the `AUDIT_ACTIONS` union.
 
 ## Reports
@@ -267,7 +279,7 @@ any bar to ADMIN.
   `messaging`, `reports`, `analytics`, `templates`, `bulk_edit`,
   `saved_views`, `notifications`, `calendar_feed`, `csv_import`,
   `csv_export`, `insurance`, `loans`, `maintenance`, `budget`,
-  `public_page`.
+  `public_page`, `wishlist`, `household`.
 - `GET /api/admin/features` — current flag overrides + active temp grants.
 - `PUT /api/admin/features/:key` — `{ requiredRole }` sets the minimum role
   for a feature (absent row = coded default).
@@ -283,10 +295,62 @@ helper, so the client map and the server gate can never disagree. Admin
 writes invalidate the cache immediately. The cleanup actions that must stay
 reachable when a feature is later restricted — transfer **reject/revoke**,
 the calendar feed **DELETE** + public ICS read, loan **return/delete**,
-insurance **policy-delete/unlink**, service-record **delete**, and the
-public-link **GET/DELETE** — deliberately stay on `authGuard` only. The
-unauthenticated public item read (`GET /api/public/items/:token`) is never
-gated at all.
+insurance **policy-delete/unlink**, service-record **delete**, wishlist
+**purchased-toggle/delete**, household **GET/leave/remove-member/**
+**revoke-invite**, and the public-link **GET/DELETE** — deliberately stay
+on `authGuard` only. The unauthenticated public item read
+(`GET /api/public/items/:token`) is never gated at all.
+
+## Wishlist
+
+Planned purchases, gated on the `wishlist` feature. `GET /api/wishlist`
+lists (open wishes first, purchased history after), `POST` adds, `PUT /:id`
+edits. `POST /:id/purchased` `{ purchased }` stamps/clears `purchasedAt` —
+bought items are kept (struck through in the UI) rather than deleted — and
+`DELETE /:id` removes; both stay ungated as cleanup paths. The web view
+shows a budget-fit hint when the `budget` feature is on and a monthly
+budget is set (open wishes total vs. what's left of the month's budget).
+
+## Household accounts
+
+A household is a small group (max 6) of share-capable users whose
+inventories are mutually visible and editable. Implementation: an
+auto-managed **mesh of WRITE `InventoryShare` rows** — each member pair
+gets a row in both directions, tagged `viaHouseholdId` — so every existing
+sharing surface (the shared view, WRITE edits via
+`PUT /api/shared/articles/:id`, transfer PULL visibility) works on
+household inventories unchanged, and the same privacy boundary applies
+(serials, prices, provider/claim details never cross).
+
+- `GET /api/household` — the caller's household (or `{ household: null }`),
+  with members and — for the OWNER — pending invites. Open (a downgraded
+  member can still see + leave).
+- `POST /api/household` `{ name }` — create; caller becomes OWNER (gated).
+- `POST /api/household/invites` `{ email }` — OWNER invites an existing
+  Power User; enumeration-safe errors, one pending invite per email, 7-day
+  token emailed best-effort (gated).
+- `POST /api/household/invites/accept` `{ token }` — join; single-use
+  atomic claim, builds the mesh with every current member (gated).
+- `DELETE /api/household/invites/:id`, `POST /api/household/leave`,
+  `DELETE /api/household/members/:userId` — cleanup paths, ungated.
+
+Leaving (or being removed, or being demoted from POWER_USER) tears down
+only the mesh rows tagged with the household — a manual share created
+after teardown is untouched; one that existed *before* joining is absorbed
+into the mesh and deactivates with it. The last member's departure deletes
+the household; an OWNER's departure promotes the oldest remaining member.
+Role downgrade exits the household inside the same transaction as the role
+change (`ShareService.cleanupSharingForUser`).
+
+## Lost & found (public)
+
+When the owner sets an article's status to LOST, its public QR page
+(`GET /api/public/items/:token`) carries `isLost: true` and accepts
+`POST /api/public/items/:token/found-report` `{ message, contact? }` —
+unauthenticated (the token is the credential), destructive-rate-limited,
+deduped to one recorded report per article per hour. The report lands as a
+notification-bell entry for the owner plus best-effort push/email; finder
+and owner stay mutually anonymous.
 
 ## Database backup / restore (ADMIN)
 

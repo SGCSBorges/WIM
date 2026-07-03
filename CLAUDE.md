@@ -710,6 +710,34 @@ rows where the deleted user is the **invitee** (matched by email — there's
 no FK). Without that, someone re-registering with the same email could
 accept a stale token and gain access to a third party's inventory.
 
+## Household accounts
+
+A `Household` is a small group (max 6) of share-capable users whose
+inventories are mutually visible and editable — implemented as an
+auto-managed **mesh of WRITE `InventoryShare` rows** (each member pair gets a
+row in both directions, tagged `viaHouseholdId`), so every existing sharing
+surface (recipient views, `PUT /api/shared/articles/:id` WRITE edits,
+transfer PULL visibility, the privacy boundary) works unchanged. Key rules:
+
+- One household per user (`HouseholdMember.userId` unique — the DB arbitrates
+  concurrent joins). Roles: OWNER (invites/removals) / MEMBER; the OWNER's
+  departure promotes the oldest member, the last member's departure deletes
+  the household.
+- `HouseholdInvite` mirrors ShareInvite: enumeration-safe errors, 7-day
+  emailed token (`/sharing?householdToken=…`), single-use atomic claim.
+- Join upserts the mesh pairs (absorbing a pre-existing manual share);
+  leave/remove deactivates + untags only rows carrying `viaHouseholdId`, so
+  manual shares created after teardown are never collateral damage.
+- Role downgrade exits the household **inside the same transaction** —
+  `HouseholdService.removeOnDowngrade` runs first in
+  `ShareService.cleanupSharingForUser` (it must cover incoming mesh rows,
+  which the blanket outgoing cleanup misses).
+- Gating: create/invite/accept require the `household` feature; GET, leave,
+  remove-member, revoke-invite stay on authGuard (cleanup rule). Web:
+  `HouseholdSection` on the `/sharing` page.
+- Files: `apps/api/src/modules/household/{household.service,household.routes}.ts`,
+  `apps/web/src/components/sharing/HouseholdSection.tsx`.
+
 ## Article ownership transfer
 
 Permanent transfer of an article (and all its related data) between two
@@ -851,7 +879,7 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   `messaging`, `reports`, `analytics`, `templates`, `bulk_edit`,
   `saved_views`, `notifications`, `calendar_feed`, `csv_import`,
   `csv_export`, `insurance`, `loans`, `maintenance`, `budget`,
-  `public_page`, `wishlist`) defaults to `POWER_USER`** —
+  `public_page`, `wishlist`, `household`) defaults to `POWER_USER`** —
   i.e. they are all paid features by default, and an admin can lower a bar
   (e.g. to USER) per feature when desired. A **60-second
   process-level snapshot cache** (`getSnapshot`) holds both tables so gated
@@ -888,7 +916,10 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   **delete stays open**), `budget` (`statistics/budget` GET +
   `profile/me/budget` PUT), `public_page` (`articles/public-link.routes.ts`
   **POST only** — the GET status + DELETE stay open, and the unauthenticated
-  `GET /api/public/items/:token` read is never gated). The "cleanup paths
+  `GET /api/public/items/:token` read is never gated), `wishlist`
+  (`wishlist.routes.ts` — list/create/update; **purchased-toggle + delete stay
+  open**), `household` (`household.routes.ts` — create/invite/accept; **GET,
+  leave, remove-member, revoke-invite stay open**). The "cleanup paths
   stay open" rule mirrors the transfer reject/revoke + calendar-DELETE
   pattern: a downgraded user can always wind a thing down even when the
   feature is later restricted. `cmd_palette` is frontend-only (it reuses the

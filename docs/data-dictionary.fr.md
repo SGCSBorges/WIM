@@ -11,7 +11,7 @@ colonne par colonne. Les deux sont alignés sur la source unique de vérité,
 [`apps/api/prisma/schema.prisma`](../apps/api/prisma/schema.prisma) — en cas de
 désaccord entre les trois, c'est le schéma qui l'emporte.
 
-**Portée :** 30 modèles + 14 énumérations, regroupés par domaine : Inventaire
+**Portée :** 35 modèles + 15 énumérations, regroupés par domaine : Inventaire
 cœur · Modules de cycle de vie · Partage & transfert · Messagerie · Sécurité du
 compte · Plateforme & admin · Énumérations.
 
@@ -68,6 +68,8 @@ multi-appareils et les identifiants de facturation Stripe.
 | `calendarToken` | String? VarChar(64) | null | **Unique**. Jeton de capacité du flux iCal ; null = flux désactivé. |
 | `emailReminders` | Boolean | `true` | Désinscription des rappels de garantie par e-mail. |
 | `weeklyDigest` | Boolean | `false` | Inscription au digest hebdomadaire des expirations. |
+| `warrantyReminderDays` | String? VarChar(40) | null | CSV des décalages de rappel (ex. `"90,30,7"`) ; null = défaut J-30/J-7/J-1. |
+| `emailVerifiedAt` | DateTime? | null | Posé à la consommation du lien de vérification ; remis à null au changement d'e-mail. Souple — rien n'en dépend durement. |
 | `theme` | String? VarChar(16) | null | `light\|dark\|ocean\|cyber\|sunset` ; null = défaut appareil. |
 | `language` | String? VarChar(8) | null | `en\|fr\|pt\|es\|nl` ; null = défaut appareil. |
 | `dateFormat` | String? VarChar(16) | null | `system\|dd/MM/yyyy\|MM/dd/yyyy\|yyyy-MM-dd`. |
@@ -76,8 +78,9 @@ multi-appareils et les identifiants de facturation Stripe.
 
 **Relations :** possède `Article`, `Garantie`, `Alerte`, `Location`, `Tag`,
 `ArticleNote`, `SavedView`, `ArticleTemplate`, `Attachment`, `Loan`,
-`InsurancePolicy`, `ServiceRecord`, `UserSession`, `PushSubscription`,
-`PasswordResetToken`, `AuditLog` ; 0..1 `TotpSecret` ; participe des deux côtés à
+`InsurancePolicy`, `ServiceRecord`, `WishlistItem`, `UserSession`,
+`PushSubscription`, `PasswordResetToken`, `EmailVerificationToken`,
+`AuditLog` ; 0..1 `TotpSecret` ; 0..1 `HouseholdMember` ; participe des deux côtés à
 `InventoryShare`/`ShareInvite`/`ArticleTransferRequest`/`MessageThread`/`Message`.
 
 ### Article
@@ -94,6 +97,8 @@ Un bien physique de l'inventaire. Le hub auquel tout le reste se rattache.
 | `productImageUrl` | String? VarChar(500) | null | URL d'image externe/propre. |
 | `serialNumber` | String? VarChar(120) | null | Indexé par trigrammes ; intégré à la recherche `q`. |
 | `brand` | String? VarChar(120) | null | Indexé par trigrammes. |
+| `purchasedFrom` | String? VarChar(150) | null | Enseigne/magasin. Privé — ne traverse jamais la frontière de partage. |
+| `orderRef` | String? VarChar(100) | null | Référence de commande/reçu. Privé, comme `purchasedFrom`. |
 | `purchasePrice` | Decimal(12,2)? | null | Pilote la valeur d'inventaire + l'amortissement. |
 | `depreciationRate` | Decimal(5,2)? | null | % linéaire annuel, 0–100. null = pas d'amortissement. |
 | `sharedWithPowerUsers` | Boolean | `false` | Drapeau de partage public (lecture seule). |
@@ -167,6 +172,7 @@ par l'utilisateur. Au moins un de `alerteGarantieId` / `alerteArticleId` est pos
 | `status` | `AlerteStatus` | `SCHEDULED` | |
 | `kind` | `AlerteKind` | `WARRANTY` | WARRANTY (auto) vs CUSTOM (utilisateur). |
 | `recurrenceMonths` | Int? | null | CUSTOM seulement : répéter tous les N mois ; null = ponctuel. |
+| `reminderDays` | Int? | null | WARRANTY seulement : le décalage en jours de ce rappel, pour reconstruire l'id de job BullMQ exact à l'annulation. Null sur les lignes anciennes/CUSTOM. |
 | `snoozedUntil` | DateTime? | null | Posé au report ; `alerteDate` suit. |
 | `sentAt` | DateTime? | null | |
 | `failedAt` | DateTime? | null | |
@@ -202,6 +208,8 @@ garantie.
 ### Location
 
 Un lieu de rangement. Propre au propriétaire ; nom unique par propriétaire.
+Optionnellement imbriqué (Maison → Garage → Boîte rouge) via une auto-relation ;
+le service parcourt la chaîne des ancêtres pour bloquer les cycles.
 
 | Champ | Type | Défaut | Notes |
 |---|---|---|---|
@@ -209,6 +217,7 @@ Un lieu de rangement. Propre au propriétaire ; nom unique par propriétaire.
 | `ownerUserId` | Int (FK→User) | — | Cascade. |
 | `name` | String VarChar(120) | — | **Unique par propriétaire** (`uq_location_owner_name`). |
 | `description` | String? VarChar(255) | null | |
+| `parentLocationId` | Int? (FK→Location) | null | Auto-relation ; **SetNull** à la suppression du parent (les enfants remontent à la racine). |
 
 ### ArticleLocation *(jonction)*
 
@@ -333,8 +342,24 @@ seulement.
 | `description` | String VarChar(300) | — | |
 | `cost` | Decimal(12,2)? | null | |
 | `provider` | String? VarChar(150) | null | |
-| `nextDueAt` | DateTime? | null | Planifie un rappel « prochain entretien ». |
+| `nextDueAt` | DateTime? | null | Planifie un rappel « prochain entretien ». Dérivé de `performedAt` + `intervalMonths` s'il n'est pas fourni. |
+| `intervalMonths` | Int? | null | Cadence récurrente (1–120) ; null = ponctuel. |
 | `reminderAlerteId` | Int? | null | |
+
+### WishlistItem
+
+Un achat prévu. Le marquer acheté pose `purchasedAt` (conservé, barré dans
+l'interface) au lieu de le supprimer.
+
+| Champ | Type | Défaut | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `ownerUserId` | Int (FK→User) | — | Cascade. |
+| `name` | String VarChar(120) | — | |
+| `url` | String? VarChar(500) | null | Lien produit (http/https uniquement). |
+| `targetPrice` | Decimal(12,2)? | null | Alimente l'indicateur d'adéquation au budget. |
+| `note` | String? VarChar(500) | null | |
+| `purchasedAt` | DateTime? | null | Non nul = acheté. |
 
 ---
 
@@ -351,6 +376,7 @@ Un partage actif propriétaire→cible à l'échelle de l'inventaire (READ ou WR
 | `targetUserId` | Int (FK→User) | — | Cascade (`SharesReceived`). |
 | `permission` | `SharePermission` | `READ` | |
 | `active` | Boolean | `true` | Désactivé (non supprimé) à la rétrogradation. |
+| `viaHouseholdId` | Int? (FK→Household) | null | Posé quand la ligne est gérée par un maillage de foyer ; **SetNull** à la suppression du foyer. Rejoindre/quitter un foyer ne touche que les lignes marquées. |
 
 **Contrainte :** unique `(ownerUserId, targetUserId)`.
 
@@ -371,6 +397,51 @@ Une invitation par jeton qui matérialise un `InventoryShare` à l'acceptation.
 
 **Index :** composé `(ownerUserId, email, status)` pour le contrôle des
 doublons d'invitation.
+
+### Household *(foyer)*
+
+Un petit groupe (max 6) d'utilisateurs aptes au partage dont les inventaires
+sont mutuellement visibles et modifiables — implémenté comme un maillage
+auto-géré de lignes `InventoryShare` en WRITE marquées `viaHouseholdId`, si
+bien que toutes les surfaces de partage existantes fonctionnent sans
+changement.
+
+| Champ | Type | Défaut | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `name` | String VarChar(120) | — | |
+| `createdByUserId` | Int | — | Informatif — **pas de FK**, le foyer survit à la suppression du compte de son créateur tant qu'il reste des membres. |
+
+### HouseholdMember *(membre du foyer)*
+
+Ligne d'appartenance. Un utilisateur appartient à **au plus un** foyer
+(`userId` unique — la base arbitre les adhésions concurrentes). Le départ du
+dernier membre supprime le foyer ; le départ du OWNER promeut le membre le
+plus ancien.
+
+| Champ | Type | Défaut | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `householdId` | Int (FK→Household) | — | Cascade. |
+| `userId` | Int (FK→User) | — | **Unique.** Cascade. |
+| `role` | `HouseholdRole` | `MEMBER` | OWNER gère invitations et retraits. |
+
+A `createdAt` seulement.
+
+### HouseholdInvite *(invitation au foyer)*
+
+Invitation par jeton à rejoindre un foyer. Miroir de `ShareInvite`
+(consommation atomique à usage unique, expiration à 7 jours).
+
+| Champ | Type | Défaut | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `householdId` | Int (FK→Household) | — | Cascade. |
+| `email` | String VarChar(255) | — | Invité (rapproché par e-mail — pas de FK). |
+| `token` | String VarChar(128) | — | **Unique**. Le justificatif de capacité. |
+| `status` | `InviteStatus` | `PENDING` | |
+| `expiresAt` | DateTime | — | 7 jours. |
+| `usedAt` | DateTime? | null | |
 
 ### ArticleTransferRequest
 
@@ -480,6 +551,23 @@ stocké.
 
 A `createdAt` seulement.
 
+### EmailVerificationToken
+
+Preuve de possession de l'adresse e-mail. Miroir de `PasswordResetToken`
+(hachage SHA-256 stocké, texte clair envoyé par e-mail, consommation atomique
+à usage unique) avec une durée de vie plus longue de 3 jours. Sa consommation
+pose `User.emailVerifiedAt`.
+
+| Champ | Type | Défaut | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `userId` | Int (FK→User) | — | Cascade. |
+| `tokenHash` | String VarChar(64) | — | **Unique**. Hex SHA-256. |
+| `expiresAt` | DateTime | — | 3 jours. |
+| `consumedAt` | DateTime? | null | Posé à l'usage. |
+
+A `createdAt` seulement.
+
 ### PushSubscription
 
 Un abonnement navigateur Web Push (VAPID).
@@ -579,7 +667,8 @@ messagerie. Les valeurs littérales correspondent toujours à l'énumération BD
 |---|---|---|
 | `Role` | `USER` · `POWER_USER` · `ADMIN` | `User.role`, `FeatureFlag.requiredRole`. Hiérarchie `USER < POWER_USER < ADMIN`. |
 | `SharePermission` | `READ` · `WRITE` | `InventoryShare`, `ShareInvite`. |
-| `InviteStatus` | `PENDING` · `ACCEPTED` · `REVOKED` · `EXPIRED` | `ShareInvite.status`. |
+| `InviteStatus` | `PENDING` · `ACCEPTED` · `REVOKED` · `EXPIRED` | `ShareInvite.status`, `HouseholdInvite.status`. |
+| `HouseholdRole` | `OWNER` · `MEMBER` | `HouseholdMember.role`. |
 | `AttachmentType` | `INVOICE` · `WARRANTY` · `OTHER` | `Attachment.type`. |
 | `AlerteStatus` | `SCHEDULED` · `SENT` · `CANCELLED` · `FAILED` | `Alerte.status`. |
 | `AlerteKind` | `WARRANTY` · `CUSTOM` | `Alerte.kind`. |

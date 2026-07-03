@@ -76,8 +76,11 @@ This is the spine of the product (see UML `02` activity and `04` sequence):
    computes `garantieFin = garantieDateAchat + garantieDuration` months — the
    client never sends the end date.
 3. **`AlertService` schedules reminders** — J-30 / J-7 / J-1 before
-   `garantieFin`, enqueued as BullMQ jobs on the `wim-alerts` queue (past
-   dates are skipped).
+   `garantieFin` by default, or the user's custom offsets
+   (`User.warrantyReminderDays`, editable in Profile → Notifications),
+   enqueued as BullMQ jobs on the `wim-alerts` queue (past dates are
+   skipped). Each alert row pins its own offset (`Alerte.reminderDays`) so
+   cancellation can rebuild the exact job id.
 4. **The reminder processor delivers** when a job fires
    ([`jobs/processors/reminder.processor.ts`](../apps/api/src/jobs/processors/reminder.processor.ts)):
    load context → **push (awaited; throws on hard failure so BullMQ retries)**
@@ -106,7 +109,7 @@ the article list, Warranties view, Reports filter, and
 Dashboard "Needs attention" panel always agree on what "expired" or
 "expiring soon" means (30-day window matching the J-30 reminder).
 
-## Two sharing models
+## Two sharing models (+ households)
 
 Both require **share capability** (POWER_USER, or ADMIN which inherits it
 without a subscription — `requireRole` runs on the `USER < POWER_USER < ADMIN`
@@ -122,8 +125,18 @@ sequence.
   both ends). WRITE recipients edit basic fields via
   `PUT /api/shared/articles/:id`.
 
+**Households** layer on top of the per-user model: a `Household` (max 6
+members, one per user) is an auto-managed **mesh of WRITE `InventoryShare`
+rows** — each member pair gets a row in both directions, tagged
+`viaHouseholdId`. Because the mesh is made of ordinary share rows, every
+existing surface (shared views, WRITE edits, transfer PULL visibility) works
+on household inventories unchanged. Join builds the mesh; leave/remove tears
+down only the tagged rows. See the "Household accounts" section of
+[`docs/api.md`](./api.md) for the endpoints.
+
 On every POWER_USER → USER downgrade (Stripe cancel webhook, manual
 `/api/billing/sync`, admin demote), `ShareService.cleanupSharingForUser`
+exits the user from their household (mesh teardown + membership delete),
 flips public articles back, deactivates outgoing shares, and revokes pending
 invites — **inside the same transaction as the role change**. The Stripe
 upgrade/downgrade path (webhook guards + the `sync` fallback) is drawn in

@@ -142,21 +142,23 @@ Cartographie des groupes de ressources (détail exhaustif dans Swagger) :
 
 | Groupe | Base | Résumé |
 |---|---|---|
-| **Auth** | `/api/auth` | inscription, connexion (+ défi TOTP), déconnexion, `/me`, mot de passe oublié/réinitialisé |
+| **Auth** | `/api/auth` | inscription, connexion (+ défi TOTP), déconnexion, `/me`, mot de passe oublié/réinitialisé, vérification d'e-mail |
 | **Articles** | `/api/articles` | CRUD, corbeille (soft-delete), duplication, import/export CSV/PDF, notes, opérations groupées, partage, transfert |
 | **Garanties** | `/api/warranties` | CRUD, réclamation, renouvellement/prolongation en place + historique |
 | **Pièces jointes** | `/api/attachments` | upload (10 Mo, validation magic-byte), liste, suppression |
-| **Alertes** | `/api/alerts` | rappels garantie J-30/J-7/J-1 (auto) + alertes personnalisées récurrentes |
-| **Emplacements / Étiquettes** | `/api/locations`, `/api/tags` | CRUD, affectation, fusion d'étiquettes |
+| **Alertes** | `/api/alerts` | rappels garantie J-30/J-7/J-1 (décalages personnalisables) + alertes personnalisées récurrentes |
+| **Emplacements / Étiquettes** | `/api/locations`, `/api/tags` | CRUD (emplacements imbriqués), affectation, fusion d'étiquettes |
 | **Vues enregistrées** | `/api/saved-views` | presets de filtres d'articles |
 | **Calendrier** | `/api/calendar` | flux iCal (RFC-5545) authentifié par jeton |
 | **Push** | `/api/push` | abonnements Web Push (VAPID) |
 | **Partage** | `/api/shares`, `/api/shared` | invitations par utilisateur (READ/WRITE) + vue reçue |
+| **Foyer** | `/api/household` | groupe familial (max 6) — maillage auto-géré de partages WRITE entre membres |
+| **Liste d'envies** | `/api/wishlist` | achats prévus avec indicateur d'adéquation au budget |
 | **Statistiques** | `/api/statistics` | tableau de bord, analytique de dépenses, budget |
 | **Transferts** | `/api/articles/transfers` | transfert de propriété PUSH/PULL entre Power Users |
 | **Prêts / Assurances / Maintenance** | `/api/loans`, `/api/insurance`, `/api/service-records` | modules par article (payants) |
-| **Page publique** | `/api/public`, `.../public-link` | page en lecture seule opt-in (cible d'étiquette QR) |
-| **Profil** | `/api/profile` | e-mail, mot de passe, devise, préférences, sessions, TOTP, budget, suppression de compte |
+| **Page publique** | `/api/public`, `.../public-link` | page en lecture seule opt-in (cible d'étiquette QR) + signalement « objet trouvé » pour les objets perdus |
+| **Profil** | `/api/profile` | e-mail, mot de passe, devise, préférences, décalages de rappel, sessions, TOTP, budget, export complet des données, suppression de compte |
 | **Facturation** | `/api/billing` | checkout Stripe, portail, webhook, sync |
 | **Admin** | `/api/admin` | utilisateurs, journal d'audit, drapeaux de fonctionnalités, jobs, export/import BD |
 | **Fonctionnalités** | `/api/features` | carte d'accès `{ clé: booléen }` du demandeur |
@@ -189,6 +191,8 @@ User ─── Article ─── Garantie ─── WarrantyHistory (audit en aj
   │
   ├── ArticleTransferRequest (PUSH/PULL ; PENDING/ACCEPTED/REJECTED/REVOKED/EXPIRED)
   ├── ArticleTemplate · InventoryShare · ShareInvite
+  ├── HouseholdMember → Household (max 6 ; maillage de partages WRITE) ── HouseholdInvite
+  ├── WishlistItem · EmailVerificationToken
   ├── UserSession · TotpSecret · PasswordResetToken
   ├── SavedView · CalendarToken
   └── AuditLog

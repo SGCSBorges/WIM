@@ -9,8 +9,9 @@
  * Auth, articles, article-templates, locations, warranties, alerts,
  * attachments, notes, shares, transfers, messaging, tags, saved-views,
  * calendar, push, billing, profile, admin (incl. the audit log), statistics,
- * reports, features, loans, insurance, maintenance, the public item page, and
- * the meta endpoints are all listed below.
+ * reports, features, loans, insurance, maintenance, wishlist, household,
+ * the public item page (incl. the lost-and-found report), and the meta
+ * endpoints are all listed below.
  */
 
 import { z } from "zod";
@@ -113,6 +114,33 @@ export function buildOpenApiDocument() {
             "204": { description: "Logged out" },
             "401": { description: "Missing or invalid token" },
           },
+        },
+      },
+      "/api/auth/verify-email": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Consume an email-verification token from the mailed link (no session required — the token is the credential). Rate-limited.",
+          requestBody: {
+            ...json(z.object({ token: z.string().min(32).max(128) })),
+            required: true,
+          },
+          responses: {
+            "204": { description: "Email verified" },
+            "400": {
+              description: "Invalid or expired token",
+              ...json(ErrorResponse),
+            },
+          },
+        },
+      },
+      "/api/auth/verify-email/request": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Re-send the verification link to the signed-in user (no-op when already verified). Rate-limited.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Requested (best-effort)" } },
         },
       },
       "/api/auth/seed-demo": {
@@ -1387,6 +1415,38 @@ export function buildOpenApiDocument() {
           responses: { "200": { description: "Updated" } },
         },
       },
+      "/api/profile/me/reminder-days": {
+        put: {
+          tags: ["profile"],
+          summary:
+            "Set custom warranty reminder offsets (days before expiry, 1-5 values) and re-arm every live warranty. Null resets to the 30/7/1 default.",
+          security: [cookieAuth],
+          requestBody: {
+            ...json(
+              z.object({
+                days: z
+                  .array(z.number().int().min(1).max(365))
+                  .min(1)
+                  .max(5)
+                  .nullable(),
+              })
+            ),
+            required: true,
+          },
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+      "/api/profile/me/export": {
+        get: {
+          tags: ["profile"],
+          summary:
+            "Full personal data export — one JSON document with every record the account owns (data portability; not feature-gated; rate-limited; audited as DB_EXPORT).",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "JSON attachment with the full account" },
+          },
+        },
+      },
       "/api/profile/me/budget": {
         put: {
           tags: ["profile"],
@@ -1825,11 +1885,209 @@ export function buildOpenApiDocument() {
         get: {
           tags: ["public"],
           summary:
-            "Public, unauthenticated item view (QR-label target). Returns only privacy-safe fields — never price, serial, owner, or location.",
+            "Public, unauthenticated item view (QR-label target). Returns only privacy-safe fields — never price, serial, owner, or location. Carries `isLost: true` while the owner has the item marked LOST.",
           responses: {
             "200": { description: "PublicItem" },
             "404": { description: "Not found" },
           },
+        },
+      },
+      "/api/public/items/{token}/found-report": {
+        parameters: [
+          {
+            name: "token",
+            in: "path",
+            required: true,
+            schema: { type: "string", pattern: "^[a-f0-9]{64}$" },
+          },
+        ],
+        post: {
+          tags: ["public"],
+          summary:
+            "Anonymous 'I found this item' report — only accepted while the item is marked LOST. Records a notification for the owner (+ best-effort push/email). Rate-limited; at most one recorded report per article per hour.",
+          requestBody: {
+            ...json(
+              z.object({
+                message: z.string().min(1).max(500),
+                contact: z.string().max(120).nullish(),
+              })
+            ),
+            required: true,
+          },
+          responses: {
+            "204": { description: "Recorded (or silently deduped)" },
+            "404": { description: "Unknown token or item not marked LOST" },
+          },
+        },
+      },
+
+      "/api/wishlist": {
+        get: {
+          tags: ["wishlist"],
+          summary:
+            "List the caller's wishlist (gated: wishlist feature). Open wishes first, purchased history after.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ items }" } },
+        },
+        post: {
+          tags: ["wishlist"],
+          summary: "Add a planned purchase (gated: wishlist feature).",
+          security: [cookieAuth],
+          requestBody: {
+            ...json(
+              z.object({
+                name: z.string().min(1).max(120),
+                url: z.string().url().max(500).nullish(),
+                targetPrice: z.number().nonnegative().nullish(),
+                note: z.string().max(500).nullish(),
+              })
+            ),
+            required: true,
+          },
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/api/wishlist/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        put: {
+          tags: ["wishlist"],
+          summary: "Update a wishlist item (gated: wishlist feature).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated" } },
+        },
+        delete: {
+          tags: ["wishlist"],
+          summary: "Delete a wishlist item (ungated cleanup path).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+      "/api/wishlist/{id}/purchased": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["wishlist"],
+          summary:
+            "Toggle the bought state (ungated cleanup path). Purchased items are kept, struck through, instead of deleted.",
+          security: [cookieAuth],
+          requestBody: {
+            ...json(z.object({ purchased: z.boolean() })),
+            required: true,
+          },
+          responses: { "200": { description: "Updated" } },
+        },
+      },
+
+      "/api/household": {
+        get: {
+          tags: ["household"],
+          summary:
+            "The caller's household (members + pending invites for the OWNER), or { household: null }. Open so a downgraded member can still see and wind down their membership.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ household }" } },
+        },
+        post: {
+          tags: ["household"],
+          summary:
+            "Create a household — the caller becomes OWNER (gated: household feature). A household is an auto-managed mesh of WRITE inventory shares between all members.",
+          security: [cookieAuth],
+          requestBody: {
+            ...json(z.object({ name: z.string().min(1).max(120) })),
+            required: true,
+          },
+          responses: {
+            "201": { description: "Created" },
+            "409": { description: "Already in a household" },
+          },
+        },
+      },
+      "/api/household/invites": {
+        post: {
+          tags: ["household"],
+          summary:
+            "Invite a Power User by email (OWNER only; gated: household feature). Sends a token link; households are capped at 6 members.",
+          security: [cookieAuth],
+          requestBody: {
+            ...json(z.object({ email: z.string().email() })),
+            required: true,
+          },
+          responses: {
+            "201": { description: "Invite created (email best-effort)" },
+            "403": { description: "Not the household owner" },
+          },
+        },
+      },
+      "/api/household/invites/accept": {
+        post: {
+          tags: ["household"],
+          summary:
+            "Join a household via the emailed token (gated: household feature). Single-use atomic claim; builds the WRITE-share mesh with every existing member.",
+          security: [cookieAuth],
+          requestBody: {
+            ...json(z.object({ token: z.string().min(32).max(128) })),
+            required: true,
+          },
+          responses: {
+            "200": { description: "Joined" },
+            "400": { description: "Invalid or already-used token" },
+            "410": { description: "Invite expired" },
+          },
+        },
+      },
+      "/api/household/invites/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["household"],
+          summary:
+            "Revoke a pending invite (OWNER only; ungated cleanup path).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Revoked" } },
+        },
+      },
+      "/api/household/leave": {
+        post: {
+          tags: ["household"],
+          summary:
+            "Leave your household (ungated cleanup path). Tears down your mesh shares; the last member's departure deletes the household; an OWNER's departure promotes the oldest member.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Left" } },
+        },
+      },
+      "/api/household/members/{userId}": {
+        parameters: [
+          {
+            name: "userId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["household"],
+          summary:
+            "Remove a member (OWNER only; ungated cleanup path). Same teardown as leave.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Removed" } },
         },
       },
 

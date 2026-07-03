@@ -311,6 +311,8 @@ describe("ShareService.cleanupSharingForUser", () => {
       articleTransferRequest: {
         updateMany: vi.fn().mockResolvedValue({ count: 4 }),
       },
+      // Household exit runs first inside cleanup; null = not in a household.
+      householdMember: { findUnique: vi.fn().mockResolvedValue(null) },
     };
 
     const result = await ShareService.cleanupSharingForUser(

@@ -33,6 +33,8 @@ export type {
   ServiceRecordItem,
   ServiceDueItem,
   WishlistItemRow,
+  HouseholdInfo,
+  HouseholdMemberInfo,
   ShareInviteItem,
   ShareItem,
   SharedArticleRow,

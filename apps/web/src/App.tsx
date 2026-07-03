@@ -94,6 +94,9 @@ const SharesList = React.lazy(() => import("./components/sharing/SharesList"));
 const SharedArticlesView = React.lazy(
   () => import("./components/sharing/SharedArticlesView")
 );
+const HouseholdSection = React.lazy(
+  () => import("./components/sharing/HouseholdSection")
+);
 const AcceptInviteForm = React.lazy(
   () => import("./components/sharing/AcceptInviteForm")
 );
@@ -563,6 +566,7 @@ export default function App() {
   const sharingRoute = gatedRoute(
     canShare,
     <div className="space-y-6">
+      <HouseholdSection />
       <MySharedArticlesView />
       <AcceptInviteForm />
       <SharesList />

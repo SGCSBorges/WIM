@@ -19,6 +19,7 @@ import { Prisma, SharePermission, InviteStatus } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { roleAtLeast } from "../common/roles";
+import { HouseholdService } from "../household/household.service";
 import {
   InventoryShareCreateInput,
   ShareInviteCreateInput,
@@ -98,6 +99,11 @@ export const ShareService = {
     invitesRevoked: number;
     transfersRevoked: number;
   }> {
+    // Household exit first: it deactivates the mesh rows in BOTH directions
+    // (the blanket outgoing cleanup below only covers rows the user owns) and
+    // removes the membership so a later re-upgrade starts clean.
+    await HouseholdService.removeOnDowngrade(userId, tx);
+
     const [articlesUnshared, sharesRevoked, invitesRevoked, transfersRevoked] =
       await Promise.all([
         tx.article.updateMany({

@@ -124,6 +124,8 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `GET`  | `/me` | ✓ | Current user profile |
 | `POST` | `/forgot-password` | ✗ | Request a reset link (uniform response — no email enumeration) |
 | `POST` | `/reset-password` | ✗ | Consume the emailed token + set a new password (bumps `tokenVersion`) |
+| `POST` | `/verify-email` | ✗ | Consume an email-verification token (the token is the credential; rate-limited) |
+| `POST` | `/verify-email/request` | ✓ | Re-send the verification link (no-op when already verified) |
 | `POST` | `/bootstrap-admin` | ✗ | One-shot promote `admin@admin.com` if no ADMIN exists yet (idempotent) |
 
 ### Articles — `/api/articles`
@@ -314,6 +316,36 @@ Append-only service log per item (date, description, cost, provider, optional ne
 | `POST`   | `/` | POWER_USER | Log a service entry |
 | `DELETE` | `/:id` | ✓ | Delete a record (open for cleanup) |
 
+### Wishlist — `/api/wishlist` (POWER_USER · `wishlist`)
+
+Planned purchases with an optional target price, link, and note; the web view
+shows a budget-fit hint when a monthly budget is set. Purchased items are kept
+(struck through) instead of deleted.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/api/wishlist` | POWER_USER (`wishlist`) | List (open wishes first) |
+| `POST`   | `/api/wishlist` | POWER_USER (`wishlist`) | Add a planned purchase |
+| `PUT`    | `/api/wishlist/:id` | POWER_USER (`wishlist`) | Edit |
+| `POST`   | `/api/wishlist/:id/purchased` | ✓ | Toggle bought state (open for cleanup) |
+| `DELETE` | `/api/wishlist/:id` | ✓ | Delete (open for cleanup) |
+
+### Household — `/api/household` (POWER_USER · `household`)
+
+A household (max 6 members, one per user) shares every member's inventory with
+every other member — implemented as an auto-managed mesh of WRITE
+`InventoryShare` rows, so all existing sharing surfaces work unchanged.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/api/household` | ✓ | The caller's household + members (or `{ household: null }`) — open |
+| `POST`   | `/api/household` | POWER_USER (`household`) | Create (caller becomes OWNER) |
+| `POST`   | `/api/household/invites` | POWER_USER (`household`) | OWNER invites a Power User by email (7-day token) |
+| `POST`   | `/api/household/invites/accept` | POWER_USER (`household`) | Join via the emailed token |
+| `DELETE` | `/api/household/invites/:id` | ✓ | OWNER revokes a pending invite (open) |
+| `POST`   | `/api/household/leave` | ✓ | Leave (open); last member's departure deletes the household |
+| `DELETE` | `/api/household/members/:userId` | ✓ | OWNER removes a member (open) |
+
 ### Public item page — `/api/public` + `/api/articles/:id/public-link`
 
 Opt-in, read-only public page per article (QR-label target). The owner mints a token (gated `public_page`); the public read is **unauthenticated** and returns only privacy-safe fields — never price, serial, owner, or location.
@@ -323,7 +355,8 @@ Opt-in, read-only public page per article (QR-label target). The owner mints a t
 | `GET`    | `/api/articles/:id/public-link` | ✓ | Current token (or null) — open so a downgraded user can disable |
 | `POST`   | `/api/articles/:id/public-link` | POWER_USER (`public_page`) | Generate/rotate the token |
 | `DELETE` | `/api/articles/:id/public-link` | ✓ | Disable the public page (open for cleanup) |
-| `GET`    | `/api/public/items/:token` | Public | Privacy-safe item view (no auth — the token is the credential) |
+| `GET`    | `/api/public/items/:token` | Public | Privacy-safe item view (no auth — the token is the credential); carries `isLost` while the item is marked LOST |
+| `POST`   | `/api/public/items/:token/found-report` | Public | Anonymous "I found this item" report (LOST items only; rate-limited, hourly dedupe) → owner notification + best-effort push/email |
 
 ### Profile — `/api/profile`
 
@@ -336,6 +369,8 @@ Opt-in, read-only public page per article (QR-label target). The owner mints a t
 | `PUT`    | `/me/preferences` | ✓ | Update display preferences (`{ theme?, language?, dateFormat? }`) — any combination, `null` clears to device default |
 | `PUT`    | `/me/email-reminders` | ✓ | Toggle emailed warranty reminders |
 | `PUT`    | `/me/weekly-digest` | ✓ | Toggle the opt-in weekly expirations digest |
+| `PUT`    | `/me/reminder-days` | ✓ | Custom warranty reminder offsets (`{ days: [90,30,7] }`, `null` = default) — re-arms every live warranty |
+| `GET`    | `/me/export` | ✓ | Full personal data export (one JSON document; ungated, rate-limited, audited) |
 | `PUT`    | `/me/budget` | POWER_USER (`budget`) | Set monthly/annual spend budgets (`null` clears) |
 | `GET`    | `/me/login-history` | ✓ | Last 50 login/logout events |
 | `GET`    | `/me/sessions` | ✓ | Active sessions — `{ items, currentJti }` (use `currentJti` to mark "this device") |
@@ -419,8 +454,11 @@ User ─── Article ─── Garantie (warranty) ─── WarrantyHistory (
   │
   ├── ArticleTransferRequest (PUSH/PULL; status: PENDING/ACCEPTED/REJECTED/REVOKED/EXPIRED)
   ├── ArticleTemplate (JSONB payload with locationNames/tagNames)
-  ├── InventoryShare (owner → target, READ|WRITE, active flag)
+  ├── InventoryShare (owner → target, READ|WRITE, active flag; viaHouseholdId when mesh-managed)
   ├── ShareInvite (token-based; status: PENDING / ACCEPTED / REVOKED / EXPIRED)
+  ├── HouseholdMember → Household (max 6; mesh of WRITE shares) ── HouseholdInvite
+  ├── WishlistItem (planned purchases; purchasedAt = bought)
+  ├── EmailVerificationToken (sha256 hash, 3-day TTL)
   ├── UserSession (one per device, keyed by JWT jti)
   ├── TotpSecret (base32 secret + bcrypt-hashed backup codes)
   ├── PasswordResetToken (sha256 hash, 30-min TTL)
@@ -532,3 +570,4 @@ The web service is provisioned from `render.yaml` at the repo root (SPA rewrite 
 - [ ] Add a data-caching layer (TanStack Query) on the web client to reduce duplicate fetches across routes
 - [ ] Replace the temporary `/auth/bootstrap-admin` with a proper one-time seed flow once the production DB is stable
 - [ ] Consolidate the two sharing models (public flag + per-user InventoryShare) into a single “Share article…” dialog with options — deferred by design today
+- [x] Household accounts — shipped as an auto-managed mesh of WRITE shares (see `docs/api.md` → Household accounts)

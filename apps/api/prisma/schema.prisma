@@ -252,6 +252,7 @@ model User {
   articleTemplates    ArticleTemplate[]
   emailVerificationTokens EmailVerificationToken[]
   wishlistItems           WishlistItem[]
+  householdMembership     HouseholdMember?
 }
 
 // Email-ownership verification. Mirrors PasswordResetToken: sha256 hex of the
@@ -628,15 +629,80 @@ model InventoryShare {
   permission       SharePermission @default(READ)
   active           Boolean         @default(true)
 
+  // Set when this share row is managed by a household mesh (see Household).
+  // Household join/leave only touches rows carrying its id, so manually
+  // created shares between the same pair are never collateral damage.
+  // SetNull on household delete: the row stays but is no longer managed.
+  viaHouseholdId Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   owner  User @relation("SharesGiven", fields: [ownerUserId], references: [userId], onDelete: Cascade)
   target User @relation("SharesReceived", fields: [targetUserId], references: [userId], onDelete: Cascade)
+  viaHousehold Household? @relation(fields: [viaHouseholdId], references: [id], onDelete: SetNull)
 
   @@unique([ownerUserId, targetUserId], map: "uq_share_owner_target")
   @@index([ownerUserId])
   @@index([targetUserId])
+  @@index([viaHouseholdId])
+}
+
+// A household — a small group of share-capable users whose inventories are
+// mutually visible and editable. Implemented as an auto-managed mesh of
+// WRITE InventoryShare rows (N members → N×(N-1) rows tagged with
+// viaHouseholdId), so every existing sharing surface (recipient views,
+// shared-edit authorization, transfer PULL visibility) works unchanged.
+// A user belongs to at most one household (HouseholdMember.userId unique).
+model Household {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.VarChar(120)
+  // Informational — the creating user. No FK: the household must survive
+  // its creator's account deletion as long as other members remain.
+  createdByUserId Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  members HouseholdMember[]
+  invites HouseholdInvite[]
+  shares  InventoryShare[]
+}
+
+enum HouseholdRole {
+  OWNER
+  MEMBER
+}
+
+model HouseholdMember {
+  id          Int           @id @default(autoincrement())
+  householdId Int
+  userId      Int           @unique
+  role        HouseholdRole @default(MEMBER)
+  createdAt   DateTime      @default(now())
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([householdId])
+}
+
+// Invitation to join a household. Mirrors ShareInvite: emailed token,
+// PENDING → ACCEPTED | REVOKED | EXPIRED, atomic single-use claim.
+model HouseholdInvite {
+  id          Int          @id @default(autoincrement())
+  householdId Int
+  email       String       @db.VarChar(255)
+  token       String       @unique @db.VarChar(128)
+  status      InviteStatus @default(PENDING)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, email, status])
+  @@index([email])
 }
 
 model ShareInvite {
