@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Eye,
   EyeOff,
+  KeyRound,
 } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
@@ -42,6 +43,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
   const {
     register,
+    getValues,
     handleApiSubmit,
     formState: { errors, isSubmitting },
     submissionError,
@@ -92,6 +94,45 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       setTotpError(e instanceof Error ? e.message : t("auth.error.default"));
     } finally {
       setTotpBusy(false);
+    }
+  };
+
+  // Passkey sign-in: fetch challenge options for the typed email, hand them
+  // to the platform authenticator, and post the assertion back. The email
+  // field is the only required input — no password touches the wire.
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
+  const passkeySupported =
+    typeof window !== "undefined" && !!window.PublicKeyCredential;
+
+  const signInWithPasskey = async () => {
+    const email = getValues("email").trim();
+    if (!email) {
+      setPasskeyError(t("auth.passkey.emailFirst"));
+      return;
+    }
+    setPasskeyBusy(true);
+    setPasskeyError(null);
+    try {
+      const { startAuthentication } = await import("@simplewebauthn/browser");
+      const { options, challengeToken } =
+        await authAPI.passkeyLoginOptions(email);
+      const assertion = await startAuthentication({
+        optionsJSON: options as Parameters<
+          typeof startAuthentication
+        >[0]["optionsJSON"],
+      });
+      await authAPI.passkeyLoginVerify(challengeToken, assertion);
+      onLogin();
+    } catch (e) {
+      // NotAllowedError = user dismissed the prompt — stay quiet about it.
+      if (!(e instanceof DOMException && e.name === "NotAllowedError")) {
+        setPasskeyError(
+          e instanceof Error ? e.message : t("auth.error.default")
+        );
+      }
+    } finally {
+      setPasskeyBusy(false);
     }
   };
 
@@ -364,6 +405,26 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                     ? t("auth.login")
                     : t("auth.register")}
               </Button>
+
+              {isLogin && passkeySupported && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    fullWidth
+                    loading={passkeyBusy}
+                    onClick={signInWithPasskey}
+                    leftIcon={<KeyRound className="h-4 w-4" />}
+                  >
+                    {t("auth.passkey.signIn")}
+                  </Button>
+                  {passkeyError && (
+                    <p role="alert" className="text-sm ui-text-error">
+                      {passkeyError}
+                    </p>
+                  )}
+                </>
+              )}
 
               {isLogin && (
                 <div className="text-center text-sm">

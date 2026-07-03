@@ -20,6 +20,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { addMonths } from "date-fns";
 import {
   ScanLine,
+  ReceiptText,
   Plus,
   Trash2,
   ExternalLink,
@@ -47,6 +48,7 @@ import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
 import BarcodeScanner, { barcodeSupported } from "./BarcodeScanner";
+import ReceiptScanner, { type ReceiptScanResult } from "./ReceiptScanner";
 import TemplateBar from "./TemplateBar";
 import { useFeature } from "../../features/features";
 import {
@@ -169,6 +171,20 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     article?.category ?? ""
   );
   const [showScanner, setShowScanner] = useState(false);
+  const [showReceiptScanner, setShowReceiptScanner] = useState(false);
+
+  // Receipt OCR result → prefill price / retailer / warranty purchase date.
+  // Only fills fields the user hasn't already typed into, and never
+  // overwrites — the scan is a shortcut, not an authority.
+  const applyReceipt = (r: ReceiptScanResult) => {
+    if (r.total !== null && purchasePrice.trim() === "")
+      setPurchasePrice(String(r.total));
+    if (r.merchant && !(formData.purchasedFrom ?? "").toString().trim())
+      setFormData((prev) => ({ ...prev, purchasedFrom: r.merchant }));
+    if (r.date && warrantyEnabled && !warrantyDateAchat)
+      setWarrantyDateAchat(r.date);
+    setDirty(true);
+  };
 
   const [warrantyEnabled, setWarrantyEnabled] = useState(
     Boolean(article?.garantie)
@@ -724,8 +740,22 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                 {t("scan.button")}
               </Button>
             )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowReceiptScanner(true)}
+              leftIcon={<ReceiptText className="h-4 w-4" />}
+            >
+              {t("receipt.button")}
+            </Button>
           </div>
         </Field>
+
+        <ReceiptScanner
+          open={showReceiptScanner}
+          onClose={() => setShowReceiptScanner(false)}
+          onApply={applyReceipt}
+        />
 
         {showScanner && (
           <BarcodeScanner

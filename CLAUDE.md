@@ -632,6 +632,23 @@ Smaller features added in one batch; each follows the existing patterns.
   households/provenance/recurring-maintenance/reminder-offsets/
   emailVerifiedAt.
 
+## Round 3 (2026-07): passkeys + receipt OCR (both free, no external APIs)
+
+- **Passkeys (WebAuthn)**: `WebAuthnCredential` table;
+  `modules/auth/webauthn.routes.ts` (mounted inside auth.routes, so the
+  auth rate limiter applies). Challenge = short-lived signed JWT (mirrors
+  the TOTP challenge pattern — `kind` separates reg/auth). rpID/origin come
+  from `APP_URL` (Origin header fallback in dev). Passkey login satisfies
+  2FA. Web: `startAuthentication`/`startRegistration` lazy-imported;
+  "Sign in with a passkey" on LoginForm (email-first), `PasskeysPanel` in
+  Profile → Security. Enumeration-safe options for unknown emails.
+- **Receipt scan → autofill**: tesseract.js OCR runs entirely client-side
+  (lazy chunk + on-demand language data; photo never leaves the device).
+  `utils/receiptParse.ts` is the pure heuristic parser (total/date/merchant,
+  EU decimal-comma + day-first aware — unit-tested); `ReceiptScanner` modal
+  in ArticleForm prefills price / purchasedFrom / warranty purchase date,
+  never overwriting user-typed values.
+
 ## Account security (login history → sessions → 2FA)
 
 Three independent slices; the password-only login path is byte-for-byte

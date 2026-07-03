@@ -21,6 +21,7 @@ import { denyToken } from "./token-denylist";
 import { prisma } from "../../libs/prisma";
 import { cookieOptsFor } from "./cookies";
 import { PasswordResetService } from "./password-reset.service";
+import webauthnRoutes from "./webauthn.routes";
 import { EmailVerificationService } from "./email-verification.service";
 import { SessionService } from "./session.service";
 import { TotpService } from "./totp.service";
@@ -36,6 +37,9 @@ import {
 } from "../demo/demo.service";
 
 const router = Router();
+
+// Passkey (WebAuthn) sub-routes — same /api/auth mount, same auth limiter.
+router.use(webauthnRoutes);
 
 // Guards a single in-flight demo seed (the op inserts thousands of rows).
 let demoSeeding = false;

@@ -245,6 +245,107 @@ export const authAPI = {
     return data;
   },
 
+  // ---- Passkeys (WebAuthn) ----
+
+  async passkeyLoginOptions(email: string): Promise<{
+    options: unknown;
+    challengeToken: string;
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/webauthn/login/options`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ email }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Passkey sign-in failed"));
+    return response.json();
+  },
+
+  async passkeyLoginVerify(challengeToken: string, resp: unknown) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/webauthn/login/verify`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ challengeToken, response: resp }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Passkey sign-in failed"));
+    const data = await response.json();
+    _cachedRole = data.user?.role ?? null;
+    return data;
+  },
+
+  async passkeyRegisterOptions(): Promise<{
+    options: unknown;
+    challengeToken: string;
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/webauthn/register/options`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to start passkey setup")
+      );
+    return response.json();
+  },
+
+  async passkeyRegisterVerify(
+    challengeToken: string,
+    resp: unknown,
+    deviceLabel?: string
+  ) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/webauthn/register/verify`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          challengeToken,
+          response: resp,
+          deviceLabel: deviceLabel || null,
+        }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to register passkey")
+      );
+    return response.json();
+  },
+
+  async listPasskeys(): Promise<{
+    items: Array<{
+      id: number;
+      deviceLabel: string | null;
+      transports: string | null;
+      createdAt: string;
+      lastUsedAt: string | null;
+    }>;
+  }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/webauthn/credentials`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load passkeys"));
+    return response.json();
+  },
+
+  async deletePasskey(id: number): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/auth/webauthn/credentials/${id}`,
+      { method: "DELETE", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to delete passkey"));
+  },
+
   // Consume an email-verification token from the mailed link. Works without
   // a session (the token is the credential).
   async verifyEmail(token: string): Promise<void> {

@@ -128,6 +128,9 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `POST` | `/reset-password` | ✗ | Consume the emailed token + set a new password (bumps `tokenVersion`) |
 | `POST` | `/verify-email` | ✗ | Consume an email-verification token (the token is the credential; rate-limited) |
 | `POST` | `/verify-email/request` | ✓ | Re-send the verification link (no-op when already verified) |
+| `POST` | `/webauthn/register/options` + `/verify` | ✓ | Enroll a passkey (WebAuthn; challenge carried in a short-lived signed token) |
+| `POST` | `/webauthn/login/options` + `/verify` | ✗ | Passkey sign-in — enumeration-safe options; a passkey satisfies 2FA |
+| `GET`/`DELETE` | `/webauthn/credentials[/:id]` | ✓ | List / remove registered passkeys |
 | `POST` | `/bootstrap-admin` | ✗ | One-shot promote `admin@admin.com` if no ADMIN exists yet (idempotent) |
 
 ### Articles — `/api/articles`

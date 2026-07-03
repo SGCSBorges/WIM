@@ -10,7 +10,7 @@ column-by-column catalog. Both are kept aligned with the single source of truth,
 [`apps/api/prisma/schema.prisma`](../apps/api/prisma/schema.prisma) — when any of
 the three disagree, the schema wins.
 
-**Scope:** 35 models + 15 enums. Grouped by domain:
+**Scope:** 36 models + 15 enums. Grouped by domain:
 [Core inventory](#core-inventory) · [Lifecycle add-ons](#lifecycle-add-ons) ·
 [Sharing & transfer](#sharing--transfer) · [Messaging](#messaging) ·
 [Account security](#account-security) · [Platform & admin](#platform--admin) ·
@@ -534,6 +534,25 @@ A short-lived reset token. Only the SHA-256 hash is stored.
 | `tokenHash` | String VarChar(64) | — | **Unique**. SHA-256 hex; plaintext is emailed, never stored. |
 | `expiresAt` | DateTime | — | |
 | `consumedAt` | DateTime? | null | Set on use. |
+
+Has `createdAt` only.
+
+### WebAuthnCredential
+
+A registered passkey. One user can hold several (phone, laptop, hardware
+key); the signature `counter` supports clone detection and is updated on
+every successful assertion.
+
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `userId` | Int (FK→User) | — | Cascade. |
+| `credentialId` | String VarChar(512) | — | **Unique**. Base64URL id the browser presents at login. |
+| `publicKey` | Bytes | — | COSE public key from the authenticator. |
+| `counter` | Int | `0` | Signature counter (clone detection). |
+| `transports` | String? VarChar(120) | null | CSV (usb/nfc/ble/internal/hybrid) for allowCredentials UX. |
+| `deviceLabel` | String? VarChar(120) | null | User-supplied name. |
+| `lastUsedAt` | DateTime? | null | Stamped on each successful sign-in. |
 
 Has `createdAt` only.
 

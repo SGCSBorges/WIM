@@ -253,6 +253,30 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   wishlistItems           WishlistItem[]
   householdMembership     HouseholdMember?
+  webauthnCredentials     WebAuthnCredential[]
+}
+
+// A registered passkey (WebAuthn credential). One user can hold several
+// (phone, laptop, hardware key). `credentialId` and `publicKey` come from
+// the authenticator; `counter` is the signature counter used for clone
+// detection (updated on every successful assertion).
+model WebAuthnCredential {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  // Base64URL credential id — what the browser sends back on login.
+  credentialId String    @unique @db.VarChar(512)
+  publicKey    Bytes
+  counter      Int       @default(0)
+  // CSV of authenticator transports (usb/nfc/ble/internal/hybrid) — improves
+  // browser UX when offered back in allowCredentials.
+  transports   String?   @db.VarChar(120)
+  deviceLabel  String?   @db.VarChar(120)
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Email-ownership verification. Mirrors PasswordResetToken: sha256 hex of the

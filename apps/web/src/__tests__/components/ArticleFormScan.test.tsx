@@ -43,7 +43,7 @@ describe("ArticleForm barcode scan button", () => {
       expect(screen.getByLabelText(/model|modèle|modelo/i)).toBeInTheDocument()
     );
     expect(
-      screen.queryByRole("button", { name: /scan|scanner|digitalizar/i })
+      screen.queryByRole("button", { name: /^(scan|scanner|digitalizar)$/i })
     ).toBeNull();
   });
 
@@ -55,7 +55,7 @@ describe("ArticleForm barcode scan button", () => {
       expect(screen.getByLabelText(/model|modèle|modelo/i)).toBeInTheDocument()
     );
     expect(
-      screen.getByRole("button", { name: /scan|scanner|digitalizar/i })
+      screen.getByRole("button", { name: /^(scan|scanner|digitalizar)$/i })
     ).toBeInTheDocument();
   });
 });

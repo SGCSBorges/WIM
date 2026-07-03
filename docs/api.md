@@ -251,6 +251,21 @@ session is invalidated, and the calling device gets a fresh cookie in the
 same response. An admin changing a user's email via
 `PATCH /api/admin/users/:id` invalidates that user's sessions the same way.
 
+## Passkeys (WebAuthn)
+
+Free-standing standard — no external service. Enrollment and sign-in are
+two-step: an `options` call returns WebAuthn options plus a **5-minute
+signed challenge token** (same pattern as the TOTP login challenge; `kind`
+discriminates registration from authentication), and a `verify` call checks
+the authenticator's response against it. Registered credentials live in
+`WebAuthnCredential` (unique `credentialId`, COSE public key, signature
+counter updated on every assertion). A successful passkey sign-in mints a
+full session **even for TOTP-enabled accounts** — the assertion is
+phishing-resistant possession + user-verification proof. Enumeration
+safety: `login/options` returns valid-looking options with an empty
+credential list for unknown emails, and `login/verify` answers every
+failure mode with the same 401.
+
 ## Article power features
 
 - `POST /api/articles/bulk-update` —

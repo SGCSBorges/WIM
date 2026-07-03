@@ -26,6 +26,7 @@ import { getErrorMessage } from "../../utils/error";
 import { Section, Badge, Button } from "../ui";
 import { Skeleton } from "../common/Skeleton";
 import TwoFactorPanel from "./TwoFactorPanel";
+import PasskeysPanel from "./PasskeysPanel";
 
 interface LoginEvent {
   id: number;
@@ -143,6 +144,10 @@ export default function SecuritySection() {
         {totpEnabled !== null && (
           <TwoFactorPanel enabled={totpEnabled} onChanged={loadTotp} />
         )}
+
+        <div className="border-t ui-divider pt-4">
+          <PasskeysPanel />
+        </div>
         {!sessionsFailed && (
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">

@@ -11,7 +11,7 @@ colonne par colonne. Les deux sont alignés sur la source unique de vérité,
 [`apps/api/prisma/schema.prisma`](../apps/api/prisma/schema.prisma) — en cas de
 désaccord entre les trois, c'est le schéma qui l'emporte.
 
-**Portée :** 35 modèles + 15 énumérations, regroupés par domaine : Inventaire
+**Portée :** 36 modèles + 15 énumérations, regroupés par domaine : Inventaire
 cœur · Modules de cycle de vie · Partage & transfert · Messagerie · Sécurité du
 compte · Plateforme & admin · Énumérations.
 
@@ -548,6 +548,25 @@ stocké.
 | `tokenHash` | String VarChar(64) | — | **Unique**. Hex SHA-256 ; le texte clair est envoyé par e-mail, jamais stocké. |
 | `expiresAt` | DateTime | — | |
 | `consumedAt` | DateTime? | null | Posé à l'usage. |
+
+A `createdAt` seulement.
+
+### WebAuthnCredential
+
+Une passkey enregistrée. Un utilisateur peut en détenir plusieurs
+(téléphone, portable, clé matérielle) ; le compteur de signature `counter`
+sert à la détection de clonage et est mis à jour à chaque assertion réussie.
+
+| Champ | Type | Défaut | Notes |
+|---|---|---|---|
+| `id` | Int (PK) | auto | |
+| `userId` | Int (FK→User) | — | Cascade. |
+| `credentialId` | String VarChar(512) | — | **Unique**. Id Base64URL présenté par le navigateur à la connexion. |
+| `publicKey` | Bytes | — | Clé publique COSE de l'authentificateur. |
+| `counter` | Int | `0` | Compteur de signature (détection de clonage). |
+| `transports` | String? VarChar(120) | null | CSV (usb/nfc/ble/internal/hybrid) pour l'UX allowCredentials. |
+| `deviceLabel` | String? VarChar(120) | null | Nom fourni par l'utilisateur. |
+| `lastUsedAt` | DateTime? | null | Horodaté à chaque connexion réussie. |
 
 A `createdAt` seulement.
 

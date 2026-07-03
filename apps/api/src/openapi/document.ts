@@ -116,6 +116,74 @@ export function buildOpenApiDocument() {
           },
         },
       },
+      "/api/auth/webauthn/register/options": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Begin passkey enrollment — returns WebAuthn creation options + a 5-minute challenge token.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ options, challengeToken }" } },
+        },
+      },
+      "/api/auth/webauthn/register/verify": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Finish passkey enrollment: verify the authenticator response against the challenge token and store the credential.",
+          security: [cookieAuth],
+          responses: {
+            "201": { description: "Passkey registered" },
+            "400": { description: "Verification failed" },
+          },
+        },
+      },
+      "/api/auth/webauthn/login/options": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Begin a passkey sign-in for an email. Enumeration-safe: unknown emails receive valid-looking options with an empty credential list.",
+          requestBody: {
+            ...json(z.object({ email: z.string().email() })),
+            required: true,
+          },
+          responses: { "200": { description: "{ options, challengeToken }" } },
+        },
+      },
+      "/api/auth/webauthn/login/verify": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Finish a passkey sign-in — verifies the assertion, updates the signature counter, and mints a session cookie. A passkey satisfies 2FA (phishing-resistant possession + user verification).",
+          responses: {
+            "200": { description: "Authenticated" },
+            "401": { description: "Passkey sign-in failed (uniform)" },
+          },
+        },
+      },
+      "/api/auth/webauthn/credentials": {
+        get: {
+          tags: ["auth"],
+          summary: "List the caller's registered passkeys.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ items }" } },
+        },
+      },
+      "/api/auth/webauthn/credentials/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["auth"],
+          summary: "Remove a passkey (password login keeps working).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Removed" } },
+        },
+      },
       "/api/auth/verify-email": {
         post: {
           tags: ["auth"],
