@@ -1030,8 +1030,22 @@ export async function seedDemoData(
       data: locNames.map((name) => ({ ownerUserId: user.userId, name })),
     });
     const tagNames = pickN(TAG_NAMES, randInt(6, 10));
+    // Give roughly half the demo tags a color so the colored-badge feature is
+    // visible in demo data.
+    const TAG_COLORS = [
+      "#ef4444",
+      "#f97316",
+      "#22c55e",
+      "#3b82f6",
+      "#8b5cf6",
+      "#ec4899",
+    ];
     await prisma.tag.createMany({
-      data: tagNames.map((name) => ({ ownerUserId: user.userId, name })),
+      data: tagNames.map((name) => ({
+        ownerUserId: user.userId,
+        name,
+        color: chance(0.5) ? pick(TAG_COLORS) : null,
+      })),
     });
     const [locations, tags] = await Promise.all([
       prisma.location.findMany({

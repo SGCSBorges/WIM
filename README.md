@@ -214,8 +214,8 @@ Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET`    | `/` | ✓ | List own tags (with per-tag article counts) |
-| `POST`   | `/` | ✓ | Create a tag |
-| `PUT`    | `/:id` | ✓ | Rename a tag |
+| `POST`   | `/` | ✓ | Create a tag (optional `color` as `#RRGGBB`) |
+| `PUT`    | `/:id` | ✓ | Update a tag's `name` and/or `color` (`color: null` clears it) |
 | `POST`   | `/merge` | ✓ | Merge one tag into another (`{ fromId, intoId }`; re-tags + dedupes) |
 | `DELETE` | `/:id` | ✓ | Delete a tag |
 

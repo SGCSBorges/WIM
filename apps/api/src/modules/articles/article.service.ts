@@ -71,7 +71,7 @@ const articleInclude = {
     },
   },
   tags: {
-    select: { tagId: true, tag: { select: { name: true } } },
+    select: { tagId: true, tag: { select: { name: true, color: true } } },
   },
 } as const;
 

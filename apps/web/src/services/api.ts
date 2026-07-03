@@ -60,6 +60,7 @@ import type {
   WarrantyItem,
   WarrantyRenewRequest,
 } from "../types";
+import { compressImageFile } from "../utils/imageCompress";
 
 // Re-export shared response shapes so existing `import { X } from
 // "../services/api"` sites keep working after the move into @wim/types.
@@ -1109,8 +1110,12 @@ export const attachmentsAPI = {
     type: "INVOICE" | "WARRANTY" | "OTHER" = "OTHER",
     options: { articleId?: number } = {}
   ) {
+    // Downscale/re-encode large photos in the browser before upload — cheaper
+    // to transfer + store, and dodges the API's 10 MB reject. No-op for
+    // non-photo types, small files, or when the canvas path is unavailable.
+    const toSend = await compressImageFile(file);
     const form = new FormData();
-    form.append("file", file);
+    form.append("file", toSend);
     form.append("type", type);
     if (options.articleId != null)
       form.append("articleId", String(options.articleId));
@@ -1177,7 +1182,12 @@ export const attachmentsAPI = {
 // Tags API
 export const tagsAPI = {
   async getAll(): Promise<
-    Array<{ tagId: number; name: string; articleCount: number }>
+    Array<{
+      tagId: number;
+      name: string;
+      color?: string | null;
+      articleCount: number;
+    }>
   > {
     const response = await fetchWithTimeout(`${API_BASE_URL}/tags`, {
       headers: getHeaders(),
@@ -1187,28 +1197,33 @@ export const tagsAPI = {
     return response.json();
   },
 
-  async create(name: string): Promise<{ tagId: number; name: string }> {
+  async create(
+    name: string,
+    color?: string | null
+  ): Promise<{ tagId: number; name: string; color: string | null }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/tags`, {
       method: "POST",
       headers: getHeaders(),
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, ...(color !== undefined ? { color } : {}) }),
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to create tag"));
     return response.json();
   },
 
-  async rename(
+  /** Patch a tag's name and/or color. Pass `color: null` to clear it back to
+   *  the default badge tone; omit a field to leave it unchanged. */
+  async update(
     tagId: number,
-    name: string
-  ): Promise<{ tagId: number; name: string }> {
+    patch: { name?: string; color?: string | null }
+  ): Promise<{ tagId: number; name: string; color: string | null }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/tags/${tagId}`, {
       method: "PUT",
       headers: getHeaders(),
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(patch),
     });
     if (!response.ok)
-      throw new Error(await extractError(response, "Failed to rename tag"));
+      throw new Error(await extractError(response, "Failed to update tag"));
     return response.json();
   },
 

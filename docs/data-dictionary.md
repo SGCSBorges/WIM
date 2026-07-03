@@ -238,6 +238,7 @@ A free-form label. Owner-scoped; unique name per owner. Has `createdAt` but no
 | `tagId` | Int (PK) | auto | |
 | `ownerUserId` | Int (FK→User) | — | Cascade. |
 | `name` | String VarChar(40) | — | **Unique per owner** (`uq_tag_owner_name`). |
+| `color` | String? VarChar(9) | null | Optional badge color as `#RRGGBB` (validated at the API); null = default neutral tone. Cosmetic. |
 
 ### ArticleTag *(junction)*
 

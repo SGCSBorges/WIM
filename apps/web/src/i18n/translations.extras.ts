@@ -369,6 +369,8 @@ export const extras = {
     "tags.manage.mergeTarget": "Merge target tag",
     "tags.manage.merged": "Merged — {count} item(s) re-tagged.",
     "tags.manage.renameLabel": "Tag name",
+    "tags.manage.colorLabel": "Tag color",
+    "tags.manage.colorNone": "None",
     "tags.manage.deleteConfirm":
       "Delete this tag? It will be removed from all items.",
     "tags.manage.loadError": "Failed to load tags",
@@ -1473,6 +1475,8 @@ export const extras = {
     "tags.manage.mergeTarget": "Étiquette cible de la fusion",
     "tags.manage.merged": "Fusionnées — {count} article(s) ré-étiqueté(s).",
     "tags.manage.renameLabel": "Nom de l'étiquette",
+    "tags.manage.colorLabel": "Couleur de l'étiquette",
+    "tags.manage.colorNone": "Aucune",
     "tags.manage.deleteConfirm":
       "Supprimer cette étiquette ? Elle sera retirée de tous les articles.",
     "tags.manage.loadError": "Échec du chargement des étiquettes",
@@ -2603,6 +2607,8 @@ export const extras = {
     "tags.manage.mergeTarget": "Etiqueta de destino da fusão",
     "tags.manage.merged": "Fundidas — {count} artigo(s) reetiquetado(s).",
     "tags.manage.renameLabel": "Nome da etiqueta",
+    "tags.manage.colorLabel": "Cor da etiqueta",
+    "tags.manage.colorNone": "Nenhuma",
     "tags.manage.deleteConfirm":
       "Eliminar esta etiqueta? Será removida de todos os artigos.",
     "tags.manage.loadError": "Falha ao carregar etiquetas",
@@ -3728,6 +3734,8 @@ export const extras = {
     "tags.manage.mergeTarget": "Etiqueta de destino de la fusión",
     "tags.manage.merged": "Fusionadas — {count} artículo(s) reetiquetado(s).",
     "tags.manage.renameLabel": "Nombre de la etiqueta",
+    "tags.manage.colorLabel": "Color de la etiqueta",
+    "tags.manage.colorNone": "Ninguno",
     "tags.manage.deleteConfirm":
       "¿Eliminar esta etiqueta? Se quitará de todos los artículos.",
     "tags.manage.loadError": "No se pudieron cargar las etiquetas",
@@ -4858,6 +4866,8 @@ export const extras = {
     "tags.manage.mergeTarget": "Doellabel voor samenvoegen",
     "tags.manage.merged": "Samengevoegd — {count} item(s) opnieuw gelabeld.",
     "tags.manage.renameLabel": "Labelnaam",
+    "tags.manage.colorLabel": "Labelkleur",
+    "tags.manage.colorNone": "Geen",
     "tags.manage.deleteConfirm":
       "Dit label verwijderen? Het wordt van alle items verwijderd.",
     "tags.manage.loadError": "Labels laden mislukt",

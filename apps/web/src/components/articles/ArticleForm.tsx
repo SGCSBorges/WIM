@@ -1312,12 +1312,19 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                     key={tg.tagId}
                     onClick={() => toggleTag(tg.tagId)}
                     aria-pressed={active}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                       active
                         ? "ui-badge-info"
                         : "border border-line ui-text-muted hover:bg-surface-muted"
                     }`}
                   >
+                    {tg.color && (
+                      <span
+                        aria-hidden="true"
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: tg.color }}
+                      />
+                    )}
                     {tg.name}
                   </button>
                 );

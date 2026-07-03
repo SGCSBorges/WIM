@@ -56,6 +56,7 @@ import LoanSection from "./LoanSection";
 import InsuranceSection from "./InsuranceSection";
 import MaintenanceSection from "./MaintenanceSection";
 import PublicLinkSection from "./PublicLinkSection";
+import TagChip from "./TagChip";
 import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { currentValue } from "../../utils/depreciation";
@@ -725,9 +726,11 @@ export default function ArticleDetail() {
           {article.tags && article.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 pt-1">
               {article.tags.map((tg) => (
-                <Badge key={tg.tagId} tone="info">
-                  {tg.tag?.name ?? `#${tg.tagId}`}
-                </Badge>
+                <TagChip
+                  key={tg.tagId}
+                  name={tg.tag?.name ?? `#${tg.tagId}`}
+                  color={tg.tag?.color}
+                />
               ))}
             </div>
           )}

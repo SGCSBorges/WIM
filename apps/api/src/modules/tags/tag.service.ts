@@ -25,19 +25,26 @@ export const TagService = {
     return tags.map((t) => ({
       tagId: t.tagId,
       name: t.name,
+      color: t.color,
       articleCount: t._count.articles,
     }));
   },
 
-  create: (ownerUserId: number, name: string) =>
+  create: (ownerUserId: number, name: string, color?: string | null) =>
     // The unique (ownerUserId, name) constraint guards duplicates; a P2002 is
     // mapped to 409 by the global error handler.
     prisma.tag.create({
-      data: { ownerUserId, name },
-      select: { tagId: true, name: true },
+      data: { ownerUserId, name, ...(color !== undefined ? { color } : {}) },
+      select: { tagId: true, name: true, color: true },
     }),
 
-  rename: async (tagId: number, ownerUserId: number, name: string) => {
+  // Patch a tag's name and/or color. Both are optional — an absent key leaves
+  // that field unchanged; `color: null` clears the color to the default tone.
+  update: async (
+    tagId: number,
+    ownerUserId: number,
+    patch: { name?: string; color?: string | null }
+  ) => {
     const existing = await prisma.tag.findFirst({
       where: { tagId, ownerUserId },
       select: { tagId: true },
@@ -47,8 +54,11 @@ export const TagService = {
     // mapped to 409 ("Tag already exists") by the global error handler.
     return prisma.tag.update({
       where: { tagId },
-      data: { name },
-      select: { tagId: true, name: true },
+      data: {
+        ...(patch.name !== undefined ? { name: patch.name } : {}),
+        ...(patch.color !== undefined ? { color: patch.color } : {}),
+      },
+      select: { tagId: true, name: true, color: true },
     });
   },
 

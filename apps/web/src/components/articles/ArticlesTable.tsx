@@ -15,6 +15,7 @@ import type { BadgeTone } from "../ui";
 import { Button, Badge } from "../ui";
 import ArticleThumb from "./ArticleThumb";
 import ShareArticleButton from "./ShareArticleButton";
+import TagChip from "./TagChip";
 
 interface ArticlesTableProps {
   articles: FetchedArticle[];
@@ -131,9 +132,11 @@ export default function ArticlesTable({
                   {article.tags && article.tags.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {article.tags.map((at) => (
-                        <Badge key={at.tagId} tone="info">
-                          {at.tag?.name ?? `#${at.tagId}`}
-                        </Badge>
+                        <TagChip
+                          key={at.tagId}
+                          name={at.tag?.name ?? `#${at.tagId}`}
+                          color={at.tag?.color}
+                        />
                       ))}
                     </div>
                   )}

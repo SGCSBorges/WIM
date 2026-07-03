@@ -31,13 +31,13 @@ router.post(
   security.createRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
-    const { name } = TagCreateSchema.parse(req.body);
-    const created = await TagService.create(req.user!.sub, name);
+    const { name, color } = TagCreateSchema.parse(req.body);
+    const created = await TagService.create(req.user!.sub, name, color);
     await auditAction(req, {
       action: "CREATE",
       entity: "Tag",
       entityId: created.tagId,
-      metadata: { name },
+      metadata: { name, hasColor: Boolean(color) },
     });
     res.status(201).json(created);
   })
@@ -48,13 +48,16 @@ router.put(
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
-    const { name } = TagRenameSchema.parse(req.body);
-    const updated = await TagService.rename(id, req.user!.sub, name);
+    const { name, color } = TagRenameSchema.parse(req.body);
+    const updated = await TagService.update(id, req.user!.sub, { name, color });
     await auditAction(req, {
       action: "UPDATE",
       entity: "Tag",
       entityId: id,
-      metadata: { name },
+      metadata: {
+        ...(name !== undefined ? { name } : {}),
+        ...(color !== undefined ? { colorChanged: true } : {}),
+      },
     });
     res.json(updated);
   })

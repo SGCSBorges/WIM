@@ -441,6 +441,9 @@ model Tag {
   tagId       Int      @id @default(autoincrement())
   ownerUserId Int
   name        String   @db.VarChar(40)
+  // Optional badge color as a #RRGGBB hex (validated at the API boundary).
+  // Null = use the default neutral badge tone. Purely cosmetic.
+  color       String?  @db.VarChar(9)
   createdAt   DateTime @default(now())
 
   owner    User         @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)

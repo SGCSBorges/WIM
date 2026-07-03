@@ -161,7 +161,10 @@ export interface Article {
   locations?: Array<{ locationId: number; location?: { name: string } }>;
   // Tags: write via tagIds; reads carry the joined tags array.
   tagIds?: number[];
-  tags?: Array<{ tagId: number; tag?: { name: string } }>;
+  tags?: Array<{
+    tagId: number;
+    tag?: { name: string; color?: string | null };
+  }>;
   garantie?: ArticleWarranty | null;
 }
 
@@ -170,6 +173,8 @@ export interface Article {
 export interface Tag {
   tagId: number;
   name: string;
+  /** Optional badge color as a #RRGGBB hex; null/absent = default tone. */
+  color?: string | null;
   articleCount?: number;
 }
 

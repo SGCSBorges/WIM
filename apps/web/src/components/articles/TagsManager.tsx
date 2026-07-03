@@ -13,8 +13,14 @@ import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import { Skeleton } from "../common/Skeleton";
 import { Button, Input, Select, Badge } from "../ui";
+import { TAG_COLOR_PRESETS } from "./TagChip";
 
-type TagRow = { tagId: number; name: string; articleCount: number };
+type TagRow = {
+  tagId: number;
+  name: string;
+  color?: string | null;
+  articleCount: number;
+};
 
 interface TagsManagerProps {
   open: boolean;
@@ -35,6 +41,7 @@ export default function TagsManager({
   const [busyId, setBusyId] = useState<number | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
+  const [editColor, setEditColor] = useState<string | null>(null);
   const [mergeFor, setMergeFor] = useState<number | null>(null);
   const [deleteFor, setDeleteFor] = useState<TagRow | null>(null);
 
@@ -58,6 +65,7 @@ export default function TagsManager({
     // could point at a tag renamed/deleted in the meantime).
     setEditId(null);
     setEditName("");
+    setEditColor(null);
     setMergeFor(null);
     setDeleteFor(null);
     void load();
@@ -73,7 +81,7 @@ export default function TagsManager({
     if (!name) return;
     setBusyId(id);
     try {
-      await tagsAPI.rename(id, name);
+      await tagsAPI.update(id, { name, color: editColor });
       setEditId(null);
       await afterChange();
     } catch (e) {
@@ -183,41 +191,75 @@ export default function TagsManager({
                   </Button>
                 </>
               ) : editId === tag.tagId ? (
-                <>
-                  <Input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (
-                        e.key === "Enter" &&
-                        editName.trim() &&
-                        busyId === null
-                      ) {
-                        e.preventDefault();
-                        void saveRename(tag.tagId);
-                      }
-                    }}
-                    maxLength={40}
-                    className="flex-1"
-                    aria-label={t("tags.manage.renameLabel")}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => saveRename(tag.tagId)}
-                    loading={busyId === tag.tagId}
-                    leftIcon={<Check className="h-4 w-4" />}
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          editName.trim() &&
+                          busyId === null
+                        ) {
+                          e.preventDefault();
+                          void saveRename(tag.tagId);
+                        }
+                      }}
+                      maxLength={40}
+                      className="flex-1"
+                      aria-label={t("tags.manage.renameLabel")}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => saveRename(tag.tagId)}
+                      loading={busyId === tag.tagId}
+                      leftIcon={<Check className="h-4 w-4" />}
+                    >
+                      {t("common.save")}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditId(null)}
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                  </div>
+                  <div
+                    className="flex flex-wrap items-center gap-1.5"
+                    role="group"
+                    aria-label={t("tags.manage.colorLabel")}
                   >
-                    {t("common.save")}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditId(null)}
-                  >
-                    {t("common.cancel")}
-                  </Button>
-                </>
+                    {TAG_COLOR_PRESETS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setEditColor(c)}
+                        aria-label={c}
+                        aria-pressed={editColor === c}
+                        className={`h-6 w-6 rounded-full border transition-transform hover:scale-110 ${
+                          editColor === c
+                            ? "border-fg ring-2 ring-offset-1 ring-primary"
+                            : "border-line"
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setEditColor(null)}
+                      aria-label={t("tags.manage.colorNone")}
+                      aria-pressed={editColor === null}
+                      className={`inline-flex h-6 items-center rounded-full border px-2 text-xs ui-text-muted ${
+                        editColor === null ? "border-fg" : "border-line"
+                      }`}
+                    >
+                      {t("tags.manage.colorNone")}
+                    </button>
+                  </div>
+                </div>
               ) : mergeFor === tag.tagId ? (
                 <>
                   <span className="flex-1 truncate text-sm" title={tag.name}>
@@ -253,11 +295,20 @@ export default function TagsManager({
                 </>
               ) : (
                 <>
-                  <span
-                    className="flex-1 truncate text-sm font-medium ui-title"
-                    title={tag.name}
-                  >
-                    {tag.name}
+                  <span className="flex min-w-0 flex-1 items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="h-3 w-3 shrink-0 rounded-full border border-line"
+                      style={{
+                        backgroundColor: tag.color ?? "transparent",
+                      }}
+                    />
+                    <span
+                      className="truncate text-sm font-medium ui-title"
+                      title={tag.name}
+                    >
+                      {tag.name}
+                    </span>
                   </span>
                   <Badge tone="neutral">
                     {t("tags.manage.count").replace(
@@ -271,6 +322,7 @@ export default function TagsManager({
                     onClick={() => {
                       setEditId(tag.tagId);
                       setEditName(tag.name);
+                      setEditColor(tag.color ?? null);
                     }}
                     aria-label={t("common.edit")}
                     leftIcon={<Pencil className="h-4 w-4" />}

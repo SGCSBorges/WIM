@@ -241,6 +241,7 @@ Une étiquette libre. Propre au propriétaire ; nom unique par propriétaire. A
 | `tagId` | Int (PK) | auto | |
 | `ownerUserId` | Int (FK→User) | — | Cascade. |
 | `name` | String VarChar(40) | — | **Unique par propriétaire** (`uq_tag_owner_name`). |
+| `color` | String? VarChar(9) | null | Couleur de badge optionnelle en `#RRGGBB` (validée côté API) ; null = ton neutre par défaut. Cosmétique. |
 
 ### ArticleTag *(jonction)*
 

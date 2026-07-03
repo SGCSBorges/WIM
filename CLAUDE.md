@@ -649,6 +649,28 @@ Smaller features added in one batch; each follows the existing patterns.
   in ArticleForm prefills price / purchasedFrom / warranty purchase date,
   never overwriting user-typed values.
 
+## Round 5 (2026-07): tag colors + client-side image compression
+
+- **Tag colors**: `Tag.color` (`#RRGGBB` hex, nullable; validated at the API
+  boundary — null = default neutral badge). `PUT /api/tags/:id` now patches
+  `name` and/or `color` (`TagService.rename` renamed to `update`; `color: null`
+  clears). The article-include `tags` select carries `color` so colored badges
+  render on the detail page + list rows. Web: preset swatch picker in
+  `TagsManager` (edit row), shared `components/articles/TagChip` (fills the pill
+  with the color and flips text to black/white by luminance; falls back to the
+  neutral `Badge` when no color), colored dots in the `ArticleForm` tag toggles.
+- **Client-side image compression**: `utils/imageCompress.ts` downscales large
+  raster photos (jpeg/png/webp > ~300 KB) to a ≤1600px JPEG via a canvas before
+  upload. Wired once inside `attachmentsAPI.uploadFile`, so every call site
+  (gallery add, warranty proof, quick-add) benefits. No-op for PDFs/SVG/GIF,
+  small files, or when the canvas path is unavailable; only replaces the
+  original when the re-encode is actually smaller — never blocks an upload. The
+  server's magic-byte check + sharp thumbnail still run on whatever arrives.
+- **Deferred**: per-item **quantity** was scoped this round but deferred — it
+  changes money semantics (is `purchasePrice` per-unit or total?) across the
+  dashboard/reports/analytics/budget/household value aggregations, so it needs
+  an explicit product decision before threading `quantity` through all of them.
+
 ## Round 4 (2026-07): inventory check + custom fields
 
 - **Inventory check**: `Article.lastVerifiedAt` (null = never). `POST

@@ -92,6 +92,14 @@ The UI uses `attachment.fileUrl` (which points at `/uploads/…`) to render
 images or trigger downloads — never `/api/attachments/:id`, because
 navigating that in a tab doesn't send the cookie and you'll see a 401.
 
+**Client-side image compression.** Before an upload leaves the browser,
+`utils/imageCompress.ts` downscales large raster photos (jpeg/png/webp over
+~300 KB) to a ≤1600px JPEG via a canvas — cutting transfer + storage and
+dodging the API's 10 MB reject. It's a no-op for PDFs/SVG/GIF, small files, or
+when the canvas path is unavailable, and only replaces the original when the
+re-encode is genuinely smaller, so it can never block an upload. The server
+still runs its own magic-byte check + sharp thumbnailing on whatever arrives.
+
 ## User preferences
 
 The `User` row carries display preferences so they follow the user across

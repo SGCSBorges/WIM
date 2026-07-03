@@ -34,15 +34,15 @@ beforeEach(() => {
 describe("TagService", () => {
   it("list maps article counts", async () => {
     mockPrisma.tag.findMany.mockResolvedValue([
-      { tagId: 1, name: "Tools", _count: { articles: 3 } },
-      { tagId: 2, name: "Electronics", _count: { articles: 0 } },
+      { tagId: 1, name: "Tools", color: "#ff8800", _count: { articles: 3 } },
+      { tagId: 2, name: "Electronics", color: null, _count: { articles: 0 } },
     ]);
 
     const result = await TagService.list(7);
 
     expect(result).toEqual([
-      { tagId: 1, name: "Tools", articleCount: 3 },
-      { tagId: 2, name: "Electronics", articleCount: 0 },
+      { tagId: 1, name: "Tools", color: "#ff8800", articleCount: 3 },
+      { tagId: 2, name: "Electronics", color: null, articleCount: 0 },
     ]);
     expect(mockPrisma.tag.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { ownerUserId: 7 } })
@@ -76,23 +76,59 @@ describe("TagService", () => {
     });
   });
 
-  it("rename rejects a tag the caller does not own", async () => {
+  it("update rejects a tag the caller does not own", async () => {
     mockPrisma.tag.findFirst.mockResolvedValue(null);
-    await expect(TagService.rename(5, 7, "New")).rejects.toMatchObject({
+    await expect(
+      TagService.update(5, 7, { name: "New" })
+    ).rejects.toMatchObject({
       status: 404,
     });
     expect(mockPrisma.tag.update).not.toHaveBeenCalled();
   });
 
-  it("rename updates an owned tag", async () => {
+  it("update renames an owned tag", async () => {
     mockPrisma.tag.findFirst.mockResolvedValue({ tagId: 5 });
-    mockPrisma.tag.update.mockResolvedValue({ tagId: 5, name: "Tools v2" });
-    const result = await TagService.rename(5, 7, "Tools v2");
-    expect(result).toEqual({ tagId: 5, name: "Tools v2" });
+    mockPrisma.tag.update.mockResolvedValue({
+      tagId: 5,
+      name: "Tools v2",
+      color: null,
+    });
+    const result = await TagService.update(5, 7, { name: "Tools v2" });
+    expect(result).toEqual({ tagId: 5, name: "Tools v2", color: null });
     expect(mockPrisma.tag.update).toHaveBeenCalledWith({
       where: { tagId: 5 },
       data: { name: "Tools v2" },
-      select: { tagId: true, name: true },
+      select: { tagId: true, name: true, color: true },
+    });
+  });
+
+  it("update patches only the color when name is omitted", async () => {
+    mockPrisma.tag.findFirst.mockResolvedValue({ tagId: 5 });
+    mockPrisma.tag.update.mockResolvedValue({
+      tagId: 5,
+      name: "Tools",
+      color: "#ff8800",
+    });
+    await TagService.update(5, 7, { color: "#ff8800" });
+    expect(mockPrisma.tag.update).toHaveBeenCalledWith({
+      where: { tagId: 5 },
+      data: { color: "#ff8800" },
+      select: { tagId: true, name: true, color: true },
+    });
+  });
+
+  it("update clears the color when passed null", async () => {
+    mockPrisma.tag.findFirst.mockResolvedValue({ tagId: 5 });
+    mockPrisma.tag.update.mockResolvedValue({
+      tagId: 5,
+      name: "Tools",
+      color: null,
+    });
+    await TagService.update(5, 7, { color: null });
+    expect(mockPrisma.tag.update).toHaveBeenCalledWith({
+      where: { tagId: 5 },
+      data: { color: null },
+      select: { tagId: true, name: true, color: true },
     });
   });
 
