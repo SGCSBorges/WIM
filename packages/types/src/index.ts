@@ -151,6 +151,12 @@ export interface Article {
   status?: ArticleStatus;
   // Optional broad category (null/absent = uncategorized).
   category?: ArticleCategory | null;
+  // Physical inventory check: when the owner last confirmed they still hold
+  // the item. Null/absent = never verified.
+  lastVerifiedAt?: string | null;
+  // User-defined attributes (ordered { key, value } pairs; ≤20). Private —
+  // never crosses the sharing boundary, like purchasedFrom/orderRef.
+  customFields?: Array<{ key: string; value: string }> | null;
   locationIds?: number[];
   locations?: Array<{ locationId: number; location?: { name: string } }>;
   // Tags: write via tagIds; reads carry the joined tags array.
@@ -200,6 +206,8 @@ export interface ArticleListParams {
   status?: ArticleStatus;
   // Filter to a single category.
   category?: ArticleCategory;
+  // Physical inventory check: "needed" = never verified or >12 months ago.
+  verification?: "needed" | "verified";
   sort?: ArticleSort;
   dir?: "asc" | "desc";
   page?: number;
@@ -573,6 +581,9 @@ export interface DashboardStatistics {
     total: number;
     withWarranty: number;
     withoutWarranty: number;
+    /** Currently-owned items never verified, or last verified more than
+     *  12 months ago (physical inventory check). */
+    needsVerification: number;
   };
   locations: {
     byLocation: Array<{

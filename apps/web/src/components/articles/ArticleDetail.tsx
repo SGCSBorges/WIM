@@ -28,6 +28,8 @@ import {
   Send,
   Bell,
   ArrowRightLeft,
+  BadgeCheck,
+  ListPlus,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { useFileDrop } from "../../hooks/useFileDrop";
@@ -253,6 +255,23 @@ export default function ArticleDetail() {
       kind: string;
     }>
   >([]);
+  const [verifying, setVerifying] = useState(false);
+
+  const markVerified = async () => {
+    if (!article) return;
+    setVerifying(true);
+    try {
+      const { lastVerifiedAt } = await articlesAPI.verify(article.articleId);
+      setArticle((prev) => (prev ? { ...prev, lastVerifiedAt } : prev));
+      toast.show(t("verify.marked"), { kind: "success" });
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   // Monotonic request id so navigating between article-detail pages in quick
   // succession (this route component stays mounted across :id changes) can't
@@ -674,6 +693,24 @@ export default function ArticleDetail() {
                   : "—"}
               </p>
             </div>
+            <div>
+              <p className="text-xs ui-text-muted">{t("verify.title")}</p>
+              <p className="text-sm ui-title">
+                {article.lastVerifiedAt
+                  ? safeDate(article.lastVerifiedAt)
+                  : t("verify.never")}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="-ml-2 mt-0.5"
+                loading={verifying}
+                onClick={() => void markVerified()}
+                leftIcon={<BadgeCheck className="h-4 w-4" />}
+              >
+                {t("verify.button")}
+              </Button>
+            </div>
           </div>
 
           <ValueOverTime
@@ -692,6 +729,33 @@ export default function ArticleDetail() {
                   {tg.tag?.name ?? `#${tg.tagId}`}
                 </Badge>
               ))}
+            </div>
+          )}
+
+          {article.customFields && article.customFields.length > 0 && (
+            <div className="border-t ui-divider pt-3">
+              <p className="mb-1 flex items-center gap-1.5 text-xs ui-text-muted">
+                <ListPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                {t("customFields.title")}
+              </p>
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+                {article.customFields.map((f, i) => (
+                  <div key={i} className="flex items-baseline gap-2">
+                    <dt
+                      className="max-w-[10rem] truncate ui-text-muted"
+                      title={f.key}
+                    >
+                      {f.key}
+                    </dt>
+                    <dd
+                      className="min-w-0 truncate font-medium ui-title"
+                      title={f.value}
+                    >
+                      {f.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           )}
         </div>

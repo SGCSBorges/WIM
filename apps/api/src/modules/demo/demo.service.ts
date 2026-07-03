@@ -1103,6 +1103,18 @@ export async function seedDemoData(
         status: s.status,
         sharedWithPowerUsers: paid && chance(0.15),
         publicToken: paid && chance(0.04) ? token() : null,
+        // Physical inventory check: most demo items were verified some time in
+        // the last 18 months, so the "needs verification" filter has both
+        // buckets populated.
+        lastVerifiedAt: chance(0.6)
+          ? new Date(Date.now() - randInt(1, 540) * 24 * 60 * 60 * 1000)
+          : null,
+        customFields: chance(0.25)
+          ? [
+              { key: "Color", value: pick(["Black", "White", "Silver"]) },
+              { key: "Condition", value: pick(["New", "Good", "Fair"]) },
+            ]
+          : undefined,
         createdAt: s.createdAt,
       })),
     });

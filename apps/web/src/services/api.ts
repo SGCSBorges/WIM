@@ -481,6 +481,7 @@ export const articlesAPI = {
     if (params.warrantyStatus) p.set("warrantyStatus", params.warrantyStatus);
     if (params.status) p.set("status", params.status);
     if (params.category) p.set("category", params.category);
+    if (params.verification) p.set("verification", params.verification);
     if (params.priceMin != null) p.set("priceMin", String(params.priceMin));
     if (params.priceMax != null) p.set("priceMax", String(params.priceMax));
     if (params.createdFrom) p.set("createdFrom", params.createdFrom);
@@ -583,6 +584,7 @@ export const articlesAPI = {
       price?: number | null;
       purchasedFrom?: string | null;
       orderRef?: string | null;
+      customFields?: string | null;
       locations: string[];
       tags: string[];
     }>,
@@ -715,6 +717,35 @@ export const articlesAPI = {
         )
       );
     return null;
+  },
+
+  /** Physical inventory check: stamp "I still hold this item". */
+  async verify(id: number): Promise<{ lastVerifiedAt: string }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${id}/verify`,
+      { method: "POST", headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to verify article"));
+    return response.json();
+  },
+
+  async bulkVerify(
+    ids: number[]
+  ): Promise<{ count: number; lastVerifiedAt: string }> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/bulk-verify`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ ids }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to verify articles")
+      );
+    return response.json();
   },
 
   /** Server-side clone: deep-copies the article (name suffixed " (copy)",

@@ -4,6 +4,18 @@ import { ARTICLE_STATUSES, ARTICLE_CATEGORIES } from "@wim/types";
 export const ArticleStatusSchema = z.enum(ARTICLE_STATUSES);
 export const ArticleCategorySchema = z.enum(ARTICLE_CATEGORIES);
 
+// User-defined attributes: an ordered list of { key, value } pairs stored as
+// JSONB. Bounded so a hostile payload can't bloat the row; private like
+// purchasedFrom/orderRef (never selected across the sharing boundary).
+export const CustomFieldsSchema = z
+  .array(
+    z.object({
+      key: z.string().trim().min(1).max(40),
+      value: z.string().trim().min(1).max(500),
+    })
+  )
+  .max(20);
+
 export const ArticleCreateSchema = z.object({
   articleNom: z.string().trim().min(1).max(100),
   articleModele: z.string().trim().min(1).max(100),
@@ -37,6 +49,8 @@ export const ArticleCreateSchema = z.object({
   status: ArticleStatusSchema.optional(),
   // Optional broad category (null clears it).
   category: ArticleCategorySchema.optional().nullable(),
+  // User-defined attributes (null clears them all).
+  customFields: CustomFieldsSchema.optional().nullable(),
   // An article must belong to at least one location
   locationIds: z.array(z.number().int().positive()).min(1),
   // Optional tags (owner-scoped). Empty/absent = no tags.

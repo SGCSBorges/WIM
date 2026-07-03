@@ -26,6 +26,7 @@ import {
   ExternalLink,
   UploadCloud,
   Lock,
+  X,
 } from "lucide-react";
 import { useFileDrop } from "../../hooks/useFileDrop";
 import { usePreferences } from "../../preferences/preferences";
@@ -170,6 +171,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [category, setCategory] = useState<ArticleCategory | "">(
     article?.category ?? ""
   );
+  // User-defined key/value attributes (≤20, matching the API bound).
+  const [customFields, setCustomFields] = useState<
+    Array<{ key: string; value: string }>
+  >(() => article?.customFields ?? []);
   const [showScanner, setShowScanner] = useState(false);
   const [showReceiptScanner, setShowReceiptScanner] = useState(false);
 
@@ -242,6 +247,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     );
     setStatus(article?.status ?? "ACTIVE");
     setCategory(article?.category ?? "");
+    setCustomFields(article?.customFields ?? []);
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setSelectedTagIds(deriveInitialTagIds(article));
     setWarrantyEnabled(Boolean(article?.garantie));
@@ -508,6 +514,13 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       depreciationRate: depVal,
       status,
       category: category || null,
+      // Drop half-filled rows; null (not []) clears server-side on edit.
+      customFields: (() => {
+        const cleaned = customFields
+          .map((f) => ({ key: f.key.trim(), value: f.value.trim() }))
+          .filter((f) => f.key && f.value);
+        return cleaned.length > 0 ? cleaned : null;
+      })(),
       locationIds: selectedLocationIds,
       tagIds: selectedTagIds,
       ...(warrantyEnabled
@@ -862,6 +875,76 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               className="font-mono"
             />
           </Field>
+        </div>
+
+        {/* User-defined attributes (private, like provenance). */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium ui-text-muted">
+            {t("customFields.title")}
+            <span className="ml-1 text-xs font-normal">
+              · {t("articleForm.private.badge")}
+            </span>
+          </p>
+          {customFields.map((f, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Input
+                type="text"
+                value={f.key}
+                onChange={(e) =>
+                  setCustomFields((prev) =>
+                    prev.map((row, j) =>
+                      j === i ? { ...row, key: e.target.value } : row
+                    )
+                  )
+                }
+                maxLength={40}
+                placeholder={t("customFields.keyPlaceholder")}
+                aria-label={t("customFields.keyPlaceholder")}
+                className="w-40"
+              />
+              <Input
+                type="text"
+                value={f.value}
+                onChange={(e) =>
+                  setCustomFields((prev) =>
+                    prev.map((row, j) =>
+                      j === i ? { ...row, value: e.target.value } : row
+                    )
+                  )
+                }
+                maxLength={500}
+                placeholder={t("customFields.valuePlaceholder")}
+                aria-label={t("customFields.valuePlaceholder")}
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomFields((prev) => prev.filter((_, j) => j !== i));
+                  setDirty(true);
+                }}
+                aria-label={t("customFields.remove")}
+                title={t("customFields.remove")}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-md ui-btn-ghost text-danger"
+              >
+                <X className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          ))}
+          {customFields.length < 20 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setCustomFields((prev) => [...prev, { key: "", value: "" }]);
+                setDirty(true);
+              }}
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
+              {t("customFields.add")}
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

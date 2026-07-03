@@ -105,6 +105,8 @@ Un bien physique de l'inventaire. Le hub auquel tout le reste se rattache.
 | `publicToken` | String? VarChar(64) | null | **Unique**. Page publique opt-in `/i/<token>` ; null = désactivée. |
 | `status` | `ArticleStatus` | `ACTIVE` | État de cycle de vie ; organisationnel, ne masque jamais la ligne. |
 | `category` | `ArticleCategory`? | null | Catégorie large optionnelle ; null = non catégorisé. |
+| `lastVerifiedAt` | DateTime? | null | Horodatage de l'inventaire physique ; null = jamais vérifié. Pilote le filtre `verification=needed` (jamais ou >12 mois) + le rappel du tableau de bord. |
+| `customFields` | Json? | null | `{ key, value }[]` défini par l'utilisateur (≤20 ; clé ≤40, valeur ≤500). Privé, comme `purchasedFrom`. |
 | `deletedAt` | DateTime? | null | Soft-delete (corbeille). Les lectures vivantes filtrent `deletedAt: null`. |
 
 **Relations :** 0..1 `Garantie` ; plusieurs `Attachment`, `Alerte`,

@@ -68,6 +68,8 @@ export async function getDashboardStatistics(
     const currentDate = new Date();
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(currentDate.getDate() + 30);
+    const verificationCutoff = new Date(currentDate);
+    verificationCutoff.setMonth(verificationCutoff.getMonth() - 12);
 
     // Warranties of trashed articles must not count — a Garantie row
     // survives the article's soft-delete (only the article row is stamped),
@@ -98,6 +100,7 @@ export async function getDashboardStatistics(
     const [
       articlesTotal,
       articlesWithWarranty,
+      articlesNeedingVerification,
       locations,
       articleCountsByLocation,
       warrantiesTotal,
@@ -117,6 +120,22 @@ export async function getDashboardStatistics(
       prisma.article.count({ where: { ownerUserId, deletedAt: null } }),
       prisma.article.count({
         where: { ownerUserId, garantie: { isNot: null }, deletedAt: null },
+      }),
+      // Physical inventory check: only currently-held items need verifying
+      // (a SOLD/DISPOSED/LOST record has nothing to physically confirm).
+      prisma.article.count({
+        where: {
+          ownerUserId,
+          deletedAt: null,
+          status: { notIn: NOT_OWNED_STATUSES },
+          OR: [
+            { lastVerifiedAt: null },
+            // Same 12-month rule as the list's `verification=needed` filter
+            // (buildArticleWhere) so the nudge count and the filtered list
+            // always agree.
+            { lastVerifiedAt: { lt: verificationCutoff } },
+          ],
+        },
       }),
       prisma.location.findMany({
         where: { ownerUserId },
@@ -369,6 +388,7 @@ export async function getDashboardStatistics(
         total: articlesTotal,
         withWarranty: articlesWithWarranty,
         withoutWarranty: articlesWithoutWarranty,
+        needsVerification: articlesNeedingVerification,
       },
       locations: {
         byLocation,

@@ -277,6 +277,21 @@ failure mode with the same 401.
   points for the create form. JSONB `payload` stores locations and tags
   by **name**, not by id, so a template survives a rename or a live row
   delete; the form resolves names → ids at apply time.
+- **Inventory check** — `POST /api/articles/:id/verify` stamps
+  `lastVerifiedAt` ("I still hold this item"); `POST /api/articles/bulk-verify`
+  does the same for a selection (ungated, like bulk-assign — it's a core
+  inventory action). Both are atomic `updateMany` calls with the ownership
+  precondition in the WHERE clause. The list endpoint accepts
+  `?verification=needed|verified` (needed = never verified or >12 months ago —
+  the same rule behind the dashboard's `articles.needsVerification` count),
+  and the CSV export carries a read-only `lastVerifiedAt` column.
+- **Custom fields** — `Article.customFields` is an ordered JSONB array of
+  `{ key, value }` pairs (≤20; key ≤40 chars, value ≤500), written through the
+  normal create/update endpoints (`null` clears). Private like
+  `purchasedFrom`/`orderRef` — the shared-view select never includes it. The
+  CSV export writes the array as a JSON cell and the importer parses it back,
+  so the round-trip preserves the fields (a malformed cell fails that row in
+  the dry-run report instead of silently dropping data).
 
 ## Feature gating
 

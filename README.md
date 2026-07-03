@@ -143,6 +143,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `PUT`    | `/:id` | ✓ | Update article (and its warranty + locations + tags) |
 | `DELETE` | `/:id` | ✓ | Soft-delete (moves to trash) |
 | `POST`   | `/:id/duplicate` | ✓ | Deep-copy an article (locations + tags; warranty intentionally skipped) |
+| `POST`   | `/:id/verify` · `/bulk-verify` | ✓ | Physical inventory check — stamp `lastVerifiedAt` ("I still hold this item"); list filter `?verification=needed\|verified` |
 | `GET`    | `/trash` | ✓ | List soft-deleted articles |
 | `POST`   | `/:id/restore` | ✓ | Restore from trash |
 | `DELETE` | `/:id/purge` | ✓ | Permanently delete (skip retention) |

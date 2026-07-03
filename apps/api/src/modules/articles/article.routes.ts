@@ -61,6 +61,9 @@ const ImportSchema = z.object({
         price: z.coerce.number().nonnegative().max(1e10).optional().nullable(),
         purchasedFrom: z.string().trim().max(150).optional().nullable(),
         orderRef: z.string().trim().max(100).optional().nullable(),
+        // The raw JSON cell from the export's customFields column; parsed +
+        // validated per-row in the importer (invalid JSON = row error).
+        customFields: z.string().trim().max(20_000).optional().nullable(),
         locations: z.array(z.string().trim().max(120)).default([]),
         tags: z.array(z.string().trim().max(40)).default([]),
       })
@@ -79,6 +82,8 @@ const ArticleListQuerySchema = z.object({
     .optional(),
   status: ArticleStatusSchema.optional(),
   category: ArticleCategorySchema.optional(),
+  // Physical inventory check: "needed" = never verified or >12 months ago.
+  verification: z.enum(["needed", "verified"]).optional(),
   priceMin: z.coerce.number().nonnegative().optional(),
   priceMax: z.coerce.number().nonnegative().optional(),
   // Inclusive createdAt date range. Coerce from YYYY-MM-DD strings the web
@@ -108,6 +113,7 @@ router.get(
       warrantyStatus: q.warrantyStatus,
       status: q.status,
       category: q.category,
+      verification: q.verification,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,
@@ -289,6 +295,49 @@ router.put(
       },
     });
     res.json(updated);
+  })
+);
+
+/** POST mark an article as physically verified ("I still hold this item").
+ *  Returns the stamp so the client can render it without a refetch. */
+router.post(
+  "/:id/verify",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const lastVerifiedAt = await ArticleService.verify(id, req.user!.sub);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      entityId: id,
+      metadata: { verified: true },
+    });
+    res.json({ lastVerifiedAt });
+  })
+);
+
+/** POST bulk-verify a selection (physical inventory sweep). Ungated like
+ *  bulk-assign — verification is a core inventory action, not a paid one. */
+router.post(
+  "/bulk-verify",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const { ids } = BulkIdsSchema.parse(req.body);
+    const { count, lastVerifiedAt } = await ArticleService.bulkVerify(
+      ids,
+      req.user!.sub
+    );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      metadata: {
+        bulk: true,
+        verified: true,
+        requested: ids.length,
+        updated: count,
+      },
+    });
+    res.json({ count, lastVerifiedAt });
   })
 );
 
@@ -512,6 +561,7 @@ router.get(
       warrantyStatus: q.warrantyStatus,
       status: q.status,
       category: q.category,
+      verification: q.verification,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,

@@ -649,6 +649,28 @@ Smaller features added in one batch; each follows the existing patterns.
   in ArticleForm prefills price / purchasedFrom / warranty purchase date,
   never overwriting user-typed values.
 
+## Round 4 (2026-07): inventory check + custom fields
+
+- **Inventory check**: `Article.lastVerifiedAt` (null = never). `POST
+  /articles/:id/verify` + `POST /articles/bulk-verify` stamp it via atomic
+  `updateMany` (precondition in WHERE — the standard rule). List filter
+  `?verification=needed|verified` ("needed" = null or >12 months, same
+  12-month rule as the dashboard's `articles.needsVerification` count so the
+  nudge and the filtered list agree). Web: cell + "Mark as verified" on the
+  detail hero, bulk-bar action, filter Select, dashboard System-health nudge
+  linking to `/articles?verification=needed`. Ungated (core inventory action,
+  like bulk-assign). CSV export column is read-only on round-trip.
+- **Custom fields**: `Article.customFields` JSONB — ordered `{key,value}[]`,
+  bounded by `CustomFieldsSchema` (≤20 pairs, key ≤40, value ≤500). Private
+  like purchasedFrom (sharedArticleSelect never includes it). Clearing on
+  update needs `Prisma.DbNull` (plain null is rejected by the Json input
+  type). Duplicate copies them; CSV round-trips them as a JSON cell (importer
+  parses + validates per-row; bad cell = row error surfaced in the dry-run
+  preview). Web: key/value rows editor in ArticleForm (private-badged),
+  dl display on the detail hero.
+- The article-detail **value curve** (`ValueOverTime` in ArticleDetail.tsx)
+  predates this round — dependency-free inline SVG; don't add recharts there.
+
 ## Account security (login history → sessions → 2FA)
 
 Three independent slices; the password-only login path is byte-for-byte

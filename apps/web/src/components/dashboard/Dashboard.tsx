@@ -17,6 +17,7 @@ import {
   Activity,
   AlertTriangle,
   Plus,
+  BadgeCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -519,6 +520,11 @@ const Dashboard: React.FC = () => {
               value: statistics.articles.withoutWarranty,
               tone: "ui-text-warn",
             },
+            {
+              label: t("dashboard.needsVerification"),
+              value: statistics.articles.needsVerification ?? 0,
+              tone: "ui-text-warn",
+            },
           ]}
         />
 
@@ -621,6 +627,18 @@ const Dashboard: React.FC = () => {
               {t("dashboard.warrantiesNeedAttention")}
             </span>
           </div>
+          {(statistics.articles.needsVerification ?? 0) > 0 && (
+            <Link
+              to="/articles?verification=needed"
+              className="flex items-center gap-2 hover:underline"
+            >
+              <BadgeCheck className="h-4 w-4 ui-text-warn" aria-hidden="true" />
+              <span className="text-sm ui-text-muted">
+                {formatCount(statistics.articles.needsVerification, language)}{" "}
+                {t("dashboard.needsVerificationNudge")}
+              </span>
+            </Link>
+          )}
         </div>
       </Section>
     </div>

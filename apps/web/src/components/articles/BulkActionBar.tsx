@@ -21,6 +21,7 @@ interface BulkActionBarProps {
   onAssignLocation: (locationId: number) => void;
   onAssignTag: (tagId: number) => void;
   onEditFields: () => void;
+  onVerify: () => void;
 }
 
 export default function BulkActionBar({
@@ -37,6 +38,7 @@ export default function BulkActionBar({
   onAssignLocation,
   onAssignTag,
   onEditFields,
+  onVerify,
 }: BulkActionBarProps) {
   const { t } = useI18n();
 
@@ -128,6 +130,16 @@ export default function BulkActionBar({
             {t("articles.bulk.editFields")}
           </button>
         )}
+
+        <button
+          type="button"
+          onClick={onVerify}
+          disabled={busy}
+          className="text-sm px-3 py-1.5 ui-btn-ghost border ui-divider rounded-md"
+          title={t("articles.bulk.verifyTooltip")}
+        >
+          {t("articles.bulk.verify")}
+        </button>
 
         <button
           type="button"

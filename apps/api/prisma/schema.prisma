@@ -388,6 +388,16 @@ model Article {
   // the spend-by-category analytics.
   category ArticleCategory?
 
+  // Physical inventory check: when the owner last confirmed they still hold
+  // the item. Null = never verified. Drives the "needs verification" filter
+  // (never, or older than 12 months) and the dashboard nudge.
+  lastVerifiedAt DateTime?
+
+  // User-defined attributes as an ordered list of { key, value } pairs
+  // (validated at the API boundary: ≤20 pairs, key ≤40 chars, value ≤500).
+  // Private like purchasedFrom/orderRef — never crosses the sharing boundary.
+  customFields Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   // Soft-delete marker. Null = live. Live reads scope `deletedAt: null`; the

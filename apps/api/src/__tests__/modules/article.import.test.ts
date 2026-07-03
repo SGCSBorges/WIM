@@ -137,4 +137,58 @@ describe("importArticles", () => {
     const result = await importArticles(7, rows, { dryRun: true });
     expect(result.created).toBe(51);
   });
+
+  it("round-trips a valid customFields JSON cell into the create call", async () => {
+    const cell = JSON.stringify([
+      { key: "RAM", value: "32 GB" },
+      { key: "Color", value: "Black" },
+    ]);
+    const result = await importArticles(7, [
+      { name: "PC", model: "X1", locations: ["Office"], customFields: cell },
+    ]);
+
+    expect(result.created).toBe(1);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customFields: [
+          { key: "RAM", value: "32 GB" },
+          { key: "Color", value: "Black" },
+        ],
+      })
+    );
+  });
+
+  it("reports a row error for a malformed customFields cell (dry run too)", async () => {
+    const result = await importArticles(
+      7,
+      [
+        {
+          name: "PC",
+          model: "X1",
+          locations: ["Office"],
+          customFields: "not-json",
+        },
+      ],
+      { dryRun: true }
+    );
+
+    expect(result.created).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].message).toMatch(/customFields/);
+  });
+
+  it("rejects a structurally-invalid customFields array", async () => {
+    const result = await importArticles(7, [
+      {
+        name: "PC",
+        model: "X1",
+        locations: ["Office"],
+        customFields: JSON.stringify([{ key: "", value: "x" }]),
+      },
+    ]);
+
+    expect(result.created).toBe(0);
+    expect(result.errors).toHaveLength(1);
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
 });

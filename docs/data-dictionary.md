@@ -105,6 +105,8 @@ A physical item in the inventory. The hub everything else hangs off.
 | `publicToken` | String? VarChar(64) | null | **Unique**. Opt-in `/i/<token>` public page; null = off. |
 | `status` | `ArticleStatus` | `ACTIVE` | Lifecycle state; organizational, never hides the row. |
 | `category` | `ArticleCategory`? | null | Optional broad bucket; null = uncategorized. |
+| `lastVerifiedAt` | DateTime? | null | Physical inventory check stamp; null = never verified. Drives the `verification=needed` filter (never or >12 months) + dashboard nudge. |
+| `customFields` | Json? | null | User-defined `{ key, value }[]` (≤20; key ≤40, value ≤500). Private, like `purchasedFrom`. |
 | `deletedAt` | DateTime? | null | Soft-delete (trash). Live reads scope `deletedAt: null`. |
 
 **Relations:** 0..1 `Garantie`; many `Attachment`, `Alerte`, `ArticleNote`,

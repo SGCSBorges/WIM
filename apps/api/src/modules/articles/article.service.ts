@@ -82,6 +82,7 @@ export type ArticleListFilters = {
   warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
   status?: ArticleStatus;
   category?: ArticleCategory;
+  verification?: "needed" | "verified";
   priceMin?: number;
   priceMax?: number;
   createdFrom?: Date;
@@ -140,6 +141,17 @@ function buildArticleWhere(
       ...(f.createdFrom ? { gte: f.createdFrom } : {}),
       ...(f.createdTo ? { lte: f.createdTo } : {}),
     };
+  }
+  if (f.verification) {
+    // "Needs verification" = never verified, or verified more than 12 months
+    // ago. Top-level OR is ANDed with the other filter keys by Prisma.
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - 12);
+    if (f.verification === "needed") {
+      where.OR = [{ lastVerifiedAt: null }, { lastVerifiedAt: { lt: cutoff } }];
+    } else {
+      where.lastVerifiedAt = { gte: cutoff };
+    }
   }
   if (f.warrantyStatus) {
     const now = new Date();
@@ -212,7 +224,10 @@ export const ArticleService = {
     }),
 
   create: async (data: ArticleCreateInput) => {
-    const { locationIds, tagIds, garantie, ...articleData } = data;
+    // customFields is extracted because Prisma's Json input type rejects a
+    // plain null — absent/null on create both mean "no custom fields".
+    const { locationIds, tagIds, garantie, customFields, ...articleData } =
+      data;
 
     // Ownership checks + the insert all run in a single transaction so an
     // interleaved delete can't slip a stale locationId/attachmentId past
@@ -266,6 +281,9 @@ export const ArticleService = {
       return tx.article.create({
         data: {
           ...articleData,
+          ...(customFields != null && customFields.length > 0
+            ? { customFields }
+            : {}),
           ...(garantie
             ? {
                 garantie: {
@@ -330,6 +348,9 @@ export const ArticleService = {
 
     return ArticleService.create({
       ownerUserId,
+      customFields:
+        (source.customFields as { key: string; value: string }[] | null) ??
+        undefined,
       articleNom: `${source.articleNom} (copy)`.slice(0, 100),
       articleModele: source.articleModele,
       articleDescription: source.articleDescription,
@@ -350,7 +371,14 @@ export const ArticleService = {
   },
 
   update: async (id: number, ownerUserId: number, data: ArticleUpdateInput) => {
-    const { locationIds, tagIds, garantie, removeGarantie, ...patch } = data;
+    const {
+      locationIds,
+      tagIds,
+      garantie,
+      removeGarantie,
+      customFields,
+      ...patch
+    } = data;
 
     // If updating locations, enforce at least one.
     if (locationIds && Array.isArray(locationIds) && locationIds.length === 0)
@@ -504,6 +532,16 @@ export const ArticleService = {
         where: { articleId: id },
         data: {
           ...patch,
+          // Json columns need Prisma.DbNull to clear (a plain null is
+          // rejected by the input type). Empty array clears too.
+          ...(customFields !== undefined
+            ? {
+                customFields:
+                  customFields == null || customFields.length === 0
+                    ? Prisma.DbNull
+                    : customFields,
+              }
+            : {}),
           ownerUserId,
           ...(locationIds
             ? {
@@ -838,6 +876,35 @@ export const ArticleService = {
       });
       return { count: res.count };
     });
+  },
+
+  // Physical inventory check: stamp "I still hold this item" on a row. The
+  // precondition lives in the WHERE clause (atomic updateMany) per the
+  // status-transition convention. Returns the stamp so the client can render
+  // it without refetching.
+  verify: async (id: number, ownerUserId: number): Promise<Date> => {
+    const now = new Date();
+    const res = await prisma.article.updateMany({
+      where: { articleId: id, ownerUserId, deletedAt: null },
+      data: { lastVerifiedAt: now },
+    });
+    if (res.count === 0) throw createHttpError(404, "Article not found");
+    return now;
+  },
+
+  // Bulk variant for the list selection. Silently skips ids the caller
+  // doesn't own (same model as bulkRemove).
+  bulkVerify: async (
+    ids: number[],
+    ownerUserId: number
+  ): Promise<{ count: number; lastVerifiedAt: Date }> => {
+    const now = new Date();
+    if (ids.length === 0) return { count: 0, lastVerifiedAt: now };
+    const res = await prisma.article.updateMany({
+      where: { articleId: { in: ids }, ownerUserId, deletedAt: null },
+      data: { lastVerifiedAt: now },
+    });
+    return { count: res.count, lastVerifiedAt: now };
   },
 
   bulkAssign: async (

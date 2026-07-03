@@ -1174,6 +1174,35 @@ export function buildOpenApiDocument() {
           responses: { "200": { description: "Updated" } },
         },
       },
+      "/api/articles/bulk-verify": {
+        post: {
+          tags: ["articles"],
+          summary:
+            "Bulk-stamp the physical inventory check (lastVerifiedAt) on a selection.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ count, lastVerifiedAt }" } },
+        },
+      },
+      "/api/articles/{id}/verify": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["articles"],
+          summary:
+            "Mark an article as physically verified (“I still hold this item”).",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "{ lastVerifiedAt }" },
+            "404": { description: "Not found", ...json(ErrorResponse) },
+          },
+        },
+      },
       "/api/articles/import": {
         post: {
           tags: ["articles"],

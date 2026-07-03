@@ -20,6 +20,7 @@ function renderBar(
     onAssignLocation: vi.fn(),
     onAssignTag: vi.fn(),
     onEditFields: vi.fn(),
+    onVerify: vi.fn(),
     ...overrides,
   };
   return {

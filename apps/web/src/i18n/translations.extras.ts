@@ -9,6 +9,25 @@
 // add new keys (TS picks them up via the ExtrasKey union below).
 export const extras = {
   en: {
+    "verify.title": "Inventory check",
+    "verify.never": "Never verified",
+    "verify.button": "Mark as verified",
+    "verify.marked": "Marked as verified",
+    "articles.bulk.verify": "Mark verified",
+    "articles.bulk.verifyTooltip":
+      "Confirm you still hold the selected items (physical inventory check)",
+    "articles.bulk.verifySuccess": "{count} article(s) marked as verified",
+    "articles.filter.verification.label": "Inventory check",
+    "articles.filter.verification.all": "Any verification",
+    "articles.filter.verification.needed": "Needs verification",
+    "articles.filter.verification.verified": "Verified (last 12 months)",
+    "customFields.title": "Custom fields",
+    "customFields.add": "Add field",
+    "customFields.remove": "Remove field",
+    "customFields.keyPlaceholder": "Name (e.g. RAM)",
+    "customFields.valuePlaceholder": "Value (e.g. 32 GB)",
+    "dashboard.needsVerification": "Needs verification",
+    "dashboard.needsVerificationNudge": "item(s) to verify â open the list",
     "auth.passkey.signIn": "Sign in with a passkey",
     "auth.passkey.emailFirst": "Enter your email first, then use your passkey",
     "passkeys.title": "Passkeys",
@@ -1088,6 +1107,27 @@ export const extras = {
     "features.csv_export": "CSV export",
   },
   fr: {
+    "verify.title": "Inventaire physique",
+    "verify.never": "Jamais vérifié",
+    "verify.button": "Marquer comme vérifié",
+    "verify.marked": "Marqué comme vérifié",
+    "articles.bulk.verify": "Marquer vérifiés",
+    "articles.bulk.verifyTooltip":
+      "Confirmez que vous détenez toujours les articles sélectionnés (inventaire physique)",
+    "articles.bulk.verifySuccess":
+      "{count} article(s) marqué(s) comme vérifié(s)",
+    "articles.filter.verification.label": "Inventaire physique",
+    "articles.filter.verification.all": "Toute vérification",
+    "articles.filter.verification.needed": "À vérifier",
+    "articles.filter.verification.verified": "Vérifié (12 derniers mois)",
+    "customFields.title": "Champs personnalisés",
+    "customFields.add": "Ajouter un champ",
+    "customFields.remove": "Supprimer le champ",
+    "customFields.keyPlaceholder": "Nom (ex. RAM)",
+    "customFields.valuePlaceholder": "Valeur (ex. 32 Go)",
+    "dashboard.needsVerification": "À vérifier",
+    "dashboard.needsVerificationNudge":
+      "article(s) à vérifier — ouvrir la liste",
     "auth.passkey.signIn": "Se connecter avec une passkey",
     "auth.passkey.emailFirst":
       "Saisissez d'abord votre e-mail, puis utilisez votre passkey",
@@ -2198,6 +2238,26 @@ export const extras = {
     "features.csv_export": "Export CSV",
   },
   pt: {
+    "verify.title": "Inventário físico",
+    "verify.never": "Nunca verificado",
+    "verify.button": "Marcar como verificado",
+    "verify.marked": "Marcado como verificado",
+    "articles.bulk.verify": "Marcar verificados",
+    "articles.bulk.verifyTooltip":
+      "Confirme que ainda possui os artigos selecionados (inventário físico)",
+    "articles.bulk.verifySuccess":
+      "{count} artigo(s) marcado(s) como verificado(s)",
+    "articles.filter.verification.label": "Inventário físico",
+    "articles.filter.verification.all": "Qualquer verificação",
+    "articles.filter.verification.needed": "Precisa de verificação",
+    "articles.filter.verification.verified": "Verificado (últimos 12 meses)",
+    "customFields.title": "Campos personalizados",
+    "customFields.add": "Adicionar campo",
+    "customFields.remove": "Remover campo",
+    "customFields.keyPlaceholder": "Nome (ex.: RAM)",
+    "customFields.valuePlaceholder": "Valor (ex.: 32 GB)",
+    "dashboard.needsVerification": "Precisa de verificação",
+    "dashboard.needsVerificationNudge": "artigo(s) a verificar — abrir a lista",
     "auth.passkey.signIn": "Entrar com uma passkey",
     "auth.passkey.emailFirst":
       "Introduza primeiro o seu e-mail e depois use a sua passkey",
@@ -3304,6 +3364,27 @@ export const extras = {
     "features.csv_export": "Exportação CSV",
   },
   es: {
+    "verify.title": "Inventario físico",
+    "verify.never": "Nunca verificado",
+    "verify.button": "Marcar como verificado",
+    "verify.marked": "Marcado como verificado",
+    "articles.bulk.verify": "Marcar verificados",
+    "articles.bulk.verifyTooltip":
+      "Confirma que aún posees los artículos seleccionados (inventario físico)",
+    "articles.bulk.verifySuccess":
+      "{count} artículo(s) marcado(s) como verificado(s)",
+    "articles.filter.verification.label": "Inventario físico",
+    "articles.filter.verification.all": "Cualquier verificación",
+    "articles.filter.verification.needed": "Necesita verificación",
+    "articles.filter.verification.verified": "Verificado (últimos 12 meses)",
+    "customFields.title": "Campos personalizados",
+    "customFields.add": "Añadir campo",
+    "customFields.remove": "Eliminar campo",
+    "customFields.keyPlaceholder": "Nombre (p. ej. RAM)",
+    "customFields.valuePlaceholder": "Valor (p. ej. 32 GB)",
+    "dashboard.needsVerification": "Necesita verificación",
+    "dashboard.needsVerificationNudge":
+      "artículo(s) por verificar — abrir la lista",
     "auth.passkey.signIn": "Iniciar sesión con una passkey",
     "auth.passkey.emailFirst":
       "Introduce primero tu correo y luego usa tu passkey",
@@ -4415,6 +4496,28 @@ export const extras = {
     "features.csv_export": "Exportación CSV",
   },
   nl: {
+    "verify.title": "Fysieke inventaris",
+    "verify.never": "Nooit geverifieerd",
+    "verify.button": "Markeren als geverifieerd",
+    "verify.marked": "Gemarkeerd als geverifieerd",
+    "articles.bulk.verify": "Markeer geverifieerd",
+    "articles.bulk.verifyTooltip":
+      "Bevestig dat u de geselecteerde artikelen nog bezit (fysieke inventaris)",
+    "articles.bulk.verifySuccess":
+      "{count} artikel(en) gemarkeerd als geverifieerd",
+    "articles.filter.verification.label": "Fysieke inventaris",
+    "articles.filter.verification.all": "Elke verificatie",
+    "articles.filter.verification.needed": "Verificatie nodig",
+    "articles.filter.verification.verified":
+      "Geverifieerd (laatste 12 maanden)",
+    "customFields.title": "Aangepaste velden",
+    "customFields.add": "Veld toevoegen",
+    "customFields.remove": "Veld verwijderen",
+    "customFields.keyPlaceholder": "Naam (bijv. RAM)",
+    "customFields.valuePlaceholder": "Waarde (bijv. 32 GB)",
+    "dashboard.needsVerification": "Verificatie nodig",
+    "dashboard.needsVerificationNudge":
+      "artikel(en) te verifiëren — open de lijst",
     "auth.passkey.signIn": "Inloggen met een passkey",
     "auth.passkey.emailFirst":
       "Voer eerst je e-mailadres in en gebruik dan je passkey",

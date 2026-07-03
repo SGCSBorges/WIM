@@ -26,6 +26,11 @@ const COLUMNS = [
   // round-trip — the importer ignores unknown columns, like currentValue.
   "status",
   "category",
+  // Physical inventory check stamp. Read-only on round-trip.
+  "lastVerifiedAt",
+  // User-defined attributes as a JSON array of { key, value } pairs; the
+  // importer parses it back so the round-trip preserves them.
+  "customFields",
   "locations",
   "tags",
   "warrantyName",
@@ -90,6 +95,10 @@ function serializeRow(a: ExportRow): string {
     current,
     a.status,
     a.category,
+    a.lastVerifiedAt,
+    Array.isArray(a.customFields) && a.customFields.length > 0
+      ? JSON.stringify(a.customFields)
+      : "",
     locationNames,
     tagNames,
     a.garantie?.garantieNom,

@@ -161,6 +161,7 @@ const ArticlesList: React.FC = () => {
   const warrantyStatus = searchParams.get("warranty") ?? "";
   const statusFilter = searchParams.get("status") ?? "";
   const categoryFilter = searchParams.get("category") ?? "";
+  const verificationFilter = searchParams.get("verification") ?? "";
   const priceMin = searchParams.get("priceMin") ?? "";
   const priceMax = searchParams.get("priceMax") ?? "";
   const createdFrom = searchParams.get("createdFrom") ?? "";
@@ -180,6 +181,7 @@ const ArticlesList: React.FC = () => {
     warrantyStatus ||
     statusFilter ||
     categoryFilter ||
+    verificationFilter ||
     priceMin ||
     priceMax ||
     createdFrom ||
@@ -251,6 +253,8 @@ const ArticlesList: React.FC = () => {
             | "") || undefined,
         status: (statusFilter as ArticleStatus | "") || undefined,
         category: (categoryFilter as ArticleCategory | "") || undefined,
+        verification:
+          (verificationFilter as "needed" | "verified" | "") || undefined,
         priceMin: priceMin ? Number(priceMin) : undefined,
         priceMax: priceMax ? Number(priceMax) : undefined,
         createdFrom: createdFrom || undefined,
@@ -293,6 +297,7 @@ const ArticlesList: React.FC = () => {
     warrantyStatus,
     statusFilter,
     categoryFilter,
+    verificationFilter,
     priceMin,
     priceMax,
     createdFrom,
@@ -375,6 +380,27 @@ const ArticlesList: React.FC = () => {
         t("articles.bulk.shareSuccess").replace("{count}", String(count)),
         { kind: "success" }
       );
+      await fetchArticles();
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkVerify = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { count } = await articlesAPI.bulkVerify(ids);
+      toast.show(
+        t("articles.bulk.verifySuccess").replace("{count}", String(count)),
+        { kind: "success" }
+      );
+      clearSelection();
       await fetchArticles();
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
@@ -660,6 +686,7 @@ const ArticlesList: React.FC = () => {
           warrantyStatus={warrantyStatus}
           statusFilter={statusFilter}
           categoryFilter={categoryFilter}
+          verificationFilter={verificationFilter}
           priceMin={priceMin}
           priceMax={priceMax}
           createdFrom={createdFrom}
@@ -907,6 +934,7 @@ const ArticlesList: React.FC = () => {
         }
         onAssignTag={(tagId) => bulkAssign({ addTagIds: [tagId] })}
         onEditFields={() => setShowBulkEdit(true)}
+        onVerify={() => void bulkVerify()}
       />
 
       {showBulkEdit && (

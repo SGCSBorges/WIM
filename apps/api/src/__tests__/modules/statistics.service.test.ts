@@ -74,10 +74,12 @@ function setupDashboardMocks({
   ownedSharedArticles = 2,
   unassigned = 0,
   totalSharedArticles = 0,
+  needsVerification = 0,
 } = {}) {
   mockPrisma.article.count
     .mockResolvedValueOnce(articlesTotal) // total
     .mockResolvedValueOnce(articlesWithWarranty) // withWarranty
+    .mockResolvedValueOnce(needsVerification) // needsVerification (inventory check)
     .mockResolvedValueOnce(ownedSharedArticles) // ownedSharedArticles
     .mockResolvedValueOnce(unassigned) // unassigned (locations: none)
     .mockResolvedValueOnce(totalSharedArticles); // totalSharedArticles (if role is POWER_USER)
@@ -168,15 +170,17 @@ describe("getDashboardStatistics", () => {
 
     expect(result.sharing.totalSharedArticles).toBe(0);
     // A USER must not pay for the cross-user shared-articles query — it
-    // resolves to 0 without hitting the DB. article.count fires exactly 4x
-    // (total, withWarranty, ownedShared, unassigned), not 5.
-    expect(mockPrisma.article.count).toHaveBeenCalledTimes(4);
+    // resolves to 0 without hitting the DB. article.count fires exactly 5x
+    // (total, withWarranty, needsVerification, ownedShared, unassigned),
+    // not 6.
+    expect(mockPrisma.article.count).toHaveBeenCalledTimes(5);
   });
 
   it("fetches totalSharedArticles for POWER_USER role", async () => {
     mockPrisma.article.count
       .mockResolvedValueOnce(3) // total
       .mockResolvedValueOnce(1) // withWarranty
+      .mockResolvedValueOnce(0) // needsVerification
       .mockResolvedValueOnce(1) // ownedSharedArticles
       .mockResolvedValueOnce(0) // unassigned
       .mockResolvedValueOnce(5); // totalSharedArticles
@@ -203,9 +207,9 @@ describe("getDashboardStatistics", () => {
     });
 
     expect(result.sharing.totalSharedArticles).toBe(5);
-    // A share-capable role DOES issue the 5th article.count for the
+    // A share-capable role DOES issue the extra article.count for the
     // cross-user shared total.
-    expect(mockPrisma.article.count).toHaveBeenCalledTimes(5);
+    expect(mockPrisma.article.count).toHaveBeenCalledTimes(6);
   });
 
   it("aggregates inventory value (total, at-risk, by location)", async () => {

@@ -36,6 +36,7 @@ interface ArticlesFilterBarProps {
   warrantyStatus: string;
   statusFilter: string;
   categoryFilter: string;
+  verificationFilter: string;
   priceMin: string;
   priceMax: string;
   createdFrom: string;
@@ -57,6 +58,7 @@ export default function ArticlesFilterBar({
   warrantyStatus,
   statusFilter,
   categoryFilter,
+  verificationFilter,
   priceMin,
   priceMax,
   createdFrom,
@@ -78,6 +80,7 @@ export default function ArticlesFilterBar({
     warrantyStatus,
     statusFilter,
     categoryFilter,
+    verificationFilter,
     priceMin,
     priceMax,
     createdFrom,
@@ -248,6 +251,23 @@ export default function ArticlesFilterBar({
                 {t(`articleCategory.${c}`)}
               </option>
             ))}
+          </Select>
+
+          <Select
+            value={verificationFilter}
+            onChange={(e) =>
+              updateParams({ verification: e.target.value || undefined })
+            }
+            aria-label={t("articles.filter.verification.label")}
+            className="w-auto"
+          >
+            <option value="">{t("articles.filter.verification.all")}</option>
+            <option value="needed">
+              {t("articles.filter.verification.needed")}
+            </option>
+            <option value="verified">
+              {t("articles.filter.verification.verified")}
+            </option>
           </Select>
 
           <Input

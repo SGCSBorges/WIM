@@ -28,6 +28,8 @@ type ParsedRow = {
   price: number | null;
   purchasedFrom: string;
   orderRef: string;
+  /** Raw JSON cell round-tripped from the export; server parses/validates. */
+  customFields: string;
   locations: string[];
   tags: string[];
   valid: boolean;
@@ -60,6 +62,7 @@ function toRow(rec: Record<string, string>): ParsedRow {
       rec["ordernumber"] ??
       ""
     ).trim(),
+    customFields: (rec["customfields"] ?? rec["custom fields"] ?? "").trim(),
     locations,
     tags,
     valid: name.trim() !== "" && model.trim() !== "" && locations.length > 0,
@@ -116,6 +119,7 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
         price: r.price,
         purchasedFrom: r.purchasedFrom || null,
         orderRef: r.orderRef || null,
+        customFields: r.customFields || null,
         locations: r.locations,
         tags: r.tags,
       }));

@@ -11,6 +11,7 @@
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { ArticleService } from "./article.service";
+import { CustomFieldsSchema } from "./article.schemas";
 
 export type ImportRow = {
   name: string;
@@ -19,9 +20,35 @@ export type ImportRow = {
   price?: number | null;
   purchasedFrom?: string | null;
   orderRef?: string | null;
+  /** Raw JSON cell from the export's customFields column. */
+  customFields?: string | null;
   locations: string[];
   tags?: string[];
 };
+
+// Parse the customFields CSV cell (a JSON array of { key, value } pairs as
+// written by the exporter). Empty cell = none; malformed JSON or a shape
+// that fails validation throws so the row lands in the error report instead
+// of silently dropping data.
+function parseCustomFieldsCell(
+  raw: string | null | undefined
+): { key: string; value: string }[] | undefined {
+  const s = raw?.trim();
+  if (!s) return undefined;
+  let json: unknown;
+  try {
+    json = JSON.parse(s);
+  } catch {
+    throw new Error("customFields is not valid JSON");
+  }
+  const parsed = CustomFieldsSchema.safeParse(json);
+  if (!parsed.success) {
+    throw new Error(
+      "customFields must be a JSON array of { key, value } pairs"
+    );
+  }
+  return parsed.data.length > 0 ? parsed.data : undefined;
+}
 
 export type ImportResult = {
   created: number;
@@ -174,6 +201,8 @@ export async function importArticles(
       if (!hasLocation) {
         throw new Error("At least one location is required");
       }
+      // Parse before the dry-run bail so the preview surfaces a bad cell.
+      const customFields = parseCustomFieldsCell(row.customFields);
 
       // Dry run validates structure only; defer all writes to the real import.
       if (dryRun) {
@@ -196,6 +225,7 @@ export async function importArticles(
         purchasePrice: row.price ?? null,
         purchasedFrom: row.purchasedFrom?.trim() || null,
         orderRef: row.orderRef?.trim() || null,
+        customFields,
         locationIds,
         tagIds,
       });
