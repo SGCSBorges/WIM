@@ -45,6 +45,8 @@ export const ArticleCreateSchema = z.object({
     .nullable(),
   // Annual straight-line depreciation rate as a percentage (0–100).
   depreciationRate: z.coerce.number().min(0).max(100).optional().nullable(),
+  // Units this record represents (per-unit price × quantity = line value).
+  quantity: z.coerce.number().int().min(1).max(1_000_000).optional(),
   // Lifecycle state. Omitted on create defaults to ACTIVE (DB default).
   status: ArticleStatusSchema.optional(),
   // Optional broad category (null clears it).

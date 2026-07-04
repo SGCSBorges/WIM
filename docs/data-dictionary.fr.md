@@ -99,7 +99,8 @@ Un bien physique de l'inventaire. Le hub auquel tout le reste se rattache.
 | `brand` | String? VarChar(120) | null | Indexé par trigrammes. |
 | `purchasedFrom` | String? VarChar(150) | null | Enseigne/magasin. Privé — ne traverse jamais la frontière de partage. |
 | `orderRef` | String? VarChar(100) | null | Référence de commande/reçu. Privé, comme `purchasedFrom`. |
-| `purchasePrice` | Decimal(12,2)? | null | Pilote la valeur d'inventaire + l'amortissement. |
+| `purchasePrice` | Decimal(12,2)? | null | Prix **unitaire**. Pilote la valeur d'inventaire + l'amortissement (valeur = prix × `quantity`). |
+| `quantity` | Int | `1` | Unités représentées par cette ligne. Les valeurs multiplient prix × quantité ; les décomptes restent par ligne. |
 | `depreciationRate` | Decimal(5,2)? | null | % linéaire annuel, 0–100. null = pas d'amortissement. |
 | `sharedWithPowerUsers` | Boolean | `false` | Drapeau de partage public (lecture seule). |
 | `publicToken` | String? VarChar(64) | null | **Unique**. Page publique opt-in `/i/<token>` ; null = désactivée. |

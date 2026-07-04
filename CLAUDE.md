@@ -446,7 +446,9 @@ intentionally rely on native validation with **no** custom field messages
   dashboard inventory/current/at-risk/per-location/per-tag value
   (`statistics.service.ts` `ownedValueScope`/`ownedArticleRelation`) and the
   portfolio report — while **counts keep them** (you still have the record).
-  `IN_REPAIR`/`LOANED` are still owned, so they count.
+  `IN_REPAIR`/`LOANED` are still owned, so they count. Every value figure is
+  `purchasePrice × quantity` (per-unit price — see Round 6); counts stay
+  per-record regardless of quantity.
 - **Article category** (`Article.category`, `ArticleCategory?` enum) is an
   optional broad bucket (null = uncategorized) complementing free-form tags.
   Same mirror rule as status (`schema.prisma` / `ARTICLE_CATEGORIES` in
@@ -666,10 +668,26 @@ Smaller features added in one batch; each follows the existing patterns.
   small files, or when the canvas path is unavailable; only replaces the
   original when the re-encode is actually smaller — never blocks an upload. The
   server's magic-byte check + sharp thumbnail still run on whatever arrives.
-- **Deferred**: per-item **quantity** was scoped this round but deferred — it
-  changes money semantics (is `purchasePrice` per-unit or total?) across the
-  dashboard/reports/analytics/budget/household value aggregations, so it needs
-  an explicit product decision before threading `quantity` through all of them.
+## Round 6 (2026-07): per-item quantity
+
+- **Quantity**: `Article.quantity` (`Int`, default 1) + migration. Product
+  decision: **`purchasePrice` is the PER-UNIT price**, so every value figure is
+  `price × quantity`. Threaded through every value surface — the dashboard
+  (`statistics.service.ts`: the two `_sum(purchasePrice)` aggregates became
+  `findMany` + in-memory `price × qty` because SQL `_sum` can't multiply two
+  columns; per-location/tag/`valueArticles`/current-value all `× qty`),
+  analytics (`getPortfolioAnalytics`), budget (`getBudgetStatus`), household
+  (`getHouseholdStatistics` groupBy `_sum` → `findMany` per-owner fold), the
+  per-location value in `location.service.ts`, and both PDFs (portfolio +
+  claim/inventory manifest). **Counts stay per-record** (a 6-unit row is still
+  one article). Multipliers use `Math.max(1, quantity ?? 1)` (belt-and-
+  suspenders — the column is NOT NULL default 1). CSV export adds a `quantity`
+  column and the importer round-trips it. Duplicate copies quantity. Web:
+  numeric input in `ArticleForm`; the detail hero shows line-total Value /
+  Current value (with a "N × unit" hint) + a Quantity stat and passes
+  `price × qty` into the value curve, all suppressed for the qty=1 case so
+  single-unit records look unchanged. Demo seeder makes ~15% of items
+  multi-unit.
 
 ## Round 4 (2026-07): inventory check + custom fields
 

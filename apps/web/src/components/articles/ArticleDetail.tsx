@@ -523,6 +523,9 @@ export default function ArticleDetail() {
     );
   }
 
+  // Units this record represents; value stats show line totals (price × qty).
+  const qty = Math.max(1, article.quantity ?? 1);
+
   return (
     <div>
       <PageHeader
@@ -655,9 +658,19 @@ export default function ArticleDetail() {
               </p>
               <p className="text-sm font-semibold ui-title tabular-nums">
                 {article.purchasePrice != null
-                  ? formatMoney(article.purchasePrice, currency, language)
+                  ? formatMoney(
+                      Number(article.purchasePrice) * qty,
+                      currency,
+                      language
+                    )
                   : "—"}
               </p>
+              {qty > 1 && article.purchasePrice != null && (
+                <p className="text-[10px] ui-text-muted tabular-nums">
+                  {qty} ×{" "}
+                  {formatMoney(article.purchasePrice, currency, language)}
+                </p>
+              )}
             </div>
             {(() => {
               const current = currentValue(
@@ -672,7 +685,7 @@ export default function ArticleDetail() {
                     {t("articleDetail.currentValue")}
                   </p>
                   <p className="text-sm font-semibold ui-title tabular-nums">
-                    {formatMoney(current, currency, language)}
+                    {formatMoney(current * qty, currency, language)}
                   </p>
                   <p className="text-[10px] ui-text-muted">
                     {Number(article.depreciationRate)}%/
@@ -681,6 +694,16 @@ export default function ArticleDetail() {
                 </div>
               );
             })()}
+            {qty > 1 && (
+              <div>
+                <p className="text-xs ui-text-muted">
+                  {t("articleForm.quantity")}
+                </p>
+                <p className="text-sm font-semibold ui-title tabular-nums">
+                  {qty}
+                </p>
+              </div>
+            )}
             <div>
               <p className="text-xs ui-text-muted">
                 {t("articleDetail.locations")}
@@ -715,7 +738,11 @@ export default function ArticleDetail() {
           </div>
 
           <ValueOverTime
-            purchasePrice={article.purchasePrice}
+            purchasePrice={
+              article.purchasePrice != null
+                ? Number(article.purchasePrice) * qty
+                : article.purchasePrice
+            }
             depreciationRate={article.depreciationRate}
             basis={article.garantie?.garantieDateAchat ?? article.createdAt}
             currency={currency}

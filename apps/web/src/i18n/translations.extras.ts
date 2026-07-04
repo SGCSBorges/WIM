@@ -613,6 +613,11 @@ export const extras = {
     "articleForm.depreciationRateHint":
       "Annual straight-line depreciation. Leave blank if the item holds its value.",
     "articleForm.private.badge": "Private",
+    "articleForm.quantity": "Quantity",
+    "articleForm.quantityHint":
+      "Number of identical units (value = price × quantity).",
+    "articleForm.quantity.invalid":
+      "Quantity must be a whole number of at least 1.",
     "articleForm.private.hint":
       "Only visible to you — never shown when you share or transfer this item.",
     "dashboard.inventoryValue": "Inventory value",
@@ -1729,6 +1734,11 @@ export const extras = {
     "articleForm.depreciationRateHint":
       "Amortissement linéaire annuel. Laissez vide si l'objet garde sa valeur.",
     "articleForm.private.badge": "Privé",
+    "articleForm.quantity": "Quantité",
+    "articleForm.quantityHint":
+      "Nombre d'unités identiques (valeur = prix × quantité).",
+    "articleForm.quantity.invalid":
+      "La quantité doit être un entier d'au moins 1.",
     "articleForm.private.hint":
       "Visible par vous seul — jamais affiché lors du partage ou du transfert de cet objet.",
     "dashboard.inventoryValue": "Valeur de l'inventaire",
@@ -2858,6 +2868,11 @@ export const extras = {
     "articleForm.depreciationRateHint":
       "Depreciação linear anual. Deixe em branco se o item mantém o valor.",
     "articleForm.private.badge": "Privado",
+    "articleForm.quantity": "Quantidade",
+    "articleForm.quantityHint":
+      "Número de unidades idênticas (valor = preço × quantidade).",
+    "articleForm.quantity.invalid":
+      "A quantidade deve ser um inteiro de pelo menos 1.",
     "articleForm.private.hint":
       "Visível apenas para si — nunca mostrado ao partilhar ou transferir este item.",
     "dashboard.inventoryValue": "Valor do inventário",
@@ -3990,6 +4005,11 @@ export const extras = {
     "articleForm.depreciationRateHint":
       "Depreciación lineal anual. Déjalo en blanco si el artículo conserva su valor.",
     "articleForm.private.badge": "Privado",
+    "articleForm.quantity": "Cantidad",
+    "articleForm.quantityHint":
+      "Número de unidades idénticas (valor = precio × cantidad).",
+    "articleForm.quantity.invalid":
+      "La cantidad debe ser un entero de al menos 1.",
     "articleForm.private.hint":
       "Solo visible para ti — nunca se muestra al compartir o transferir este artículo.",
     "dashboard.inventoryValue": "Valor del inventario",
@@ -5117,6 +5137,11 @@ export const extras = {
     "articleForm.depreciationRateHint":
       "Jaarlijkse lineaire afschrijving. Laat leeg als het item zijn waarde behoudt.",
     "articleForm.private.badge": "Privé",
+    "articleForm.quantity": "Aantal",
+    "articleForm.quantityHint":
+      "Aantal identieke eenheden (waarde = prijs × aantal).",
+    "articleForm.quantity.invalid":
+      "Aantal moet een geheel getal van minstens 1 zijn.",
     "articleForm.private.hint":
       "Alleen voor jou zichtbaar — nooit getoond bij delen of overdragen van dit item.",
     "dashboard.inventoryValue": "Inventariswaarde",

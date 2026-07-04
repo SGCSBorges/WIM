@@ -59,6 +59,7 @@ const ImportSchema = z.object({
         model: z.string().trim().min(1).max(100),
         description: z.string().trim().max(255).optional().nullable(),
         price: z.coerce.number().nonnegative().max(1e10).optional().nullable(),
+        quantity: z.coerce.number().int().min(1).max(1_000_000).optional(),
         purchasedFrom: z.string().trim().max(150).optional().nullable(),
         orderRef: z.string().trim().max(100).optional().nullable(),
         // The raw JSON cell from the export's customFields column; parsed +

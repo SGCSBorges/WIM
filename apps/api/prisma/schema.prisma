@@ -364,7 +364,15 @@ model Article {
 
   // Purchase price for inventory-value tracking. Decimal to avoid float
   // rounding; serialized as a string over JSON and formatted on the client.
+  // Interpreted as the PER-UNIT price — every value figure multiplies it by
+  // `quantity` (dashboard, reports, analytics, budget, household, claim PDF).
   purchasePrice      Decimal? @db.Decimal(12, 2)
+
+  // Number of identical units this record represents (e.g. 6 dining chairs as
+  // one row). Default 1 keeps every existing record a single unit. Value
+  // totals use purchasePrice × quantity; article counts still count the row
+  // once (it's one inventory record).
+  quantity           Int      @default(1)
 
   // Annual straight-line depreciation rate as a percentage (0–100). Null
   // means the item doesn't depreciate. Used to derive a current value from

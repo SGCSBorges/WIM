@@ -365,6 +365,7 @@ export const ArticleService = {
         source.depreciationRate != null
           ? Number(source.depreciationRate)
           : null,
+      quantity: source.quantity,
       locationIds: source.locations.map((l) => l.locationId),
       tagIds: source.tags.map((t) => t.tagId),
     });

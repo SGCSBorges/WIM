@@ -18,6 +18,7 @@ export type ImportRow = {
   model: string;
   description?: string | null;
   price?: number | null;
+  quantity?: number;
   purchasedFrom?: string | null;
   orderRef?: string | null;
   /** Raw JSON cell from the export's customFields column. */
@@ -223,6 +224,7 @@ export async function importArticles(
         articleModele: row.model.trim(),
         articleDescription: row.description?.trim() || null,
         purchasePrice: row.price ?? null,
+        quantity: row.quantity ?? undefined,
         purchasedFrom: row.purchasedFrom?.trim() || null,
         orderRef: row.orderRef?.trim() || null,
         customFields,

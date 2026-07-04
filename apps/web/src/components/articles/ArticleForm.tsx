@@ -165,6 +165,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [depreciationRate, setDepreciationRate] = useState<string>(
     article?.depreciationRate != null ? String(article.depreciationRate) : ""
   );
+  const [quantity, setQuantity] = useState<string>(
+    article?.quantity != null ? String(article.quantity) : "1"
+  );
   const [status, setStatus] = useState<ArticleStatus>(
     article?.status ?? "ACTIVE"
   );
@@ -245,6 +248,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setDepreciationRate(
       article?.depreciationRate != null ? String(article.depreciationRate) : ""
     );
+    setQuantity(article?.quantity != null ? String(article.quantity) : "1");
     setStatus(article?.status ?? "ACTIVE");
     setCategory(article?.category ?? "");
     setCustomFields(article?.customFields ?? []);
@@ -501,6 +505,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       setFormError(t("articleForm.depreciation.invalid"));
       return;
     }
+    const qtyVal = quantity.trim() === "" ? 1 : Number(quantity);
+    if (!Number.isInteger(qtyVal) || qtyVal < 1 || qtyVal > 1_000_000) {
+      setFormError(t("articleForm.quantity.invalid"));
+      return;
+    }
 
     const submitData: Omit<Article, "articleId"> = {
       ...formData,
@@ -512,6 +521,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       productImageUrl: formData.productImageUrl?.trim() || null,
       purchasePrice: priceVal,
       depreciationRate: depVal,
+      quantity: qtyVal,
       status,
       category: category || null,
       // Drop half-filled rows; null (not []) clears server-side on edit.
@@ -991,6 +1001,22 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               value={depreciationRate}
               onChange={(e) => setDepreciationRate(e.target.value)}
               placeholder={t("articleForm.placeholder.depreciationRate")}
+            />
+          </Field>
+          <Field
+            label={t("articleForm.quantity")}
+            htmlFor="quantity"
+            hint={t("articleForm.quantityHint")}
+          >
+            <Input
+              type="number"
+              id="quantity"
+              name="quantity"
+              min="1"
+              step="1"
+              inputMode="numeric"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
             />
           </Field>
         </div>

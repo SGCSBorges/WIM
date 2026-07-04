@@ -1112,6 +1112,9 @@ export async function seedDemoData(
         purchasedFrom: chance(0.55) ? pick(RETAILERS) : null,
         orderRef: chance(0.35) ? `ORD-${randInt(10000000, 99999999)}` : null,
         purchasePrice: s.price,
+        // Occasionally a multi-unit record (e.g. a set of chairs) so the
+        // per-unit × quantity value math is exercised in demo data.
+        quantity: chance(0.15) ? randInt(2, 8) : 1,
         depreciationRate: s.dep,
         category: s.item.category,
         status: s.status,

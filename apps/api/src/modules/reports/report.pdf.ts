@@ -55,6 +55,7 @@ interface ArticleForReport {
   serialNumber: string | null;
   purchasePrice: unknown;
   depreciationRate: unknown;
+  quantity: number;
   createdAt: Date;
   garantie: {
     garantieDateAchat: Date | null;
@@ -118,6 +119,7 @@ export async function streamPortfolioReportPdf(
       serialNumber: true,
       purchasePrice: true,
       depreciationRate: true,
+      quantity: true,
       createdAt: true,
       garantie: {
         select: {
@@ -163,12 +165,15 @@ export async function streamPortfolioReportPdf(
   let covered = 0;
   const now = Date.now();
   for (const a of scoped) {
-    const purchase = a.purchasePrice ? Number(a.purchasePrice) : 0;
-    const current = currentValue(
-      a.purchasePrice == null ? null : Number(a.purchasePrice),
-      a.depreciationRate == null ? null : Number(a.depreciationRate),
-      a.garantie?.garantieDateAchat ?? a.createdAt
-    );
+    const qty = Math.max(1, a.quantity ?? 1);
+    // Line values: per-unit price × quantity.
+    const purchase = (a.purchasePrice ? Number(a.purchasePrice) : 0) * qty;
+    const current =
+      currentValue(
+        a.purchasePrice == null ? null : Number(a.purchasePrice),
+        a.depreciationRate == null ? null : Number(a.depreciationRate),
+        a.garantie?.garantieDateAchat ?? a.createdAt
+      ) * qty;
     totalPurchase += purchase;
     totalCurrent += current;
     const fin = a.garantie?.garantieFin
@@ -228,18 +233,25 @@ export async function streamPortfolioReportPdf(
     doc.fontSize(12).fillColor("#000").text(loc, { underline: true });
     doc.fontSize(9).fillColor("#000");
     for (const a of group) {
-      const purchase = money(a.purchasePrice, currency);
+      const qty = Math.max(1, a.quantity ?? 1);
+      // Manifest line shows the line total (× quantity) so it agrees with the
+      // cover totals; a "×N" marker keeps the unit count visible.
+      const purchase = money(
+        (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) * qty,
+        currency
+      );
       const current = money(
         currentValue(
           a.purchasePrice == null ? null : Number(a.purchasePrice),
           a.depreciationRate == null ? null : Number(a.depreciationRate),
           a.garantie?.garantieDateAchat ?? a.createdAt
-        ),
+        ) * qty,
         currency
       );
       const providers = providersByArticle.get(a.articleId);
       doc.text(
         `• ${a.articleNom} — ${a.brand ? a.brand + " " : ""}${a.articleModele}` +
+          (qty > 1 ? ` · ×${qty}` : "") +
           (a.serialNumber ? ` · S/N ${a.serialNumber}` : "") +
           ` · purchase ${purchase} · now ${current}` +
           ` · warranty ${

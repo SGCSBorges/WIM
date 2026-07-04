@@ -225,19 +225,30 @@ describe("getDashboardStatistics", () => {
       { locationId: 1, _count: { articleId: 2 } },
       { locationId: 2, _count: { articleId: 1 } },
     ]);
-    mockPrisma.article.aggregate
-      .mockResolvedValueOnce({ _sum: { purchasePrice: 300 } }) // total
-      .mockResolvedValueOnce({ _sum: { purchasePrice: 50 } }); // at-risk
+    // Value totals now come from findMany (per-unit price × quantity) rather
+    // than a SQL _sum: inventory rows first, then the at-risk (warranty-
+    // expired) rows, then valueArticles (empty here).
+    mockPrisma.article.findMany
+      .mockResolvedValueOnce([{ purchasePrice: 300, quantity: 1 }]) // inventory total
+      .mockResolvedValueOnce([{ purchasePrice: 50, quantity: 1 }]) // at-risk
+      .mockResolvedValue([]);
     mockPrisma.articleLocation.findMany.mockResolvedValue([
-      { locationId: 1, article: { purchasePrice: 100 } },
-      { locationId: 1, article: { purchasePrice: 50 } },
-      { locationId: 2, article: { purchasePrice: 150 } },
+      { locationId: 1, article: { purchasePrice: 100, quantity: 1 } },
+      { locationId: 1, article: { purchasePrice: 50, quantity: 1 } },
+      { locationId: 2, article: { purchasePrice: 150, quantity: 1 } },
     ]);
     mockPrisma.articleTag.findMany.mockResolvedValue([
-      { tagId: 1, tag: { name: "Tools" }, article: { purchasePrice: 100 } },
-      { tagId: 1, tag: { name: "Tools" }, article: { purchasePrice: 150 } },
+      {
+        tagId: 1,
+        tag: { name: "Tools" },
+        article: { purchasePrice: 100, quantity: 1 },
+      },
+      {
+        tagId: 1,
+        tag: { name: "Tools" },
+        article: { purchasePrice: 150, quantity: 1 },
+      },
     ]);
-    mockPrisma.article.findMany.mockResolvedValue([]);
     mockPrisma.garantie.count.mockResolvedValue(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
     mockPrisma.garantie.findMany.mockResolvedValue([]);
@@ -253,6 +264,29 @@ describe("getDashboardStatistics", () => {
     expect(result.inventoryValue.byTag).toEqual([
       { tagId: 1, name: "Tools", value: 250 },
     ]);
+  });
+
+  it("multiplies value by quantity (per-unit price × quantity)", async () => {
+    setupDashboardMocks({
+      locations: [{ locationId: 1, name: "Home" }],
+    });
+    // One inventory row: 3 units at 100 each ⇒ line value 300. At-risk empty.
+    mockPrisma.article.findMany
+      .mockResolvedValueOnce([{ purchasePrice: 100, quantity: 3 }]) // inventory
+      .mockResolvedValueOnce([]) // at-risk
+      .mockResolvedValue([]); // valueArticles + additions series
+    mockPrisma.articleLocation.findMany.mockResolvedValue([
+      { locationId: 1, article: { purchasePrice: 100, quantity: 3 } },
+    ]);
+
+    const result = await getDashboardStatistics({ userId: 1, role: "USER" });
+
+    // Both the grand total and the per-location slice reflect price × quantity.
+    expect(result.inventoryValue.total).toBe(300);
+    const home = result.inventoryValue.byLocation.find(
+      (l) => l.locationId === 1
+    );
+    expect(home?.value).toBe(300);
   });
 
   it("computes currentTotal from per-article straight-line depreciation", async () => {
@@ -339,12 +373,17 @@ describe("getDashboardStatistics", () => {
     const lastMonth = new Date(now);
     lastMonth.setMonth(lastMonth.getMonth() - 1);
     lastMonth.setDate(10);
-    mockPrisma.article.findMany.mockResolvedValueOnce([]); // value rows query
-    mockPrisma.article.findMany.mockResolvedValueOnce([
-      { createdAt: lastMonth },
-      { createdAt: lastMonth },
-      { createdAt: now },
-    ]);
+    // Three value-row queries run first (inventory total, at-risk,
+    // valueArticles) before the article-additions series query.
+    mockPrisma.article.findMany
+      .mockResolvedValueOnce([]) // inventory total rows
+      .mockResolvedValueOnce([]) // at-risk rows
+      .mockResolvedValueOnce([]) // valueArticles
+      .mockResolvedValueOnce([
+        { createdAt: lastMonth },
+        { createdAt: lastMonth },
+        { createdAt: now },
+      ]);
 
     const result = await getDashboardStatistics({ userId: 1, role: "USER" });
     expect(result.warrantyExpirationsByMonth).toHaveLength(12);

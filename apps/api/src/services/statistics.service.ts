@@ -110,8 +110,8 @@ export async function getDashboardStatistics(
       warrantiesWithAttachment,
       alertsTotal,
       ownedSharedArticles,
-      inventoryValueAgg,
-      atRiskValueAgg,
+      inventoryValueRows,
+      atRiskValueRows,
       locationValueRows,
       tagValueRows,
       valueArticles,
@@ -187,22 +187,25 @@ export async function getDashboardStatistics(
       prisma.article.count({
         where: { ownerUserId, sharedWithPowerUsers: true, deletedAt: null },
       }),
-      prisma.article.aggregate({
+      // Value = per-unit purchasePrice × quantity, so these can't use a SQL
+      // `_sum` (which can't multiply two columns) — fetch price+quantity and
+      // sum in memory instead.
+      prisma.article.findMany({
         where: ownedValueScope,
-        _sum: { purchasePrice: true },
+        select: { purchasePrice: true, quantity: true },
       }),
-      prisma.article.aggregate({
+      prisma.article.findMany({
         where: {
           ...ownedValueScope,
           garantie: { garantieFin: { lt: currentDate } },
         },
-        _sum: { purchasePrice: true },
+        select: { purchasePrice: true, quantity: true },
       }),
       prisma.articleLocation.findMany({
         where: ownedArticleRelation,
         select: {
           locationId: true,
-          article: { select: { purchasePrice: true } },
+          article: { select: { purchasePrice: true, quantity: true } },
         },
       }),
       prisma.articleTag.findMany({
@@ -210,7 +213,7 @@ export async function getDashboardStatistics(
         select: {
           tagId: true,
           tag: { select: { name: true } },
-          article: { select: { purchasePrice: true } },
+          article: { select: { purchasePrice: true, quantity: true } },
         },
       }),
       prisma.article.findMany({
@@ -218,6 +221,7 @@ export async function getDashboardStatistics(
         select: {
           purchasePrice: true,
           depreciationRate: true,
+          quantity: true,
           createdAt: true,
           garantie: { select: { garantieDateAchat: true } },
         },
@@ -294,15 +298,16 @@ export async function getDashboardStatistics(
     // FULL price to each slice — "value present at this location" — so slice
     // sums can exceed inventoryValue.total. Intentional; don't "fix" by
     // splitting the price across slices.
-    const cents = (price: unknown) =>
-      price ? Math.round(Number(price) * 100) : 0;
+    // Line value in integer cents: per-unit price × quantity.
+    const lineCents = (price: unknown, quantity: number) =>
+      price ? Math.round(Number(price) * 100) * Math.max(1, quantity ?? 1) : 0;
 
     const centsByLocation = new Map<number, number>();
     for (const row of locationValueRows) {
       centsByLocation.set(
         row.locationId,
         (centsByLocation.get(row.locationId) ?? 0) +
-          cents(row.article.purchasePrice)
+          lineCents(row.article.purchasePrice, row.article.quantity)
       );
     }
     const valueByLocationMap = new Map<number, number>();
@@ -311,13 +316,10 @@ export async function getDashboardStatistics(
     // Same aggregation per tag.
     const tagCents = new Map<number, { name: string; cents: number }>();
     for (const row of tagValueRows) {
+      const c = lineCents(row.article.purchasePrice, row.article.quantity);
       const existing = tagCents.get(row.tagId);
-      if (existing) existing.cents += cents(row.article.purchasePrice);
-      else
-        tagCents.set(row.tagId, {
-          name: row.tag.name,
-          cents: cents(row.article.purchasePrice),
-        });
+      if (existing) existing.cents += c;
+      else tagCents.set(row.tagId, { name: row.tag.name, cents: c });
     }
     const valueByTag = new Map<number, { name: string; value: number }>();
     for (const [id, v] of tagCents)
@@ -334,8 +336,18 @@ export async function getDashboardStatistics(
         basis,
         currentDate
       );
-      currentCents += Math.round(value * 100);
+      // Per-unit depreciated value × quantity.
+      currentCents += Math.round(value * 100) * Math.max(1, a.quantity ?? 1);
     }
+
+    // Nominal inventory value + the warranty-expired ("at risk") slice, both
+    // as Σ per-unit price × quantity (in integer cents).
+    let inventoryCents = 0;
+    for (const a of inventoryValueRows)
+      inventoryCents += lineCents(a.purchasePrice, a.quantity);
+    let atRiskCents = 0;
+    for (const a of atRiskValueRows)
+      atRiskCents += lineCents(a.purchasePrice, a.quantity);
 
     const countMap = new Map<number, number>();
     for (const row of articleCountsByLocation) {
@@ -409,9 +421,9 @@ export async function getDashboardStatistics(
         totalSharedArticles,
       },
       inventoryValue: {
-        total: Number(inventoryValueAgg._sum.purchasePrice ?? 0),
+        total: inventoryCents / 100,
         currentTotal: currentCents / 100,
-        atRisk: Number(atRiskValueAgg._sum.purchasePrice ?? 0),
+        atRisk: atRiskCents / 100,
         byLocation: byLocation.map((l) => ({
           locationId: l.locationId,
           name: l.name,
@@ -572,6 +584,7 @@ export async function getPortfolioAnalytics(params: {
       articleNom: true,
       purchasePrice: true,
       depreciationRate: true,
+      quantity: true,
       createdAt: true,
       category: true,
       garantie: { select: { garantieDateAchat: true } },
@@ -594,7 +607,9 @@ export async function getPortfolioAnalytics(params: {
   const valued: { articleId: number; name: string; value: number }[] = [];
 
   for (const a of articles) {
-    const price = a.purchasePrice == null ? 0 : Number(a.purchasePrice);
+    const qty = Math.max(1, a.quantity ?? 1);
+    // All figures are line values: per-unit price × quantity.
+    const price = (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) * qty;
     totalSpend += price;
 
     const acquired = a.garantie?.garantieDateAchat ?? a.createdAt;
@@ -602,11 +617,11 @@ export async function getPortfolioAnalytics(params: {
     spendPerMonth.set(key, (spendPerMonth.get(key) ?? 0) + price);
 
     const current =
-      currentValue(
+      (currentValue(
         a.purchasePrice == null ? null : Number(a.purchasePrice),
         a.depreciationRate == null ? null : Number(a.depreciationRate),
         acquired
-      ) ?? 0;
+      ) ?? 0) * qty;
     currentTotal += current;
     valued.push({ articleId: a.articleId, name: a.articleNom, value: current });
 
@@ -705,6 +720,7 @@ export async function getBudgetStatus(userId: number): Promise<BudgetStatus> {
     },
     select: {
       purchasePrice: true,
+      quantity: true,
       createdAt: true,
       garantie: { select: { garantieDateAchat: true } },
     },
@@ -714,7 +730,10 @@ export async function getBudgetStatus(userId: number): Promise<BudgetStatus> {
   let annualSpend = 0;
   for (const a of articles) {
     const acquired = new Date(a.garantie?.garantieDateAchat ?? a.createdAt);
-    const price = a.purchasePrice == null ? 0 : Number(a.purchasePrice);
+    // Line spend: per-unit price × quantity.
+    const price =
+      (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) *
+      Math.max(1, a.quantity ?? 1);
     if (acquired >= yearStart) annualSpend += price;
     if (acquired >= monthStart) monthlySpend += price;
   }
@@ -765,28 +784,35 @@ export async function getHouseholdStatistics(userId: number): Promise<{
   if (!membership) return null;
 
   const memberIds = membership.household.members.map((m) => m.user.userId);
-  const [counts, sums] = await Promise.all([
+  const [counts, valueRows] = await Promise.all([
     prisma.article.groupBy({
       by: ["ownerUserId"],
       where: { ownerUserId: { in: memberIds }, deletedAt: null },
       _count: { articleId: true },
     }),
-    prisma.article.groupBy({
-      by: ["ownerUserId"],
+    // Value = per-unit price × quantity, so a SQL `_sum` won't do — fetch the
+    // priced rows and fold per owner in memory (integer cents to avoid drift).
+    prisma.article.findMany({
       where: {
         ownerUserId: { in: memberIds },
         deletedAt: null,
         status: { notIn: NOT_OWNED_STATUSES },
         purchasePrice: { not: null },
       },
-      _sum: { purchasePrice: true },
+      select: { ownerUserId: true, purchasePrice: true, quantity: true },
     }),
   ]);
   const countBy = new Map(
     counts.map((c) => [c.ownerUserId, c._count.articleId])
   );
+  const centsBy = new Map<number, number>();
+  for (const a of valueRows) {
+    const c =
+      Math.round(Number(a.purchasePrice) * 100) * Math.max(1, a.quantity ?? 1);
+    centsBy.set(a.ownerUserId, (centsBy.get(a.ownerUserId) ?? 0) + c);
+  }
   const sumBy = new Map(
-    sums.map((c) => [c.ownerUserId, Number(c._sum.purchasePrice ?? 0)])
+    Array.from(centsBy.entries()).map(([id, c]) => [id, c / 100])
   );
 
   const members = membership.household.members.map((m) => ({

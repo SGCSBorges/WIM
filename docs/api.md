@@ -293,6 +293,13 @@ failure mode with the same 401.
   `?verification=needed|verified` (needed = never verified or >12 months ago —
   the same rule behind the dashboard's `articles.needsVerification` count),
   and the CSV export carries a read-only `lastVerifiedAt` column.
+- **Quantity** — `Article.quantity` (int, default 1) lets one record stand for
+  several identical units. `purchasePrice` is the **per-unit** price, so every
+  value figure across the app (dashboard, per-location/tag, analytics, budget,
+  household, and the portfolio + claim PDFs) is `price × quantity`; item
+  **counts** stay per-record. Written through the normal create/update
+  endpoints, copied by duplicate, and round-tripped through the CSV
+  export/import `quantity` column.
 - **Custom fields** — `Article.customFields` is an ordered JSONB array of
   `{ key, value }` pairs (≤20; key ≤40 chars, value ≤500), written through the
   normal create/update endpoints (`null` clears). Private like

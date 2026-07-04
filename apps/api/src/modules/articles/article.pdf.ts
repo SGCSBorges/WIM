@@ -92,14 +92,25 @@ export async function streamArticleClaimPdf(
   if (article.serialNumber) row("Serial number:", article.serialNumber);
   if (article.purchasedFrom) row("Purchased from:", article.purchasedFrom);
   if (article.orderRef) row("Order / receipt no.:", article.orderRef);
+  const qty = Math.max(1, article.quantity ?? 1);
   row("Purchase price:", money(article.purchasePrice, currency));
+  if (qty > 1) {
+    row("Quantity:", String(qty));
+    if (article.purchasePrice != null)
+      row(
+        "Total purchase value:",
+        money(Number(article.purchasePrice) * qty, currency)
+      );
+  }
   if (article.depreciationRate != null && article.purchasePrice != null) {
     const basis = article.garantie?.garantieDateAchat ?? article.createdAt;
-    const current = currentValue(
-      Number(article.purchasePrice),
-      Number(article.depreciationRate),
-      basis
-    );
+    // Line current value (× quantity), consistent with the dashboard + report.
+    const current =
+      currentValue(
+        Number(article.purchasePrice),
+        Number(article.depreciationRate),
+        basis
+      ) * qty;
     row(
       "Current value:",
       `${money(current, currency)} (${Number(article.depreciationRate)}%/yr depreciation)`
@@ -218,11 +229,16 @@ export async function streamInventoryPdf(
       articleNom: true,
       articleModele: true,
       purchasePrice: true,
+      quantity: true,
     },
   });
 
+  // Line value: per-unit price × quantity.
   const total = articles.reduce(
-    (sum, a) => sum + (a.purchasePrice ? Number(a.purchasePrice) : 0),
+    (sum, a) =>
+      sum +
+      (a.purchasePrice ? Number(a.purchasePrice) : 0) *
+        Math.max(1, a.quantity ?? 1),
     0
   );
 
@@ -250,9 +266,10 @@ export async function streamInventoryPdf(
 
   doc.fontSize(10);
   for (const a of articles) {
+    const qty = Math.max(1, a.quantity ?? 1);
     doc.text(
-      `• ${a.articleNom} (${a.articleModele}) — ${money(
-        a.purchasePrice,
+      `• ${a.articleNom} (${a.articleModele})${qty > 1 ? ` ×${qty}` : ""} — ${money(
+        (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) * qty,
         currency
       )}`
     );

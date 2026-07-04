@@ -146,6 +146,9 @@ export interface Article {
   // Annual straight-line depreciation rate as a percentage (0–100). Null/
   // absent = no depreciation. String on reads (Prisma Decimal), number on writes.
   depreciationRate?: string | number | null;
+  // Number of identical units this record represents (default 1). Value
+  // figures use purchasePrice (per-unit) × quantity; counts stay per-record.
+  quantity?: number;
   sharedWithPowerUsers?: boolean;
   // Lifecycle state. Defaults to ACTIVE server-side; absent on legacy writes.
   status?: ArticleStatus;

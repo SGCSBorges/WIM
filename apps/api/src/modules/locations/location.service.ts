@@ -78,14 +78,15 @@ export const LocationService = {
       },
       select: {
         locationId: true,
-        article: { select: { purchasePrice: true } },
+        article: { select: { purchasePrice: true, quantity: true } },
       },
     });
 
     const sums = new Map<number, number>();
     for (const r of rows) {
+      // Line value: per-unit price × quantity.
       const price = r.article.purchasePrice
-        ? Number(r.article.purchasePrice)
+        ? Number(r.article.purchasePrice) * Math.max(1, r.article.quantity ?? 1)
         : 0;
       sums.set(r.locationId, (sums.get(r.locationId) ?? 0) + price);
     }

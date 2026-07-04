@@ -17,6 +17,7 @@ const COLUMNS = [
   "orderRef",
   "description",
   "purchasePrice",
+  "quantity",
   "depreciationRate",
   // Computed at export time (purchase price after straight-line depreciation
   // based on warranty purchase date or createdAt). Read-only — the importer
@@ -91,6 +92,7 @@ function serializeRow(a: ExportRow): string {
     a.orderRef,
     a.articleDescription,
     a.purchasePrice,
+    a.quantity,
     a.depreciationRate,
     current,
     a.status,
