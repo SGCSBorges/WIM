@@ -1071,4 +1071,176 @@ suite("API integration (real Postgres)", () => {
       ).status
     ).toBe(409);
   }, 30_000);
+
+  // Helper: create a location + a priced article for the calling agent.
+  const makeArticle = async (
+    agent: ReturnType<typeof request.agent>,
+    body: Record<string, unknown>
+  ) => {
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: `Loc-${Math.random().toString(36).slice(2, 8)}` });
+    const created = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Item",
+        articleModele: "M1",
+        locationIds: [loc.body.locationId],
+        ...body,
+      });
+    expect(created.status).toBe(201);
+    return created.body;
+  };
+
+  it("pins a favorite and the ?favorite=1 filter reflects it both ways", async () => {
+    const agent = await register("fav@example.com");
+    const a = await makeArticle(agent, { articleNom: "Camera" });
+
+    // Nothing favorited yet.
+    const before = await agent.get("/api/articles?favorite=1");
+    expect(before.body.total).toBe(0);
+
+    const pin = await agent
+      .post(`/api/articles/${a.articleId}/favorite`)
+      .set("Origin", ORIGIN)
+      .send({ favorite: true });
+    expect(pin.status).toBe(200);
+
+    const after = await agent.get("/api/articles?favorite=1");
+    expect(after.body.total).toBe(1);
+    expect(after.body.items[0].isFavorite).toBe(true);
+
+    // Unpin → filter empty again.
+    await agent
+      .post(`/api/articles/${a.articleId}/favorite`)
+      .set("Origin", ORIGIN)
+      .send({ favorite: false });
+    const cleared = await agent.get("/api/articles?favorite=1");
+    expect(cleared.body.total).toBe(0);
+  });
+
+  it("counts inventory value as per-unit price × quantity on the dashboard", async () => {
+    const agent = await register("qty@example.com");
+    await makeArticle(agent, { purchasePrice: 100, quantity: 3 });
+
+    const dash = await agent.get("/api/statistics/dashboard");
+    expect(dash.status).toBe(200);
+    // 3 units × 100 = 300, not 100.
+    expect(dash.body.inventoryValue.total).toBe(300);
+    // A single record, but three units.
+    expect(dash.body.articles.total).toBe(1);
+    expect(dash.body.articles.totalUnits).toBe(3);
+
+    // The CSV export (csv_export-gated → POWER_USER) carries the quantity
+    // column in its header.
+    await prisma.user.update({
+      where: { email: "qty@example.com" },
+      data: { role: "POWER_USER" },
+    });
+    const csv = await agent.get("/api/articles/export/inventory.csv");
+    expect(csv.status).toBe(200);
+    expect(csv.text.split("\r\n")[0]).toContain("quantity");
+  });
+
+  it("stamps an inventory-check and the verification filter partitions the list", async () => {
+    const agent = await register("verify@example.com");
+    const a = await makeArticle(agent, { articleNom: "Ladder" });
+
+    // Freshly created → needs verification, not yet verified.
+    expect((await agent.get("/api/articles?verification=needed")).body.total).toBe(1);
+    expect((await agent.get("/api/articles?verification=verified")).body.total).toBe(0);
+
+    const verify = await agent
+      .post(`/api/articles/${a.articleId}/verify`)
+      .set("Origin", ORIGIN);
+    expect(verify.status).toBe(200);
+    expect(verify.body.lastVerifiedAt).toBeTruthy();
+
+    // Now verified within 12 months → flips buckets.
+    expect((await agent.get("/api/articles?verification=needed")).body.total).toBe(0);
+    expect((await agent.get("/api/articles?verification=verified")).body.total).toBe(1);
+  });
+
+  it("round-trips custom fields on create → getById", async () => {
+    const agent = await register("cf@example.com");
+    const a = await makeArticle(agent, {
+      customFields: [
+        { key: "RAM", value: "32 GB" },
+        { key: "Color", value: "Black" },
+      ],
+    });
+    const got = await agent.get(`/api/articles/${a.articleId}`);
+    expect(got.status).toBe(200);
+    expect(got.body.customFields).toEqual([
+      { key: "RAM", value: "32 GB" },
+      { key: "Color", value: "Black" },
+    ]);
+  });
+
+  it("sets and clears a tag color", async () => {
+    const agent = await register("tagcolor@example.com");
+    const created = await agent
+      .post("/api/tags")
+      .set("Origin", ORIGIN)
+      .send({ name: "Tools", color: "#ff8800" });
+    expect(created.status).toBe(201);
+    expect(created.body.color).toBe("#ff8800");
+
+    // Reject a malformed hex.
+    const bad = await agent
+      .put(`/api/tags/${created.body.tagId}`)
+      .set("Origin", ORIGIN)
+      .send({ color: "orange" });
+    expect(bad.status).toBe(400);
+
+    // Clear it back to the default (null).
+    const cleared = await agent
+      .put(`/api/tags/${created.body.tagId}`)
+      .set("Origin", ORIGIN)
+      .send({ color: null });
+    expect(cleared.status).toBe(200);
+    expect(cleared.body.color).toBeNull();
+  });
+
+  it("surfaces a warranty expiry on the in-app agenda, linked to its article", async () => {
+    // Seed the article + warranty via Prisma so the create doesn't schedule
+    // BullMQ reminders and block on Redis (same reason as the claim test).
+    const agent = await register("agenda@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    const loc = await prisma.location.create({
+      data: { ownerUserId, name: "Kitchen" },
+    });
+    const article = await prisma.article.create({
+      data: {
+        ownerUserId,
+        articleNom: "Fridge",
+        articleModele: "F1",
+        locations: { create: [{ locationId: loc.locationId }] },
+      },
+    });
+    await prisma.garantie.create({
+      data: {
+        ownerUserId,
+        garantieArticleId: article.articleId,
+        garantieNom: "Manufacturer",
+        garantieDateAchat: new Date(),
+        garantieDuration: 6,
+        // ~90 days out → inside the 365-day forward window.
+        garantieFin: new Date(Date.now() + 90 * 86400_000),
+        garantieIsValide: true,
+      },
+    });
+
+    const agenda = await agent.get("/api/calendar/agenda");
+    expect(agenda.status).toBe(200);
+    const warranty = agenda.body.events.find(
+      (e: { kind: string; articleId: number | null }) =>
+        e.kind === "warranty" && e.articleId === article.articleId
+    );
+    expect(warranty).toBeTruthy();
+    expect(warranty.title).toContain("Manufacturer");
+  });
 });

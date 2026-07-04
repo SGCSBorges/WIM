@@ -104,4 +104,52 @@ describe("<BulkEditDialog />", () => {
       expect(bulkUpdate).toHaveBeenCalledWith([1, 2, 3], { brand: null });
     });
   });
+
+  it("offers no Clear option for quantity (the column is NOT NULL)", () => {
+    renderDialog();
+    const qtyOp = screen.getByLabelText("Quantity operation");
+    const options = Array.from(qtyOp.querySelectorAll("option")).map((o) =>
+      o.getAttribute("value")
+    );
+    expect(options).toEqual(expect.arrayContaining(["skip", "set"]));
+    expect(options).not.toContain("clear");
+  });
+
+  it("forwards a set quantity to bulkUpdate", async () => {
+    bulkUpdate.mockResolvedValueOnce({ count: 3 });
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.selectOptions(
+      screen.getByLabelText("Quantity operation"),
+      "set"
+    );
+    await user.type(
+      screen.getByLabelText("Quantity", { selector: "input" }),
+      "4"
+    );
+    await user.click(screen.getByRole("button", { name: /apply changes/i }));
+
+    await waitFor(() => {
+      expect(bulkUpdate).toHaveBeenCalledWith([1, 2, 3], { quantity: 4 });
+    });
+  });
+
+  it("rejects a fractional quantity before hitting the API", async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.selectOptions(
+      screen.getByLabelText("Quantity operation"),
+      "set"
+    );
+    await user.type(
+      screen.getByLabelText("Quantity", { selector: "input" }),
+      "2.5"
+    );
+    await user.click(screen.getByRole("button", { name: /apply changes/i }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(bulkUpdate).not.toHaveBeenCalled();
+  });
 });
