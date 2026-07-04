@@ -85,6 +85,8 @@ const ArticleListQuerySchema = z.object({
   category: ArticleCategorySchema.optional(),
   // Physical inventory check: "needed" = never verified or >12 months ago.
   verification: z.enum(["needed", "verified"]).optional(),
+  // Restrict to owner-pinned favorites (only "1"/"true" enables it).
+  favorite: z.enum(["1", "true"]).optional(),
   priceMin: z.coerce.number().nonnegative().optional(),
   priceMax: z.coerce.number().nonnegative().optional(),
   // Inclusive createdAt date range. Coerce from YYYY-MM-DD strings the web
@@ -115,6 +117,7 @@ router.get(
       status: q.status,
       category: q.category,
       verification: q.verification,
+      favorite: q.favorite ? true : undefined,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,
@@ -317,6 +320,24 @@ router.post(
   })
 );
 
+/** POST pin/unpin an article as a favorite. `{ favorite: boolean }`. */
+router.post(
+  "/:id/favorite",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const { favorite } = z.object({ favorite: z.boolean() }).parse(req.body);
+    await ArticleService.setFavorite(id, req.user!.sub, favorite);
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "Article",
+      entityId: id,
+      metadata: { favorite },
+    });
+    res.json({ favorite });
+  })
+);
+
 /** POST bulk-verify a selection (physical inventory sweep). Ungated like
  *  bulk-assign — verification is a core inventory action, not a paid one. */
 router.post(
@@ -481,6 +502,7 @@ router.post(
           depreciationRate: z.number().min(0).max(100).nullable().optional(),
           brand: z.string().trim().max(120).nullable().optional(),
           serialNumber: z.string().trim().max(120).nullable().optional(),
+          quantity: z.number().int().min(1).max(1_000_000).optional(),
         })
         .refine((v) => Object.keys(v).length > 0, {
           message: "at least one field is required",
@@ -563,6 +585,7 @@ router.get(
       status: q.status,
       category: q.category,
       verification: q.verification,
+      favorite: q.favorite ? true : undefined,
       priceMin: q.priceMin,
       priceMax: q.priceMax,
       createdFrom: q.createdFrom,

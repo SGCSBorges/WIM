@@ -293,6 +293,15 @@ failure mode with the same 401.
   `?verification=needed|verified` (needed = never verified or >12 months ago —
   the same rule behind the dashboard's `articles.needsVerification` count),
   and the CSV export carries a read-only `lastVerifiedAt` column.
+- **Favorites** — `Article.isFavorite` (bool). `POST /api/articles/:id/favorite
+  { favorite }` pins/unpins; the list accepts `?favorite=1`. A star toggle
+  appears on the detail page and list rows.
+- **Agenda** — `GET /api/calendar/agenda` returns a JSON list of upcoming and
+  overdue events (warranty expirations, maintenance due, loan returns,
+  insurance renewals, scheduled alerts) aggregated server-side, sorted by
+  date. Reuses the same scoping as the ICS feed but is a plain authenticated
+  read (not gated on `calendar_feed`), since it only surfaces signals the free
+  dashboard already shows.
 - **Quantity** — `Article.quantity` (int, default 1) lets one record stand for
   several identical units. `purchasePrice` is the **per-unit** price, so every
   value figure across the app (dashboard, per-location/tag, analytics, budget,

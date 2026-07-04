@@ -10,6 +10,7 @@
  */
 import crypto from "crypto";
 import { AlerteStatus } from "@prisma/client";
+import type { AgendaEvent } from "@wim/types";
 import { prisma } from "../../libs/prisma";
 
 // Escape per RFC 5545: backslash, semicolon, comma, and newlines. A lone
@@ -191,5 +192,124 @@ export const CalendarService = {
     ];
 
     return buildCalendar(events);
+  },
+
+  /**
+   * In-app agenda: upcoming (and still-actionable overdue) events across
+   * warranties, maintenance, loans, insurance renewals, and scheduled alerts.
+   * Forward window is 365 days. Overdue loans / maintenance / insurance stay
+   * on the list until resolved (they need attention); warranties and alerts
+   * use a 30-day past window so long-expired items don't clutter it. Sorted
+   * ascending by date and capped so the payload stays bounded.
+   */
+  async agenda(userId: number): Promise<AgendaEvent[]> {
+    const now = new Date();
+    const in365 = new Date(now.getTime() + 365 * 86_400_000);
+    const past30 = new Date(now.getTime() - 30 * 86_400_000);
+    const liveArticleScope = {
+      OR: [{ article: null }, { article: { deletedAt: null } }],
+    };
+
+    const [warranties, alerts, loans, policies, serviceRecords] =
+      await Promise.all([
+        prisma.garantie.findMany({
+          where: {
+            ownerUserId: userId,
+            garantieFin: { gte: past30, lte: in365 },
+            article: { deletedAt: null },
+          },
+          select: {
+            garantieNom: true,
+            garantieFin: true,
+            garantieArticleId: true,
+          },
+        }),
+        prisma.alerte.findMany({
+          where: {
+            ownerUserId: userId,
+            status: AlerteStatus.SCHEDULED,
+            alerteDate: { gte: past30, lte: in365 },
+            ...liveArticleScope,
+          },
+          select: {
+            alerteNom: true,
+            alerteDate: true,
+            alerteArticleId: true,
+          },
+        }),
+        prisma.loan.findMany({
+          where: {
+            ownerUserId: userId,
+            returnedAt: null,
+            dueAt: { not: null, lte: in365 },
+            article: { deletedAt: null },
+          },
+          select: {
+            borrowerName: true,
+            dueAt: true,
+            articleId: true,
+            article: { select: { articleNom: true } },
+          },
+        }),
+        prisma.insurancePolicy.findMany({
+          where: {
+            ownerUserId: userId,
+            renewalAt: { not: null, lte: in365 },
+          },
+          select: { provider: true, renewalAt: true },
+        }),
+        prisma.serviceRecord.findMany({
+          where: { ownerUserId: userId, article: { deletedAt: null } },
+          orderBy: { performedAt: "desc" },
+          select: {
+            articleId: true,
+            nextDueAt: true,
+            article: { select: { articleNom: true } },
+          },
+        }),
+      ]);
+
+    // Maintenance: only the LATEST record per article carries the live
+    // schedule (a newer service with no nextDueAt clears an older one).
+    const latestService = new Map<number, (typeof serviceRecords)[number]>();
+    for (const r of serviceRecords)
+      if (!latestService.has(r.articleId)) latestService.set(r.articleId, r);
+
+    const events: AgendaEvent[] = [
+      ...warranties.map((w) => ({
+        kind: "warranty" as const,
+        date: w.garantieFin.toISOString(),
+        title: `${w.garantieNom} — warranty expires`,
+        articleId: w.garantieArticleId,
+      })),
+      ...alerts.map((a) => ({
+        kind: "alert" as const,
+        date: a.alerteDate.toISOString(),
+        title: a.alerteNom,
+        articleId: a.alerteArticleId,
+      })),
+      ...loans.map((l) => ({
+        kind: "loan" as const,
+        date: (l.dueAt as Date).toISOString(),
+        title: `${l.article.articleNom} — loan due back (${l.borrowerName})`,
+        articleId: l.articleId,
+      })),
+      ...policies.map((p) => ({
+        kind: "insurance" as const,
+        date: (p.renewalAt as Date).toISOString(),
+        title: `${p.provider} — policy renewal`,
+        articleId: null,
+      })),
+      ...[...latestService.values()]
+        .filter((r) => r.nextDueAt !== null && r.nextDueAt <= in365)
+        .map((r) => ({
+          kind: "maintenance" as const,
+          date: (r.nextDueAt as Date).toISOString(),
+          title: `${r.article.articleNom} — service due`,
+          articleId: r.articleId,
+        })),
+    ];
+
+    return events.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 200);
   },
 };

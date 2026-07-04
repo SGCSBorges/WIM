@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   ChevronDown,
   CalendarDays,
+  Star,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { ARTICLE_STATUSES, ARTICLE_CATEGORIES } from "@wim/types";
@@ -37,6 +38,7 @@ interface ArticlesFilterBarProps {
   statusFilter: string;
   categoryFilter: string;
   verificationFilter: string;
+  favoriteFilter: boolean;
   priceMin: string;
   priceMax: string;
   createdFrom: string;
@@ -59,6 +61,7 @@ export default function ArticlesFilterBar({
   statusFilter,
   categoryFilter,
   verificationFilter,
+  favoriteFilter,
   priceMin,
   priceMax,
   createdFrom,
@@ -81,6 +84,7 @@ export default function ArticlesFilterBar({
     statusFilter,
     categoryFilter,
     verificationFilter,
+    favoriteFilter,
     priceMin,
     priceMax,
     createdFrom,
@@ -269,6 +273,25 @@ export default function ArticlesFilterBar({
               {t("articles.filter.verification.verified")}
             </option>
           </Select>
+
+          <button
+            type="button"
+            onClick={() =>
+              updateParams({ favorite: favoriteFilter ? undefined : "1" })
+            }
+            aria-pressed={favoriteFilter}
+            className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm ${
+              favoriteFilter
+                ? "border-amber-400 text-amber-500"
+                : "border-line ui-text-muted hover:bg-surface-muted"
+            }`}
+          >
+            <Star
+              className={`h-4 w-4 ${favoriteFilter ? "fill-amber-400 text-amber-400" : ""}`}
+              aria-hidden="true"
+            />
+            {t("articles.filter.favoritesOnly")}
+          </button>
 
           <Input
             type="number"

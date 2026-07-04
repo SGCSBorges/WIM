@@ -41,6 +41,10 @@ export default function BulkEditDialog({
   });
   const [brand, setBrand] = useState<FieldState>({ op: "skip", value: "" });
   const [serial, setSerial] = useState<FieldState>({ op: "skip", value: "" });
+  const [quantity, setQuantity] = useState<FieldState>({
+    op: "skip",
+    value: "",
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +53,7 @@ export default function BulkEditDialog({
     setDepreciation({ op: "skip", value: "" });
     setBrand({ op: "skip", value: "" });
     setSerial({ op: "skip", value: "" });
+    setQuantity({ op: "skip", value: "" });
     setError(null);
   };
 
@@ -74,12 +79,21 @@ export default function BulkEditDialog({
       // selection (zeroing prices → corrupting depreciation/portfolio totals);
       // a blank string field would write "". Make the user enter a value or
       // pick Skip/Clear instead.
-      const emptySet = [price, depreciation, brand, serial].some(
+      const emptySet = [price, depreciation, brand, serial, quantity].some(
         (s) => s.op === "set" && s.value.trim() === ""
       );
       if (emptySet) {
         setError(t("bulkEdit.errorEmptySet"));
         return;
+      }
+      // Quantity is a whole number ≥ 1 (can't be cleared — the column is NOT
+      // NULL). Reject an out-of-range "set" before we hit the API.
+      if (quantity.op === "set") {
+        const q = Number(quantity.value);
+        if (!Number.isInteger(q) || q < 1) {
+          setError(t("articleForm.quantity.invalid"));
+          return;
+        }
       }
       const fields: Record<string, number | string | null> = {};
       const p = numericField(price);
@@ -90,6 +104,7 @@ export default function BulkEditDialog({
       if (b !== undefined) fields.brand = b;
       const s = stringField(serial);
       if (s !== undefined) fields.serialNumber = s;
+      if (quantity.op === "set") fields.quantity = Number(quantity.value);
       if (Object.keys(fields).length === 0) {
         setError(t("bulkEdit.errorNoFields"));
         return;
@@ -111,7 +126,8 @@ export default function BulkEditDialog({
     state: FieldState,
     setState: (s: FieldState) => void,
     inputType: "text" | "number",
-    extraProps: Partial<React.InputHTMLAttributes<HTMLInputElement>> = {}
+    extraProps: Partial<React.InputHTMLAttributes<HTMLInputElement>> = {},
+    noClear = false
   ) => (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-[10rem_9rem_minmax(0,1fr)]">
       <span className="text-sm font-medium ui-title sm:self-center">
@@ -124,7 +140,7 @@ export default function BulkEditDialog({
       >
         <option value="skip">{t("bulkEdit.op.skip")}</option>
         <option value="set">{t("bulkEdit.op.set")}</option>
-        <option value="clear">{t("bulkEdit.op.clear")}</option>
+        {!noClear && <option value="clear">{t("bulkEdit.op.clear")}</option>}
       </Select>
       {state.op === "set" ? (
         <Field label={label} htmlFor={htmlFor}>
@@ -189,6 +205,15 @@ export default function BulkEditDialog({
           setSerial,
           "text",
           { maxLength: 120 }
+        )}
+        {renderRow(
+          t("articleForm.quantity"),
+          "bulk-quantity",
+          quantity,
+          setQuantity,
+          "number",
+          { min: 1, step: "1", inputMode: "numeric" },
+          true
         )}
       </div>
 

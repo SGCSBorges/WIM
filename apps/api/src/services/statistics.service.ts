@@ -99,6 +99,7 @@ export async function getDashboardStatistics(
     // Fire all independent counts concurrently.
     const [
       articlesTotal,
+      unitsAgg,
       articlesWithWarranty,
       articlesNeedingVerification,
       locations,
@@ -118,6 +119,12 @@ export async function getDashboardStatistics(
       userRow,
     ] = await Promise.all([
       prisma.article.count({ where: { ownerUserId, deletedAt: null } }),
+      // Total unit count = Σ quantity across live articles (single-column
+      // sum, so a plain SQL aggregate is fine here).
+      prisma.article.aggregate({
+        where: { ownerUserId, deletedAt: null },
+        _sum: { quantity: true },
+      }),
       prisma.article.count({
         where: { ownerUserId, garantie: { isNot: null }, deletedAt: null },
       }),
@@ -401,6 +408,7 @@ export async function getDashboardStatistics(
         withWarranty: articlesWithWarranty,
         withoutWarranty: articlesWithoutWarranty,
         needsVerification: articlesNeedingVerification,
+        totalUnits: unitsAgg._sum.quantity ?? 0,
       },
       locations: {
         byLocation,

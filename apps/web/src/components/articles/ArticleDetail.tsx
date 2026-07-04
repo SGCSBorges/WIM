@@ -258,6 +258,21 @@ export default function ArticleDetail() {
   >([]);
   const [verifying, setVerifying] = useState(false);
 
+  const toggleFavorite = async () => {
+    if (!article) return;
+    const next = !article.isFavorite;
+    // Optimistic — the star flips immediately; revert on failure.
+    setArticle((prev) => (prev ? { ...prev, isFavorite: next } : prev));
+    try {
+      await articlesAPI.setFavorite(article.articleId, next);
+    } catch (e) {
+      setArticle((prev) => (prev ? { ...prev, isFavorite: !next } : prev));
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
+  };
+
   const markVerified = async () => {
     if (!article) return;
     setVerifying(true);
@@ -609,6 +624,27 @@ export default function ArticleDetail() {
         />
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void toggleFavorite()}
+              aria-pressed={Boolean(article.isFavorite)}
+              aria-label={
+                article.isFavorite ? t("favorite.remove") : t("favorite.add")
+              }
+              title={
+                article.isFavorite ? t("favorite.remove") : t("favorite.add")
+              }
+              className="grid h-8 w-8 place-items-center rounded-md ui-btn-ghost"
+            >
+              <Star
+                className={`h-5 w-5 ${
+                  article.isFavorite
+                    ? "fill-amber-400 text-amber-400"
+                    : "ui-text-muted"
+                }`}
+                aria-hidden="true"
+              />
+            </button>
             <Badge tone={articleStatusInfo(article.status).tone}>
               {t(articleStatusInfo(article.status).labelKey)}
             </Badge>

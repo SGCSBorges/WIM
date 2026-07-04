@@ -101,6 +101,7 @@ Un bien physique de l'inventaire. Le hub auquel tout le reste se rattache.
 | `orderRef` | String? VarChar(100) | null | Référence de commande/reçu. Privé, comme `purchasedFrom`. |
 | `purchasePrice` | Decimal(12,2)? | null | Prix **unitaire**. Pilote la valeur d'inventaire + l'amortissement (valeur = prix × `quantity`). |
 | `quantity` | Int | `1` | Unités représentées par cette ligne. Les valeurs multiplient prix × quantité ; les décomptes restent par ligne. |
+| `isFavorite` | Boolean | `false` | Favori épinglé par le propriétaire pour un accès rapide ; filtrable (`?favorite=1`). Cosmétique. |
 | `depreciationRate` | Decimal(5,2)? | null | % linéaire annuel, 0–100. null = pas d'amortissement. |
 | `sharedWithPowerUsers` | Boolean | `false` | Drapeau de partage public (lecture seule). |
 | `publicToken` | String? VarChar(64) | null | **Unique**. Page publique opt-in `/i/<token>` ; null = désactivée. |

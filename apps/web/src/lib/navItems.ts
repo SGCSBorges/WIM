@@ -19,6 +19,7 @@ import {
   MessagesSquare,
   Umbrella,
   Gift,
+  CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 export type NavKey =
@@ -29,6 +30,7 @@ export type NavKey =
   | "attachments"
   | "locations"
   | "alerts"
+  | "agenda"
   | "insurance"
   | "wishlist"
   | "reports"
@@ -57,6 +59,7 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "attachments", path: "/attachments", icon: Paperclip },
   { key: "locations", path: "/locations", icon: MapPin },
   { key: "alerts", path: "/alerts", icon: Bell },
+  { key: "agenda", path: "/agenda", icon: CalendarClock },
   {
     key: "insurance",
     path: "/insurance",

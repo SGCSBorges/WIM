@@ -5,6 +5,9 @@ vi.mock("../../libs/prisma", () => ({
     user: { update: vi.fn(), findUnique: vi.fn() },
     garantie: { findMany: vi.fn() },
     alerte: { findMany: vi.fn() },
+    loan: { findMany: vi.fn() },
+    insurancePolicy: { findMany: vi.fn() },
+    serviceRecord: { findMany: vi.fn() },
   },
 }));
 
@@ -15,6 +18,9 @@ const mockPrisma = prisma as unknown as {
   user: { update: ReturnType<typeof vi.fn>; findUnique: ReturnType<typeof vi.fn> };
   garantie: { findMany: ReturnType<typeof vi.fn> };
   alerte: { findMany: ReturnType<typeof vi.fn> };
+  loan: { findMany: ReturnType<typeof vi.fn> };
+  insurancePolicy: { findMany: ReturnType<typeof vi.fn> };
+  serviceRecord: { findMany: ReturnType<typeof vi.fn> };
 };
 
 beforeEach(() => vi.clearAllMocks());
@@ -97,5 +103,72 @@ describe("CalendarService", () => {
     expect(ics).toContain("UID:claim-9-OPEN@wim");
     expect(ics).toContain("SUMMARY:Warranty claim OPEN: Camera");
     expect(ics).toContain("DTSTART;VALUE=DATE:20260512");
+  });
+});
+
+describe("CalendarService.agenda", () => {
+  it("aggregates all event kinds, sorted ascending by date", async () => {
+    const soon = new Date(Date.now() + 5 * 86_400_000);
+    const later = new Date(Date.now() + 20 * 86_400_000);
+    const overdue = new Date(Date.now() - 3 * 86_400_000);
+
+    mockPrisma.garantie.findMany.mockResolvedValue([
+      { garantieNom: "Laptop", garantieFin: later, garantieArticleId: 1 },
+    ]);
+    mockPrisma.alerte.findMany.mockResolvedValue([
+      { alerteNom: "Custom reminder", alerteDate: soon, alerteArticleId: 2 },
+    ]);
+    mockPrisma.loan.findMany.mockResolvedValue([
+      {
+        borrowerName: "Sam",
+        dueAt: overdue,
+        articleId: 3,
+        article: { articleNom: "Drill" },
+      },
+    ]);
+    mockPrisma.insurancePolicy.findMany.mockResolvedValue([
+      { provider: "Acme", renewalAt: later },
+    ]);
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([
+      // Two records for the same article: only the latest (first, desc order)
+      // carries the live schedule.
+      { articleId: 4, nextDueAt: soon, article: { articleNom: "Boiler" } },
+      { articleId: 4, nextDueAt: later, article: { articleNom: "Boiler" } },
+    ]);
+
+    const events = await CalendarService.agenda(1);
+
+    expect(events.map((e) => e.kind)).toEqual([
+      "loan", // overdue → earliest
+      "alert",
+      "maintenance",
+      "warranty",
+      "insurance",
+    ]);
+    // Latest-record-per-article wins for maintenance (nextDueAt = soon).
+    const maint = events.find((e) => e.kind === "maintenance");
+    expect(maint?.date).toBe(soon.toISOString());
+    expect(maint?.articleId).toBe(4);
+    // Insurance events aren't tied to a single article.
+    expect(events.find((e) => e.kind === "insurance")?.articleId).toBeNull();
+  });
+
+  it("drops maintenance whose latest record has no next-due date", async () => {
+    mockPrisma.garantie.findMany.mockResolvedValue([]);
+    mockPrisma.alerte.findMany.mockResolvedValue([]);
+    mockPrisma.loan.findMany.mockResolvedValue([]);
+    mockPrisma.insurancePolicy.findMany.mockResolvedValue([]);
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([
+      // Newest record cleared the schedule (nextDueAt null) → no event.
+      { articleId: 4, nextDueAt: null, article: { articleNom: "Boiler" } },
+      {
+        articleId: 4,
+        nextDueAt: new Date(Date.now() + 5 * 86_400_000),
+        article: { articleNom: "Boiler" },
+      },
+    ]);
+
+    const events = await CalendarService.agenda(1);
+    expect(events).toEqual([]);
   });
 });

@@ -66,6 +66,7 @@ describe("<ArticlesCardList /> (extracted from ArticlesList)", () => {
         language="en"
         onEdit={onEdit}
         onDelete={onDelete}
+        onToggleFavorite={vi.fn()}
       />
     );
 
@@ -108,6 +109,7 @@ describe("<ArticlesTable /> (extracted from ArticlesList)", () => {
         isPowerUser={false}
         onEdit={onEdit}
         onDelete={onDelete}
+        onToggleFavorite={vi.fn()}
         onShareChanged={() => {}}
       />
     );

@@ -83,6 +83,7 @@ export type ArticleListFilters = {
   status?: ArticleStatus;
   category?: ArticleCategory;
   verification?: "needed" | "verified";
+  favorite?: boolean;
   priceMin?: number;
   priceMax?: number;
   createdFrom?: Date;
@@ -105,6 +106,7 @@ function buildArticleWhere(
   if (f.tagId) where.tags = { some: { tagId: f.tagId } };
   if (f.status) where.status = f.status;
   if (f.category) where.category = f.category;
+  if (f.favorite) where.isFavorite = true;
   if (f.q && f.q.trim()) {
     // Split into terms and require every term to match somewhere (name, model
     // or description). This makes multi-word queries like "cordless drill"
@@ -849,6 +851,7 @@ export const ArticleService = {
       depreciationRate?: number | null;
       brand?: string | null;
       serialNumber?: string | null;
+      quantity?: number;
     }
   ): Promise<{ count: number }> => {
     if (ids.length === 0) return { count: 0 };
@@ -860,6 +863,9 @@ export const ArticleService = {
     if (fields.brand !== undefined) data.brand = fields.brand;
     if (fields.serialNumber !== undefined)
       data.serialNumber = fields.serialNumber;
+    // quantity is NOT NULL (min 1) — a null clear makes no sense, so it's only
+    // ever a "set to N" op.
+    if (fields.quantity !== undefined) data.quantity = fields.quantity;
     if (Object.keys(data).length === 0) return { count: 0 };
 
     return prisma.$transaction(async (tx) => {
@@ -891,6 +897,20 @@ export const ArticleService = {
     });
     if (res.count === 0) throw createHttpError(404, "Article not found");
     return now;
+  },
+
+  // Toggle the owner-pinned favorite flag. Atomic updateMany with the
+  // ownership precondition in the WHERE clause (the standard rule).
+  setFavorite: async (
+    id: number,
+    ownerUserId: number,
+    favorite: boolean
+  ): Promise<void> => {
+    const res = await prisma.article.updateMany({
+      where: { articleId: id, ownerUserId, deletedAt: null },
+      data: { isFavorite: favorite },
+    });
+    if (res.count === 0) throw createHttpError(404, "Article not found");
   },
 
   // Bulk variant for the list selection. Silently skips ids the caller

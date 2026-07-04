@@ -38,6 +38,17 @@ router.post(
   })
 );
 
+// In-app agenda — upcoming/overdue events as JSON. Open to any authenticated
+// caller (not gated): it aggregates the same signals the free dashboard
+// already surfaces, so there's no entitled-only content to gate.
+router.get(
+  "/agenda",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    res.json({ events: await CalendarService.agenda(req.user!.sub) });
+  })
+);
+
 // Disable the feed.
 router.delete(
   "/token",

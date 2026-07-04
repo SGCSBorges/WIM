@@ -27,6 +27,7 @@
  *   (different shape — see method JSDoc).
  */
 import type {
+  AgendaEvent,
   AlertNotifications,
   Article,
   ArticleListParams,
@@ -483,6 +484,7 @@ export const articlesAPI = {
     if (params.status) p.set("status", params.status);
     if (params.category) p.set("category", params.category);
     if (params.verification) p.set("verification", params.verification);
+    if (params.favorite) p.set("favorite", "1");
     if (params.priceMin != null) p.set("priceMin", String(params.priceMin));
     if (params.priceMax != null) p.set("priceMax", String(params.priceMax));
     if (params.createdFrom) p.set("createdFrom", params.createdFrom);
@@ -721,6 +723,22 @@ export const articlesAPI = {
     return null;
   },
 
+  /** Pin/unpin an article as a favorite. */
+  async setFavorite(id: number, favorite: boolean): Promise<void> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/${id}/favorite`,
+      {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ favorite }),
+      }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to update favorite")
+      );
+  },
+
   /** Physical inventory check: stamp "I still hold this item". */
   async verify(id: number): Promise<{ lastVerifiedAt: string }> {
     const response = await fetchWithTimeout(
@@ -892,6 +910,7 @@ export const articlesAPI = {
       depreciationRate?: number | null;
       brand?: string | null;
       serialNumber?: string | null;
+      quantity?: number;
     }
   ): Promise<{ count: number }> {
     const response = await fetchWithTimeout(
@@ -1380,6 +1399,17 @@ export const pushAPI = {
 
 // Calendar feed
 export const calendarAPI = {
+  /** In-app agenda — upcoming/overdue events across warranties, maintenance,
+   *  loans, insurance, and alerts. */
+  async agenda(): Promise<{ events: AgendaEvent[] }> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/calendar/agenda`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load agenda"));
+    return response.json();
+  },
+
   async status(): Promise<{ enabled: boolean; path: string | null }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/calendar/token`, {
       headers: getHeaders(),

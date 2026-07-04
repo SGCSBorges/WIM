@@ -162,6 +162,7 @@ const ArticlesList: React.FC = () => {
   const statusFilter = searchParams.get("status") ?? "";
   const categoryFilter = searchParams.get("category") ?? "";
   const verificationFilter = searchParams.get("verification") ?? "";
+  const favoriteFilter = searchParams.get("favorite") === "1";
   const priceMin = searchParams.get("priceMin") ?? "";
   const priceMax = searchParams.get("priceMax") ?? "";
   const createdFrom = searchParams.get("createdFrom") ?? "";
@@ -182,6 +183,7 @@ const ArticlesList: React.FC = () => {
     statusFilter ||
     categoryFilter ||
     verificationFilter ||
+    favoriteFilter ||
     priceMin ||
     priceMax ||
     createdFrom ||
@@ -255,6 +257,7 @@ const ArticlesList: React.FC = () => {
         category: (categoryFilter as ArticleCategory | "") || undefined,
         verification:
           (verificationFilter as "needed" | "verified" | "") || undefined,
+        favorite: favoriteFilter || undefined,
         priceMin: priceMin ? Number(priceMin) : undefined,
         priceMax: priceMax ? Number(priceMax) : undefined,
         createdFrom: createdFrom || undefined,
@@ -298,6 +301,7 @@ const ArticlesList: React.FC = () => {
     statusFilter,
     categoryFilter,
     verificationFilter,
+    favoriteFilter,
     priceMin,
     priceMax,
     createdFrom,
@@ -387,6 +391,28 @@ const ArticlesList: React.FC = () => {
       });
     } finally {
       setBulkBusy(false);
+    }
+  };
+
+  const toggleFavorite = async (article: FetchedArticle) => {
+    const next = !article.isFavorite;
+    // Optimistic — flip in place, revert on failure.
+    setArticles((prev) =>
+      prev.map((a) =>
+        a.articleId === article.articleId ? { ...a, isFavorite: next } : a
+      )
+    );
+    try {
+      await articlesAPI.setFavorite(article.articleId, next);
+    } catch (e) {
+      setArticles((prev) =>
+        prev.map((a) =>
+          a.articleId === article.articleId ? { ...a, isFavorite: !next } : a
+        )
+      );
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
     }
   };
 
@@ -687,6 +713,7 @@ const ArticlesList: React.FC = () => {
           statusFilter={statusFilter}
           categoryFilter={categoryFilter}
           verificationFilter={verificationFilter}
+          favoriteFilter={favoriteFilter}
           priceMin={priceMin}
           priceMax={priceMax}
           createdFrom={createdFrom}
@@ -1112,6 +1139,7 @@ const ArticlesList: React.FC = () => {
                 setShowForm(true);
               }}
               onDelete={handleDelete}
+              onToggleFavorite={toggleFavorite}
             />
 
             {/* Desktop table (sm+) — extracted to ArticlesTable. */}
@@ -1132,6 +1160,7 @@ const ArticlesList: React.FC = () => {
                 setShowForm(true);
               }}
               onDelete={handleDelete}
+              onToggleFavorite={toggleFavorite}
               onShareChanged={fetchArticles}
             />
           </>

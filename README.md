@@ -144,6 +144,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `DELETE` | `/:id` | ✓ | Soft-delete (moves to trash) |
 | `POST`   | `/:id/duplicate` | ✓ | Deep-copy an article (locations + tags; warranty intentionally skipped) |
 | `POST`   | `/:id/verify` · `/bulk-verify` | ✓ | Physical inventory check — stamp `lastVerifiedAt` ("I still hold this item"); list filter `?verification=needed\|verified` |
+| `POST`   | `/:id/favorite` | ✓ | Pin/unpin a favorite (`{ favorite }`); list filter `?favorite=1` |
 | `GET`    | `/trash` | ✓ | List soft-deleted articles |
 | `POST`   | `/:id/restore` | ✓ | Restore from trash |
 | `DELETE` | `/:id/purge` | ✓ | Permanently delete (skip retention) |
@@ -231,6 +232,7 @@ Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
+| `GET`    | `/agenda` | ✓ | In-app agenda JSON — upcoming/overdue warranty, maintenance, loan, insurance, and alert events |
 | `POST`   | `/token` | ✓ | Enable the iCal feed (mints a capability token) |
 | `DELETE` | `/token` | ✓ | Disable the feed |
 | `GET`    | `/feed/:token.ics` | ✗ (token) | RFC-5545 feed of warranties/alerts — token-authenticated so calendar apps can subscribe |

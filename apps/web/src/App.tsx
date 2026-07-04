@@ -104,6 +104,7 @@ const MySharedArticlesView = React.lazy(
   () => import("./components/sharing/MySharedArticlesView")
 );
 const AlertsView = React.lazy(() => import("./components/alerts/AlertsView"));
+const AgendaView = React.lazy(() => import("./components/agenda/AgendaView"));
 const ProfileView = React.lazy(
   () => import("./components/profile/ProfileView")
 );
@@ -621,6 +622,7 @@ export default function App() {
             <Route path="/attachments" element={<AttachmentsList />} />
             <Route path="/locations" element={<LocationsView />} />
             <Route path="/alerts" element={<AlertsView />} />
+            <Route path="/agenda" element={<AgendaView />} />
             <Route
               path="/insurance"
               element={gatedRoute(canInsurance, <InsuranceView />, "insurance")}

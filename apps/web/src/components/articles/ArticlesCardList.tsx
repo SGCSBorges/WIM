@@ -5,7 +5,7 @@
  * typed callbacks, so behavior is unchanged and the wiring is compile-checked.
  */
 import { Link } from "react-router-dom";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Star } from "lucide-react";
 import type { FetchedArticle, Article } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { formatMoney } from "../../utils/money";
@@ -30,6 +30,7 @@ interface ArticlesCardListProps {
   language: string;
   onEdit: (article: FetchedArticle) => void;
   onDelete: (article: FetchedArticle) => void;
+  onToggleFavorite: (article: FetchedArticle) => void;
 }
 
 export default function ArticlesCardList({
@@ -45,6 +46,7 @@ export default function ArticlesCardList({
   language,
   onEdit,
   onDelete,
+  onToggleFavorite,
 }: ArticlesCardListProps) {
   const { t } = useI18n();
 
@@ -89,13 +91,40 @@ export default function ArticlesCardList({
               alt={article.articleNom}
             />
             <div className="min-w-0 flex-1 space-y-1">
-              <Link
-                to={`/articles/${article.articleId}`}
-                className="block truncate font-medium ui-action-primary"
-                title={article.articleNom}
-              >
-                {article.articleNom}
-              </Link>
+              <span className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => onToggleFavorite(article)}
+                  aria-pressed={Boolean(article.isFavorite)}
+                  aria-label={
+                    article.isFavorite
+                      ? t("favorite.remove")
+                      : t("favorite.add")
+                  }
+                  title={
+                    article.isFavorite
+                      ? t("favorite.remove")
+                      : t("favorite.add")
+                  }
+                  className="shrink-0"
+                >
+                  <Star
+                    className={`h-4 w-4 ${
+                      article.isFavorite
+                        ? "fill-amber-400 text-amber-400"
+                        : "ui-text-muted"
+                    }`}
+                    aria-hidden="true"
+                  />
+                </button>
+                <Link
+                  to={`/articles/${article.articleId}`}
+                  className="block truncate font-medium ui-action-primary"
+                  title={article.articleNom}
+                >
+                  {article.articleNom}
+                </Link>
+              </span>
               <p
                 className="truncate text-xs ui-text-muted"
                 title={article.articleModele ?? undefined}

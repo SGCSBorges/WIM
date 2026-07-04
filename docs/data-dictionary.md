@@ -101,6 +101,7 @@ A physical item in the inventory. The hub everything else hangs off.
 | `orderRef` | String? VarChar(100) | null | Order/receipt reference. Private, like `purchasedFrom`. |
 | `purchasePrice` | Decimal(12,2)? | null | **Per-unit** price. Drives inventory value + depreciation (value = price × `quantity`). |
 | `quantity` | Int | `1` | Units this record represents. Value figures multiply price × quantity; counts stay per-record. |
+| `isFavorite` | Boolean | `false` | Owner-pinned favorite for quick access; filterable (`?favorite=1`). Cosmetic. |
 | `depreciationRate` | Decimal(5,2)? | null | Annual straight-line %, 0–100. null = no depreciation. |
 | `sharedWithPowerUsers` | Boolean | `false` | Public (read-only) share flag. |
 | `publicToken` | String? VarChar(64) | null | **Unique**. Opt-in `/i/<token>` public page; null = off. |

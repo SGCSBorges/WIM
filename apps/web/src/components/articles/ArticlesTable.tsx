@@ -6,7 +6,7 @@
  * state still live in ArticlesList.
  */
 import { Link } from "react-router-dom";
-import { Pencil, Trash2, Globe } from "lucide-react";
+import { Pencil, Trash2, Globe, Star } from "lucide-react";
 import type { FetchedArticle, Article } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { formatMoney } from "../../utils/money";
@@ -35,6 +35,7 @@ interface ArticlesTableProps {
   isPowerUser: boolean;
   onEdit: (article: FetchedArticle) => void;
   onDelete: (article: FetchedArticle) => void;
+  onToggleFavorite: (article: FetchedArticle) => void;
   onShareChanged: () => void;
 }
 
@@ -52,6 +53,7 @@ export default function ArticlesTable({
   isPowerUser,
   onEdit,
   onDelete,
+  onToggleFavorite,
   onShareChanged,
 }: ArticlesTableProps) {
   const { t } = useI18n();
@@ -123,12 +125,39 @@ export default function ArticlesTable({
                   />
                 </td>
                 <td className="px-6 py-4 text-sm font-medium">
-                  <Link
-                    to={`/articles/${article.articleId}`}
-                    className="ui-action-primary hover:underline"
-                  >
-                    {article.articleNom}
-                  </Link>
+                  <span className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onToggleFavorite(article)}
+                      aria-pressed={Boolean(article.isFavorite)}
+                      aria-label={
+                        article.isFavorite
+                          ? t("favorite.remove")
+                          : t("favorite.add")
+                      }
+                      title={
+                        article.isFavorite
+                          ? t("favorite.remove")
+                          : t("favorite.add")
+                      }
+                      className="shrink-0"
+                    >
+                      <Star
+                        className={`h-4 w-4 ${
+                          article.isFavorite
+                            ? "fill-amber-400 text-amber-400"
+                            : "ui-text-muted"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    <Link
+                      to={`/articles/${article.articleId}`}
+                      className="ui-action-primary hover:underline"
+                    >
+                      {article.articleNom}
+                    </Link>
+                  </span>
                   {article.tags && article.tags.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {article.tags.map((at) => (

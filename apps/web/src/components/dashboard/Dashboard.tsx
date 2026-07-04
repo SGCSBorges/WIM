@@ -525,6 +525,17 @@ const Dashboard: React.FC = () => {
               value: statistics.articles.needsVerification ?? 0,
               tone: "ui-text-warn",
             },
+            // Only meaningful when some item is multi-unit; hide the row when
+            // units == records so single-unit inventories stay uncluttered.
+            ...((statistics.articles.totalUnits ?? statistics.articles.total) >
+            statistics.articles.total
+              ? [
+                  {
+                    label: t("dashboard.totalUnits"),
+                    value: statistics.articles.totalUnits,
+                  },
+                ]
+              : []),
           ]}
         />
 

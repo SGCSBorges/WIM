@@ -668,6 +668,31 @@ Smaller features added in one batch; each follows the existing patterns.
   small files, or when the canvas path is unavailable; only replaces the
   original when the re-encode is actually smaller — never blocks an upload. The
   server's magic-byte check + sharp thumbnail still run on whatever arrives.
+## Round 7 (2026-07): agenda + favorites + bulk-quantity
+
+- **In-app agenda**: `GET /api/calendar/agenda` (`CalendarService.agenda`,
+  authGuard, ungated — same free signals as the dashboard) aggregates upcoming
+  and still-actionable overdue events across warranties (`garantieFin`),
+  maintenance (latest `ServiceRecord.nextDueAt` per article — a newer record
+  with no next-due clears an older schedule), loans (`Loan.dueAt` unreturned),
+  insurance (`InsurancePolicy.renewalAt`), and scheduled alerts. Forward window
+  365d; warranties/alerts use a 30-day past window, loans/maintenance/insurance
+  include any overdue; sorted ascending, capped 200. `AgendaEvent` in
+  `@wim/types`. Web: lazy `/agenda` route + nav item (`CalendarClock`),
+  `components/agenda/AgendaView.tsx` groups into Overdue / This week / This
+  month / Later, each event linking to its article.
+- **Favorites**: `Article.isFavorite` (`Boolean`, default false) + migration.
+  `POST /articles/:id/favorite {favorite}` (atomic `updateMany`, precondition
+  in WHERE); list filter `?favorite=1` (only "1"/"true" enables it). Web:
+  optimistic star toggle on the detail hero + table/card rows, a Favorites
+  pill in the filter bar. Ungated.
+- **Quantity in bulk-edit + units stat**: `bulkUpdate` (service/route/schema)
+  now accepts `quantity` (≥1, set-only — the column is NOT NULL so there's no
+  "clear"); `BulkEditDialog` adds a quantity row with the clear option hidden
+  (`noClear`). Dashboard `articles.totalUnits` = SQL `_sum(quantity)` over live
+  rows (single-column, so a plain aggregate is fine); the dashboard row is
+  hidden when units == records so single-unit inventories stay unchanged.
+
 ## Round 6 (2026-07): per-item quantity
 
 - **Quantity**: `Article.quantity` (`Int`, default 1) + migration. Product

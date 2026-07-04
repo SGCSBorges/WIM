@@ -217,6 +217,9 @@ describe("getDashboardStatistics", () => {
       .mockResolvedValueOnce(3)
       .mockResolvedValueOnce(2)
       .mockResolvedValueOnce(0);
+    mockPrisma.article.aggregate.mockResolvedValue({
+      _sum: { quantity: 3 },
+    });
     mockPrisma.location.findMany.mockResolvedValue([
       { locationId: 1, name: "Home" },
       { locationId: 2, name: "Office" },

@@ -149,6 +149,8 @@ export interface Article {
   // Number of identical units this record represents (default 1). Value
   // figures use purchasePrice (per-unit) × quantity; counts stay per-record.
   quantity?: number;
+  // Owner-pinned favorite flag for quick access (filterable via ?favorite=1).
+  isFavorite?: boolean;
   sharedWithPowerUsers?: boolean;
   // Lifecycle state. Defaults to ACTIVE server-side; absent on legacy writes.
   status?: ArticleStatus;
@@ -216,6 +218,8 @@ export interface ArticleListParams {
   category?: ArticleCategory;
   // Physical inventory check: "needed" = never verified or >12 months ago.
   verification?: "needed" | "verified";
+  // Restrict to owner-pinned favorites.
+  favorite?: boolean;
   sort?: ArticleSort;
   dir?: "asc" | "desc";
   page?: number;
@@ -581,6 +585,17 @@ export interface MonthlyBucket {
  *  server-side per request (no caching) from a handful of grouped
  *  Prisma queries. Counts here are *owner-scoped* — shared-in
  *  articles are excluded so the dashboard reflects what the user owns. */
+/** A single upcoming (or overdue) event on the in-app agenda. Aggregated
+ *  server-side from warranties, maintenance, loans, insurance, and alerts. */
+export interface AgendaEvent {
+  kind: "warranty" | "maintenance" | "loan" | "insurance" | "alert";
+  /** ISO date the event falls on / is due. */
+  date: string;
+  title: string;
+  /** The related article, when the event hangs off one (insurance = null). */
+  articleId: number | null;
+}
+
 export interface DashboardStatistics {
   /** The owner's display currency (e.g. "USD"), carried on the payload so the
    *  client can format money without a second /profile/me round-trip. */
@@ -592,6 +607,9 @@ export interface DashboardStatistics {
     /** Currently-owned items never verified, or last verified more than
      *  12 months ago (physical inventory check). */
     needsVerification: number;
+    /** Sum of `quantity` across live articles — the total unit count, which
+     *  can exceed `total` (the per-record count) when items are multi-unit. */
+    totalUnits: number;
   };
   locations: {
     byLocation: Array<{
