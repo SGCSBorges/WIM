@@ -340,6 +340,24 @@ failure mode with the same 401.
   CSV export writes the array as a JSON cell and the importer parses it back,
   so the round-trip preserves the fields (a malformed cell fails that row in
   the dry-run report instead of silently dropping data).
+- **Warranty claim attachments** — the file upload endpoint
+  (`POST /api/attachments/upload`) now accepts a `garantieId` field alongside
+  `type=CLAIM`, so photos/PDFs (receipts, correspondence, damage shots) attach
+  to a warranty claim. They list via `GET /api/attachments?garantieId=` (each
+  row carries its `type`), render on the article-detail claim block, and the
+  **claim PDF embeds up to four** of them under "Claim evidence".
+- **Saved-view default + household sharing** — `PATCH /api/saved-views/:id`
+  `{ isDefault?, sharedWithHousehold? }` sets at most one default per owner
+  (auto-applied on the Articles page when the URL has no filters) and toggles
+  read-only household visibility. `GET /api/saved-views/shared` returns the
+  views household members opted into (each carries the owner's `ownerName`).
+  Both gated on `saved_views`.
+- **Location value dashboard** — `GET /api/statistics/locations` (gated
+  `analytics`) returns a per-location breakdown: `{ locations: [{ locationId,
+  name, parentLocationId, articleCount, value, expiringCount, expiredCount }],
+  unlocated: { articleCount, value } }`. Value uses the same owned-scope +
+  per-unit × quantity rule as the dashboard; the web `/locations/value` route
+  renders a treemap + table with the nested "Home › Garage" path.
 
 ## Feature gating
 

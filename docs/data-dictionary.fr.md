@@ -275,6 +275,8 @@ Un preset nommé de filtres de la page Articles. `createdAt` seulement.
 | `ownerUserId` | Int (FK→User) | — | Cascade. |
 | `name` | String VarChar(60) | — | **Unique par propriétaire** (`uq_savedview_owner_name`). |
 | `query` | String VarChar(500) | — | Chaîne de filtres, ex. `warranty=expired&priceMin=100`. |
+| `isDefault` | Boolean | `false` | Au plus un par propriétaire (imposé côté service) ; appliqué automatiquement sur la page Articles quand l'URL n'a aucun filtre. |
+| `sharedWithHousehold` | Boolean | `false` | Visibilité en lecture seule aux membres du foyer (`GET /saved-views/shared`). |
 
 ### ArticleTemplate
 
@@ -695,7 +697,7 @@ messagerie. Les valeurs littérales correspondent toujours à l'énumération BD
 | `SharePermission` | `READ` · `WRITE` | `InventoryShare`, `ShareInvite`. |
 | `InviteStatus` | `PENDING` · `ACCEPTED` · `REVOKED` · `EXPIRED` | `ShareInvite.status`, `HouseholdInvite.status`. |
 | `HouseholdRole` | `OWNER` · `MEMBER` | `HouseholdMember.role`. |
-| `AttachmentType` | `INVOICE` · `WARRANTY` · `OTHER` | `Attachment.type`. |
+| `AttachmentType` | `INVOICE` · `WARRANTY` · `CLAIM` · `OTHER` | `Attachment.type`. `CLAIM` = justificatif joint à une réclamation de garantie (lié via `garantieId`). |
 | `AlerteStatus` | `SCHEDULED` · `SENT` · `CANCELLED` · `FAILED` | `Alerte.status`. |
 | `AlerteKind` | `WARRANTY` · `CUSTOM` | `Alerte.kind`. |
 | `ClaimStatus` | `NONE` · `OPEN` · `APPROVED` · `REJECTED` · `RESOLVED` | `Garantie.claimStatus`. |

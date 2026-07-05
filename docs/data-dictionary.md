@@ -271,6 +271,8 @@ A named Articles-page filter preset. `createdAt` only.
 | `ownerUserId` | Int (FK→User) | — | Cascade. |
 | `name` | String VarChar(60) | — | **Unique per owner** (`uq_savedview_owner_name`). |
 | `query` | String VarChar(500) | — | Filter querystring, e.g. `warranty=expired&priceMin=100`. |
+| `isDefault` | Boolean | `false` | At most one per owner (enforced in the service); auto-applied on the Articles page when the URL has no filters. |
+| `sharedWithHousehold` | Boolean | `false` | Opt-in read-only visibility to household members (`GET /saved-views/shared`). |
 
 ### ArticleTemplate
 
@@ -676,7 +678,7 @@ the message service. The literal values still match the DB enum either way.
 | `SharePermission` | `READ` · `WRITE` | `InventoryShare`, `ShareInvite`. |
 | `InviteStatus` | `PENDING` · `ACCEPTED` · `REVOKED` · `EXPIRED` | `ShareInvite.status`, `HouseholdInvite.status`. |
 | `HouseholdRole` | `OWNER` · `MEMBER` | `HouseholdMember.role`. |
-| `AttachmentType` | `INVOICE` · `WARRANTY` · `OTHER` | `Attachment.type`. |
+| `AttachmentType` | `INVOICE` · `WARRANTY` · `CLAIM` · `OTHER` | `Attachment.type`. `CLAIM` = evidence attached to a warranty claim (linked via `garantieId`). |
 | `AlerteStatus` | `SCHEDULED` · `SENT` · `CANCELLED` · `FAILED` | `Alerte.status`. |
 | `AlerteKind` | `WARRANTY` · `CUSTOM` | `Alerte.kind`. |
 | `ClaimStatus` | `NONE` · `OPEN` · `APPROVED` · `REJECTED` · `RESOLVED` | `Garantie.claimStatus`. |

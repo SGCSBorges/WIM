@@ -1351,7 +1351,14 @@ export async function seedDemoData(
             { name: "Needs attention", query: "warrantyStatus=expiringSoon" },
           ],
           randInt(1, 2)
-        ).map((v) => ({ ownerUserId: user.userId, ...v })),
+          // First view becomes the owner's default; ~1/3 opt into household
+          // sharing so the shared-view surface has demo data.
+        ).map((v, i) => ({
+          ownerUserId: user.userId,
+          ...v,
+          isDefault: i === 0,
+          sharedWithHousehold: chance(0.33),
+        })),
         skipDuplicates: true,
       });
     }

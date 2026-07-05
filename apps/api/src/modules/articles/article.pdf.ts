@@ -54,7 +54,18 @@ export async function streamArticleClaimPdf(
   const article = await prisma.article.findFirst({
     where: { articleId, ownerUserId, deletedAt: null },
     include: {
-      garantie: { include: { garantieImageAttachment: true } },
+      garantie: {
+        include: {
+          garantieImageAttachment: true,
+          // Claim evidence images (receipts, correspondence, damage photos)
+          // uploaded against this warranty's claim — embedded below the proof.
+          attachments: {
+            where: { type: "CLAIM", mimeType: { startsWith: "image/" } },
+            orderBy: { createdAt: "desc" },
+            select: { fileUrl: true, mimeType: true },
+          },
+        },
+      },
       locations: { select: { location: { select: { name: true } } } },
       tags: { select: { tag: { select: { name: true } } } },
       // Gallery photos for the dossier — newest first, capped below.
@@ -171,6 +182,35 @@ export async function streamArticleClaimPdf(
         doc.image(proof, { fit: [400, 300] });
       } catch {
         // Unreadable/corrupt image — skip rather than fail the whole PDF.
+      }
+    }
+
+    // Claim evidence images uploaded against this warranty (up to four).
+    const claimBuffers: Buffer[] = [];
+    for (const att of article.garantie.attachments.slice(0, 4)) {
+      const bytes = await uploadImageBytes(att.fileUrl, att.mimeType);
+      if (bytes) claimBuffers.push(bytes);
+    }
+    if (claimBuffers.length > 0) {
+      doc.moveDown(0.5);
+      doc.fontSize(12).text("Claim evidence");
+      doc.moveDown(0.25);
+      const w = 240;
+      const h = 180;
+      for (let i = 0; i < claimBuffers.length; i += 2) {
+        if (doc.y + h > doc.page.height - doc.page.margins.bottom)
+          doc.addPage();
+        const rowY = doc.y;
+        for (const [j, buf] of claimBuffers.slice(i, i + 2).entries()) {
+          try {
+            doc.image(buf, doc.page.margins.left + j * (w + 15), rowY, {
+              fit: [w, h],
+            });
+          } catch {
+            // Corrupt image — skip the slot.
+          }
+        }
+        doc.y = rowY + h + 15;
       }
     }
   }

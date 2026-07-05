@@ -1219,6 +1219,153 @@ suite("API integration (real Postgres)", () => {
     expect(poor.body.items[0].articleNom).toBe("Worn drill");
   });
 
+  it("uploads claim evidence against a warranty and lists it by type", async () => {
+    const agent = await register("claimatt@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Study" });
+    const art = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Laptop",
+        articleModele: "L1",
+        locationIds: [loc.body.locationId],
+      });
+    const g = await prisma.garantie.create({
+      data: {
+        ownerUserId,
+        garantieArticleId: art.body.articleId,
+        garantieNom: "AppleCare",
+        garantieDateAchat: new Date(),
+        garantieDuration: 24,
+        garantieFin: new Date(Date.now() + 365 * 86400_000),
+      },
+    });
+    // 1×1 transparent PNG (valid magic bytes so the signature check passes).
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "base64"
+    );
+    const up = await agent
+      .post("/api/attachments/upload")
+      .set("Origin", ORIGIN)
+      .field("type", "CLAIM")
+      .field("garantieId", String(g.garantieId))
+      .attach("file", png, "evidence.png");
+    expect(up.status).toBe(201);
+
+    const list = await agent.get(
+      `/api/attachments?garantieId=${g.garantieId}`
+    );
+    expect(list.status).toBe(200);
+    const items = Array.isArray(list.body) ? list.body : list.body.items;
+    const claim = items.find(
+      (a: { type: string }) => a.type === "CLAIM"
+    );
+    expect(claim).toBeTruthy();
+    expect(claim.garantieId).toBe(g.garantieId);
+
+    // The claim PDF still streams (now able to embed the evidence image).
+    const pdf = await agent.get(`/api/articles/${art.body.articleId}/claim.pdf`);
+    expect(pdf.status).toBe(200);
+    expect(pdf.headers["content-type"]).toContain("application/pdf");
+  }, 30_000);
+
+  it("marks one saved view default (exclusive) and shares it read-only", async () => {
+    const agent = await register("savedview@example.com");
+    // saved_views defaults to POWER_USER.
+    await prisma.user.update({
+      where: { email: "savedview@example.com" },
+      data: { role: "POWER_USER" },
+    });
+    const a = await agent
+      .post("/api/saved-views")
+      .set("Origin", ORIGIN)
+      .send({ name: "Expired", query: "warrantyStatus=expired" });
+    const b = await agent
+      .post("/api/saved-views")
+      .set("Origin", ORIGIN)
+      .send({ name: "High value", query: "priceMin=1000" });
+    expect(a.status).toBe(201);
+    expect(b.status).toBe(201);
+
+    await agent
+      .patch(`/api/saved-views/${a.body.id}`)
+      .set("Origin", ORIGIN)
+      .send({ isDefault: true });
+    await agent
+      .patch(`/api/saved-views/${b.body.id}`)
+      .set("Origin", ORIGIN)
+      .send({ isDefault: true });
+
+    // Only the most-recent default sticks — one default per owner.
+    const list = await agent.get("/api/saved-views");
+    const defaults = list.body.filter(
+      (v: { isDefault: boolean }) => v.isDefault
+    );
+    expect(defaults).toHaveLength(1);
+    expect(defaults[0].id).toBe(b.body.id);
+
+    // Sharing toggles the flag; without a household nobody else can see it.
+    const shared = await agent
+      .patch(`/api/saved-views/${a.body.id}`)
+      .set("Origin", ORIGIN)
+      .send({ sharedWithHousehold: true });
+    expect(shared.body.sharedWithHousehold).toBe(true);
+    const sharedList = await agent.get("/api/saved-views/shared");
+    expect(sharedList.body).toEqual([]);
+  }, 30_000);
+
+  it("reports per-location value + warranty exposure", async () => {
+    const agent = await register("locval@example.com");
+    await prisma.user.update({
+      where: { email: "locval@example.com" },
+      data: { role: "POWER_USER" },
+    });
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Garage" });
+    // Two units × 50 = 100 of value at this location.
+    const art = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Drill",
+        articleModele: "D1",
+        purchasePrice: 50,
+        quantity: 2,
+        locationIds: [loc.body.locationId],
+      });
+    // An expired warranty → warranty exposure at that location.
+    await prisma.garantie.create({
+      data: {
+        ownerUserId,
+        garantieArticleId: art.body.articleId,
+        garantieNom: "W",
+        garantieDateAchat: new Date(Date.now() - 800 * 86400_000),
+        garantieDuration: 12,
+        garantieFin: new Date(Date.now() - 60 * 86400_000),
+      },
+    });
+
+    const res = await agent.get("/api/statistics/locations");
+    expect(res.status).toBe(200);
+    const entry = res.body.locations.find(
+      (l: { name: string }) => l.name === "Garage"
+    );
+    expect(entry).toBeTruthy();
+    expect(entry.value).toBe(100);
+    expect(entry.articleCount).toBe(1);
+    expect(entry.expiredCount).toBe(1);
+  }, 30_000);
+
   it("filters by bundle and lists distinct bundle labels", async () => {
     const agent = await register("bundle@example.com");
     await makeArticle(agent, { articleNom: "Body", bundle: "Camera kit" });

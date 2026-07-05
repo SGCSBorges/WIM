@@ -30,6 +30,9 @@ import {
   X,
   Lock,
   Check,
+  Star,
+  Share2,
+  Users,
 } from "lucide-react";
 import ArticleForm from "./ArticleForm";
 import ArticlesFilterBar from "./ArticlesFilterBar";
@@ -154,6 +157,8 @@ const ArticlesList: React.FC = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [bundleOptions, setBundleOptions] = useState<string[]>([]);
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
+  const [sharedViews, setSharedViews] = useState<SavedView[]>([]);
+  const didApplyDefaultRef = useRef(false);
   const [showImport, setShowImport] = useState(false);
   const [showTagsManager, setShowTagsManager] = useState(false);
   const [total, setTotal] = useState(0);
@@ -561,11 +566,48 @@ const ArticlesList: React.FC = () => {
     });
   };
 
-  const loadSavedViews = () =>
+  const loadSavedViews = () => {
     savedViewsAPI
       .list()
       .then(setSavedViews)
       .catch(() => {});
+    // Views household members shared with me (read-only). Best-effort — empty
+    // when I'm not in a household.
+    savedViewsAPI
+      .listShared()
+      .then(setSharedViews)
+      .catch(() => {});
+  };
+
+  const applyView = (query: string) =>
+    setSearchParams(new URLSearchParams(query), { replace: true });
+
+  const toggleDefaultView = (view: SavedView) => {
+    const next = !view.isDefault;
+    // One default at a time: optimistically flip this one on, clear the rest.
+    setSavedViews((prev) =>
+      prev.map((v) =>
+        v.id === view.id
+          ? { ...v, isDefault: next }
+          : { ...v, isDefault: next ? false : v.isDefault }
+      )
+    );
+    savedViewsAPI
+      .patch(view.id, { isDefault: next })
+      .catch(() => loadSavedViews());
+  };
+
+  const toggleShareView = (view: SavedView) => {
+    const next = !view.sharedWithHousehold;
+    setSavedViews((prev) =>
+      prev.map((v) =>
+        v.id === view.id ? { ...v, sharedWithHousehold: next } : v
+      )
+    );
+    savedViewsAPI
+      .patch(view.id, { sharedWithHousehold: next })
+      .catch(() => loadSavedViews());
+  };
 
   const loadTags = useCallback(() => {
     tagsAPI
@@ -593,6 +635,19 @@ const ArticlesList: React.FC = () => {
     if (canSavedViews) loadSavedViews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canSavedViews]);
+
+  // Auto-apply the owner's default view — but only on a truly fresh landing
+  // (no filter params in the URL) and only once, so it never fights a
+  // deep-link or a filter the user just cleared.
+  useEffect(() => {
+    if (didApplyDefaultRef.current) return;
+    if (savedViews.length === 0) return;
+    didApplyDefaultRef.current = true;
+    if ([...searchParams.keys()].length > 0) return;
+    const def = savedViews.find((v) => v.isDefault);
+    if (def && def.query) applyView(def.query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedViews]);
 
   useEffect(() => {
     fetchArticles();
@@ -881,14 +936,52 @@ const ArticlesList: React.FC = () => {
             >
               <button
                 type="button"
-                onClick={() =>
-                  setSearchParams(new URLSearchParams(v.query), {
-                    replace: true,
-                  })
-                }
+                onClick={() => applyView(v.query)}
                 className="hover:underline"
               >
                 {v.name}
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleDefaultView(v)}
+                aria-pressed={Boolean(v.isDefault)}
+                aria-label={
+                  v.isDefault
+                    ? t("savedViews.unsetDefault")
+                    : t("savedViews.setDefault")
+                }
+                title={
+                  v.isDefault
+                    ? t("savedViews.unsetDefault")
+                    : t("savedViews.setDefault")
+                }
+                className="leading-none"
+              >
+                <Star
+                  className={`h-3 w-3 ${v.isDefault ? "fill-amber-400 text-amber-400" : "ui-text-muted"}`}
+                  aria-hidden="true"
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleShareView(v)}
+                aria-pressed={Boolean(v.sharedWithHousehold)}
+                aria-label={
+                  v.sharedWithHousehold
+                    ? t("savedViews.unshare")
+                    : t("savedViews.share")
+                }
+                title={
+                  v.sharedWithHousehold
+                    ? t("savedViews.unshare")
+                    : t("savedViews.share")
+                }
+                className="leading-none"
+              >
+                <Share2
+                  className={`h-3 w-3 ${v.sharedWithHousehold ? "text-primary" : "ui-text-muted"}`}
+                  aria-hidden="true"
+                />
               </button>
               <button
                 type="button"
@@ -899,6 +992,22 @@ const ArticlesList: React.FC = () => {
                 <X className="h-3 w-3" aria-hidden="true" />
               </button>
             </span>
+          ))}
+          {sharedViews.map((v) => (
+            <button
+              key={`shared-${v.id}`}
+              type="button"
+              onClick={() => applyView(v.query)}
+              title={
+                v.ownerName
+                  ? `${v.name} · ${t("savedViews.sharedBy").replace("{name}", v.ownerName)}`
+                  : v.name
+              }
+              className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-xs ui-text-muted hover:bg-surface-muted"
+            >
+              <Users className="h-3 w-3" aria-hidden="true" />
+              <span className="hover:underline">{v.name}</span>
+            </button>
           ))}
           {namingView ? (
             <form

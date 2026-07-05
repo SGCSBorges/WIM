@@ -21,6 +21,7 @@ import {
   Check,
   Clock,
   Paperclip,
+  X,
   StickyNote,
   RotateCw,
   History,
@@ -457,6 +458,57 @@ export default function ArticleDetail() {
   const [claimStatus, setClaimStatus] = useState<ClaimStatus>("NONE");
   const [claimNote, setClaimNote] = useState("");
   const [savingClaim, setSavingClaim] = useState(false);
+  const [claimFiles, setClaimFiles] = useState<Attachment[]>([]);
+  const [claimUploading, setClaimUploading] = useState(false);
+  const claimInputRef = useRef<HTMLInputElement>(null);
+  const garantieId = article?.garantie?.garantieId;
+  useEffect(() => {
+    if (!garantieId) {
+      setClaimFiles([]);
+      return;
+    }
+    let mounted = true;
+    attachmentsAPI
+      .getAll({ garantieId })
+      .then((res: { items?: Attachment[] } | Attachment[]) => {
+        if (!mounted) return;
+        const items = Array.isArray(res) ? res : (res.items ?? []);
+        setClaimFiles(items.filter((a) => a.type === "CLAIM"));
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [garantieId]);
+
+  const uploadClaimFile = async (file: File) => {
+    if (!garantieId) return;
+    setClaimUploading(true);
+    try {
+      const created = (await attachmentsAPI.uploadFile(file, "CLAIM", {
+        garantieId,
+      })) as Attachment;
+      setClaimFiles((prev) => [created, ...prev]);
+      toast.show(t("claim.evidence.uploaded"), { kind: "success" });
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    } finally {
+      setClaimUploading(false);
+    }
+  };
+
+  const deleteClaimFile = async (id: number) => {
+    try {
+      await attachmentsAPI.deleteAttachment(id, { removeFile: true });
+      setClaimFiles((prev) => prev.filter((a) => a.attachmentId !== id));
+    } catch (e) {
+      toast.show(getErrorMessage(e, t("common.errorOccurred")), {
+        kind: "error",
+      });
+    }
+  };
 
   const [renewOpen, setRenewOpen] = useState(false);
   const [renewMode, setRenewMode] = useState<"renew" | "extend">("renew");
@@ -1031,6 +1083,84 @@ export default function ArticleDetail() {
             >
               {t("claim.save")}
             </Button>
+
+            {claimStatus !== "NONE" && (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium">
+                    {t("claim.evidence.title")}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => claimInputRef.current?.click()}
+                    loading={claimUploading}
+                    leftIcon={<Paperclip className="h-4 w-4" />}
+                  >
+                    {t("claim.evidence.add")}
+                  </Button>
+                  <input
+                    ref={claimInputRef}
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    aria-label={t("claim.evidence.add")}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void uploadClaimFile(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+                {claimFiles.length === 0 ? (
+                  <p className="text-xs ui-text-muted">
+                    {t("claim.evidence.empty")}
+                  </p>
+                ) : (
+                  <ul className="flex flex-wrap gap-2">
+                    {claimFiles.map((a) => (
+                      <li
+                        key={a.attachmentId}
+                        className="group relative flex items-center gap-2 rounded-md border ui-divider p-1.5 pr-2 text-xs"
+                      >
+                        {a.mimeType?.startsWith("image/") ? (
+                          <img
+                            src={a.thumbUrl ?? a.fileUrl}
+                            alt={a.fileName}
+                            className="h-10 w-10 rounded object-cover"
+                          />
+                        ) : (
+                          <span
+                            className="grid h-10 w-10 place-items-center rounded bg-surface-muted"
+                            aria-hidden="true"
+                          >
+                            <Paperclip className="h-4 w-4" />
+                          </span>
+                        )}
+                        <a
+                          href={a.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="max-w-[10rem] truncate hover:underline"
+                          title={a.fileName}
+                        >
+                          {a.fileName}
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => void deleteClaimFile(a.attachmentId)}
+                          aria-label={t("common.delete")}
+                          title={t("common.delete")}
+                          className="ml-1 rounded p-1 ui-text-muted hover:ui-text-error"
+                        >
+                          <X className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
 
           {warrantyHistory.length > 0 && (

@@ -31,6 +31,10 @@ enum InviteStatus {
 enum AttachmentType {
   INVOICE
   WARRANTY
+  // Photo/PDF evidence attached to a warranty claim (receipts, correspondence,
+  // damage photos). Linked to the Garantie via garantieId; surfaced on the
+  // claim timeline + embedded in the claim PDF.
+  CLAIM
   OTHER
 }
 
@@ -520,6 +524,14 @@ model SavedView {
   name        String   @db.VarChar(60)
   // The Articles-page filter querystring (e.g. "warranty=expired&priceMin=100").
   query       String   @db.VarChar(500)
+  // At most one default per owner (enforced in the service, not the DB — a
+  // partial unique index would need raw SQL). When set, the Articles page
+  // auto-applies it on first load if no querystring is present.
+  isDefault   Boolean  @default(false)
+  // Opt-in read-only visibility to the owner's household members (mirrors the
+  // Article.sharedWithPowerUsers public-flag pattern). No join table — the
+  // household membership check gates the read.
+  sharedWithHousehold Boolean @default(false)
   createdAt   DateTime @default(now())
 
   owner User @relation(fields: [ownerUserId], references: [userId], onDelete: Cascade)

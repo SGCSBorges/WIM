@@ -13,6 +13,7 @@ import type {
   DashboardStatistics,
   PortfolioAnalytics,
   BudgetStatus,
+  LocationBreakdown,
 } from "@wim/types";
 import { NOT_OWNED_STATUSES } from "@wim/types";
 
@@ -848,5 +849,109 @@ export async function getHouseholdStatistics(userId: number): Promise<{
     members,
     totalArticles: members.reduce((s, m) => s + m.articles, 0),
     totalValue: members.reduce((s, m) => s + m.value, 0),
+  };
+}
+
+/**
+ * Per-location value breakdown for the Location value dashboard. Value uses the
+ * same owned-scope + per-unit × quantity rule as the main dashboard (an article
+ * in N locations contributes its full line value to each). Warranty exposure is
+ * the count of items at a location whose warranty is expired or expiring within
+ * 30 days. `parentLocationId` lets the web build the nested roll-up + treemap.
+ */
+export async function getLocationBreakdown(
+  userId: number
+): Promise<LocationBreakdown> {
+  const ownerUserId = Number(userId);
+  const now = new Date();
+  const in30 = new Date();
+  in30.setDate(now.getDate() + 30);
+
+  const ownedArticle = {
+    ownerUserId,
+    deletedAt: null,
+    status: { notIn: NOT_OWNED_STATUSES },
+  };
+
+  const [locations, rows, unlocatedRows] = await Promise.all([
+    prisma.location.findMany({
+      where: { ownerUserId },
+      select: { locationId: true, name: true, parentLocationId: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.articleLocation.findMany({
+      where: { article: ownedArticle },
+      select: {
+        locationId: true,
+        article: {
+          select: {
+            purchasePrice: true,
+            quantity: true,
+            garantie: { select: { garantieFin: true } },
+          },
+        },
+      },
+    }),
+    // Owned articles with no location at all — surfaced as an "unlocated"
+    // bucket so the totals reconcile with the dashboard.
+    prisma.article.findMany({
+      where: { ...ownedArticle, locations: { none: {} } },
+      select: { purchasePrice: true, quantity: true },
+    }),
+  ]);
+
+  type Acc = {
+    articleCount: number;
+    cents: number;
+    expiringCount: number;
+    expiredCount: number;
+  };
+  const acc = new Map<number, Acc>();
+  const bump = (id: number): Acc => {
+    let a = acc.get(id);
+    if (!a) {
+      a = { articleCount: 0, cents: 0, expiringCount: 0, expiredCount: 0 };
+      acc.set(id, a);
+    }
+    return a;
+  };
+
+  for (const r of rows) {
+    const a = bump(r.locationId);
+    a.articleCount += 1;
+    if (r.article.purchasePrice != null)
+      a.cents +=
+        Math.round(Number(r.article.purchasePrice) * 100) *
+        Math.max(1, r.article.quantity ?? 1);
+    const fin = r.article.garantie?.garantieFin;
+    if (fin) {
+      if (fin < now) a.expiredCount += 1;
+      else if (fin <= in30) a.expiringCount += 1;
+    }
+  }
+
+  const locationsOut = locations.map((l) => {
+    const a = acc.get(l.locationId);
+    return {
+      locationId: l.locationId,
+      name: l.name,
+      parentLocationId: l.parentLocationId ?? null,
+      articleCount: a?.articleCount ?? 0,
+      value: a ? a.cents / 100 : 0,
+      expiringCount: a?.expiringCount ?? 0,
+      expiredCount: a?.expiredCount ?? 0,
+    };
+  });
+
+  let unCents = 0;
+  for (const u of unlocatedRows)
+    if (u.purchasePrice != null)
+      unCents +=
+        Math.round(Number(u.purchasePrice) * 100) *
+        Math.max(1, u.quantity ?? 1);
+
+  return {
+    locations: locationsOut,
+    unlocated: { articleCount: unlocatedRows.length, value: unCents / 100 },
   };
 }

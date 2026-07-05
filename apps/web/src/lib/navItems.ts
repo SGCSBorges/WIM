@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Paperclip,
   MapPin,
+  MapPinned,
   Bell,
   Share2,
   FileText,
@@ -35,6 +36,7 @@ export type NavKey =
   | "wishlist"
   | "reports"
   | "analytics"
+  | "locationValue"
   | "sharing"
   | "transfers"
   | "messages"
@@ -77,6 +79,12 @@ export const NAV_ITEMS: NavItem[] = [
     key: "analytics",
     path: "/analytics",
     icon: TrendingUp,
+    feature: "analytics",
+  },
+  {
+    key: "locationValue",
+    path: "/locations/value",
+    icon: MapPinned,
     feature: "analytics",
   },
   { key: "sharing", path: "/sharing", icon: Share2, requires: "share" },

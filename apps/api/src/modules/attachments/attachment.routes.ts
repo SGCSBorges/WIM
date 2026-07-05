@@ -32,7 +32,7 @@ import {
   deleteObject,
 } from "../../libs/object-storage";
 import { security } from "../../config/security";
-const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "OTHER"]);
+const AttachmentTypeSchema = z.enum(["INVOICE", "WARRANTY", "CLAIM", "OTHER"]);
 
 // Cap mirrors article.bulk-delete — a single "select all" UI today is
 // scoped to the current page (50 attachments), 500 is generous safety.
@@ -185,12 +185,15 @@ router.post(
       );
     }
 
-    const { type, articleId } = z
+    const { type, articleId, garantieId } = z
       .object({
         type: AttachmentTypeSchema.optional(),
         // Optional link to an article (e.g. the photo gallery). Ownership is
         // enforced in AttachmentService.create.
         articleId: z.coerce.number().int().positive().optional(),
+        // Optional link to a warranty (e.g. claim evidence). Ownership is
+        // enforced in AttachmentService.create.
+        garantieId: z.coerce.number().int().positive().optional(),
       })
       .parse(req.body);
     const attachmentType: AttachmentType = type ?? "OTHER";
@@ -250,6 +253,7 @@ router.post(
         fileUrl,
         thumbUrl,
         ...(articleId !== undefined ? { articleId } : {}),
+        ...(garantieId !== undefined ? { garantieId } : {}),
         ownerUserId: req.user!.sub,
       });
     } catch (err) {

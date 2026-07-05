@@ -326,6 +326,13 @@ export interface SavedView {
   id: number;
   name: string;
   query: string;
+  // At most one default per owner; auto-applied on the Articles page.
+  isDefault?: boolean;
+  // Owner opted this view into read-only household visibility.
+  sharedWithHousehold?: boolean;
+  // Present only on views surfaced *to* a household member (not the owner):
+  // who owns it. Absent on the caller's own views.
+  ownerName?: string;
 }
 
 /** Warranty as returned by `GET /api/warranties` (the standalone list,
@@ -565,7 +572,12 @@ export interface UserPreferences {
   dateFormat?: DateFormatPref | null;
 }
 
-export const ATTACHMENT_TYPES = ["INVOICE", "WARRANTY", "OTHER"] as const;
+export const ATTACHMENT_TYPES = [
+  "INVOICE",
+  "WARRANTY",
+  "CLAIM",
+  "OTHER",
+] as const;
 export type AttachmentType = (typeof ATTACHMENT_TYPES)[number];
 
 /** Uploaded file linked to an article and/or warranty. Both
@@ -811,6 +823,26 @@ export interface BudgetStatus {
   monthlySpend: number;
   annualBudget: number | null;
   annualSpend: number;
+}
+
+/** One location's slice of the Location value dashboard
+ *  (`GET /api/statistics/locations`). `value` is per-unit price × quantity
+ *  over currently-owned items directly at this location; `parentLocationId`
+ *  drives the nested roll-up + treemap. */
+export interface LocationValueEntry {
+  locationId: number;
+  name: string;
+  parentLocationId: number | null;
+  articleCount: number;
+  value: number;
+  expiringCount: number;
+  expiredCount: number;
+}
+
+export interface LocationBreakdown {
+  locations: LocationValueEntry[];
+  /** Owned items with no location at all, so the totals reconcile. */
+  unlocated: { articleCount: number; value: number };
 }
 
 /** A single article weighted by its current (depreciated) value. */

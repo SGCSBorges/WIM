@@ -42,6 +42,7 @@ import type {
   ServiceRecordItem,
   ServiceDueItem,
   PortfolioAnalytics,
+  LocationBreakdown,
   PublicItem,
   WishlistItemRow,
   HouseholdInfo,
@@ -1148,8 +1149,8 @@ export const attachmentsAPI = {
 
   async uploadFile(
     file: File,
-    type: "INVOICE" | "WARRANTY" | "OTHER" = "OTHER",
-    options: { articleId?: number } = {}
+    type: "INVOICE" | "WARRANTY" | "CLAIM" | "OTHER" = "OTHER",
+    options: { articleId?: number; garantieId?: number } = {}
   ) {
     // Downscale/re-encode large photos in the browser before upload — cheaper
     // to transfer + store, and dodges the API's 10 MB reject. No-op for
@@ -1160,6 +1161,8 @@ export const attachmentsAPI = {
     form.append("type", type);
     if (options.articleId != null)
       form.append("articleId", String(options.articleId));
+    if (options.garantieId != null)
+      form.append("garantieId", String(options.garantieId));
 
     // No Content-Type header — let the browser set multipart/form-data boundary.
     // credentials: 'include' is added by fetchWithTimeout automatically.
@@ -1372,6 +1375,32 @@ export const savedViewsAPI = {
     });
     if (!response.ok)
       throw new Error(await extractError(response, "Failed to save view"));
+    return response.json();
+  },
+
+  /** Views household members have shared read-only with the caller. */
+  async listShared(): Promise<SavedView[]> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/saved-views/shared`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to load shared views")
+      );
+    return response.json();
+  },
+
+  async patch(
+    id: number,
+    patch: { isDefault?: boolean; sharedWithHousehold?: boolean }
+  ): Promise<SavedView> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/saved-views/${id}`,
+      { method: "PATCH", headers: getHeaders(), body: JSON.stringify(patch) }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to update view"));
     return response.json();
   },
 
@@ -1614,6 +1643,18 @@ export const statisticsAPI = {
     if (!response.ok)
       throw new Error(
         await extractError(response, "Failed to fetch analytics")
+      );
+    return response.json();
+  },
+
+  async getLocationBreakdown(): Promise<LocationBreakdown> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/statistics/locations`,
+      { headers: getHeaders() }
+    );
+    if (!response.ok)
+      throw new Error(
+        await extractError(response, "Failed to fetch location breakdown")
       );
     return response.json();
   },

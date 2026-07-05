@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const AttachmentCreateSchema = z.object({
-  type: z.enum(["INVOICE", "WARRANTY", "OTHER"]).default("INVOICE"),
+  type: z.enum(["INVOICE", "WARRANTY", "CLAIM", "OTHER"]).default("INVOICE"),
   fileName: z.string().min(1).max(255),
   mimeType: z.string().max(100),
   fileSize: z.number().int().positive(),

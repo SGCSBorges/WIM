@@ -184,7 +184,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET`    | `/` | ✓ | List attachments (`?articleId=`, `?garantieId=`) |
-| `POST`   | `/upload` | ✓ | Upload file (multipart/form-data, 10 MB cap, magic-byte validated) |
+| `POST`   | `/upload` | ✓ | Upload file (multipart/form-data, 10 MB cap, magic-byte validated). Optional `type` (`INVOICE`/`WARRANTY`/`CLAIM`/`OTHER`) + `articleId`/`garantieId` links; `type=CLAIM` + `garantieId` = warranty-claim evidence |
 | `DELETE` | `/:id` | ✓ | Delete (`?removeFile=true` also deletes the file from disk) |
 
 Uploaded files are served behind auth at `GET /uploads/<filename>` — the owner must be the authenticated user.
@@ -226,8 +226,10 @@ Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/` | ✓ | List saved Articles-filter presets |
+| `GET`    | `/` | ✓ | List saved Articles-filter presets (with `isDefault` / `sharedWithHousehold`) |
+| `GET`    | `/shared` | ✓ | Presets household members shared read-only (each carries `ownerName`) |
 | `POST`   | `/` | ✓ | Save a preset (`{ name, query }`) |
+| `PATCH`  | `/:id` | ✓ | Set as default (exclusive) / toggle household sharing (`{ isDefault?, sharedWithHousehold? }`) |
 | `DELETE` | `/:id` | ✓ | Delete a preset |
 
 ### Calendar — `/api/calendar`
@@ -277,6 +279,7 @@ Per-user inventory sharing between **share-capable** users. Sharing is the POWER
 | `GET` | `/basic` | ✓ | Basic counts for the current user |
 | `GET` | `/admin` | ADMIN | Platform-wide stats |
 | `GET` | `/analytics` | POWER_USER (`analytics`) | Spending & portfolio-value analytics |
+| `GET` | `/locations` | POWER_USER (`analytics`) | Per-location value + warranty exposure breakdown (treemap dashboard) |
 | `GET` | `/budget` | POWER_USER (`budget`) | Spend vs monthly/annual budget for the current period |
 
 ### Transfers — `/api/articles/transfers` (POWER_USER)

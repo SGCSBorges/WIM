@@ -17,12 +17,36 @@ const CreateSchema = z.object({
   query: z.string().trim().max(500),
 });
 
+const PatchSchema = z
+  .object({
+    isDefault: z.boolean().optional(),
+    sharedWithHousehold: z.boolean().optional(),
+  })
+  .refine(
+    (v) => v.isDefault !== undefined || v.sharedWithHousehold !== undefined,
+    {
+      message: "nothing to update",
+    }
+  );
+
 router.get(
   "/",
   authGuard,
   requireFeature("saved_views"),
   asyncHandler(async (req: AuthRequest, res) => {
     res.json(await SavedViewService.list(req.user!.sub));
+  })
+);
+
+// Read-only views shared by the caller's household members. Static path — must
+// precede `/:id` so the segment wins the matcher. Gated on `saved_views` (the
+// household mesh already gates who's a peer).
+router.get(
+  "/shared",
+  authGuard,
+  requireFeature("saved_views"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    res.json(await SavedViewService.listShared(req.user!.sub));
   })
 );
 
@@ -43,6 +67,36 @@ router.post(
       metadata: { name },
     });
     res.status(201).json(created);
+  })
+);
+
+router.patch(
+  "/:id",
+  authGuard,
+  requireFeature("saved_views"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const id = idParam.parse(req.params.id);
+    const patch = PatchSchema.parse(req.body);
+    let updated;
+    if (patch.isDefault !== undefined)
+      updated = await SavedViewService.setDefault(
+        id,
+        req.user!.sub,
+        patch.isDefault
+      );
+    if (patch.sharedWithHousehold !== undefined)
+      updated = await SavedViewService.setShared(
+        id,
+        req.user!.sub,
+        patch.sharedWithHousehold
+      );
+    await auditAction(req, {
+      action: "UPDATE",
+      entity: "SavedView",
+      entityId: id,
+      metadata: patch,
+    });
+    res.json(updated);
   })
 );
 

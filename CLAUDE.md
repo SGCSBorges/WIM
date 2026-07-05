@@ -668,6 +668,36 @@ Smaller features added in one batch; each follows the existing patterns.
   small files, or when the canvas path is unavailable; only replaces the
   original when the re-encode is actually smaller — never blocks an upload. The
   server's magic-byte check + sharp thumbnail still run on whatever arrives.
+## Round 10 (2026-07): claim attachments + saved-view sharing + location value
+
+- **Warranty claim attachments**: `AttachmentType` gains `CLAIM` (migration
+  `20260712000000_claim_attachments_saved_view_flags`). The upload route now
+  accepts a `garantieId` field alongside `type`, so claim evidence links to the
+  warranty (`assertWarrantyOwned` already gated it). Listed via
+  `GET /attachments?garantieId=` (rows carry `type`, filtered to CLAIM
+  client-side), managed in the article-detail claim block (`ArticleDetail` —
+  upload/list/delete, only when a claim is open), and the **claim PDF embeds up
+  to 4** under "Claim evidence" (`article.pdf.ts`, via `garantie.attachments`
+  where `type:"CLAIM"`). `attachmentsAPI.uploadFile` gained a `garantieId`
+  option. i18n `claim.evidence.*`.
+- **Saved-view default + household sharing**: `SavedView.isDefault` +
+  `sharedWithHousehold` (same migration). `PATCH /api/saved-views/:id`
+  (`setDefault` clears siblings in a tx — one default per owner; `setShared`
+  toggles the flag); `GET /api/saved-views/shared` returns household peers'
+  shared views (via `householdMember` lookup, carrying `ownerName`). Web:
+  `ArticlesList` star = default (auto-applied on a fresh landing with no URL
+  filters, once, via `didApplyDefaultRef`), Share2 = household-share; shared
+  peers render as read-only `Users`-icon chips. `savedViewsAPI.patch`/
+  `listShared`. i18n `savedViews.setDefault/unsetDefault/share/unshare/sharedBy`.
+- **Location value dashboard**: `GET /api/statistics/locations` (gated
+  `analytics`) → `getLocationBreakdown` returns per-location `{ articleCount,
+  value, expiringCount, expiredCount, parentLocationId }` + an `unlocated`
+  bucket, same owned-scope + per-unit × quantity value rule as the dashboard.
+  Web: lazy `/locations/value` route (`LocationValueView`, recharts `Treemap`
+  in its own chunk) + gated nav item (`MapPinned`, `locationValue` key) + table
+  with the nested "Home › Garage" path. `LocationBreakdown`/`LocationValueEntry`
+  in `@wim/types`. i18n `locationValue.*` + `nav.locationValue`.
+
 ## Round 9 (2026-07): bulk enums + provider autofill + item bundles
 
 - **Bulk status/category/condition edit**: `bulkUpdate` (service/route/schema)

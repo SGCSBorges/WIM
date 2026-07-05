@@ -26,6 +26,7 @@ import {
   getPortfolioAnalytics,
   getBudgetStatus,
   getHouseholdStatistics,
+  getLocationBreakdown,
 } from "../services/statistics.service";
 
 const router = Router();
@@ -61,6 +62,18 @@ router.get(
   asyncHandler(async (req: AuthRequest, res) => {
     const status = await getBudgetStatus(req.user!.sub);
     res.json(status);
+  })
+);
+
+// Per-location value + warranty-exposure breakdown for the Location value
+// dashboard (paid BI surface, same tier as analytics).
+router.get(
+  "/locations",
+  authGuard,
+  requireFeature("analytics"),
+  asyncHandler(async (req: AuthRequest, res) => {
+    const breakdown = await getLocationBreakdown(req.user!.sub);
+    res.json(breakdown);
   })
 );
 

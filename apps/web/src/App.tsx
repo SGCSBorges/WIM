@@ -129,6 +129,9 @@ const WishlistView = React.lazy(
 const AnalyticsView = React.lazy(
   () => import("./components/analytics/AnalyticsView")
 );
+const LocationValueView = React.lazy(
+  () => import("./components/locations/LocationValueView")
+);
 const TransfersView = React.lazy(
   () => import("./components/transfers/TransfersView")
 );
@@ -638,6 +641,14 @@ export default function App() {
             <Route
               path="/analytics"
               element={gatedRoute(canAnalytics, <AnalyticsView />, "analytics")}
+            />
+            <Route
+              path="/locations/value"
+              element={gatedRoute(
+                canAnalytics,
+                <LocationValueView />,
+                "analytics"
+              )}
             />
             <Route path="/profile" element={<ProfileView />} />
             <Route path="/sharing" element={sharingRoute} />
