@@ -25,6 +25,8 @@ export type {
   InsurancePolicyItem,
   LoanItem,
   Location,
+  LocationBreakdown,
+  LocationValueEntry,
   MonthlyBucket,
   PortfolioAnalytics,
   PublicItem,
