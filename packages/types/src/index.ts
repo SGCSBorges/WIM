@@ -158,6 +158,9 @@ export interface Article {
   category?: ArticleCategory | null;
   // Optional physical condition grade (null/absent = unspecified).
   condition?: ArticleCondition | null;
+  // Free-text grouping label (null/absent = ungrouped). Filterable; the detail
+  // page links same-bundle siblings.
+  bundle?: string | null;
   // Physical inventory check: when the owner last confirmed they still hold
   // the item. Null/absent = never verified.
   lastVerifiedAt?: string | null;
@@ -220,6 +223,8 @@ export interface ArticleListParams {
   category?: ArticleCategory;
   // Filter to a single physical condition grade.
   condition?: ArticleCondition;
+  // Filter to a single bundle (exact grouping label).
+  bundle?: string;
   // Physical inventory check: "needed" = never verified or >12 months ago.
   verification?: "needed" | "verified";
   // Restrict to owner-pinned favorites.

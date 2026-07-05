@@ -483,6 +483,8 @@ export const articlesAPI = {
     if (params.warrantyStatus) p.set("warrantyStatus", params.warrantyStatus);
     if (params.status) p.set("status", params.status);
     if (params.category) p.set("category", params.category);
+    if (params.condition) p.set("condition", params.condition);
+    if (params.bundle) p.set("bundle", params.bundle);
     if (params.verification) p.set("verification", params.verification);
     if (params.favorite) p.set("favorite", "1");
     if (params.priceMin != null) p.set("priceMin", String(params.priceMin));
@@ -587,6 +589,7 @@ export const articlesAPI = {
       price?: number | null;
       quantity?: number;
       condition?: string | null;
+      bundle?: string | null;
       purchasedFrom?: string | null;
       orderRef?: string | null;
       customFields?: string | null;
@@ -738,6 +741,20 @@ export const articlesAPI = {
       throw new Error(
         await extractError(response, "Failed to update favorite")
       );
+  },
+
+  /** Distinct bundle labels the caller has used (for the form datalist). */
+  async bundles(): Promise<string[]> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/articles/bundles`,
+      {
+        headers: getHeaders(),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load bundles"));
+    const data = (await response.json()) as { items: string[] };
+    return data.items ?? [];
   },
 
   /** Physical inventory check: stamp "I still hold this item". */
@@ -912,6 +929,9 @@ export const articlesAPI = {
       brand?: string | null;
       serialNumber?: string | null;
       quantity?: number;
+      status?: string;
+      category?: string | null;
+      condition?: string | null;
     }
   ): Promise<{ count: number }> {
     const response = await fetchWithTimeout(
@@ -2235,6 +2255,24 @@ export const warrantiesAPI = {
         await extractError(response, "Failed to fetch warranties")
       );
     return response.json();
+  },
+
+  /** Distinct providers the caller has used (name → phone/url) for autofill. */
+  async providers(): Promise<
+    Array<{ name: string; phone: string | null; url: string | null }>
+  > {
+    const response = await fetchWithTimeout(
+      apiUrl("/warranties/providers").toString(),
+      {
+        headers: getHeaders(),
+      }
+    );
+    if (!response.ok)
+      throw new Error(await extractError(response, "Failed to load providers"));
+    const data = (await response.json()) as {
+      items: Array<{ name: string; phone: string | null; url: string | null }>;
+    };
+    return data.items ?? [];
   },
 
   async updateClaim(

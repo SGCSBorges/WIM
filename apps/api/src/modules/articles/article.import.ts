@@ -29,6 +29,7 @@ export type ImportRow = {
   price?: number | null;
   quantity?: number;
   condition?: string | null;
+  bundle?: string | null;
   purchasedFrom?: string | null;
   orderRef?: string | null;
   /** Raw JSON cell from the export's customFields column. */
@@ -236,6 +237,7 @@ export async function importArticles(
         purchasePrice: row.price ?? null,
         quantity: row.quantity ?? undefined,
         condition: parseCondition(row.condition),
+        bundle: row.bundle?.trim() || null,
         purchasedFrom: row.purchasedFrom?.trim() || null,
         orderRef: row.orderRef?.trim() || null,
         customFields,

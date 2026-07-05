@@ -1119,6 +1119,17 @@ export async function seedDemoData(
         condition: chance(0.7)
           ? pick(["NEW", "EXCELLENT", "GOOD", "FAIR", "POOR"])
           : null,
+        // A minority of items get a free-text bundle label so the "bundled
+        // with" siblings + bundle filter have data to show.
+        bundle: chance(0.12)
+          ? pick([
+              "Home office",
+              "Camera kit",
+              "Kitchen",
+              "Garage tools",
+              "Travel gear",
+            ])
+          : null,
         depreciationRate: s.dep,
         category: s.item.category,
         status: s.status,

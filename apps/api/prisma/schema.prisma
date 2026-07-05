@@ -392,6 +392,11 @@ model Article {
   // carried in the CSV round-trip. Organizational only — no value impact.
   condition          ArticleCondition?
 
+  // Free-text grouping label so related items (a camera body + its lenses)
+  // stay associated. Null = ungrouped. Filterable (?bundle=); the detail page
+  // links same-bundle siblings. Purely organizational.
+  bundle             String?  @db.VarChar(80)
+
   // Annual straight-line depreciation rate as a percentage (0–100). Null
   // means the item doesn't depreciate. Used to derive a current value from
   // purchasePrice and the item's age.

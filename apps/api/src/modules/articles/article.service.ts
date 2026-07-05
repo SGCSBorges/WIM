@@ -87,6 +87,7 @@ export type ArticleListFilters = {
   status?: ArticleStatus;
   category?: ArticleCategory;
   condition?: ArticleCondition;
+  bundle?: string;
   verification?: "needed" | "verified";
   favorite?: boolean;
   priceMin?: number;
@@ -112,6 +113,7 @@ function buildArticleWhere(
   if (f.status) where.status = f.status;
   if (f.category) where.category = f.category;
   if (f.condition) where.condition = f.condition;
+  if (f.bundle) where.bundle = f.bundle;
   if (f.favorite) where.isFavorite = true;
   if (f.q && f.q.trim()) {
     // Split into terms and require every term to match somewhere (name, model
@@ -230,6 +232,19 @@ export const ArticleService = {
       where: { articleId: id, ownerUserId, deletedAt: null },
       include: articleInclude,
     }),
+
+  // Distinct bundle labels the owner has used, for the form's datalist +
+  // the filter bar. Cheap (few dozen values); sorted for a stable menu.
+  distinctBundles: async (ownerUserId: number): Promise<string[]> => {
+    const rows = await prisma.article.findMany({
+      where: { ownerUserId, deletedAt: null, bundle: { not: null } },
+      distinct: ["bundle"],
+      select: { bundle: true },
+      orderBy: { bundle: "asc" },
+      take: 500,
+    });
+    return rows.map((r) => r.bundle!).filter(Boolean);
+  },
 
   create: async (data: ArticleCreateInput) => {
     // customFields is extracted because Prisma's Json input type rejects a
@@ -375,6 +390,7 @@ export const ArticleService = {
           : null,
       quantity: source.quantity,
       condition: source.condition,
+      bundle: source.bundle,
       locationIds: source.locations.map((l) => l.locationId),
       tagIds: source.tags.map((t) => t.tagId),
     });
@@ -859,6 +875,9 @@ export const ArticleService = {
       brand?: string | null;
       serialNumber?: string | null;
       quantity?: number;
+      status?: ArticleStatus;
+      category?: ArticleCategory | null;
+      condition?: ArticleCondition | null;
     }
   ): Promise<{ count: number }> => {
     if (ids.length === 0) return { count: 0 };
@@ -871,8 +890,12 @@ export const ArticleService = {
     if (fields.serialNumber !== undefined)
       data.serialNumber = fields.serialNumber;
     // quantity is NOT NULL (min 1) — a null clear makes no sense, so it's only
-    // ever a "set to N" op.
+    // ever a "set to N" op. status is NOT NULL too (set-only); category +
+    // condition are nullable (null clears).
     if (fields.quantity !== undefined) data.quantity = fields.quantity;
+    if (fields.status !== undefined) data.status = fields.status;
+    if (fields.category !== undefined) data.category = fields.category;
+    if (fields.condition !== undefined) data.condition = fields.condition;
     if (Object.keys(data).length === 0) return { count: 0 };
 
     return prisma.$transaction(async (tx) => {

@@ -277,10 +277,11 @@ failure mode with the same 401.
 ## Article power features
 
 - `POST /api/articles/bulk-update` —
-  `{ ids: number[], fields: { purchasePrice?, depreciationRate?, brand?, serialNumber? } }`.
-  `null` clears, missing keys leave alone. Per-row ownership + trashed-row
-  skip in a single transaction. Counterpart to the existing
-  `/articles/bulk-assign` but for scalar fields.
+  `{ ids: number[], fields: { purchasePrice?, depreciationRate?, brand?, serialNumber?, quantity?, status?, category?, condition? } }`.
+  `null` clears the nullable fields (`category`/`condition` and the scalars);
+  `status`/`quantity` are set-only (both NOT NULL). Missing keys leave alone.
+  Per-row ownership + trashed-row skip in a single transaction. Counterpart to
+  the existing `/articles/bulk-assign` but for scalar/enum fields.
 - `GET|POST|PUT|DELETE /api/article-templates[/:id]` — reusable starting
   points for the create form. JSONB `payload` stores locations and tags
   by **name**, not by id, so a template survives a rename or a live row
@@ -298,6 +299,18 @@ failure mode with the same 401.
   Written through the normal create/update endpoints, filterable via
   `?condition=`, carried in the CSV round-trip. Organizational only — it never
   affects any value figure.
+- **Bundles** — `Article.bundle` (free-text ≤80 chars, nullable) groups
+  related items (a camera body + its lenses). Written through the normal
+  create/update endpoints, filterable via `?bundle=<label>` (exact match),
+  carried in the CSV round-trip. `GET /api/articles/bundles` returns the
+  caller's distinct labels (`{ items: string[] }`, sorted) for the form
+  datalist + filter; the detail page links same-bundle siblings by reusing the
+  list endpoint. Organizational only.
+- **Warranty provider autofill** — `GET /api/warranties/providers` returns the
+  caller's distinct providers (`{ items: [{ name, phone, url }] }`, deduped by
+  name keeping the most-recent contact, sorted). The warranty form offers the
+  names as a datalist and fills the still-empty phone/url when a known name is
+  picked.
 - **Maintenance spend** — the dashboard payload carries `maintenanceSpend`
   (sum of `ServiceRecord.cost` over the trailing 12 months, live articles);
   the article-detail maintenance section shows a per-article total. The

@@ -42,6 +42,8 @@ interface ArticlesFilterBarProps {
   statusFilter: string;
   categoryFilter: string;
   conditionFilter: string;
+  bundleFilter: string;
+  bundleOptions: string[];
   verificationFilter: string;
   favoriteFilter: boolean;
   priceMin: string;
@@ -66,6 +68,8 @@ export default function ArticlesFilterBar({
   statusFilter,
   categoryFilter,
   conditionFilter,
+  bundleFilter,
+  bundleOptions,
   verificationFilter,
   favoriteFilter,
   priceMin,
@@ -90,6 +94,7 @@ export default function ArticlesFilterBar({
     statusFilter,
     categoryFilter,
     conditionFilter,
+    bundleFilter,
     verificationFilter,
     favoriteFilter,
     priceMin,
@@ -279,6 +284,24 @@ export default function ArticlesFilterBar({
               </option>
             ))}
           </Select>
+
+          {bundleOptions.length > 0 && (
+            <Select
+              value={bundleFilter}
+              onChange={(e) =>
+                updateParams({ bundle: e.target.value || undefined })
+              }
+              aria-label={t("articles.filter.bundle.label")}
+              className="w-auto"
+            >
+              <option value="">{t("articles.filter.bundle.all")}</option>
+              {bundleOptions.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </Select>
+          )}
 
           <Select
             value={verificationFilter}

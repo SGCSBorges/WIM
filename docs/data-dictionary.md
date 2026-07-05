@@ -103,6 +103,7 @@ A physical item in the inventory. The hub everything else hangs off.
 | `quantity` | Int | `1` | Units this record represents. Value figures multiply price × quantity; counts stay per-record. |
 | `isFavorite` | Boolean | `false` | Owner-pinned favorite for quick access; filterable (`?favorite=1`). Cosmetic. |
 | `condition` | `ArticleCondition`? | null | Physical grade (`NEW`/`EXCELLENT`/`GOOD`/`FAIR`/`POOR`); null = unspecified. Filterable + CSV round-trip. Organizational — no value impact. |
+| `bundle` | String? VarChar(80) | null | Free-text grouping label so related items (a camera body + its lenses) stay associated. Filterable (`?bundle=`); the detail page links same-bundle siblings; CSV round-trip. Organizational. |
 | `depreciationRate` | Decimal(5,2)? | null | Annual straight-line %, 0–100. null = no depreciation. |
 | `sharedWithPowerUsers` | Boolean | `false` | Public (read-only) share flag. |
 | `publicToken` | String? VarChar(64) | null | **Unique**. Opt-in `/i/<token>` public page; null = off. |

@@ -28,6 +28,8 @@ const COLUMNS = [
   "status",
   "category",
   "condition",
+  // Free-text grouping label; round-trips through the importer.
+  "bundle",
   // Physical inventory check stamp. Read-only on round-trip.
   "lastVerifiedAt",
   // User-defined attributes as a JSON array of { key, value } pairs; the
@@ -99,6 +101,7 @@ function serializeRow(a: ExportRow): string {
     a.status,
     a.category,
     a.condition,
+    a.bundle,
     a.lastVerifiedAt,
     Array.isArray(a.customFields) && a.customFields.length > 0
       ? JSON.stringify(a.customFields)

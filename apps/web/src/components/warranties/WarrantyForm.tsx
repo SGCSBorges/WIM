@@ -5,10 +5,11 @@
  * the existing tests assert the inline error spans. Provider contact
  * fields are optional; they print on the claim PDF.
  */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { useUnsavedChangesGuard } from "../../hooks/useUnsavedChangesGuard";
+import { warrantiesAPI } from "../../services/api";
 
 interface Warranty {
   garantieId?: number;
@@ -52,6 +53,47 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState(false);
   useUnsavedChangesGuard(dirty);
+
+  // Known providers for the name datalist + phone/url autofill (best-effort).
+  const [providers, setProviders] = useState<
+    Array<{ name: string; phone: string | null; url: string | null }>
+  >([]);
+  useEffect(() => {
+    let mounted = true;
+    warrantiesAPI
+      .providers()
+      .then((items) => {
+        if (mounted) setProviders(items);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // When the typed/picked name exactly matches a known provider, fill the
+  // still-empty phone/url — never overwrite a value the user already entered.
+  const applyProviderName = (name: string) => {
+    setFormData((prev) => {
+      const match = providers.find(
+        (p) => p.name.toLowerCase() === name.trim().toLowerCase()
+      );
+      if (!match) return { ...prev, providerName: name };
+      return {
+        ...prev,
+        providerName: name,
+        providerPhone: prev.providerPhone?.trim()
+          ? prev.providerPhone
+          : (match.phone ?? ""),
+        providerUrl: prev.providerUrl?.trim()
+          ? prev.providerUrl
+          : (match.url ?? ""),
+      };
+    });
+    setDirty(true);
+    if (errors.providerName)
+      setErrors((prev) => ({ ...prev, providerName: "" }));
+  };
 
   const handleCancel = () => {
     if (dirty && !window.confirm(t("common.unsaved.discardConfirm"))) return;
@@ -247,14 +289,18 @@ const WarrantyForm: React.FC<WarrantyFormProps> = ({
             <input
               type="text"
               id="providerName"
+              list="warranty-provider-options"
               value={formData.providerName ?? ""}
-              onChange={(e) =>
-                handleInputChange("providerName", e.target.value)
-              }
+              onChange={(e) => applyProviderName(e.target.value)}
               className="ui-input w-full px-3 py-2 rounded-md"
               maxLength={120}
               disabled={isLoading}
             />
+            <datalist id="warranty-provider-options">
+              {providers.map((p) => (
+                <option key={p.name} value={p.name} />
+              ))}
+            </datalist>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>

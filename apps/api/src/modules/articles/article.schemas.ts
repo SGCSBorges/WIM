@@ -58,6 +58,9 @@ export const ArticleCreateSchema = z.object({
   category: ArticleCategorySchema.optional().nullable(),
   // Optional physical condition grade (null clears it).
   condition: ArticleConditionSchema.optional().nullable(),
+  // Optional free-text grouping label (null clears it) so related items stay
+  // associated. Capped to match the VARCHAR(80) column.
+  bundle: z.string().trim().max(80).optional().nullable(),
   // User-defined attributes (null clears them all).
   customFields: CustomFieldsSchema.optional().nullable(),
   // An article must belong to at least one location

@@ -80,6 +80,20 @@ describe("ArticleService.bulkUpdate", () => {
     });
   });
 
+  it("forwards status/category/condition (category/condition nullable)", async () => {
+    p.__tx.article.findMany.mockResolvedValue([{ articleId: 1 }]);
+    p.__tx.article.updateMany.mockResolvedValue({ count: 1 });
+    await ArticleService.bulkUpdate([1], 7, {
+      status: "IN_REPAIR",
+      category: "ELECTRONICS",
+      condition: null,
+    });
+    expect(p.__tx.article.updateMany).toHaveBeenCalledWith({
+      where: { articleId: { in: [1] }, ownerUserId: 7 },
+      data: { status: "IN_REPAIR", category: "ELECTRONICS", condition: null },
+    });
+  });
+
   it("returns zero when nothing is owned by the caller", async () => {
     p.__tx.article.findMany.mockResolvedValue([]);
     const result = await ArticleService.bulkUpdate([1, 2], 7, {

@@ -668,6 +668,35 @@ Smaller features added in one batch; each follows the existing patterns.
   small files, or when the canvas path is unavailable; only replaces the
   original when the re-encode is actually smaller — never blocks an upload. The
   server's magic-byte check + sharp thumbnail still run on whatever arrives.
+## Round 9 (2026-07): bulk enums + provider autofill + item bundles
+
+- **Bulk status/category/condition edit**: `bulkUpdate` (service/route/schema)
+  now also accepts `status` (set-only, NOT NULL), `category`, and `condition`
+  (both nullable → `null` clears) alongside the existing scalar set.
+  `BulkEditDialog` renders the three as tri-state `<Select>` rows
+  (`renderEnumRow`; status hides the Clear op). Reuses `articleStatus.*`/
+  `articleCategory.*`/`articleCondition.*` i18n labels.
+- **Warranty provider autofill**: `GET /api/warranties/providers`
+  (`WarrantyService.distinctProviders`, deduped by name keeping the newest
+  contact, sorted) feeds a `<datalist>` on the provider-name field in
+  `WarrantyForm`; picking a known name fills the still-empty phone/url and
+  **never** overwrites a value the user already typed.
+- **Item bundles**: `Article.bundle` (`String? @db.VarChar(80)`, free-text) +
+  migration `20260710000000_article_bundle`. Groups related items (a camera
+  body + its lenses). Flows through create/update via the normal `...articleData`
+  / `...patch` spread (only `duplicate()` copies it explicitly); filterable
+  `?bundle=<label>` (exact match, `buildArticleWhere`); CSV round-trip.
+  `GET /api/articles/bundles` (`distinctBundles`) returns the owner's distinct
+  labels (sorted) for the `ArticleForm` datalist + the `ArticlesFilterBar`
+  Select (only renders when the owner has bundles). `ArticleDetail` shows a
+  "bundled with" sibling list by reusing the list endpoint filtered on the
+  label (client-side excludes the current article). i18n keys under
+  `articleForm.bundle*` / `articles.filter.bundle.*` / `articleDetail.bundle*`
+  (5 languages). Organizational only — no value impact.
+- **Latent fix**: `articlesAPI.getAll` never serialized the `condition` filter
+  into the query string (added round 8), so the condition filter pill silently
+  did nothing; round 9 wires both `condition` and `bundle` into the query.
+
 ## Round 8 (2026-07): condition + calendar-feed parity + maintenance spend
 
 - **Item condition**: `Article.condition` (`ArticleCondition?` enum —

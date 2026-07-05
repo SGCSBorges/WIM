@@ -5,6 +5,7 @@ vi.mock("../../libs/prisma", () => {
     garantie: {
       findFirst: vi.fn(),
       findUnique: vi.fn(),
+      findMany: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
     },
@@ -210,5 +211,27 @@ describe("WarrantyService.updateClaim", () => {
     expect(arg.data.claimStatus).toBe("NONE");
     expect(arg.data.claimNote).toBeNull();
     expect(arg.data.claimUpdatedAt).toBeNull();
+  });
+});
+
+describe("WarrantyService.distinctProviders", () => {
+  it("dedups by name keeping the most-recent contact and sorts by name", async () => {
+    // findMany returns newest-first (orderBy garantieId desc); the first row
+    // seen for a name wins its phone/url.
+    mockPrisma.garantie.findMany.mockResolvedValue([
+      { providerName: "Sony", providerPhone: "111", providerUrl: "s.example" },
+      { providerName: "Apple", providerPhone: "999", providerUrl: null },
+      { providerName: "Sony", providerPhone: "OLD", providerUrl: "old" },
+    ]);
+    const result = await WarrantyService.distinctProviders(7);
+    expect(mockPrisma.garantie.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { ownerUserId: 7, providerName: { not: null } },
+      })
+    );
+    expect(result).toEqual([
+      { name: "Apple", phone: "999", url: null },
+      { name: "Sony", phone: "111", url: "s.example" },
+    ]);
   });
 });

@@ -10,6 +10,14 @@ import { Button, Field, Input, Select } from "../ui";
 import { useI18n } from "../../i18n/i18n";
 import { articlesAPI } from "../../services/api";
 import { getErrorMessage } from "../../utils/error";
+import {
+  ARTICLE_STATUSES,
+  ARTICLE_CATEGORIES,
+  ARTICLE_CONDITIONS,
+  type ArticleStatus,
+  type ArticleCategory,
+  type ArticleCondition,
+} from "@wim/types";
 
 interface BulkEditDialogProps {
   open: boolean;
@@ -45,6 +53,15 @@ export default function BulkEditDialog({
     op: "skip",
     value: "",
   });
+  const [status, setStatus] = useState<FieldState>({ op: "skip", value: "" });
+  const [category, setCategory] = useState<FieldState>({
+    op: "skip",
+    value: "",
+  });
+  const [condition, setCondition] = useState<FieldState>({
+    op: "skip",
+    value: "",
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +71,9 @@ export default function BulkEditDialog({
     setBrand({ op: "skip", value: "" });
     setSerial({ op: "skip", value: "" });
     setQuantity({ op: "skip", value: "" });
+    setStatus({ op: "skip", value: "" });
+    setCategory({ op: "skip", value: "" });
+    setCondition({ op: "skip", value: "" });
     setError(null);
   };
 
@@ -79,9 +99,16 @@ export default function BulkEditDialog({
       // selection (zeroing prices → corrupting depreciation/portfolio totals);
       // a blank string field would write "". Make the user enter a value or
       // pick Skip/Clear instead.
-      const emptySet = [price, depreciation, brand, serial, quantity].some(
-        (s) => s.op === "set" && s.value.trim() === ""
-      );
+      const emptySet = [
+        price,
+        depreciation,
+        brand,
+        serial,
+        quantity,
+        status,
+        category,
+        condition,
+      ].some((s) => s.op === "set" && s.value.trim() === "");
       if (emptySet) {
         setError(t("bulkEdit.errorEmptySet"));
         return;
@@ -105,6 +132,11 @@ export default function BulkEditDialog({
       const s = stringField(serial);
       if (s !== undefined) fields.serialNumber = s;
       if (quantity.op === "set") fields.quantity = Number(quantity.value);
+      if (status.op === "set") fields.status = status.value;
+      const cat = stringField(category);
+      if (cat !== undefined) fields.category = cat;
+      const cond = stringField(condition);
+      if (cond !== undefined) fields.condition = cond;
       if (Object.keys(fields).length === 0) {
         setError(t("bulkEdit.errorNoFields"));
         return;
@@ -151,6 +183,49 @@ export default function BulkEditDialog({
             onChange={(e) => setState({ ...state, value: e.target.value })}
             {...extraProps}
           />
+        </Field>
+      ) : (
+        <span />
+      )}
+    </div>
+  );
+
+  const renderEnumRow = (
+    label: string,
+    htmlFor: string,
+    state: FieldState,
+    setState: (s: FieldState) => void,
+    options: readonly string[],
+    optionLabel: (value: string) => string,
+    noClear = false
+  ) => (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[10rem_9rem_minmax(0,1fr)]">
+      <span className="text-sm font-medium ui-title sm:self-center">
+        {label}
+      </span>
+      <Select
+        aria-label={`${label} ${t("bulkEdit.opLabel")}`}
+        value={state.op}
+        onChange={(e) => setState({ ...state, op: e.target.value as Op })}
+      >
+        <option value="skip">{t("bulkEdit.op.skip")}</option>
+        <option value="set">{t("bulkEdit.op.set")}</option>
+        {!noClear && <option value="clear">{t("bulkEdit.op.clear")}</option>}
+      </Select>
+      {state.op === "set" ? (
+        <Field label={label} htmlFor={htmlFor}>
+          <Select
+            id={htmlFor}
+            value={state.value}
+            onChange={(e) => setState({ ...state, value: e.target.value })}
+          >
+            <option value="">{t("bulkEdit.selectValue")}</option>
+            {options.map((o) => (
+              <option key={o} value={o}>
+                {optionLabel(o)}
+              </option>
+            ))}
+          </Select>
         </Field>
       ) : (
         <span />
@@ -214,6 +289,31 @@ export default function BulkEditDialog({
           "number",
           { min: 1, step: "1", inputMode: "numeric" },
           true
+        )}
+        {renderEnumRow(
+          t("articleForm.status"),
+          "bulk-status",
+          status,
+          setStatus,
+          ARTICLE_STATUSES,
+          (v) => t(`articleStatus.${v as ArticleStatus}`),
+          true
+        )}
+        {renderEnumRow(
+          t("articleForm.category"),
+          "bulk-category",
+          category,
+          setCategory,
+          ARTICLE_CATEGORIES,
+          (v) => t(`articleCategory.${v as ArticleCategory}`)
+        )}
+        {renderEnumRow(
+          t("articleForm.condition"),
+          "bulk-condition",
+          condition,
+          setCondition,
+          ARTICLE_CONDITIONS,
+          (v) => t(`articleCondition.${v as ArticleCondition}`)
         )}
       </div>
 

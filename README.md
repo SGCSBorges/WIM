@@ -137,7 +137,8 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/` | ✓ | List own articles — filters: `?q=` `?locationId=` `?tagId=` `?warrantyStatus=` `?priceMin=/priceMax=` `?createdFrom=/createdTo=` `?sort=/dir=` `?page=/limit=`. Returns `{ items, total, page, limit }` |
+| `GET`    | `/` | ✓ | List own articles — filters: `?q=` `?locationId=` `?tagId=` `?warrantyStatus=` `?status=` `?category=` `?condition=` `?bundle=` `?favorite=1` `?verification=` `?priceMin=/priceMax=` `?createdFrom=/createdTo=` `?sort=/dir=` `?page=/limit=`. Returns `{ items, total, page, limit }` |
+| `GET`    | `/bundles` | ✓ | Distinct bundle labels the caller has used (`{ items: string[] }`) for the form datalist + filter |
 | `POST`   | `/` | ✓ | Create article (can include embedded warranty + locationIds + tagIds) |
 | `GET`    | `/:id` | ✓ | Get single article |
 | `PUT`    | `/:id` | ✓ | Update article (and its warranty + locations + tags) |
@@ -150,7 +151,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `DELETE` | `/:id/purge` | ✓ | Permanently delete (skip retention) |
 | `POST`   | `/trash/bulk-restore` · `/trash/bulk-purge` | ✓ | Bulk restore / purge (`{ ids }`, ≤ 500) |
 | `POST`   | `/bulk-delete` · `/bulk-share` · `/bulk-assign` | ✓ | Bulk soft-delete / share-toggle / assign locations+tags (`{ ids, … }`) |
-| `POST`   | `/bulk-update` | POWER_USER (`bulk_edit`) | Bulk-edit scalar fields (`purchasePrice`/`depreciationRate`/`brand`/`serialNumber`); `null` clears, missing keys leave alone |
+| `POST`   | `/bulk-update` | POWER_USER (`bulk_edit`) | Bulk-edit scalar/enum fields (`purchasePrice`/`depreciationRate`/`brand`/`serialNumber`/`quantity`/`status`/`category`/`condition`); `null` clears the nullable ones, missing keys leave alone |
 | `POST`   | `/import` | ✓ | CSV import (`?dryRun=1` validates without writing) |
 | `GET`    | `/export/inventory.csv` · `/export/inventory.pdf` · `/export/labels.pdf` | ✓ | Exports (CSV honours list filters; labels carry QR codes) |
 | `GET`    | `/:id/claim.pdf` | ✓ | Warranty-claim sheet PDF |
@@ -168,6 +169,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET`    | `/` | ✓ | List own warranties (paginated) |
+| `GET`    | `/providers` | ✓ | Distinct providers used (`{ items: [{ name, phone, url }] }`) for form autofill |
 | `POST`   | `/` | ✓ | Create standalone warranty |
 | `GET`    | `/:id` | ✓ | Get warranty |
 | `PUT`    | `/:id` | ✓ | Update warranty (recalculates expiry + reschedules alerts) |

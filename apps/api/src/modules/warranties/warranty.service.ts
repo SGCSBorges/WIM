@@ -30,6 +30,37 @@ export const WarrantyService = {
   get: (id: number, ownerUserId: number) =>
     prisma.garantie.findFirst({ where: { garantieId: id, ownerUserId } }),
 
+  // Distinct providers the owner has entered, so a new/renewed warranty can
+  // offer a name datalist that autofills the phone/url. Keyed by name — the
+  // most-recently-seen phone/url wins for a given name (good enough; the user
+  // can still edit). Bounded to keep the payload small.
+  distinctProviders: async (
+    ownerUserId: number
+  ): Promise<
+    Array<{ name: string; phone: string | null; url: string | null }>
+  > => {
+    const rows = await prisma.garantie.findMany({
+      where: { ownerUserId, providerName: { not: null } },
+      select: { providerName: true, providerPhone: true, providerUrl: true },
+      orderBy: { garantieId: "desc" },
+      take: 500,
+    });
+    const byName = new Map<
+      string,
+      { name: string; phone: string | null; url: string | null }
+    >();
+    for (const r of rows) {
+      const name = r.providerName!;
+      if (!byName.has(name))
+        byName.set(name, {
+          name,
+          phone: r.providerPhone ?? null,
+          url: r.providerUrl ?? null,
+        });
+    }
+    return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
+  },
+
   create: async (data: WarrantyCreateInput) => {
     // ownerUserId is injected by route middleware (auth)
     const fin = addMonths(

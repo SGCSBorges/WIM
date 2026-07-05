@@ -103,6 +103,7 @@ Un bien physique de l'inventaire. Le hub auquel tout le reste se rattache.
 | `quantity` | Int | `1` | Unités représentées par cette ligne. Les valeurs multiplient prix × quantité ; les décomptes restent par ligne. |
 | `isFavorite` | Boolean | `false` | Favori épinglé par le propriétaire pour un accès rapide ; filtrable (`?favorite=1`). Cosmétique. |
 | `condition` | `ArticleCondition`? | null | État physique (`NEW`/`EXCELLENT`/`GOOD`/`FAIR`/`POOR`) ; null = non précisé. Filtrable + aller-retour CSV. Organisationnel — sans impact sur la valeur. |
+| `bundle` | String? VarChar(80) | null | Libellé de regroupement libre pour garder des articles liés associés (un boîtier photo + ses objectifs). Filtrable (`?bundle=`) ; la page de détail relie les articles du même lot ; aller-retour CSV. Organisationnel. |
 | `depreciationRate` | Decimal(5,2)? | null | % linéaire annuel, 0–100. null = pas d'amortissement. |
 | `sharedWithPowerUsers` | Boolean | `false` | Drapeau de partage public (lecture seule). |
 | `publicToken` | String? VarChar(64) | null | **Unique**. Page publique opt-in `/i/<token>` ; null = désactivée. |

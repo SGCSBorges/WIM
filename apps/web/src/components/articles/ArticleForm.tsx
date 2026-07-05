@@ -179,6 +179,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [condition, setCondition] = useState<ArticleCondition | "">(
     article?.condition ?? ""
   );
+  const [bundle, setBundle] = useState<string>(article?.bundle ?? "");
+  // Existing bundle labels for the datalist (best-effort — a fetch failure
+  // just yields free-text with no suggestions).
+  const [bundleOptions, setBundleOptions] = useState<string[]>([]);
   // User-defined key/value attributes (≤20, matching the API bound).
   const [customFields, setCustomFields] = useState<
     Array<{ key: string; value: string }>
@@ -257,6 +261,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setStatus(article?.status ?? "ACTIVE");
     setCategory(article?.category ?? "");
     setCondition(article?.condition ?? "");
+    setBundle(article?.bundle ?? "");
     setCustomFields(article?.customFields ?? []);
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setSelectedTagIds(deriveInitialTagIds(article));
@@ -401,6 +406,19 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+    articlesAPI
+      .bundles()
+      .then((items) => {
+        if (mounted) setBundleOptions(items);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const toggleTag = (id: number) => {
     setSelectedTagIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -531,6 +549,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       status,
       category: category || null,
       condition: condition || null,
+      bundle: bundle.trim() || null,
       // Drop half-filled rows; null (not []) clears server-side on edit.
       customFields: (() => {
         const cleaned = customFields
@@ -1119,6 +1138,31 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                 </option>
               ))}
             </Select>
+          </Field>
+
+          <Field
+            label={t("articleForm.bundle")}
+            htmlFor="articleBundle"
+            hint={t("articleForm.bundle.hint")}
+          >
+            <Input
+              id="articleBundle"
+              name="bundle"
+              type="text"
+              list="article-bundle-options"
+              maxLength={80}
+              value={bundle}
+              onChange={(e) => {
+                setBundle(e.target.value);
+                setDirty(true);
+              }}
+              placeholder={t("articleForm.placeholder.bundle")}
+            />
+            <datalist id="article-bundle-options">
+              {bundleOptions.map((b) => (
+                <option key={b} value={b} />
+              ))}
+            </datalist>
           </Field>
         </div>
 

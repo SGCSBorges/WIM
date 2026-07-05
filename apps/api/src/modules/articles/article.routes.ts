@@ -64,6 +64,7 @@ const ImportSchema = z.object({
         // Free-form on the wire; the importer normalizes + validates against
         // ARTICLE_CONDITIONS (unknown value = ignored).
         condition: z.string().trim().max(20).optional().nullable(),
+        bundle: z.string().trim().max(80).optional().nullable(),
         purchasedFrom: z.string().trim().max(150).optional().nullable(),
         orderRef: z.string().trim().max(100).optional().nullable(),
         // The raw JSON cell from the export's customFields column; parsed +
@@ -88,6 +89,8 @@ const ArticleListQuerySchema = z.object({
   status: ArticleStatusSchema.optional(),
   category: ArticleCategorySchema.optional(),
   condition: ArticleConditionSchema.optional(),
+  // Free-text grouping label (exact match).
+  bundle: z.string().trim().max(80).optional(),
   // Physical inventory check: "needed" = never verified or >12 months ago.
   verification: z.enum(["needed", "verified"]).optional(),
   // Restrict to owner-pinned favorites (only "1"/"true" enables it).
@@ -122,6 +125,7 @@ router.get(
       status: q.status,
       category: q.category,
       condition: q.condition,
+      bundle: q.bundle,
       verification: q.verification,
       favorite: q.favorite ? true : undefined,
       priceMin: q.priceMin,
@@ -134,6 +138,17 @@ router.get(
       limit: q.limit,
     });
     res.json(result);
+  })
+);
+
+/** GET the distinct bundle labels the caller has used (for the form datalist
+ *  + filter). Must precede `/:id` so the static segment wins the matcher. */
+router.get(
+  "/bundles",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const items = await ArticleService.distinctBundles(req.user!.sub);
+    res.json({ items });
   })
 );
 
@@ -509,6 +524,9 @@ router.post(
           brand: z.string().trim().max(120).nullable().optional(),
           serialNumber: z.string().trim().max(120).nullable().optional(),
           quantity: z.number().int().min(1).max(1_000_000).optional(),
+          status: ArticleStatusSchema.optional(),
+          category: ArticleCategorySchema.nullable().optional(),
+          condition: ArticleConditionSchema.nullable().optional(),
         })
         .refine((v) => Object.keys(v).length > 0, {
           message: "at least one field is required",
@@ -591,6 +609,7 @@ router.get(
       status: q.status,
       category: q.category,
       condition: q.condition,
+      bundle: q.bundle,
       verification: q.verification,
       favorite: q.favorite ? true : undefined,
       priceMin: q.priceMin,

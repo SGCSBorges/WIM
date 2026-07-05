@@ -1219,6 +1219,108 @@ suite("API integration (real Postgres)", () => {
     expect(poor.body.items[0].articleNom).toBe("Worn drill");
   });
 
+  it("filters by bundle and lists distinct bundle labels", async () => {
+    const agent = await register("bundle@example.com");
+    await makeArticle(agent, { articleNom: "Body", bundle: "Camera kit" });
+    await makeArticle(agent, { articleNom: "Lens", bundle: "Camera kit" });
+    await makeArticle(agent, { articleNom: "Kettle", bundle: "Kitchen" });
+    await makeArticle(agent, { articleNom: "Unlabeled" });
+
+    const kit = await agent.get(
+      `/api/articles?bundle=${encodeURIComponent("Camera kit")}`
+    );
+    expect(kit.body.total).toBe(2);
+    expect(kit.body.items.map((a: { articleNom: string }) => a.articleNom).sort())
+      .toEqual(["Body", "Lens"]);
+
+    // Distinct-bundles endpoint powers the form datalist + filter (sorted, no
+    // null).
+    const bundles = await agent.get("/api/articles/bundles");
+    expect(bundles.status).toBe(200);
+    expect(bundles.body.items).toEqual(["Camera kit", "Kitchen"]);
+  }, 30_000);
+
+  it("round-trips bundle through the article create/read and CSV export", async () => {
+    const agent = await register("bundlecsv@example.com");
+    const a = await makeArticle(agent, {
+      articleNom: "Tripod",
+      bundle: "Camera kit",
+    });
+    expect(a.bundle).toBe("Camera kit");
+
+    await prisma.user.update({
+      where: { email: "bundlecsv@example.com" },
+      data: { role: "POWER_USER" },
+    });
+    const csv = await agent.get("/api/articles/export/inventory.csv");
+    expect(csv.status).toBe(200);
+    expect(csv.text.split("\r\n")[0]).toContain("bundle");
+    expect(csv.text).toContain("Camera kit");
+  });
+
+  it("returns distinct warranty providers for autofill (name → phone/url)", async () => {
+    const agent = await register("providers@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Home" });
+    const art = await agent
+      .post("/api/articles")
+      .set("Origin", ORIGIN)
+      .send({
+        articleNom: "Fridge",
+        articleModele: "F1",
+        locationIds: [loc.body.locationId],
+      });
+    // Seed the warranty with provider metadata via Prisma (avoids BullMQ).
+    await prisma.garantie.create({
+      data: {
+        ownerUserId,
+        garantieArticleId: art.body.articleId,
+        garantieNom: "AppleCare",
+        garantieDateAchat: new Date(),
+        garantieDuration: 24,
+        garantieFin: new Date(Date.now() + 365 * 86400_000),
+        providerName: "Apple",
+        providerPhone: "555-0100",
+        providerUrl: "https://apple.example",
+      },
+    });
+
+    const res = await agent.get("/api/warranties/providers");
+    expect(res.status).toBe(200);
+    expect(res.body.items).toEqual([
+      { name: "Apple", phone: "555-0100", url: "https://apple.example" },
+    ]);
+  });
+
+  it("bulk-updates status/category/condition across a selection", async () => {
+    const agent = await register("bulkenum@example.com");
+    await prisma.user.update({
+      where: { email: "bulkenum@example.com" },
+      data: { role: "POWER_USER" },
+    });
+    const a1 = await makeArticle(agent, { articleNom: "A1" });
+    const a2 = await makeArticle(agent, { articleNom: "A2" });
+
+    const res = await agent
+      .post("/api/articles/bulk-update")
+      .set("Origin", ORIGIN)
+      .send({
+        ids: [a1.articleId, a2.articleId],
+        fields: { status: "IN_REPAIR", category: "TOOL", condition: "GOOD" },
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.count).toBe(2);
+
+    const list = await agent.get("/api/articles?status=IN_REPAIR");
+    expect(list.body.total).toBe(2);
+    expect(list.body.items[0].category).toBe("TOOL");
+    expect(list.body.items[0].condition).toBe("GOOD");
+  });
+
   it("sums maintenance cost onto the dashboard (trailing 12 months)", async () => {
     const agent = await register("mspend@example.com");
     const me = await agent.get("/api/auth/me");

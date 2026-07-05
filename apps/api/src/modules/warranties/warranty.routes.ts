@@ -27,6 +27,17 @@ router.get(
   })
 );
 
+// Distinct provider name/phone/url the caller has used (for form autofill).
+// Static path — must precede `/:id` so the segment wins the matcher.
+router.get(
+  "/providers",
+  authGuard,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const items = await WarrantyService.distinctProviders(req.user!.sub);
+    res.json({ items });
+  })
+);
+
 router.get(
   "/:id",
   authGuard,

@@ -152,6 +152,7 @@ const ArticlesList: React.FC = () => {
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [bundleOptions, setBundleOptions] = useState<string[]>([]);
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [showTagsManager, setShowTagsManager] = useState(false);
@@ -166,6 +167,7 @@ const ArticlesList: React.FC = () => {
   const statusFilter = searchParams.get("status") ?? "";
   const categoryFilter = searchParams.get("category") ?? "";
   const conditionFilter = searchParams.get("condition") ?? "";
+  const bundleFilter = searchParams.get("bundle") ?? "";
   const verificationFilter = searchParams.get("verification") ?? "";
   const favoriteFilter = searchParams.get("favorite") === "1";
   const priceMin = searchParams.get("priceMin") ?? "";
@@ -188,6 +190,7 @@ const ArticlesList: React.FC = () => {
     statusFilter ||
     categoryFilter ||
     conditionFilter ||
+    bundleFilter ||
     verificationFilter ||
     favoriteFilter ||
     priceMin ||
@@ -262,6 +265,7 @@ const ArticlesList: React.FC = () => {
         status: (statusFilter as ArticleStatus | "") || undefined,
         category: (categoryFilter as ArticleCategory | "") || undefined,
         condition: (conditionFilter as ArticleCondition | "") || undefined,
+        bundle: bundleFilter || undefined,
         verification:
           (verificationFilter as "needed" | "verified" | "") || undefined,
         favorite: favoriteFilter || undefined,
@@ -308,6 +312,7 @@ const ArticlesList: React.FC = () => {
     statusFilter,
     categoryFilter,
     conditionFilter,
+    bundleFilter,
     verificationFilter,
     favoriteFilter,
     priceMin,
@@ -574,6 +579,10 @@ const ArticlesList: React.FC = () => {
   useEffect(() => {
     fetchLocations();
     loadTags();
+    articlesAPI
+      .bundles()
+      .then(setBundleOptions)
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -721,6 +730,8 @@ const ArticlesList: React.FC = () => {
           statusFilter={statusFilter}
           categoryFilter={categoryFilter}
           conditionFilter={conditionFilter}
+          bundleFilter={bundleFilter}
+          bundleOptions={bundleOptions}
           verificationFilter={verificationFilter}
           favoriteFilter={favoriteFilter}
           priceMin={priceMin}

@@ -467,6 +467,33 @@ export default function ArticleDetail() {
 
   const warrantyInfo = warrantyStatusFor(article?.garantie?.garantieFin);
 
+  // Live siblings sharing this article's bundle label (best-effort).
+  const [bundleSiblings, setBundleSiblings] = useState<
+    Array<{ articleId: number; articleNom: string }>
+  >([]);
+  const bundleLabel = article?.bundle ?? null;
+  useEffect(() => {
+    if (!bundleLabel) {
+      setBundleSiblings([]);
+      return;
+    }
+    let mounted = true;
+    articlesAPI
+      .getAll({ bundle: bundleLabel, limit: 100 })
+      .then((res) => {
+        if (!mounted) return;
+        setBundleSiblings(
+          res.items
+            .filter((a) => a.articleId !== articleId)
+            .map((a) => ({ articleId: a.articleId, articleNom: a.articleNom }))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [bundleLabel, articleId]);
+
   useEffect(() => {
     setClaimStatus(article?.garantie?.claimStatus ?? "NONE");
     setClaimNote(article?.garantie?.claimNote ?? "");
@@ -692,6 +719,36 @@ export default function ArticleDetail() {
           )}
           {article.articleDescription && (
             <p className="text-sm">{article.articleDescription}</p>
+          )}
+
+          {bundleLabel && (
+            <p className="text-xs ui-text-muted">
+              <Link
+                to={`/articles?bundle=${encodeURIComponent(bundleLabel)}`}
+                className="ui-action-primary hover:underline"
+                title={bundleLabel}
+              >
+                {t("articleDetail.bundle")}: {bundleLabel}
+              </Link>
+              {bundleSiblings.length > 0 && (
+                <>
+                  {" · "}
+                  {t("articleDetail.bundledWith")}:{" "}
+                  {bundleSiblings.map((s, i) => (
+                    <span key={s.articleId}>
+                      {i > 0 && ", "}
+                      <Link
+                        to={`/articles/${s.articleId}`}
+                        className="hover:underline"
+                        title={s.articleNom}
+                      >
+                        {s.articleNom}
+                      </Link>
+                    </span>
+                  ))}
+                </>
+              )}
+            </p>
           )}
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

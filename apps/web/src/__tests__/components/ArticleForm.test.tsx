@@ -21,6 +21,10 @@ vi.mock("../../services/api", () => ({
     create: vi.fn(),
     remove: vi.fn(),
   },
+  articlesAPI: {
+    getAll: vi.fn().mockResolvedValue({ items: [], total: 0 }),
+    bundles: vi.fn().mockResolvedValue([]),
+  },
 }));
 
 import ArticleForm from "../../components/articles/ArticleForm";
