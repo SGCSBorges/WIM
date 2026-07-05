@@ -1,8 +1,13 @@
 import { z } from "zod";
-import { ARTICLE_STATUSES, ARTICLE_CATEGORIES } from "@wim/types";
+import {
+  ARTICLE_STATUSES,
+  ARTICLE_CATEGORIES,
+  ARTICLE_CONDITIONS,
+} from "@wim/types";
 
 export const ArticleStatusSchema = z.enum(ARTICLE_STATUSES);
 export const ArticleCategorySchema = z.enum(ARTICLE_CATEGORIES);
+export const ArticleConditionSchema = z.enum(ARTICLE_CONDITIONS);
 
 // User-defined attributes: an ordered list of { key, value } pairs stored as
 // JSONB. Bounded so a hostile payload can't bloat the row; private like
@@ -51,6 +56,8 @@ export const ArticleCreateSchema = z.object({
   status: ArticleStatusSchema.optional(),
   // Optional broad category (null clears it).
   category: ArticleCategorySchema.optional().nullable(),
+  // Optional physical condition grade (null clears it).
+  condition: ArticleConditionSchema.optional().nullable(),
   // User-defined attributes (null clears them all).
   customFields: CustomFieldsSchema.optional().nullable(),
   // An article must belong to at least one location

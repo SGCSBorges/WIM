@@ -586,6 +586,7 @@ export const articlesAPI = {
       description?: string | null;
       price?: number | null;
       quantity?: number;
+      condition?: string | null;
       purchasedFrom?: string | null;
       orderRef?: string | null;
       customFields?: string | null;

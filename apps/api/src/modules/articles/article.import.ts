@@ -8,10 +8,19 @@
  * the CsvImportModal preview uses so the user sees errors before they
  * hit "Import".
  */
+import { ARTICLE_CONDITIONS, type ArticleCondition } from "@wim/types";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { ArticleService } from "./article.service";
 import { CustomFieldsSchema } from "./article.schemas";
+
+// Normalize a free-form condition cell to a known grade, or undefined.
+function parseCondition(raw?: string | null): ArticleCondition | undefined {
+  const up = raw?.trim().toUpperCase();
+  return up && (ARTICLE_CONDITIONS as readonly string[]).includes(up)
+    ? (up as ArticleCondition)
+    : undefined;
+}
 
 export type ImportRow = {
   name: string;
@@ -19,6 +28,7 @@ export type ImportRow = {
   description?: string | null;
   price?: number | null;
   quantity?: number;
+  condition?: string | null;
   purchasedFrom?: string | null;
   orderRef?: string | null;
   /** Raw JSON cell from the export's customFields column. */
@@ -225,6 +235,7 @@ export async function importArticles(
         articleDescription: row.description?.trim() || null,
         purchasePrice: row.price ?? null,
         quantity: row.quantity ?? undefined,
+        condition: parseCondition(row.condition),
         purchasedFrom: row.purchasedFrom?.trim() || null,
         orderRef: row.orderRef?.trim() || null,
         customFields,

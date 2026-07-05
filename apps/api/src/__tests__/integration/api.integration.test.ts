@@ -1204,6 +1204,53 @@ suite("API integration (real Postgres)", () => {
     expect(cleared.body.color).toBeNull();
   });
 
+  it("filters the article list by physical condition", async () => {
+    const agent = await register("condition@example.com");
+    await makeArticle(agent, { articleNom: "Mint bike", condition: "NEW" });
+    await makeArticle(agent, { articleNom: "Worn drill", condition: "POOR" });
+
+    const nu = await agent.get("/api/articles?condition=NEW");
+    expect(nu.body.total).toBe(1);
+    expect(nu.body.items[0].articleNom).toBe("Mint bike");
+    expect(nu.body.items[0].condition).toBe("NEW");
+
+    const poor = await agent.get("/api/articles?condition=POOR");
+    expect(poor.body.total).toBe(1);
+    expect(poor.body.items[0].articleNom).toBe("Worn drill");
+  });
+
+  it("sums maintenance cost onto the dashboard (trailing 12 months)", async () => {
+    const agent = await register("mspend@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    const a = await makeArticle(agent, { articleNom: "Boiler" });
+    // Seed service records via Prisma (avoids the maintenance feature gate +
+    // BullMQ reminder scheduling). One recent, one older than the window.
+    await prisma.serviceRecord.createMany({
+      data: [
+        {
+          ownerUserId,
+          articleId: a.articleId,
+          performedAt: new Date(),
+          description: "Annual service",
+          cost: 120,
+        },
+        {
+          ownerUserId,
+          articleId: a.articleId,
+          performedAt: new Date(Date.now() - 400 * 86400_000),
+          description: "Old service",
+          cost: 999,
+        },
+      ],
+    });
+
+    const dash = await agent.get("/api/statistics/dashboard");
+    expect(dash.status).toBe(200);
+    // Only the in-window record counts (120); the 400-day-old 999 is excluded.
+    expect(dash.body.maintenanceSpend).toBe(120);
+  });
+
   it("surfaces a warranty expiry on the in-app agenda, linked to its article", async () => {
     // Seed the article + warranty via Prisma so the create doesn't schedule
     // BullMQ reminders and block on Redis (same reason as the claim test).

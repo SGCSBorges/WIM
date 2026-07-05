@@ -134,38 +134,76 @@ export const CalendarService = {
       OR: [{ article: null }, { article: { deletedAt: null } }],
     };
 
-    const [warranties, alerts, claims] = await Promise.all([
-      prisma.garantie.findMany({
-        where: { ownerUserId: user.userId, ...liveArticleScope },
-        select: { garantieId: true, garantieNom: true, garantieFin: true },
-      }),
-      // SCHEDULED captures both kinds (warranty J-30/J-7/J-1 reminders and
-      // custom alerts the user created themselves).
-      prisma.alerte.findMany({
-        where: {
-          ownerUserId: user.userId,
-          status: AlerteStatus.SCHEDULED,
-          ...liveArticleScope,
-        },
-        select: { alerteId: true, alerteNom: true, alerteDate: true },
-      }),
-      // Warranty claims in flight (anything off NONE) so the workflow shows
-      // up on the subscribed calendar at its last status-change date.
-      prisma.garantie.findMany({
-        where: {
-          ownerUserId: user.userId,
-          NOT: { claimStatus: "NONE" },
-          claimUpdatedAt: { not: null },
-          ...liveArticleScope,
-        },
-        select: {
-          garantieId: true,
-          garantieNom: true,
-          claimStatus: true,
-          claimUpdatedAt: true,
-        },
-      }),
-    ]);
+    const [warranties, alerts, claims, loans, policies, serviceRecords] =
+      await Promise.all([
+        prisma.garantie.findMany({
+          where: { ownerUserId: user.userId, ...liveArticleScope },
+          select: { garantieId: true, garantieNom: true, garantieFin: true },
+        }),
+        // SCHEDULED captures both kinds (warranty J-30/J-7/J-1 reminders and
+        // custom alerts the user created themselves).
+        prisma.alerte.findMany({
+          where: {
+            ownerUserId: user.userId,
+            status: AlerteStatus.SCHEDULED,
+            ...liveArticleScope,
+          },
+          select: { alerteId: true, alerteNom: true, alerteDate: true },
+        }),
+        // Warranty claims in flight (anything off NONE) so the workflow shows
+        // up on the subscribed calendar at its last status-change date.
+        prisma.garantie.findMany({
+          where: {
+            ownerUserId: user.userId,
+            NOT: { claimStatus: "NONE" },
+            claimUpdatedAt: { not: null },
+            ...liveArticleScope,
+          },
+          select: {
+            garantieId: true,
+            garantieNom: true,
+            claimStatus: true,
+            claimUpdatedAt: true,
+          },
+        }),
+        // Loan return dates (open loans), insurance renewals, and maintenance
+        // due dates — parity with the in-app agenda so a subscribed calendar
+        // shows the same actionable dates.
+        prisma.loan.findMany({
+          where: {
+            ownerUserId: user.userId,
+            returnedAt: null,
+            dueAt: { not: null },
+            article: { deletedAt: null },
+          },
+          select: {
+            loanId: true,
+            borrowerName: true,
+            dueAt: true,
+            article: { select: { articleNom: true } },
+          },
+        }),
+        prisma.insurancePolicy.findMany({
+          where: { ownerUserId: user.userId, renewalAt: { not: null } },
+          select: { policyId: true, provider: true, renewalAt: true },
+        }),
+        prisma.serviceRecord.findMany({
+          where: { ownerUserId: user.userId, article: { deletedAt: null } },
+          orderBy: { performedAt: "desc" },
+          select: {
+            serviceId: true,
+            articleId: true,
+            nextDueAt: true,
+            article: { select: { articleNom: true } },
+          },
+        }),
+      ]);
+
+    // Maintenance: only the latest record per article carries the live
+    // schedule (a newer service with no nextDueAt clears an older one).
+    const latestService = new Map<number, (typeof serviceRecords)[number]>();
+    for (const r of serviceRecords)
+      if (!latestService.has(r.articleId)) latestService.set(r.articleId, r);
 
     const events: CalEvent[] = [
       ...warranties.map((w) => ({
@@ -189,6 +227,23 @@ export const CalendarService = {
             ]
           : []
       ),
+      ...loans.map((l) => ({
+        uid: `loan-${l.loanId}@wim`,
+        date: l.dueAt as Date,
+        summary: `${l.article.articleNom} — loan due back (${l.borrowerName})`,
+      })),
+      ...policies.map((p) => ({
+        uid: `insurance-${p.policyId}@wim`,
+        date: p.renewalAt as Date,
+        summary: `${p.provider} — policy renewal`,
+      })),
+      ...[...latestService.values()]
+        .filter((r) => r.nextDueAt !== null)
+        .map((r) => ({
+          uid: `service-${r.serviceId}@wim`,
+          date: r.nextDueAt as Date,
+          summary: `${r.article.articleNom} — service due`,
+        })),
     ];
 
     return buildCalendar(events);

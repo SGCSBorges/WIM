@@ -60,7 +60,11 @@ import { consumeSharedDraft } from "../../utils/shareTarget";
 import { useFeature, useFeatures } from "../../features/features";
 import { useUpgrade } from "../../features/upgrade";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
-import type { ArticleStatus, ArticleCategory } from "@wim/types";
+import type {
+  ArticleStatus,
+  ArticleCategory,
+  ArticleCondition,
+} from "@wim/types";
 import { PageHeader, Button, Input, Pagination } from "../ui";
 
 const ArticlesList: React.FC = () => {
@@ -161,6 +165,7 @@ const ArticlesList: React.FC = () => {
   const warrantyStatus = searchParams.get("warranty") ?? "";
   const statusFilter = searchParams.get("status") ?? "";
   const categoryFilter = searchParams.get("category") ?? "";
+  const conditionFilter = searchParams.get("condition") ?? "";
   const verificationFilter = searchParams.get("verification") ?? "";
   const favoriteFilter = searchParams.get("favorite") === "1";
   const priceMin = searchParams.get("priceMin") ?? "";
@@ -182,6 +187,7 @@ const ArticlesList: React.FC = () => {
     warrantyStatus ||
     statusFilter ||
     categoryFilter ||
+    conditionFilter ||
     verificationFilter ||
     favoriteFilter ||
     priceMin ||
@@ -255,6 +261,7 @@ const ArticlesList: React.FC = () => {
             | "") || undefined,
         status: (statusFilter as ArticleStatus | "") || undefined,
         category: (categoryFilter as ArticleCategory | "") || undefined,
+        condition: (conditionFilter as ArticleCondition | "") || undefined,
         verification:
           (verificationFilter as "needed" | "verified" | "") || undefined,
         favorite: favoriteFilter || undefined,
@@ -300,6 +307,7 @@ const ArticlesList: React.FC = () => {
     warrantyStatus,
     statusFilter,
     categoryFilter,
+    conditionFilter,
     verificationFilter,
     favoriteFilter,
     priceMin,
@@ -712,6 +720,7 @@ const ArticlesList: React.FC = () => {
           warrantyStatus={warrantyStatus}
           statusFilter={statusFilter}
           categoryFilter={categoryFilter}
+          conditionFilter={conditionFilter}
           verificationFilter={verificationFilter}
           favoriteFilter={favoriteFilter}
           priceMin={priceMin}

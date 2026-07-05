@@ -668,6 +668,27 @@ Smaller features added in one batch; each follows the existing patterns.
   small files, or when the canvas path is unavailable; only replaces the
   original when the re-encode is actually smaller — never blocks an upload. The
   server's magic-byte check + sharp thumbnail still run on whatever arrives.
+## Round 8 (2026-07): condition + calendar-feed parity + maintenance spend
+
+- **Item condition**: `Article.condition` (`ArticleCondition?` enum —
+  `NEW`/`EXCELLENT`/`GOOD`/`FAIR`/`POOR`, null = unspecified) + migration.
+  Additive/organizational like category — **never** touches value math. Same
+  three-place mirror rule (`schema.prisma` / `ARTICLE_CONDITIONS` in
+  `@wim/types` / `utils/articleCondition.ts` badge-tone map + `articleCondition.*`
+  i18n). Filterable (`?condition=`), in the CSV round-trip (importer normalizes
+  a free-form cell against `ARTICLE_CONDITIONS`), on the form Select + a
+  detail-hero badge + the filter bar.
+- **Calendar ICS feed parity**: `feedForToken` now emits loan-return,
+  insurance-renewal, and maintenance-due events alongside warranties/alerts/
+  claims, so the subscribed `.ics` matches the in-app agenda's five sources.
+  Stable per-row UIDs (`loan-<id>@wim` etc.) so calendar clients don't
+  duplicate; maintenance uses the latest-record-per-article rule like the
+  agenda.
+- **Maintenance spend**: dashboard `maintenanceSpend` = SQL `_sum(cost)` over
+  `ServiceRecord.performedAt` in the trailing 12 months (live articles); a
+  self-hiding money Stat tile (only when > 0). `MaintenanceSection` shows a
+  per-article "total spent" line summed client-side from the fetched records.
+
 ## Round 7 (2026-07): agenda + favorites + bulk-quantity
 
 - **In-app agenda**: `GET /api/calendar/agenda` (`CalendarService.agenda`,

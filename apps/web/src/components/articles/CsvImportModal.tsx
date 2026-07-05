@@ -27,6 +27,7 @@ type ParsedRow = {
   description: string;
   price: number | null;
   quantity: number | null;
+  condition: string;
   purchasedFrom: string;
   orderRef: string;
   /** Raw JSON cell round-tripped from the export; server parses/validates. */
@@ -60,6 +61,7 @@ function toRow(rec: Record<string, string>): ParsedRow {
       const q = Number(rec["quantity"] ?? "");
       return Number.isInteger(q) && q >= 1 ? q : null;
     })(),
+    condition: (rec["condition"] ?? "").trim(),
     purchasedFrom: (rec["purchasedfrom"] ?? rec["purchased from"] ?? "").trim(),
     orderRef: (
       rec["orderref"] ??
@@ -123,6 +125,7 @@ export default function CsvImportModal({ open, onClose, onImported }: Props) {
         description: r.description || null,
         price: r.price,
         quantity: r.quantity ?? undefined,
+        condition: r.condition || null,
         purchasedFrom: r.purchasedFrom || null,
         orderRef: r.orderRef || null,
         customFields: r.customFields || null,

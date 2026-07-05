@@ -293,6 +293,17 @@ failure mode with the same 401.
   `?verification=needed|verified` (needed = never verified or >12 months ago —
   the same rule behind the dashboard's `articles.needsVerification` count),
   and the CSV export carries a read-only `lastVerifiedAt` column.
+- **Condition** — `Article.condition` (`NEW`/`EXCELLENT`/`GOOD`/`FAIR`/`POOR`,
+  nullable) is an optional physical grade for insurance valuation + resale.
+  Written through the normal create/update endpoints, filterable via
+  `?condition=`, carried in the CSV round-trip. Organizational only — it never
+  affects any value figure.
+- **Maintenance spend** — the dashboard payload carries `maintenanceSpend`
+  (sum of `ServiceRecord.cost` over the trailing 12 months, live articles);
+  the article-detail maintenance section shows a per-article total. The
+  subscribed **ICS calendar feed** now also emits loan-return, insurance-
+  renewal, and maintenance-due events, so it matches the in-app agenda's five
+  sources (it previously carried only warranties, alerts, and claims).
 - **Favorites** — `Article.isFavorite` (bool). `POST /api/articles/:id/favorite
   { favorite }` pins/unpins; the list accepts `?favorite=1`. A star toggle
   appears on the detail page and list rows.

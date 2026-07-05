@@ -11,7 +11,7 @@ colonne par colonne. Les deux sont alignés sur la source unique de vérité,
 [`apps/api/prisma/schema.prisma`](../apps/api/prisma/schema.prisma) — en cas de
 désaccord entre les trois, c'est le schéma qui l'emporte.
 
-**Portée :** 36 modèles + 15 énumérations, regroupés par domaine : Inventaire
+**Portée :** 36 modèles + 16 énumérations, regroupés par domaine : Inventaire
 cœur · Modules de cycle de vie · Partage & transfert · Messagerie · Sécurité du
 compte · Plateforme & admin · Énumérations.
 
@@ -102,6 +102,7 @@ Un bien physique de l'inventaire. Le hub auquel tout le reste se rattache.
 | `purchasePrice` | Decimal(12,2)? | null | Prix **unitaire**. Pilote la valeur d'inventaire + l'amortissement (valeur = prix × `quantity`). |
 | `quantity` | Int | `1` | Unités représentées par cette ligne. Les valeurs multiplient prix × quantité ; les décomptes restent par ligne. |
 | `isFavorite` | Boolean | `false` | Favori épinglé par le propriétaire pour un accès rapide ; filtrable (`?favorite=1`). Cosmétique. |
+| `condition` | `ArticleCondition`? | null | État physique (`NEW`/`EXCELLENT`/`GOOD`/`FAIR`/`POOR`) ; null = non précisé. Filtrable + aller-retour CSV. Organisationnel — sans impact sur la valeur. |
 | `depreciationRate` | Decimal(5,2)? | null | % linéaire annuel, 0–100. null = pas d'amortissement. |
 | `sharedWithPowerUsers` | Boolean | `false` | Drapeau de partage public (lecture seule). |
 | `publicToken` | String? VarChar(64) | null | **Unique**. Page publique opt-in `/i/<token>` ; null = désactivée. |
@@ -700,6 +701,7 @@ messagerie. Les valeurs littérales correspondent toujours à l'énumération BD
 | `ArticleNoteKind` | `SERVICE` · `WARRANTY_CLAIM` · `MAINTENANCE` · `OTHER` | `ArticleNote.kind`. |
 | `ArticleStatus` | `ACTIVE` · `IN_REPAIR` · `LOANED` · `SOLD` · `DISPOSED` · `LOST` | `Article.status`. `SOLD/DISPOSED/LOST` sont exclus des totaux de valeur. |
 | `ArticleCategory` | `ELECTRONICS` · `APPLIANCE` · `FURNITURE` · `TOOL` · `VEHICLE` · `CLOTHING` · `JEWELRY` · `SPORTS` · `COLLECTIBLE` · `OTHER` | `Article.category` (nullable). |
+| `ArticleCondition` | `NEW` · `EXCELLENT` · `GOOD` · `FAIR` · `POOR` | `Article.condition` (nullable). |
 | `TransferDirection` | `PUSH` · `PULL` | `ArticleTransferRequest.direction`. |
 | `MessageKind` | `TEXT` · `OFFER` | `Message.kind`. |
 | `OfferStatus` | `PENDING` · `ACCEPTED` · `DECLINED` · `WITHDRAWN` | `Message.offerStatus` (messages OFFER uniquement). |

@@ -281,6 +281,21 @@ export default function MaintenanceSection({
           ))}
         </ul>
       )}
+
+      {(() => {
+        const total = records.reduce(
+          (sum, r) => sum + (r.cost != null ? Number(r.cost) : 0),
+          0
+        );
+        return total > 0 ? (
+          <p className="mt-3 border-t ui-divider pt-2 text-right text-sm ui-text-muted">
+            {t("service.totalSpent")}:{" "}
+            <span className="font-semibold tabular-nums ui-title">
+              {formatMoney(total, currency, language)}
+            </span>
+          </p>
+        ) : null;
+      })()}
     </Section>
   );
 }

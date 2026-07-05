@@ -235,7 +235,7 @@ Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom 
 | `GET`    | `/agenda` | ✓ | In-app agenda JSON — upcoming/overdue warranty, maintenance, loan, insurance, and alert events |
 | `POST`   | `/token` | ✓ | Enable the iCal feed (mints a capability token) |
 | `DELETE` | `/token` | ✓ | Disable the feed |
-| `GET`    | `/feed/:token.ics` | ✗ (token) | RFC-5545 feed of warranties/alerts — token-authenticated so calendar apps can subscribe |
+| `GET`    | `/feed/:token.ics` | ✗ (token) | RFC-5545 feed of warranty/alert/claim/loan/insurance/maintenance dates — token-authenticated so calendar apps can subscribe |
 
 ### Push — `/api/push`
 

@@ -20,7 +20,11 @@ import {
   Star,
 } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
-import { ARTICLE_STATUSES, ARTICLE_CATEGORIES } from "@wim/types";
+import {
+  ARTICLE_STATUSES,
+  ARTICLE_CATEGORIES,
+  ARTICLE_CONDITIONS,
+} from "@wim/types";
 import { Button, Input, Select, Badge } from "../ui";
 
 interface FilterOption {
@@ -37,6 +41,7 @@ interface ArticlesFilterBarProps {
   warrantyStatus: string;
   statusFilter: string;
   categoryFilter: string;
+  conditionFilter: string;
   verificationFilter: string;
   favoriteFilter: boolean;
   priceMin: string;
@@ -60,6 +65,7 @@ export default function ArticlesFilterBar({
   warrantyStatus,
   statusFilter,
   categoryFilter,
+  conditionFilter,
   verificationFilter,
   favoriteFilter,
   priceMin,
@@ -83,6 +89,7 @@ export default function ArticlesFilterBar({
     warrantyStatus,
     statusFilter,
     categoryFilter,
+    conditionFilter,
     verificationFilter,
     favoriteFilter,
     priceMin,
@@ -253,6 +260,22 @@ export default function ArticlesFilterBar({
             {ARTICLE_CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {t(`articleCategory.${c}`)}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            value={conditionFilter}
+            onChange={(e) =>
+              updateParams({ condition: e.target.value || undefined })
+            }
+            aria-label={t("articles.filter.condition.label")}
+            className="w-auto"
+          >
+            <option value="">{t("articles.filter.condition.all")}</option>
+            {ARTICLE_CONDITIONS.map((c) => (
+              <option key={c} value={c}>
+                {t(`articleCondition.${c}`)}
               </option>
             ))}
           </Select>

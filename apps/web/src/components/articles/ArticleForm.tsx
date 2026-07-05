@@ -43,7 +43,9 @@ import {
   ARTICLE_STATUSES,
   type ArticleStatus,
   ARTICLE_CATEGORIES,
+  ARTICLE_CONDITIONS,
   type ArticleCategory,
+  type ArticleCondition,
 } from "@wim/types";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
@@ -174,6 +176,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   const [category, setCategory] = useState<ArticleCategory | "">(
     article?.category ?? ""
   );
+  const [condition, setCondition] = useState<ArticleCondition | "">(
+    article?.condition ?? ""
+  );
   // User-defined key/value attributes (≤20, matching the API bound).
   const [customFields, setCustomFields] = useState<
     Array<{ key: string; value: string }>
@@ -251,6 +256,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     setQuantity(article?.quantity != null ? String(article.quantity) : "1");
     setStatus(article?.status ?? "ACTIVE");
     setCategory(article?.category ?? "");
+    setCondition(article?.condition ?? "");
     setCustomFields(article?.customFields ?? []);
     setSelectedLocationIds(deriveInitialLocationIds(article));
     setSelectedTagIds(deriveInitialTagIds(article));
@@ -524,6 +530,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       quantity: qtyVal,
       status,
       category: category || null,
+      condition: condition || null,
       // Drop half-filled rows; null (not []) clears server-side on edit.
       customFields: (() => {
         const cleaned = customFields
@@ -1091,6 +1098,24 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
               {ARTICLE_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {t(`articleCategory.${c}`)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label={t("articleForm.condition")} htmlFor="articleCondition">
+            <Select
+              id="articleCondition"
+              name="condition"
+              value={condition}
+              onChange={(e) =>
+                setCondition(e.target.value as ArticleCondition | "")
+              }
+            >
+              <option value="">{t("articleCondition.none")}</option>
+              {ARTICLE_CONDITIONS.map((c) => (
+                <option key={c} value={c}>
+                  {t(`articleCondition.${c}`)}
                 </option>
               ))}
             </Select>

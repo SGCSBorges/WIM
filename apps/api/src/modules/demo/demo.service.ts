@@ -1116,6 +1116,9 @@ export async function seedDemoData(
         // per-unit × quantity value math is exercised in demo data.
         quantity: chance(0.15) ? randInt(2, 8) : 1,
         isFavorite: chance(0.1),
+        condition: chance(0.7)
+          ? pick(["NEW", "EXCELLENT", "GOOD", "FAIR", "POOR"])
+          : null,
         depreciationRate: s.dep,
         category: s.item.category,
         status: s.status,

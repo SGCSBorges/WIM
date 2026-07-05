@@ -20,7 +20,11 @@
  *     row's `ownerUserId` into `hardRemove`.
  */
 import { Prisma } from "@prisma/client";
-import type { ArticleStatus, ArticleCategory } from "@wim/types";
+import type {
+  ArticleStatus,
+  ArticleCategory,
+  ArticleCondition,
+} from "@wim/types";
 import { prisma } from "../../libs/prisma";
 import { ArticleCreateInput, ArticleUpdateInput } from "./article.schemas";
 import { addMonths } from "../common/date";
@@ -82,6 +86,7 @@ export type ArticleListFilters = {
   warrantyStatus?: "valid" | "expiringSoon" | "expired" | "none";
   status?: ArticleStatus;
   category?: ArticleCategory;
+  condition?: ArticleCondition;
   verification?: "needed" | "verified";
   favorite?: boolean;
   priceMin?: number;
@@ -106,6 +111,7 @@ function buildArticleWhere(
   if (f.tagId) where.tags = { some: { tagId: f.tagId } };
   if (f.status) where.status = f.status;
   if (f.category) where.category = f.category;
+  if (f.condition) where.condition = f.condition;
   if (f.favorite) where.isFavorite = true;
   if (f.q && f.q.trim()) {
     // Split into terms and require every term to match somewhere (name, model
@@ -368,6 +374,7 @@ export const ArticleService = {
           ? Number(source.depreciationRate)
           : null,
       quantity: source.quantity,
+      condition: source.condition,
       locationIds: source.locations.map((l) => l.locationId),
       tagIds: source.tags.map((t) => t.tagId),
     });

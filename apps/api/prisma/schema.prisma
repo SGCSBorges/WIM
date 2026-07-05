@@ -101,6 +101,16 @@ enum ArticleCategory {
   OTHER
 }
 
+// Physical condition grade. Optional (null = unspecified). Organizational —
+// useful for insurance valuation + resale, never affects value math.
+enum ArticleCondition {
+  NEW
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+}
+
 enum TransferDirection {
   PUSH
   PULL
@@ -377,6 +387,10 @@ model Article {
   // Owner-pinned "favorite" flag for quick access. Purely organizational —
   // filterable (?favorite=1) and surfaced with a star toggle.
   isFavorite         Boolean  @default(false)
+
+  // Optional physical condition grade (null = unspecified). Filterable;
+  // carried in the CSV round-trip. Organizational only — no value impact.
+  condition          ArticleCondition?
 
   // Annual straight-line depreciation rate as a percentage (0–100). Null
   // means the item doesn't depreciate. Used to derive a current value from

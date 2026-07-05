@@ -32,6 +32,7 @@ import {
   ArticleUpdateSchema,
   ArticleStatusSchema,
   ArticleCategorySchema,
+  ArticleConditionSchema,
 } from "./article.schemas";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "../auth/auth.middleware";
@@ -60,6 +61,9 @@ const ImportSchema = z.object({
         description: z.string().trim().max(255).optional().nullable(),
         price: z.coerce.number().nonnegative().max(1e10).optional().nullable(),
         quantity: z.coerce.number().int().min(1).max(1_000_000).optional(),
+        // Free-form on the wire; the importer normalizes + validates against
+        // ARTICLE_CONDITIONS (unknown value = ignored).
+        condition: z.string().trim().max(20).optional().nullable(),
         purchasedFrom: z.string().trim().max(150).optional().nullable(),
         orderRef: z.string().trim().max(100).optional().nullable(),
         // The raw JSON cell from the export's customFields column; parsed +
@@ -83,6 +87,7 @@ const ArticleListQuerySchema = z.object({
     .optional(),
   status: ArticleStatusSchema.optional(),
   category: ArticleCategorySchema.optional(),
+  condition: ArticleConditionSchema.optional(),
   // Physical inventory check: "needed" = never verified or >12 months ago.
   verification: z.enum(["needed", "verified"]).optional(),
   // Restrict to owner-pinned favorites (only "1"/"true" enables it).
@@ -116,6 +121,7 @@ router.get(
       warrantyStatus: q.warrantyStatus,
       status: q.status,
       category: q.category,
+      condition: q.condition,
       verification: q.verification,
       favorite: q.favorite ? true : undefined,
       priceMin: q.priceMin,
@@ -584,6 +590,7 @@ router.get(
       warrantyStatus: q.warrantyStatus,
       status: q.status,
       category: q.category,
+      condition: q.condition,
       verification: q.verification,
       favorite: q.favorite ? true : undefined,
       priceMin: q.priceMin,

@@ -24,6 +24,9 @@ vi.mock("../../libs/prisma", () => ({
     alerte: {
       count: vi.fn(),
     },
+    serviceRecord: {
+      aggregate: vi.fn(),
+    },
     user: {
       count: vi.fn(),
       groupBy: vi.fn(),
@@ -54,6 +57,7 @@ const mockPrisma = prisma as unknown as {
   articleTag: Record<string, ReturnType<typeof vi.fn>>;
   garantie: Record<string, ReturnType<typeof vi.fn>>;
   alerte: Record<string, ReturnType<typeof vi.fn>>;
+  serviceRecord: Record<string, ReturnType<typeof vi.fn>>;
   user: Record<string, ReturnType<typeof vi.fn>>;
 };
 
@@ -99,6 +103,10 @@ function setupDashboardMocks({
     .mockResolvedValueOnce(warrantiesExpiringSoon)
     .mockResolvedValueOnce(warrantiesWithAttachment);
   mockPrisma.alerte.count.mockResolvedValue(alertsTotal);
+  // Maintenance spend aggregate defaults to none.
+  mockPrisma.serviceRecord.aggregate.mockResolvedValue({
+    _sum: { cost: null },
+  });
   // Display-currency lookup carried on the dashboard payload.
   mockPrisma.user.findUnique.mockResolvedValue({ currency: "USD" });
   // Time-series queries used by the forecasting buckets default to empty.
@@ -199,6 +207,9 @@ describe("getDashboardStatistics", () => {
       .mockResolvedValueOnce(0)
       .mockResolvedValueOnce(0);
     mockPrisma.alerte.count.mockResolvedValue(0);
+    mockPrisma.serviceRecord.aggregate.mockResolvedValue({
+      _sum: { cost: null },
+    });
     mockPrisma.garantie.findMany.mockResolvedValue([]);
 
     const result = await getDashboardStatistics({
@@ -219,6 +230,9 @@ describe("getDashboardStatistics", () => {
       .mockResolvedValueOnce(0);
     mockPrisma.article.aggregate.mockResolvedValue({
       _sum: { quantity: 3 },
+    });
+    mockPrisma.serviceRecord.aggregate.mockResolvedValue({
+      _sum: { cost: null },
     });
     mockPrisma.location.findMany.mockResolvedValue([
       { locationId: 1, name: "Home" },
@@ -290,6 +304,15 @@ describe("getDashboardStatistics", () => {
       (l) => l.locationId === 1
     );
     expect(home?.value).toBe(300);
+  });
+
+  it("sums maintenance spend over the trailing window", async () => {
+    setupDashboardMocks();
+    mockPrisma.serviceRecord.aggregate.mockResolvedValue({
+      _sum: { cost: 137.5 },
+    });
+    const result = await getDashboardStatistics({ userId: 1, role: "USER" });
+    expect(result.maintenanceSpend).toBe(137.5);
   });
 
   it("computes currentTotal from per-article straight-line depreciation", async () => {

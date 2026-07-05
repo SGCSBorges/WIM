@@ -156,6 +156,8 @@ export interface Article {
   status?: ArticleStatus;
   // Optional broad category (null/absent = uncategorized).
   category?: ArticleCategory | null;
+  // Optional physical condition grade (null/absent = unspecified).
+  condition?: ArticleCondition | null;
   // Physical inventory check: when the owner last confirmed they still hold
   // the item. Null/absent = never verified.
   lastVerifiedAt?: string | null;
@@ -216,6 +218,8 @@ export interface ArticleListParams {
   status?: ArticleStatus;
   // Filter to a single category.
   category?: ArticleCategory;
+  // Filter to a single physical condition grade.
+  condition?: ArticleCondition;
   // Physical inventory check: "needed" = never verified or >12 months ago.
   verification?: "needed" | "verified";
   // Restrict to owner-pinned favorites.
@@ -286,6 +290,17 @@ export const ARTICLE_CATEGORIES = [
   "OTHER",
 ] as const;
 export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
+
+/** Physical condition grade. Optional on an article (absent = unspecified).
+ *  Mirrors the Prisma `ArticleCondition` enum — keep both in lock-step. */
+export const ARTICLE_CONDITIONS = [
+  "NEW",
+  "EXCELLENT",
+  "GOOD",
+  "FAIR",
+  "POOR",
+] as const;
+export type ArticleCondition = (typeof ARTICLE_CONDITIONS)[number];
 
 /** A free-form note attached to an article (service log, warranty
  *  claim record, etc.). Ordered newest-first by the article detail
@@ -626,6 +641,8 @@ export interface DashboardStatistics {
     expiringSoon: number;
     withAttachment: number;
   };
+  /** Sum of ServiceRecord.cost over the trailing 12 months (live articles). */
+  maintenanceSpend: number;
   alerts: {
     total: number;
   };

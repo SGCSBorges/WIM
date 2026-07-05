@@ -77,6 +77,9 @@ describe("CalendarService", () => {
     mockPrisma.alerte.findMany.mockResolvedValue([
       { alerteId: 2, alerteNom: "Filter change", alerteDate: new Date("2026-09-01T00:00:00Z") },
     ]);
+    mockPrisma.loan.findMany.mockResolvedValue([]);
+    mockPrisma.insurancePolicy.findMany.mockResolvedValue([]);
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([]);
     const ics = (await CalendarService.feedForToken("t")) as string;
     expect(ics).toContain("UID:warranty-1@wim");
     expect(ics).toContain("UID:alert-2@wim");
@@ -99,10 +102,58 @@ describe("CalendarService", () => {
         },
       ]);
     mockPrisma.alerte.findMany.mockResolvedValue([]);
+    mockPrisma.loan.findMany.mockResolvedValue([]);
+    mockPrisma.insurancePolicy.findMany.mockResolvedValue([]);
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([]);
     const ics = (await CalendarService.feedForToken("t")) as string;
     expect(ics).toContain("UID:claim-9-OPEN@wim");
     expect(ics).toContain("SUMMARY:Warranty claim OPEN: Camera");
     expect(ics).toContain("DTSTART;VALUE=DATE:20260512");
+  });
+
+  it("feedForToken also emits loan, insurance, and maintenance events", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.garantie.findMany.mockResolvedValue([]);
+    mockPrisma.alerte.findMany.mockResolvedValue([]);
+    mockPrisma.loan.findMany.mockResolvedValue([
+      {
+        loanId: 5,
+        borrowerName: "Sam",
+        dueAt: new Date("2026-08-01T00:00:00Z"),
+        article: { articleNom: "Drill" },
+      },
+    ]);
+    mockPrisma.insurancePolicy.findMany.mockResolvedValue([
+      {
+        policyId: 6,
+        provider: "Acme",
+        renewalAt: new Date("2026-10-01T00:00:00Z"),
+      },
+    ]);
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([
+      // Latest record (first, desc order) carries the live schedule.
+      {
+        serviceId: 8,
+        articleId: 4,
+        nextDueAt: new Date("2026-07-15T00:00:00Z"),
+        article: { articleNom: "Boiler" },
+      },
+      {
+        serviceId: 7,
+        articleId: 4,
+        nextDueAt: new Date("2026-01-15T00:00:00Z"),
+        article: { articleNom: "Boiler" },
+      },
+    ]);
+
+    const ics = (await CalendarService.feedForToken("t")) as string;
+    expect(ics).toContain("UID:loan-5@wim");
+    expect(ics).toContain("SUMMARY:Drill — loan due back (Sam)");
+    expect(ics).toContain("UID:insurance-6@wim");
+    expect(ics).toContain("SUMMARY:Acme — policy renewal");
+    // Only the latest service record emits (serviceId 8, not 7).
+    expect(ics).toContain("UID:service-8@wim");
+    expect(ics).not.toContain("UID:service-7@wim");
   });
 });
 

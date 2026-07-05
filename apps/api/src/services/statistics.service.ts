@@ -258,6 +258,7 @@ export async function getDashboardStatistics(
       recentArticleCreations,
       unassigned,
       totalSharedArticles,
+      maintenanceSpendAgg,
     ] = await Promise.all([
       prisma.garantie.findMany({
         where: {
@@ -292,6 +293,16 @@ export async function getDashboardStatistics(
             },
           })
         : Promise.resolve(0),
+      // Maintenance spend over the trailing 12 months (live articles only).
+      // ServiceRecord.cost is a single Decimal column, so a SQL _sum is fine.
+      prisma.serviceRecord.aggregate({
+        where: {
+          ownerUserId,
+          performedAt: { gte: twelveMonthsAgo },
+          article: { deletedAt: null },
+        },
+        _sum: { cost: true },
+      }),
     ]);
 
     const articlesWithoutWarranty = articlesTotal - articlesWithWarranty;
@@ -421,6 +432,7 @@ export async function getDashboardStatistics(
         expiringSoon: warrantiesExpiringSoon,
         withAttachment: warrantiesWithAttachment,
       },
+      maintenanceSpend: Number(maintenanceSpendAgg._sum.cost ?? 0),
       alerts: {
         total: alertsTotal,
       },

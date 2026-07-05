@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Plus,
   BadgeCheck,
+  Wrench,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -264,6 +265,23 @@ const Dashboard: React.FC = () => {
         </span>
       ),
     },
+    // Only surfaced once the user has logged some service cost — no nag for
+    // an empty maintenance log.
+    ...((statistics.maintenanceSpend ?? 0) > 0
+      ? [
+          {
+            title: t("dashboard.maintenanceSpend"),
+            value: money(statistics.maintenanceSpend),
+            icon: <Wrench className="h-5 w-5" />,
+            tone: "warning" as StatTone,
+            footer: (
+              <span className="ui-text-muted">
+                {t("dashboard.maintenanceSpendHint")}
+              </span>
+            ),
+          },
+        ]
+      : []),
     {
       title: t("dashboard.totalArticles"),
       value: count(statistics.articles.total),

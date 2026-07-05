@@ -49,6 +49,7 @@ import type {
 } from "../../types";
 import { warrantyStatusFor } from "../../utils/warrantyStatus";
 import { articleStatusInfo } from "../../utils/articleStatus";
+import { articleConditionInfo } from "../../utils/articleCondition";
 import { NOT_OWNED_STATUSES, ARTICLE_NOTE_KINDS } from "@wim/types";
 import RenewWarrantyDialog from "../warranties/RenewWarrantyDialog";
 import TransferDialog from "./TransferDialog";
@@ -648,6 +649,12 @@ export default function ArticleDetail() {
             <Badge tone={articleStatusInfo(article.status).tone}>
               {t(articleStatusInfo(article.status).labelKey)}
             </Badge>
+            {(() => {
+              const info = articleConditionInfo(article.condition);
+              return info ? (
+                <Badge tone={info.tone}>{t(info.labelKey)}</Badge>
+              ) : null;
+            })()}
             {article.status && NOT_OWNED_STATUSES.includes(article.status) && (
               <Link
                 to={`/reports?status=${article.status}`}
