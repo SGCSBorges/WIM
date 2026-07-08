@@ -359,6 +359,32 @@ failure mode with the same 401.
   per-unit × quantity rule as the dashboard; the web `/locations/value` route
   renders a treemap + table with the nested "Home › Garage" path.
 
+## Per-item lifecycle add-ons (loans / insurance / maintenance)
+
+Three owner-scoped modules that hang off an article, one shape: a service with
+ownership assertions, a thin route module, and a **best-effort** reminder via
+`AlertService.createCustom` (a Redis hiccup never fails the write). Each one's
+cleanup paths stay open past a downgrade (the same rule as transfer
+reject/revoke — see Feature gating below).
+
+- **Loans** — `GET/POST /api/loans`, `POST /api/loans/:id/return`,
+  `DELETE /api/loans/:id` (gate `loans` on list/create; return + delete open).
+  Creating a loan sets the article `LOANED`; returning reverts to `ACTIVE`
+  only if still `LOANED` (atomic precondition) and cancels the due reminder.
+- **Insurance** — CRUD under `/api/insurance` plus link/unlink at
+  `/api/insurance/:id/articles[/:articleId]` (gate `insurance` on
+  list/create/update/link; policy delete + unlink open). One policy covers
+  many articles (m2m); a renewal date schedules a reminder, rescheduled on
+  edit and cancelled on delete.
+- **Maintenance** — `GET/POST /api/service-records?articleId=` and
+  `GET /api/service-records/due` (gate `maintenance`; delete open). Append-only
+  service log; `/due` returns the **latest** record per article due within 30
+  days or overdue (a newer record with no `nextDueAt` clears an older
+  schedule). `intervalMonths` derives the next due date for routine jobs.
+
+All three feed the dashboard's attention card, the in-app agenda, and the
+subscribed ICS calendar feed.
+
 ## Feature gating
 
 Admins control which **role** each named feature requires, overriding the

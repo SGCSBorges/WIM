@@ -10,7 +10,7 @@ the canonical detail lives elsewhere and is linked from here:
 - [`docs/api.md`](./api.md) — the auth model, the attachments gotcha, and a
   triage section for common confusions.
 - [`docs/data-dictionary.md`](./data-dictionary.md) — the exhaustive
-  field-by-field reference for all 30 tables + 14 enums.
+  field-by-field reference for all 36 tables + 16 enums.
 - [`docs/uml/`](./uml/) — PlantUML diagrams (in French) for the use cases,
   class model, core flows, and state machines.
 
@@ -265,6 +265,13 @@ the mobile browser chrome and installed-PWA status bar match it, and
   with `kind:"totp-challenge"` instead of a session cookie, and the
   client posts the code to `/auth/login/verify-totp` to mint the real
   session. Backup codes are bcrypt-hashed and consumed on use.
+- **Passkeys (WebAuthn)** — an alternative sign-in path
+  (`/auth/webauthn/*`, one `WebAuthnCredential` row per enrolled
+  authenticator). The challenge rides in a short-lived signed token
+  (mirroring the TOTP challenge pattern), and a successful assertion
+  mints a full session **even for TOTP-enabled accounts** — possession
+  + user-verification is phishing-resistant 2FA in itself. Options for
+  unknown emails are enumeration-safe.
 - **No email enumeration** — lookups by email return the same error for "not
   found" vs "found but wrong role" (e.g. `ShareService.createInvite`).
 

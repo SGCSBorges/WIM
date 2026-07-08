@@ -142,20 +142,23 @@ Cartographie des groupes de ressources (détail exhaustif dans Swagger) :
 
 | Groupe | Base | Résumé |
 |---|---|---|
-| **Auth** | `/api/auth` | inscription, connexion (+ défi TOTP), déconnexion, `/me`, mot de passe oublié/réinitialisé, vérification d'e-mail |
+| **Auth** | `/api/auth` | inscription, connexion (+ défi TOTP, passkeys WebAuthn), déconnexion, `/me`, mot de passe oublié/réinitialisé, vérification d'e-mail |
 | **Articles** | `/api/articles` | CRUD, corbeille (soft-delete), duplication, import/export CSV/PDF, notes, opérations groupées, partage, transfert |
 | **Garanties** | `/api/warranties` | CRUD, réclamation, renouvellement/prolongation en place + historique |
 | **Pièces jointes** | `/api/attachments` | upload (10 Mo, validation magic-byte), liste, suppression |
 | **Alertes** | `/api/alerts` | rappels garantie J-30/J-7/J-1 (décalages personnalisables) + alertes personnalisées récurrentes |
 | **Emplacements / Étiquettes** | `/api/locations`, `/api/tags` | CRUD (emplacements imbriqués), affectation, fusion d'étiquettes |
 | **Vues enregistrées** | `/api/saved-views` | presets de filtres d'articles |
-| **Calendrier** | `/api/calendar` | flux iCal (RFC-5545) authentifié par jeton |
+| **Calendrier** | `/api/calendar` | agenda JSON intégré (`/agenda`) + flux iCal (RFC-5545) authentifié par jeton |
 | **Push** | `/api/push` | abonnements Web Push (VAPID) |
 | **Partage** | `/api/shares`, `/api/shared` | invitations par utilisateur (READ/WRITE) + vue reçue |
 | **Foyer** | `/api/household` | groupe familial (max 6) — maillage auto-géré de partages WRITE entre membres |
 | **Liste d'envies** | `/api/wishlist` | achats prévus avec indicateur d'adéquation au budget |
-| **Statistiques** | `/api/statistics` | tableau de bord, analytique de dépenses, budget |
+| **Statistiques** | `/api/statistics` | tableau de bord, analytique de dépenses, valeur par emplacement, budget |
 | **Transferts** | `/api/articles/transfers` | transfert de propriété PUSH/PULL entre Power Users |
+| **Messagerie** | `/api/messages` | fils acheteur↔propriétaire sur un article partagé + offres (l'acceptation crée un transfert) |
+| **Rapports** | `/api/reports` | PDF de portefeuille prêt pour l'assurance (mêmes filtres que la liste d'articles) |
+| **Modèles d'articles** | `/api/article-templates` | points de départ réutilisables du formulaire de création (charge utile JSONB par noms) |
 | **Prêts / Assurances / Maintenance** | `/api/loans`, `/api/insurance`, `/api/service-records` | modules par article (payants) |
 | **Page publique** | `/api/public`, `.../public-link` | page en lecture seule opt-in (cible d'étiquette QR) + signalement « objet trouvé » pour les objets perdus |
 | **Profil** | `/api/profile` | e-mail, mot de passe, devise, préférences, décalages de rappel, sessions, TOTP, budget, export complet des données, suppression de compte |
@@ -184,17 +187,19 @@ de 60 s alimente à la fois le garde et la carte d'accès via un même helper
 ```
 User ─── Article ─── Garantie ─── WarrantyHistory (audit en ajout seul)
   │         │              └── Alerte
-  │         ├── Attachment
+  │         ├── Attachment (INVOICE/WARRANTY/CLAIM/OTHER)
   │         ├── ArticleNote (kind : SERVICE/WARRANTY_CLAIM/MAINTENANCE/OTHER)
   │         ├── Tag (M:N via ArticleTag)
-  │         └── Location (M:N via ArticleLocation)
+  │         ├── Location (M:N via ArticleLocation ; imbrication via parentLocationId)
+  │         ├── Loan · ServiceRecord · InsurancePolicy (M:N via ArticleInsurance)
+  │         └── MessageThread ── Message (fils acheteur↔propriétaire + offres)
   │
   ├── ArticleTransferRequest (PUSH/PULL ; PENDING/ACCEPTED/REJECTED/REVOKED/EXPIRED)
   ├── ArticleTemplate · InventoryShare · ShareInvite
   ├── HouseholdMember → Household (max 6 ; maillage de partages WRITE) ── HouseholdInvite
-  ├── WishlistItem · EmailVerificationToken
-  ├── UserSession · TotpSecret · PasswordResetToken
-  ├── SavedView · CalendarToken
+  ├── WishlistItem · EmailVerificationToken · PushSubscription
+  ├── UserSession · TotpSecret · WebAuthnCredential · PasswordResetToken
+  ├── SavedView (isDefault + sharedWithHousehold)
   └── AuditLog
 ```
 

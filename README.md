@@ -132,6 +132,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `POST` | `/webauthn/login/options` + `/verify` | ✗ | Passkey sign-in — enumeration-safe options; a passkey satisfies 2FA |
 | `GET`/`DELETE` | `/webauthn/credentials[/:id]` | ✓ | List / remove registered passkeys |
 | `POST` | `/bootstrap-admin` | ✗ | One-shot promote `admin@admin.com` if no ADMIN exists yet (idempotent) |
+| `POST` | `/seed-demo` | ✗ | Refresh the demo dataset in the background (202; wipes prior `@demo.wim.app` accounts first, never touches real ones). Disable with `DEMO_SEED_ENABLED=false` |
 
 ### Articles — `/api/articles`
 
@@ -293,6 +294,37 @@ Permanent ownership transfer between Power Users. See [`docs/api.md`](./docs/api
 | `POST`   | `/transfers/:token/accept` | POWER_USER | Accept a transfer (PUSH: recipient accepts; PULL: owner accepts) |
 | `POST`   | `/transfers/:token/reject` | POWER_USER | Reject a transfer (PULL: owner rejects) |
 | `DELETE` | `/transfers/:id` | POWER_USER | Revoke a transfer the caller initiated (PUSH: owner cancels; PULL: requester cancels) |
+
+### Messaging — `/api/messages` (POWER_USER · `messaging`)
+
+Buyer↔owner threads anchored on a shared article, with an offer workflow whose acceptance mints a real transfer request. See [`docs/api.md` → Secure messaging](./docs/api.md#secure-messaging).
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/unread-count` | POWER_USER | Unread-message badge count |
+| `GET`    | `/threads` | POWER_USER | List the caller's threads (participant-scoped) |
+| `POST`   | `/threads` | POWER_USER | Open (or reuse) a thread about a visible shared article (`{ articleId, body }`) |
+| `GET`    | `/threads/:id` | POWER_USER | Thread with its messages (marks the caller's side read) |
+| `POST`   | `/threads/:id/messages` | POWER_USER | Reply in a thread |
+| `POST`   | `/threads/:id/offer` | POWER_USER | Make a purchase/transfer offer (`{ amount? }`) |
+| `POST`   | `/offers/:messageId/accept` · `/decline` | POWER_USER | Resolve an offer — accepting creates an `ArticleTransferRequest` for the buyer |
+
+### Reports — `/api/reports` (POWER_USER · `reports`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET` | `/portfolio.pdf` | POWER_USER | Insurance-ready portfolio PDF (cover totals, per-location manifest, uninsured/expired exposure). Honours the article-list filters (`?locationId=` `?tagId=` `?warrantyStatus=` `?status=`); audited as `DB_EXPORT` |
+
+### Article templates — `/api/article-templates` (POWER_USER · `templates`)
+
+Reusable starting points for the create form. The JSONB payload stores locations/tags **by name** so a template survives renames/deletes; names resolve to live ids at apply time.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `GET`    | `/` · `/:id` | POWER_USER | List / fetch templates |
+| `POST`   | `/` | POWER_USER | Create a template (`{ name, payload }`) |
+| `PUT`    | `/:id` | POWER_USER | Update a template |
+| `DELETE` | `/:id` | POWER_USER | Delete a template |
 
 ### Loans — `/api/loans` (POWER_USER · `loans`)
 
@@ -460,10 +492,14 @@ gating** sections of [`docs/api.md`](./docs/api.md) and [`CLAUDE.md`](./CLAUDE.m
 ```
 User ─── Article ─── Garantie (warranty) ─── WarrantyHistory (append-only audit)
   │         │              └── Alerte (alert)
-  │         ├── Attachment
+  │         ├── Attachment (INVOICE/WARRANTY/CLAIM/OTHER; claim evidence links via garantieId)
   │         ├── ArticleNote (kind: SERVICE/WARRANTY_CLAIM/MAINTENANCE/OTHER)
   │         ├── Tag (many-to-many via ArticleTag)
-  │         └── Location (many-to-many via ArticleLocation)
+  │         ├── Location (many-to-many via ArticleLocation; nested via parentLocationId)
+  │         ├── Loan (who borrowed it; return reverts LOANED → ACTIVE)
+  │         ├── InsurancePolicy (many-to-many via ArticleInsurance)
+  │         ├── ServiceRecord (append-only maintenance log; optional recurrence)
+  │         └── MessageThread ── Message (buyer↔owner chat + offers)
   │
   ├── ArticleTransferRequest (PUSH/PULL; status: PENDING/ACCEPTED/REJECTED/REVOKED/EXPIRED)
   ├── ArticleTemplate (JSONB payload with locationNames/tagNames)
@@ -474,13 +510,14 @@ User ─── Article ─── Garantie (warranty) ─── WarrantyHistory (
   ├── EmailVerificationToken (sha256 hash, 3-day TTL)
   ├── UserSession (one per device, keyed by JWT jti)
   ├── TotpSecret (base32 secret + bcrypt-hashed backup codes)
+  ├── WebAuthnCredential (one per enrolled passkey)
   ├── PasswordResetToken (sha256 hash, 30-min TTL)
-  ├── SavedView (named article-filter presets)
-  ├── CalendarToken (iCal feed capability token)
+  ├── SavedView (named article-filter presets; isDefault + sharedWithHousehold)
+  ├── PushSubscription (Web Push endpoints)
   └── AuditLog
 ```
 
-Key flags on User: `role`, `tokenVersion`, `totpEnabled`, `stripeCustomerId`, `stripeSubscriptionId`.
+Key flags on User: `role`, `tokenVersion`, `totpEnabled`, `stripeCustomerId`, `stripeSubscriptionId`, `calendarToken` (iCal feed capability), `warrantyReminderDays`, `monthlyBudget`/`annualBudget`. Platform-level tables (`FeatureFlag`, `FeatureTempGrant`, `ProcessedStripeEvent`) hang off no user.
 
 The diagram above is a simplified spine — for the **exhaustive field-by-field
 reference** of every table and enum, see
@@ -579,7 +616,7 @@ The web service is provisioned from `render.yaml` at the repo root (SPA rewrite 
 
 - [x] Move file uploads from ephemeral disk to S3-compatible storage — env-gated via `S3_*` vars (Cloudflare R2 / AWS S3 / MinIO); local-disk fallback for dev
 - [x] Per-user rate limits — the destructive + create limiters key on the hashed auth token (IP fallback for anonymous requests)
-- [ ] Expand test coverage to route-level integration tests
+- [x] Expand test coverage to route-level integration tests — a supertest suite against real Postgres runs in CI (self-skips locally unless `INTEGRATION_DATABASE_URL` is set)
 - [ ] Add a data-caching layer (TanStack Query) on the web client to reduce duplicate fetches across routes
 - [ ] Replace the temporary `/auth/bootstrap-admin` with a proper one-time seed flow once the production DB is stable
 - [ ] Consolidate the two sharing models (public flag + per-user InventoryShare) into a single “Share article…” dialog with options — deferred by design today

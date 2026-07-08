@@ -12,7 +12,7 @@ circule » — le détail canonique vit ailleurs et est référencé ici :
 - [`docs/api.md`](./api.md) — le modèle d'authentification, le piège des pièces
   jointes et une section de triage des confusions courantes.
 - [`docs/data-dictionary.md`](./data-dictionary.md) — la référence exhaustive
-  champ par champ des 30 tables + 14 énumérations.
+  champ par champ des 36 tables + 16 énumérations.
 - [`docs/uml/`](./uml/) — diagrammes PlantUML (en français) : cas d'utilisation,
   modèle de classes, flux cœur et machines à états.
 
@@ -243,6 +243,13 @@ langue choisie pour la prononciation par les lecteurs d'écran.
   `challengeToken` pré-auth court (5 min) au lieu d'un cookie, et le client poste
   le code à `/auth/login/verify-totp`. Les codes de secours sont hachés bcrypt et
   consommés à l'usage.
+- **Passkeys (WebAuthn)** — un chemin de connexion alternatif
+  (`/auth/webauthn/*`, une ligne `WebAuthnCredential` par authentificateur
+  enrôlé). Le défi voyage dans un jeton signé de courte durée (même motif que
+  le défi TOTP), et une assertion réussie ouvre une session complète **même
+  pour les comptes TOTP** — possession + vérification utilisateur valent 2FA
+  résistante au phishing. Les options pour un e-mail inconnu sont sûres contre
+  l'énumération.
 - **Pas d'énumération d'e-mails** — les recherches par e-mail renvoient la même
   erreur pour « introuvable » et « trouvé mais mauvais rôle ».
 
