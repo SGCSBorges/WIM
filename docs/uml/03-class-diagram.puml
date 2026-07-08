@@ -48,12 +48,18 @@ class Article {
   +brand: varchar(120)
   +purchasedFrom: varchar(150)
   +orderRef: varchar(100)
-  +purchasePrice: decimal(12,2)
+  +purchasePrice: decimal(12,2)  ' prix UNITAIRE
+  +quantity: int  ' valeur = prix × quantité
   +depreciationRate: decimal(5,2)
   +sharedWithPowerUsers: bool
   +publicToken: varchar(64)
   +status: ArticleStatus
   +category: ArticleCategory
+  +condition: ArticleCondition
+  +bundle: varchar(80)  ' regroupement libre
+  +isFavorite: bool
+  +lastVerifiedAt: datetime  ' inventaire physique
+  +customFields: jsonb  ' paires {key,value}, privé
   +deletedAt: datetime
 }
 
@@ -124,6 +130,8 @@ class SavedView {
   +id: int
   +name: varchar(60)
   +query: varchar(500)
+  +isDefault: bool  ' au plus une par propriétaire
+  +sharedWithHousehold: bool  ' lecture seule pour le foyer
 }
 
 class ArticleTemplate {
@@ -180,6 +188,16 @@ class TotpSecret {
   +secret: varchar(64)  ' base32
   +backupCodesHash: text  ' bcrypt, usage unique
   +verified: bool
+}
+
+class WebAuthnCredential {
+  +id: int
+  +credentialId: varchar(512)  ' Base64URL, unique
+  +publicKey: bytes
+  +counter: int  ' anti-clonage, mis à jour à chaque assertion
+  +transports: varchar(120)  ' CSV usb/nfc/ble/internal/hybrid
+  +deviceLabel: varchar(120)
+  +lastUsedAt: datetime
 }
 
 class PasswordResetToken {
@@ -321,6 +339,7 @@ User "1" *-- "0..*" Attachment
 User "1" *-- "0..*" Alerte
 User "1" *-- "0..*" UserSession
 User "1" *-- "0..1" TotpSecret
+User "1" *-- "0..*" WebAuthnCredential
 User "1" *-- "0..*" PasswordResetToken
 User "1" *-- "0..*" EmailVerificationToken
 User "1" *-- "0..*" PushSubscription
@@ -349,7 +368,7 @@ User "1" --> "0..*" AuditLog : trace
 ' Liens optionnels (FK nullable) : couverture de garantie / preuves
 Garantie "0..1" --> "0..1" Article : couvre (unique)
 Attachment "0..*" --> "0..1" Article
-Attachment "0..*" --> "0..1" Garantie : preuve
+Attachment "0..*" --> "0..1" Garantie : preuve / pièces CLAIM
 Alerte "0..*" --> "0..1" Garantie : J-30/J-7/J-1
 Alerte "0..*" --> "0..1" Article : custom
 
@@ -393,9 +412,10 @@ Aligné sur prisma/schema.prisma :
 - Un Household est un maillage auto-géré de lignes InventoryShare en WRITE
   (marquées viaHouseholdId) entre tous ses membres (max 6, un foyer par
   utilisateur) — les surfaces de partage existantes restent inchangées.
-- Enums : Role, ClaimStatus, AlerteStatus, AlerteKind, AttachmentType,
-  ArticleNoteKind, ArticleStatus, ArticleCategory, SharePermission,
-  InviteStatus, HouseholdRole, TransferDirection, MessageKind, OfferStatus,
+- Enums : Role, ClaimStatus, AlerteStatus, AlerteKind, AttachmentType
+  (INVOICE/WARRANTY/CLAIM/OTHER), ArticleNoteKind, ArticleStatus,
+  ArticleCategory, ArticleCondition, SharePermission, InviteStatus,
+  HouseholdRole, TransferDirection, MessageKind, OfferStatus,
   WarrantyHistoryEvent.
 - Référence champ-par-champ exhaustive : ../data-dictionary.md.
 end note
