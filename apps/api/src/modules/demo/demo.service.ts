@@ -30,6 +30,15 @@ export const DEMO_PASSWORD = "Demo1234!";
 export const DEMO_EMAIL_DOMAIN = "demo.wim.app";
 export const DEMO_ADMIN_EMAIL = `admin@${DEMO_EMAIL_DOMAIN}`;
 
+// Dedicated showcase account for live app demos: fixed, memorable
+// credentials, ADMIN role, and the full per-user inventory (100 articles by
+// default). It deliberately lives OFF the demo domain so the address looks
+// real on stage; resetDemoData compensates by also deleting it by exact
+// email, so every reseed recreates it fresh. Do NOT hand these credentials
+// to a real user — the account is wiped on every demo reseed.
+export const DEMO_SHOWCASE_EMAIL = "admin@wim.com";
+export const DEMO_SHOWCASE_PASSWORD = "Admin123+";
+
 export interface SeedDemoOptions {
   users?: number; // default 100
   articlesPerUser?: number; // default 100
@@ -922,7 +931,14 @@ async function reserveUserIdMargin(prisma: PrismaClient, margin: number) {
 // up-to-date demo data on a repeat click without wiping the whole database.
 export async function resetDemoData(prisma: PrismaClient): Promise<number> {
   const demoUsers = await prisma.user.findMany({
-    where: { email: { endsWith: `@${DEMO_EMAIL_DOMAIN}` } },
+    where: {
+      OR: [
+        { email: { endsWith: `@${DEMO_EMAIL_DOMAIN}` } },
+        // The showcase account is off-domain by design — match it by exact
+        // email so reseeds recreate it instead of colliding on the unique.
+        { email: DEMO_SHOWCASE_EMAIL },
+      ],
+    },
     select: { userId: true },
   });
   if (demoUsers.length === 0) return 0;
@@ -983,6 +999,25 @@ export async function seedDemoData(
     people[0].email = adminEmail;
   }
 
+  // Fixed-credential showcase account (see DEMO_SHOWCASE_*): takes slot #1 so
+  // it flows through the exact same seeding path as every other account —
+  // full inventory, warranties, alerts, paid add-ons. Skipped if the email is
+  // already taken (seedDemoData is append-only; the reset path clears it) or
+  // if the run is too small to have a slot #1.
+  let showcaseSeeded = false;
+  if (users >= 2 && !used.has(DEMO_SHOWCASE_EMAIL)) {
+    used.add(DEMO_SHOWCASE_EMAIL);
+    people[1] = { first: "Demo", last: "Admin", email: DEMO_SHOWCASE_EMAIL };
+    showcaseSeeded = true;
+  } else if (!used.has(DEMO_SHOWCASE_EMAIL)) {
+    log(`showcase account skipped (users=${users} < 2)`);
+  } else {
+    log(`showcase account skipped (${DEMO_SHOWCASE_EMAIL} already exists)`);
+  }
+  const showcasePasswordHash = showcaseSeeded
+    ? await bcrypt.hash(DEMO_SHOWCASE_PASSWORD, 10)
+    : null;
+
   type SeededUser = { userId: number; role: Prisma.UserCreateInput["role"] };
   const seeded: SeededUser[] = [];
   let totalArticles = 0;
@@ -990,8 +1025,10 @@ export async function seedDemoData(
   let totalAlerts = 0;
 
   for (let i = 0; i < users; i++) {
+    const isShowcase =
+      showcaseSeeded && people[i].email === DEMO_SHOWCASE_EMAIL;
     const role: Prisma.UserCreateInput["role"] =
-      makeAdmin && i === 0
+      (makeAdmin && i === 0) || isShowcase
         ? "ADMIN"
         : i <= powerUserCount
           ? "POWER_USER"
@@ -999,26 +1036,35 @@ export async function seedDemoData(
     const paid = role !== "USER";
 
     const accountCreatedAt = daysAgo(randInt(30, 1400));
+    // The showcase account gets its own password and stable, stage-friendly
+    // preferences (English UI, light theme, EUR, verified email) instead of
+    // the randomized ones — a live demo shouldn't open in a surprise locale.
     const user = await prisma.user.create({
       data: {
         email: people[i].email,
-        password: passwordHash,
+        password:
+          isShowcase && showcasePasswordHash
+            ? showcasePasswordHash
+            : passwordHash,
         role,
-        currency: pick(CURRENCIES),
-        theme: pick(THEMES),
-        language: pick(LANGS),
+        currency: isShowcase ? "EUR" : pick(CURRENCIES),
+        theme: isShowcase ? "light" : pick(THEMES),
+        language: isShowcase ? "en" : pick(LANGS),
         dateFormat: pick(DATE_FORMATS),
-        emailReminders: chance(0.85),
+        emailReminders: isShowcase || chance(0.85),
         weeklyDigest: chance(0.4),
         warrantyReminderDays: chance(0.25)
           ? pick(["90,30,7", "60,14,3", "45,7"])
           : null,
-        emailVerifiedAt: chance(0.7)
-          ? new Date(accountCreatedAt.getTime() + randInt(1, 72) * 3_600_000)
-          : null,
+        emailVerifiedAt:
+          isShowcase || chance(0.7)
+            ? new Date(accountCreatedAt.getTime() + randInt(1, 72) * 3_600_000)
+            : null,
         calendarToken: paid && chance(0.5) ? token() : null,
-        monthlyBudget: paid && chance(0.6) ? jitter(800, 0.4) : null,
-        annualBudget: paid && chance(0.6) ? jitter(9000, 0.4) : null,
+        monthlyBudget:
+          isShowcase || (paid && chance(0.6)) ? jitter(800, 0.4) : null,
+        annualBudget:
+          isShowcase || (paid && chance(0.6)) ? jitter(9000, 0.4) : null,
         createdAt: accountCreatedAt,
       },
       select: { userId: true },
@@ -1069,7 +1115,13 @@ export async function seedDemoData(
       warranty: { dateAchat: Date; duration: number; fin: Date } | null;
     };
     const specs: Spec[] = [];
-    for (let j = 0; j < articlesPerUser; j++) {
+    // The showcase account is guaranteed at least 100 items even when a
+    // caller shrinks articlesPerUser for a quick run — it exists to demo a
+    // well-populated inventory.
+    const articleCount = isShowcase
+      ? Math.max(articlesPerUser, 100)
+      : articlesPerUser;
+    for (let j = 0; j < articleCount; j++) {
       const item = pick(CATALOG);
       const createdAt = daysAgo(randInt(1, 1400));
       let warranty: Spec["warranty"] = null;

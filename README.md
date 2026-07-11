@@ -132,7 +132,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 | `POST` | `/webauthn/login/options` + `/verify` | ✗ | Passkey sign-in — enumeration-safe options; a passkey satisfies 2FA |
 | `GET`/`DELETE` | `/webauthn/credentials[/:id]` | ✓ | List / remove registered passkeys |
 | `POST` | `/bootstrap-admin` | ✗ | One-shot promote `admin@admin.com` if no ADMIN exists yet (idempotent) |
-| `POST` | `/seed-demo` | ✗ | Refresh the demo dataset in the background (202; wipes prior `@demo.wim.app` accounts first, never touches real ones). Disable with `DEMO_SEED_ENABLED=false` |
+| `POST` | `/seed-demo` | ✗ | Refresh the demo dataset in the background (202; wipes prior `@demo.wim.app` accounts + the `admin@wim.com` showcase account first, never touches real ones). Recreates the fixed showcase login `admin@wim.com` / `Admin123+` (ADMIN, ≥100 items) for live demos. Disable with `DEMO_SEED_ENABLED=false` |
 
 ### Articles — `/api/articles`
 

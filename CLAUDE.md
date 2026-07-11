@@ -1278,6 +1278,13 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   exists. A `demoSeeding` guard prevents overlapping runs. Set
   `DEMO_SEED_ENABLED=false` to disable. All demo accounts share the password
   `Demo1234!`. The demo module is excluded from coverage in `vitest.config.ts`.
+  A dedicated **showcase account** for live demos rides slot #1 of every seed:
+  `admin@wim.com` / `Admin123+` (`DEMO_SHOWCASE_EMAIL/_PASSWORD`), ADMIN role,
+  ≥100 articles guaranteed (floor even when `articlesPerUser` is smaller),
+  stable stage-friendly prefs (en/EUR/light, verified email, budgets set). It
+  deliberately lives OFF the demo domain so the address looks real on stage;
+  `resetDemoData` compensates by also deleting it **by exact email**, so each
+  reseed recreates it fresh — never hand these credentials to a real user.
 - **Two sharing models** (public flag vs InventoryShare) still both
   exist intentionally. The owner-side UX has separate flows for each;
   consolidating into a single "Share article…" dialog with options
