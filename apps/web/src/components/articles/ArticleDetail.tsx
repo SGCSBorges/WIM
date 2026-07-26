@@ -7,7 +7,7 @@
  * (not warranty / attachments) — see article.service.ts duplicate().
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router";
 import { usePreferences } from "../../preferences/preferences";
 import {
   Copy,

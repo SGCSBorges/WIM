@@ -6,7 +6,7 @@
  * count reflects "anything new since you last looked".
  */
 import { useCallback, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { Bell } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";

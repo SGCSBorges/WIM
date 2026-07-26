@@ -6,7 +6,7 @@
  * in Profile → Budget.
  */
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Wallet, AlertTriangle } from "lucide-react";
 import { statisticsAPI } from "../../services/api";
 import type { BudgetStatus } from "../../types";

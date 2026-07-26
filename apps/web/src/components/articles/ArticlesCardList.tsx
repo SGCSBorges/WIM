@@ -4,7 +4,7 @@
  * ArticlesList; all selection/edit/delete logic stays there and arrives via
  * typed callbacks, so behavior is unchanged and the wiring is compile-checked.
  */
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Pencil, Trash2, Star } from "lucide-react";
 import type { FetchedArticle, Article } from "../../types";
 import { useI18n } from "../../i18n/i18n";

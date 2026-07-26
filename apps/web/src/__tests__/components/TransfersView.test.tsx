@@ -12,7 +12,7 @@ vi.mock("../../services/api", () => ({
   },
 }));
 
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import TransfersView from "../../components/transfers/TransfersView";
 import { transfersAPI, type TransferItem } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";

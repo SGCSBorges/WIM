@@ -6,7 +6,7 @@
  * nag them on every fresh visit).
  */
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { CheckCircle2, Circle, Sparkles, X } from "lucide-react";
 import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

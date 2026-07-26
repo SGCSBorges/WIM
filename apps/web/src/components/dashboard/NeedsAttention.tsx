@@ -10,7 +10,7 @@
  * a warranty manager: "what's about to bite you".
  */
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import {
   TriangleAlert,
   ShieldAlert,

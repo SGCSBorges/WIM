@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 
 // Both cards are entitled in these tests so we exercise the rendered states;
 // the "locked → self-hide" path is the all-false default elsewhere.

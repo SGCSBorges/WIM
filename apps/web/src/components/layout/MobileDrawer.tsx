@@ -6,7 +6,7 @@
  * both ways; pointer-events are disabled when closed.
  */
 import { useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 import { X, LogOut, Lock } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import {

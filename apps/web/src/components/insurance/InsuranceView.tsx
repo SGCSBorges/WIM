@@ -8,7 +8,7 @@
  * Lazy-loaded so it stays out of the main bundle until /insurance is opened.
  */
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Umbrella, Plus, Pencil, Trash2, Check, Package } from "lucide-react";
 import { insuranceAPI } from "../../services/api";
 import type { InsurancePolicyItem } from "../../types";

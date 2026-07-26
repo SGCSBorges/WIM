@@ -17,7 +17,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router";
 import {
   Package,
   Plus,

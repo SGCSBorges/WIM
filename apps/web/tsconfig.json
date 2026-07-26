@@ -2,9 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "module": "ES2022",
+    "module": "ESNext",
     "target": "ES2022",
-    "moduleResolution": "Node",
+    // react-router v8 is ESM-only and ships an `exports` map; classic "Node"
+    // resolution can't read it. "bundler" is what Vite actually does anyway.
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {},
     "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]

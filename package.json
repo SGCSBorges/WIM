@@ -21,8 +21,8 @@
     "docs:uml": "bash scripts/render-uml.sh"
   },
   "overrides": {
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "qs": "6.15.2"
   }
 }

@@ -19,7 +19,7 @@
  * title; unknown routes fall back to it alone.
  */
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigationType } from "react-router-dom";
+import { useLocation, useNavigationType } from "react-router";
 import { useI18n } from "../../i18n/i18n";
 
 const APP_NAME = "WIM";

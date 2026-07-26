@@ -11,7 +11,7 @@ export default defineConfig({
         // per-route lazy chunks stay small. Long cache lifetimes for
         // `vendor`, route bundles re-fetch only when their own code changes.
         manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"],
+          vendor: ["react", "react-dom", "react-router"],
           "date-fns": ["date-fns"],
           zod: ["zod"],
         },

@@ -36,7 +36,7 @@ vi.mock("../../services/api", () => ({
   authAPI: { getRole: () => null },
 }));
 
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import Dashboard from "../../components/dashboard/Dashboard";
 import { statisticsAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";

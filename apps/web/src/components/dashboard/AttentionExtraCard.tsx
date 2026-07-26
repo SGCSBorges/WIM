@@ -7,7 +7,7 @@
  * slate. Mirrors the self-contained BudgetCard pattern (no backend changes).
  */
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { HandHelping, Umbrella, Wrench, ArrowRight } from "lucide-react";
 import { loansAPI, insuranceAPI, serviceRecordsAPI } from "../../services/api";
 import type {

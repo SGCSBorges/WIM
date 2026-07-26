@@ -14,7 +14,7 @@ import {
   Umbrella,
   Bell,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { calendarAPI } from "../../services/api";
 import type { AgendaEvent } from "@wim/types";
 import { useI18n } from "../../i18n/i18n";

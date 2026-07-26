@@ -28,7 +28,7 @@ import {
   Navigate,
   useNavigate,
   useLocation,
-} from "react-router-dom";
+} from "react-router";
 import {
   Loader2,
   AlertTriangle,

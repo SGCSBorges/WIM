@@ -7,7 +7,7 @@
  * mesh, so members already see each other's inventories.
  */
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Home } from "lucide-react";
 import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

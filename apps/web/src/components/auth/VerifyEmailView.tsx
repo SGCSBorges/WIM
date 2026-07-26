@@ -5,7 +5,7 @@
  * Consumes the token once on mount and reports the outcome.
  */
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Loader2, MailCheck, MailX } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

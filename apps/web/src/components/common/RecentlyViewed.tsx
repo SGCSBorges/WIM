@@ -6,7 +6,7 @@
  * re-entered (the "/" route remounts on navigation).
  */
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Clock, Package } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { getRecentlyViewed } from "../../utils/recentlyViewed";

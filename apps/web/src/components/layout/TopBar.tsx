@@ -5,7 +5,7 @@
  * Sidebar (desktop) and MobileDrawer (mobile).
  */
 import { forwardRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 import { Menu, X, User, LogOut, Search, Plus } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { useFeature } from "../../features/features";

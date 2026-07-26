@@ -8,7 +8,7 @@
  * surfaces as a clear error here.
  */
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 import { Inbox, CheckCircle2 } from "lucide-react";
 import { sharesAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

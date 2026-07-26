@@ -12,7 +12,7 @@ loads into every new Claude Code session.
   force-logout). Helmet + CORS + rate limiting in `config/security.ts`.
   Audit logs via `auditAction` (typed action union — extend when adding new
   ones). Background workers in `src/jobs/workers.ts`.
-- **Web** (`apps/web`): Vite + React 19 + React Router v7 + Tailwind v3 +
+- **Web** (`apps/web`): Vite + React 19 + React Router v8 + Tailwind v3 +
   react-hook-form + Zod (resolvers v5 for Zod v4 compatibility). Route-level
   code splitting with `React.lazy`. PWA-installable (manifest + service
   worker + sharp-generated icons).
@@ -1252,6 +1252,14 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   the install into a workspace `node_modules` and break root resolution —
   if `npm ci` then can't find the module at runtime, ensure the root
   `node_modules/<pkg>` lockfile entry still exists.
+- **A widened semver range alone won't move the lockfile.** Bumping
+  `"react-router-dom": "^7.16.0"` → `"^7.18.1"` and re-running `npm install`
+  is a no-op: npm reuses the already-satisfying tree, and `npm install
+  pkg@version` even rewrites your range back down to what's installed.
+  Cache clearing doesn't help. Delete the package's `packages[…]` entries
+  from `package-lock.json` first, then `npm install` — npm re-resolves them
+  against the registry. Verify with `node -p "require('pkg/package.json')
+  .version"`, not by reading `package.json`.
 
 ## Open items / temporary stuff
 

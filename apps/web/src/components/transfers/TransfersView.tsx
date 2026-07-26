@@ -15,7 +15,7 @@ import {
   Segmented,
   type BadgeTone,
 } from "../ui";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import type { ExtrasKey } from "../../i18n/translations.extras";
 
 type TransferAction = { id: number; kind: "accept" | "reject" | "revoke" };

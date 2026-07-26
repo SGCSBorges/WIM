@@ -4,7 +4,7 @@
  * aria-current="page".
  */
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { ChevronRight } from "lucide-react";
 
 export interface Crumb {

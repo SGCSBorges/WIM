@@ -5,7 +5,7 @@
  * this section only wires coverage to/from policies that already exist.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Umbrella, X, Plus } from "lucide-react";
 import { insuranceAPI } from "../../services/api";
 import type { InsurancePolicyItem } from "../../types";

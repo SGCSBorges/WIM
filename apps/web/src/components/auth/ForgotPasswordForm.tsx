@@ -5,7 +5,7 @@
  * confirmation, even when the email isn't registered.
  */
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { KeyRound, MailCheck, ArrowLeft } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

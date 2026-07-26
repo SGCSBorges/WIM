@@ -5,7 +5,7 @@
  * label so the signal isn't color-only.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import {
   ShieldCheck,
   RotateCw,

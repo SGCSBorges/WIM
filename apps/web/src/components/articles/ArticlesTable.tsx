@@ -5,7 +5,7 @@
  * and a dropped wire is a compile error. The mobile card list + bulk-selection
  * state still live in ArticlesList.
  */
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Pencil, Trash2, Globe, Star } from "lucide-react";
 import type { FetchedArticle, Article } from "../../types";
 import { useI18n } from "../../i18n/i18n";

@@ -10,7 +10,7 @@ vi.mock("../../services/api", () => ({
   },
 }));
 
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import LoginForm from "../../components/auth/LoginForm";
 import { authAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";

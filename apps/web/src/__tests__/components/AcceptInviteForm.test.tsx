@@ -6,7 +6,7 @@ vi.mock("../../services/api", () => ({
   sharesAPI: { acceptInvite: vi.fn() },
 }));
 
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import AcceptInviteForm from "../../components/sharing/AcceptInviteForm";
 import { sharesAPI } from "../../services/api";
 import { I18nProvider } from "../../i18n/i18n";

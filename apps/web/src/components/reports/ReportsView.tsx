@@ -9,7 +9,7 @@
  * user actually opens /reports.
  */
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { Check, Download, FileText } from "lucide-react";
 import { locationsAPI, reportsAPI, tagsAPI } from "../../services/api";
 import { ARTICLE_STATUSES, type ArticleStatus } from "@wim/types";

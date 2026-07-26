@@ -23,7 +23,7 @@ npm workspaces, trois paquets :
 - **`apps/api`** — Node 22, Express + TypeScript, Prisma sur PostgreSQL, BullMQ
   sur Redis, Stripe, JWT dans un cookie httpOnly. Point d'entrée
   `src/index.ts` ; l'app est assemblée dans `src/app.ts`.
-- **`apps/web`** — Vite + React 19 + React Router v7 + Tailwind. Installable en
+- **`apps/web`** — Vite + React 19 + React Router v8 + Tailwind. Installable en
   PWA. Point d'entrée `src/main.tsx` ; routes dans `src/App.tsx` ; le client
   API est `src/services/api.ts`.
 - **`packages/types`** — interfaces partagées sans framework (ni Zod, ni Prisma,

@@ -6,7 +6,7 @@
  * user is invalidated; the UI redirects to login.
  */
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Lock, CheckCircle2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { authAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";

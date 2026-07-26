@@ -3,7 +3,7 @@
  * icon-rail; the collapsed/expanded choice is owned by AppShell (persisted in
  * localStorage). Active section is derived from the current route.
  */
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 import { PanelLeftClose, PanelLeft, Lock } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import {

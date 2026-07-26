@@ -14,7 +14,7 @@ WIM is a full-stack SaaS application for tracking physical assets, their warrant
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19 · TypeScript · Vite · Tailwind CSS · React Router v7 · react-hook-form + Zod |
+| Frontend | React 19 · TypeScript · Vite · Tailwind CSS · React Router v8 · react-hook-form + Zod |
 | Backend | Node.js 22 · Express · TypeScript · Prisma ORM |
 | Database | PostgreSQL |
 | Queue | BullMQ + Redis |

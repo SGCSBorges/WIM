@@ -6,7 +6,7 @@
  * adapt across light/dark/ocean/cyber.
  */
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import {
   Wallet,
   TrendingDown,
