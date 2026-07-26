@@ -4,7 +4,7 @@
  * a "lend out" form, and past loan history. Reuses the loans API; lending an
  * item sets it LOANED and (with a due date) schedules a reminder server-side.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { HandHelping, Check, Trash2, Plus, CalendarClock } from "lucide-react";
 import { loansAPI } from "../../services/api";
 import type { LoanItem } from "../../types";
@@ -47,15 +47,24 @@ export default function LoanSection({
   const [note, setNote] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // Sibling links (bundles, "bundled with") navigate article → article without
+  // unmounting this section, so a slow response for the previous article must
+  // not overwrite the newer one. Same request-sequence guard as ArticleDetail.
+  const requestSeqRef = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     setLoading(true);
     try {
-      setLoans(await loansAPI.list({ articleId }));
+      const items = await loansAPI.list({ articleId });
+      if (seq !== requestSeqRef.current) return;
+      setLoans(items);
     } catch {
       // Section self-hides its content on error; leave the list empty.
+      if (seq !== requestSeqRef.current) return;
       setLoans([]);
     } finally {
-      setLoading(false);
+      if (seq === requestSeqRef.current) setLoading(false);
     }
   }, [articleId]);
 

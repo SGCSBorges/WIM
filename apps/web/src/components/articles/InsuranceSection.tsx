@@ -4,7 +4,7 @@
  * policy from a dropdown. Creating a new policy lives on the /insurance page —
  * this section only wires coverage to/from policies that already exist.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Umbrella, X, Plus } from "lucide-react";
 import { insuranceAPI } from "../../services/api";
@@ -28,21 +28,28 @@ export default function InsuranceSection({ articleId }: { articleId: number }) {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
 
+  // Article → article navigation (bundle siblings) reuses this section, so a
+  // slow response for the previous article must not overwrite the newer one.
+  const requestSeqRef = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     setLoading(true);
     try {
       const [mine, every] = await Promise.all([
         insuranceAPI.list({ articleId }),
         insuranceAPI.list(),
       ]);
+      if (seq !== requestSeqRef.current) return;
       setCovering(mine);
       setAll(every);
       setFailed(false);
     } catch {
       // Older backend without the insurance endpoint — hide the section.
+      if (seq !== requestSeqRef.current) return;
       setFailed(true);
     } finally {
-      setLoading(false);
+      if (seq === requestSeqRef.current) setLoading(false);
     }
   }, [articleId]);
 

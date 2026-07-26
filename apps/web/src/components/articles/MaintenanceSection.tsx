@@ -4,7 +4,7 @@
  * newest-first history. An optional next-service date schedules a reminder
  * server-side and drives a "next service due" badge on the most recent entry.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Wrench, Plus, Trash2, Check, CalendarClock } from "lucide-react";
 import { serviceRecordsAPI } from "../../services/api";
 import type { ServiceRecordItem } from "../../types";
@@ -44,14 +44,22 @@ export default function MaintenanceSection({
   const [intervalMonths, setIntervalMonths] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // Article → article navigation (bundle siblings) reuses this section, so a
+  // slow response for the previous article must not overwrite the newer one.
+  const requestSeqRef = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     setLoading(true);
     try {
-      setRecords(await serviceRecordsAPI.list(articleId));
+      const items = await serviceRecordsAPI.list(articleId);
+      if (seq !== requestSeqRef.current) return;
+      setRecords(items);
     } catch {
+      if (seq !== requestSeqRef.current) return;
       setRecords([]);
     } finally {
-      setLoading(false);
+      if (seq === requestSeqRef.current) setLoading(false);
     }
   }, [articleId]);
 
