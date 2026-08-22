@@ -41,5 +41,5 @@ Thumbs.db
 # Local
 commit.ps1
 
-# Claude Code agent worktrees (temporary isolated working copies)
+# Agent worktrees (temporary isolated working copies)
 .claude/worktrees/

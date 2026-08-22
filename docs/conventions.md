@@ -21,13 +21,14 @@ open items that the README deliberately doesn't repeat.
 
 ## Git commit rules
 
-- Never add "Co-Authored-By" or "Generated with Claude Code" to commit messages.
-- Always use the default system `user.name` and `user.email` from git config.
+Commits carry no generated-by or co-author trailers. Author identity comes
+from the system `user.name` / `user.email` in git config; nothing overrides
+them.
 
 ## Branching & deploy
 
-- **Always work on the `dev` branch. Never create custom branches — all commits go to `dev`.**
-- Develop on **`dev`**. Push to dev triggers CI and Render redeploys.
+- **All work lands on `dev`.** The repo has no feature branches and no PR
+  flow; a push to `dev` triggers CI and a Render redeploy.
 - Render hosts two services:
   - `wimapi.onrender.com` — API service. `render-build:api` runs `npm ci
     --include=optional` then the API's `render-build` (`prisma generate &&
@@ -120,8 +121,8 @@ npm --workspace apps/web run test:e2e
 - **Theming**: CSS variables in `apps/web/src/index.css`, five themes
   (`light` / `dark` / `ocean` / `cyber` / `sunset`) toggled via `data-theme` on
   `<html>`. Brand palette comes from the WIM shield logo (navy primary +
-  orange accent). Don't hardcode Tailwind colors on shared components —
-  use `.ui-*` utility classes (`ui-card`, `ui-btn-primary`,
+  orange accent). Shared components take their colors from `.ui-*` utility
+  classes (`ui-card`, `ui-btn-primary`,
   `ui-badge-power`, etc.). A Tailwind bridge in `tailwind.config.js` maps
   semantic tokens (`bg-surface`, `text-muted`, `border-line`,
   `bg-primary text-primary-contrast`, etc.) onto those CSS vars so
@@ -214,9 +215,9 @@ npm --workspace apps/web run test:e2e
   `apps/api/src/utils/http-error.ts`); the global error middleware
   serializes the `status` field. Frontend's `getErrorMessage(err,
   fallback)` reads `err.message` or falls back.
-- **Don't introduce email enumeration**: helpers that look up a user by
-  email should return the same error for "not found" vs "found but
-  wrong role" (see `ShareService.createInvite`).
+- **No email enumeration**: helpers that look up a user by email return
+  the same error for "not found" as for "found but wrong role" (see
+  `ShareService.createInvite`).
 - **Status transitions are atomic `updateMany` with the precondition in
   the WHERE clause** (`status: "PENDING"`, `active: true`,
   `expiresAt: { gt: now }`), checking `count === 0` — never
@@ -229,20 +230,18 @@ npm --workspace apps/web run test:e2e
   snapshot taken before `$transaction` is stale by definition — the
   admin last-admin guards re-fetch the target's role inside the tx and
   keep the outer read only for audit metadata.
-- **Timeout racing**: use `utils/with-timeout.ts` (`withTimeout(p, ms,
-  message)`) — it cancels the timer when the promise settles. Don't
-  hand-roll `Promise.race` + `setTimeout` copies.
-- **Don't add error handling, fallbacks, or comments for impossible
-  cases.** Only at system boundaries.
-- **Comments**: describe *why*, not *what*. Skip them entirely when the
-  name says enough.
-- **Always edit existing files** rather than creating new ones unless
-  the new file is genuinely needed.
+- **Timeout racing** goes through `utils/with-timeout.ts` (`withTimeout(p,
+  ms, message)`), which cancels the timer when the promise settles; a
+  hand-rolled `Promise.race` + `setTimeout` leaves it running.
+- **Impossible-case branches are omitted.** Error handling and fallbacks
+  live at system boundaries only.
+- **Comments** describe *why*, not *what*, and are left out entirely where
+  the name already says enough.
 
 ## Accessibility & UX conventions
 
-These patterns are established throughout the codebase. Apply them
-consistently when adding or editing any frontend component.
+These patterns are established throughout the frontend, and components
+follow them consistently.
 
 ### ARIA roles on dynamic messages
 
@@ -260,7 +259,7 @@ consistently when adding or editing any frontend component.
 
 ### Input attributes
 
-Always set these on every text `<input>` / `<Input>`:
+Every text `<input>` / `<Input>` carries these:
 
 | Context | `inputMode` | `autoComplete` | `autoCapitalize` | `spellCheck` |
 |---|---|---|---|---|
@@ -365,10 +364,10 @@ input becomes unusable at 500–2000 characters.
 
 ### Segmented for mutually-exclusive view toggles
 
-Use the `<Segmented>` component (which implements `role="radiogroup"` +
-`role="radio"` with roving tabindex and Arrow/Home/End keyboard nav)
-for any filter that switches between a fixed set of mutually-exclusive
-views. Don't reach for plain `<button>` groups for this pattern.
+Filters that switch between a fixed set of mutually-exclusive views use the
+`<Segmented>` component, which implements `role="radiogroup"` + `role="radio"`
+with roving tabindex and Arrow/Home/End keyboard nav. A plain `<button>` group
+carries none of that semantics.
 
 ### CSV parser — quote-open only at field start
 
@@ -837,7 +836,8 @@ unchanged when `User.totpEnabled = false`.
   Denylist TTL on revoke is always the JWT max lifetime (7d):
   `UserSession` doesn't store each token's own `exp`, and using the
   *caller's* exp once let a revoked session reactivate when the
-  caller's token expired first. Don't "optimize" this back.
+  caller's token expired first — the fixed TTL is deliberate, not an
+  oversight.
   **Identity changes invalidate sessions**: email change (self-serve
   `PUT /profile/me/email` or admin `PATCH /admin/users/:id`) bumps
   `tokenVersion` exactly like a password change; the self-serve route
@@ -1234,9 +1234,9 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   proxy above) — `new URL(\`${API_BASE_URL}/...\`)` therefore **throws**
   ("Failed to construct 'URL'") unless given a base. Use the `apiUrl(path)`
   helper in `apps/web/src/services/api.ts` (anchors on
-  `window.location.origin`; absolute bases ignore it) whenever an endpoint
-  needs `URL`/`searchParams` — never construct `new URL` from `API_BASE_URL`
-  directly. This broke every list view in production once.
+  `window.location.origin`; absolute bases ignore it) covers every endpoint
+  that needs `URL`/`searchParams`. Constructing `new URL` from
+  `API_BASE_URL` directly broke every list view in production once.
 - **Vite hashes asset filenames**, so a new deploy invalidates old CSS
   references in the SW cache automatically. `index.html` is fetched
   network-first so users get the fresh hash.
@@ -1246,8 +1246,8 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   `swagger-ui-express` / `supertest`). The gate is **production-only** —
   remaining dev-tooling advisories (esbuild/vite/vitest) are accepted
   because that stack never ships and the fix is a breaking Vite major.
-  When an audit finding appears, prefer adding/bumping an override over
-  loosening the gate. Caveat: an override on a package that's also a *peer
+  An audit finding is resolved by adding or bumping an override rather than
+  by loosening the gate. Caveat: an override on a package that's also a *peer
   dep* of another (e.g. `express` under `swagger-ui-express`) can relocate
   the install into a workspace `node_modules` and break root resolution —
   if `npm ci` then can't find the module at runtime, ensure the root
@@ -1255,11 +1255,15 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 - **A widened semver range alone won't move the lockfile.** Bumping
   `"react-router-dom": "^7.16.0"` → `"^7.18.1"` and re-running `npm install`
   is a no-op: npm reuses the already-satisfying tree, and `npm install
-  pkg@version` even rewrites your range back down to what's installed.
-  Cache clearing doesn't help. Delete the package's `packages[…]` entries
-  from `package-lock.json` first, then `npm install` — npm re-resolves them
-  against the registry. Verify with `node -p "require('pkg/package.json')
-  .version"`, not by reading `package.json`.
+  pkg@version` rewrites the range back down to what is installed. Cache
+  clearing doesn't help — the entry has to be deleted from
+  `package-lock.json` before `npm install` will re-resolve it against the
+  registry. For a **transitive-only** package, deleting its entry alone makes
+  npm prune it rather than re-resolve, leaving the parent with a dependency
+  in neither the lockfile nor `node_modules`; the parent's entry has to go
+  too. That is how `ip-address` was bumped, which also carried
+  `express-rate-limit` 8.5.2 → 8.6.2. The check is `node -p
+  "require('pkg/package.json').version"`, not the range in `package.json`.
 
 ## Open items / temporary stuff
 
