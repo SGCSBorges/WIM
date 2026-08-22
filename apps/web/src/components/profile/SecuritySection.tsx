@@ -1,8 +1,9 @@
 /**
  * Profile → Security section.
  *
- * Two panels — both safe to render no-op if the backend is older than
- * round 3 (fetch failures hide the panel quietly):
+ * Two panels — both safe to render no-op against a backend that predates
+ * the sessions / login-history endpoints (fetch failures hide the panel
+ * quietly):
  *
  *   • Active sessions — pulled from `/profile/me/sessions`. Each row shows
  *     the device label, IP, and "active N minutes ago", with a Revoke

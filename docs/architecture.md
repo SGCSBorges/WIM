@@ -5,7 +5,7 @@
 A map of how the pieces fit together. This is the "how it all flows" view —
 the canonical detail lives elsewhere and is linked from here:
 
-- [`CLAUDE.md`](../CLAUDE.md) — conventions, deploy quirks, the sharing model
+- [`conventions.md`](./conventions.md) — conventions, deploy quirks, the sharing model
   and billing in depth (canonical when this doc and it disagree).
 - [`docs/api.md`](./api.md) — the auth model, the attachments gotcha, and a
   triage section for common confusions.
@@ -86,8 +86,8 @@ This is the spine of the product (see UML `02` activity and `04` sequence):
    load context → **push (awaited; throws on hard failure so BullMQ retries)**
    → **email (best-effort; never throws)** → **mark the alert `SENT`**. This
    order matters — a failed push must not mark the alert sent and lose the
-   notification (fixed in round 10). Recurring custom alerts reschedule the
-   next occurrence here too.
+   notification. Recurring custom alerts reschedule the next occurrence here
+   too.
 
 Push needs VAPID keys and email needs `RESEND_API_KEY` + `MAIL_FROM`; without
 them each leg is a logged no-op, and the rest of the flow is unaffected.
@@ -114,7 +114,7 @@ Dashboard "Needs attention" panel always agree on what "expired" or
 Both require **share capability** (POWER_USER, or ADMIN which inherits it
 without a subscription — `requireRole` runs on the `USER < POWER_USER < ADMIN`
 hierarchy in `modules/common/roles.ts`). Canonical detail is in the "Sharing
-model" section of [`CLAUDE.md`](../CLAUDE.md). See UML `06` for the per-user
+model" section of [`conventions.md`](./conventions.md). See UML `06` for the per-user
 sequence.
 
 - **Public** — `Article.sharedWithPowerUsers` (a bool). Always read-only,
@@ -146,7 +146,7 @@ UML `10`.
 
 Permanent transfer between two share-capable accounts (POWER_USER or ADMIN),
 detailed in the "Article ownership transfer" section of
-[`CLAUDE.md`](../CLAUDE.md). Two flows:
+[`conventions.md`](./conventions.md). Two flows:
 
 - **PUSH** — owner sends an offer to a specific email. Recipient accepts from
   their `/transfers` page.

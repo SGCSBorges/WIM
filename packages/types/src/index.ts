@@ -675,9 +675,8 @@ export interface DashboardStatistics {
     byTag: Array<{ tagId: number; name: string; value: number }>;
   };
   // Populated by F3 dashboard forecasting; always present in the API
-  // response. Round 10 promoted these to required so the API + shared type
-  // agree (the API used to declare them required locally; the local interface
-  // was dropped in T1).
+  // response. Required so the API and this shared type agree — the API's
+  // local duplicate of this interface was removed.
   warrantyExpirationsByMonth: MonthlyBucket[];
   articlesAddedByMonth: MonthlyBucket[];
 }

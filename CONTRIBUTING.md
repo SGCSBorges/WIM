@@ -2,8 +2,8 @@
 
 Thanks for taking the time to contribute. This file is the short
 operational guide — for the architectural map (deploy quirks, the sharing
-model, billing, conventions) read [`CLAUDE.md`](./CLAUDE.md) at the repo
-root. Both should agree; if you find them disagreeing, [`CLAUDE.md`](./CLAUDE.md)
+model, billing, conventions) read [`docs/conventions.md`](./docs/conventions.md).
+Both should agree; if you find them disagreeing, [`docs/conventions.md`](./docs/conventions.md)
 is canonical and this file should be updated.
 
 ## Prerequisites

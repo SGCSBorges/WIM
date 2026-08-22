@@ -718,7 +718,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         // native HTML5 constraints (required name/model, type="url" image,
         // min/max price/depreciation/duration) fire first and block submit
         // with an un-localized native bubble, preempting our own formError
-        // messages. See CLAUDE.md "Manual validateForm() ⇒ noValidate".
+        // messages. See docs/conventions.md "Manual validateForm() ⇒ noValidate".
         noValidate
       >
         <Field label={t("articleForm.name")} htmlFor="articleNom" required>

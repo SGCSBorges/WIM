@@ -7,8 +7,8 @@ import { prisma } from "../libs/prisma";
 import { logger } from "../config/logger";
 import { currentValue } from "../modules/common/depreciation";
 // Single source of truth — the local interface that used to live here was
-// dropped in round 10 (T1) so the API and web client can't drift on
-// dashboard-statistics shape.
+// dropped so the API and web client can't drift on dashboard-statistics
+// shape.
 import type {
   DashboardStatistics,
   PortfolioAnalytics,

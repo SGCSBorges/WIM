@@ -169,8 +169,8 @@ La machine à états `AlerteStatus` (`SCHEDULED → SENT | CANCELLED | FAILED`).
 Le `snooze` reboucle sur `SCHEDULED` en déplaçant `alerteDate` ; `CANCELLED`
 correspond à une suppression de garantie/article ou à une annulation
 utilisateur ; `FAILED` n'arrive qu'après épuisement des tentatives BullMQ. La
-note insiste sur l'invariant `markSent` **après** push réussi (corrigé au
-round 10) et la replanification des alertes custom récurrentes.
+note insiste sur l'invariant `markSent` **après** push réussi et la
+replanification des alertes custom récurrentes.
 
 ### `09-sequence-auth.puml` — Authentification & session
 

@@ -90,7 +90,7 @@ describe("<AdminDbBackup />", () => {
 
     // A reflexive Enter after typing the password must not wipe the DB —
     // the danger button has to be clicked deliberately (see ConfirmDialog
-    // danger-tone convention in CLAUDE.md).
+    // danger-tone convention in docs/conventions.md).
     expect(importDb).not.toHaveBeenCalled();
   });
 

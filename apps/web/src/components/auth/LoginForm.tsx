@@ -3,7 +3,7 @@
  * brand panel (gradient, value props) on large screens + the credential form.
  * Uses react-hook-form + Zod for validation matching the API's password rules.
  * Includes "Forgot password" + the temporary "TestAdmin" bootstrap entry
- * point (see CLAUDE.md "Open items").
+ * point (see docs/conventions.md "Open items").
  */
 import { useCallback, useState } from "react";
 import { Link } from "react-router";

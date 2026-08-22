@@ -20,8 +20,8 @@ FAILED --> [*]
 note as N1
 enum AlerteStatus (prisma) = enum AlertStatus (@wim/types).
 markSent n'intervient qu'APRÈS un push réussi : un push en
-échec laisse l'alerte SCHEDULED pour que BullMQ rejoue le job
-(corrigé au round 10). Les alertes CUSTOM récurrentes
-replanifient une nouvelle occurrence après SENT.
+échec laisse l'alerte SCHEDULED pour que BullMQ rejoue le job.
+Les alertes CUSTOM récurrentes replanifient une nouvelle
+occurrence après SENT.
 end note
 @enduml

@@ -14,7 +14,7 @@ français.
 | **Architecture** | [`architecture.md`](./architecture.md) | [`architecture.fr.md`](./architecture.fr.md) | Cycle de vie d'une requête, flux article→garantie→rappel, partage, jobs |
 | **API reference** | [`api.md`](./api.md) | — (voir Swagger) | Modèle d'auth, sections de triage, référence des routes |
 | **Data dictionary · Dictionnaire de données** | [`data-dictionary.md`](./data-dictionary.md) | [`data-dictionary.fr.md`](./data-dictionary.fr.md) | Référence champ par champ des 36 tables + 16 énumérations |
-| **Internal context · Contexte interne** | [`../CLAUDE.md`](../CLAUDE.md) | — | Conventions, particularités de déploiement, source canonique |
+| **Internal context · Contexte interne** | [`conventions.md`](./conventions.md) | — | Conventions, particularités de déploiement, source canonique |
 | **Contributing · Contribuer** | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | — | Flux de travail, tests, style |
 
 > The **live Swagger UI** at `GET /api/docs` (raw spec at `GET /api/openapi.json`)

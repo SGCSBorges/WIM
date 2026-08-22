@@ -466,8 +466,8 @@ model Article {
   @@index([articleNom(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_articleNom_trgm_idx")
   @@index([articleModele(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_articleModele_trgm_idx")
   @@index([articleDescription(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_articleDescription_trgm_idx")
-  // serialNumber + brand joined the `q` substring OR in round 8 (F1) but had
-  // no trigram index, so those terms fell back to a sequential scan.
+  // serialNumber + brand are part of the `q` substring OR; without a trigram
+  // index those terms fell back to a sequential scan.
   @@index([serialNumber(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_serialNumber_trgm_idx")
   @@index([brand(ops: raw("gin_trgm_ops"))], type: Gin, map: "Article_brand_trgm_idx")
 }

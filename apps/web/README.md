@@ -3,7 +3,7 @@
 The WIM frontend — Vite + React 19 + React Router v7 + Tailwind v3,
 react-hook-form + Zod (resolvers v5), PWA-installable.
 
-See [`CLAUDE.md`](../../CLAUDE.md) at the repo root for the architectural
+See [`docs/conventions.md`](../../docs/conventions.md) for the architectural
 context (theming, i18n, sharing model). This README is the per-workspace
 operational guide.
 

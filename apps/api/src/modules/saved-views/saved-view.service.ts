@@ -3,7 +3,7 @@
  * the `query` field holds a URL search-string the UI re-applies via
  * setSearchParams. Owner-scoped CRUD; nothing fancier.
  *
- * Round 10 adds two opt-in extras: one view can be the owner's default
+ * Two opt-in extras: one view can be the owner's default
  * (auto-applied on the Articles page), and a view can be shared read-only
  * with the owner's household members.
  */

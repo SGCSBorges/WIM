@@ -3,7 +3,7 @@
 The WIM backend — Node 22, Express, TypeScript, Prisma over PostgreSQL,
 BullMQ over Redis, Stripe billing, JWT (httpOnly cookies).
 
-See [`CLAUDE.md`](../../CLAUDE.md) at the repo root for the high-level
+See [`docs/conventions.md`](../../docs/conventions.md) for the high-level
 architecture (auth model, sharing flavors, billing, deploy quirks). This
 README is the per-workspace operational guide.
 

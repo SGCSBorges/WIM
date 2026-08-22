@@ -6,7 +6,7 @@
 Une carte de la façon dont les pièces s'assemblent. C'est la vue « comment tout
 circule » — le détail canonique vit ailleurs et est référencé ici :
 
-- [`CLAUDE.md`](../CLAUDE.md) — conventions, particularités de déploiement, le
+- [`conventions.md`](./conventions.md) — conventions, particularités de déploiement, le
   modèle de partage et la facturation en profondeur (canonique en cas de
   désaccord avec ce document).
 - [`docs/api.md`](./api.md) — le modèle d'authentification, le piège des pièces
@@ -117,7 +117,7 @@ alignée sur le rappel J-30).
 Les deux exigent la **capacité de partage** (POWER_USER, ou ADMIN qui en hérite
 sans abonnement — `requireRole` s'appuie sur la hiérarchie
 `USER < POWER_USER < ADMIN` dans `modules/common/roles.ts`). Le détail canonique
-est dans la section « Sharing model » de [`CLAUDE.md`](../CLAUDE.md). Voir l'UML
+est dans la section « Sharing model » de [`conventions.md`](./conventions.md). Voir l'UML
 `06` pour la séquence par utilisateur.
 
 - **Public** — `Article.sharedWithPowerUsers` (un booléen). Toujours en lecture
@@ -151,7 +151,7 @@ dans l'UML `10`.
 
 Transfert permanent entre deux comptes capables de partage (POWER_USER ou
 ADMIN), détaillé dans la section « Article ownership transfer » de
-[`CLAUDE.md`](../CLAUDE.md). Deux flux :
+[`conventions.md`](./conventions.md). Deux flux :
 
 - **PUSH** — le propriétaire envoie une offre à une adresse précise. Le
   destinataire accepte depuis sa page `/transfers`.

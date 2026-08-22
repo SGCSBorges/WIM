@@ -10,7 +10,7 @@
  *
  * **Dev only.** The credentials above are well-known — never run this against
  * a production database. In prod the first admin is created through the
- * temporary `/api/auth/bootstrap-admin` flow (see CLAUDE.md "Open items"),
+ * temporary `/api/auth/bootstrap-admin` flow (see docs/conventions.md "Open items"),
  * not this seed.
  *
  * Run: `npm --workspace apps/api run prisma:seed` (wired via the `prisma.seed`

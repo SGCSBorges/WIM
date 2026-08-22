@@ -1,7 +1,7 @@
 # WIM — Warranty & Inventory Manager
 
-Quick orientation for a fresh chat. This file lives at the repo root so it
-loads into every new Claude Code session.
+Internal engineering notes: conventions, deploy quirks, known gotchas and
+open items that the README deliberately doesn't repeat.
 
 ## Stack
 

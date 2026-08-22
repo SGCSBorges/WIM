@@ -4,7 +4,7 @@
 
 WIM is a full-stack SaaS application for tracking physical assets, their warranties, attachments, and alerts. Built with a React frontend and a Node.js/Express API backed by PostgreSQL and Redis.
 
-> **New chat?** Read [`CLAUDE.md`](./CLAUDE.md) at the repo root — it has the internal context (deploy quirks, conventions, open items) the README intentionally doesn't repeat.
+> **New to the project?** Read [`docs/conventions.md`](./docs/conventions.md) — it has the internal context (deploy quirks, conventions, open items) the README intentionally doesn't repeat.
 >
 > **How it fits together?** [`docs/architecture.md`](./docs/architecture.md) maps the request lifecycle, the article→warranty→reminder data flow, the two sharing models, and the jobs pipeline.
 
@@ -35,7 +35,6 @@ WIM/
 ├── packages/
 │   └── types/              # Plain TS interfaces shared by api + web
 ├── render.yaml             # Render Blueprint for the static web site
-├── CLAUDE.md               # Context primer for new chats
 └── .github/workflows/ci.yml
 ```
 
@@ -285,7 +284,7 @@ Per-user inventory sharing between **share-capable** users. Sharing is the POWER
 
 ### Transfers — `/api/articles/transfers` (POWER_USER)
 
-Permanent ownership transfer between Power Users. See [`docs/api.md`](./docs/api.md) and [`CLAUDE.md`](./CLAUDE.md) for the full lifecycle (`PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED`, 7-day expiry). Initiating endpoints are on the article resource above.
+Permanent ownership transfer between Power Users. See [`docs/api.md`](./docs/api.md) and [`docs/conventions.md`](./docs/conventions.md) for the full lifecycle (`PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED`, 7-day expiry). Initiating endpoints are on the article resource above.
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
@@ -483,7 +482,7 @@ one shared `isAllowed` helper, so they can't disagree.
 Admin-side management (set required role, issue/revoke temp grants) lives in the
 [Admin table above](#admin--apiadmin) (`/admin/features*`). For the full feature
 key list, the middleware wiring, and per-feature defaults, see the **Feature
-gating** sections of [`docs/api.md`](./docs/api.md) and [`CLAUDE.md`](./CLAUDE.md).
+gating** sections of [`docs/api.md`](./docs/api.md) and [`docs/conventions.md`](./docs/conventions.md).
 
 ---
 

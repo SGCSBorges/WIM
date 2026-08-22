@@ -185,7 +185,7 @@ ignores unknown columns so a round-trip preserves data.
 
 ## Article ownership transfer
 
-Permanent, atomic transfer of an article and all related data between two share-capable accounts. Requires POWER_USER (or ADMIN, which inherits). See `CLAUDE.md` for the full lifecycle.
+Permanent, atomic transfer of an article and all related data between two share-capable accounts. Requires POWER_USER (or ADMIN, which inherits). See [`conventions.md`](./conventions.md) for the full lifecycle.
 
 **Initiation** (mounted on `/api/articles`):
 
@@ -557,8 +557,8 @@ Admin Jobs tab (`/admin/jobs`) surfaces live queue depth + recent failures.
 - **Web**: `wim-web.onrender.com` — `apps/web`. Static site built from
   `apps/web/dist`. SPA-rewrite lives in the repo's `render.yaml`.
 
-The full env catalog lives in `apps/api/.env.example`; CLAUDE.md at the
-repo root has the canonical setup notes.
+The full env catalog lives in `apps/api/.env.example`; `conventions.md`
+has the canonical setup notes.
 
 ## Triage
 

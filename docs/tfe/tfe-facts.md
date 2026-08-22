@@ -287,7 +287,7 @@ Run **#609**, workflow `ci`, commit `de3ca09`, completed
   feature is opt-in via dashboard-only configuration. **Without S3 env
   vars, uploads are written to the local `uploads/` directory** (multer
   disk storage, `attachment.routes.ts:45`), which on Render's free tier
-  is an ephemeral disk wiped on every deploy — the README and CLAUDE.md
+  is an ephemeral disk wiped on every deploy — the README and docs/conventions.md
   therefore recommend configuring the bucket in production.
 
 ---

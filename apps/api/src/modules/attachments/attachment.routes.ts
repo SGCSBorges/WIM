@@ -2,7 +2,7 @@
  * Attachment routes — owner-scoped file CRUD. Uploads via Multer to local
  * disk (10 MB cap), `verifyFileSignature` reads magic bytes to catch
  * MIME-type spoofing, and image uploads get a thumbnail via sharp.
- * Bulk-delete (round 10) silently skips foreign ids and best-effort
+ * Bulk-delete silently skips foreign ids and best-effort
  * unlinks files via `unlinkAttachmentFiles`.
  */
 import { Router } from "express";

@@ -7,7 +7,7 @@ WIM est une application SaaS full-stack de suivi des biens physiques, de leurs
 garanties, de leurs pièces jointes et de leurs alertes. Elle repose sur un
 frontend React et une API Node.js/Express appuyée sur PostgreSQL et Redis.
 
-> **Nouveau sur le projet ?** Lisez [`CLAUDE.md`](./CLAUDE.md) à la racine — il
+> **Nouveau sur le projet ?** Lisez [`docs/conventions.md`](./docs/conventions.md) — il
 > contient le contexte interne (particularités de déploiement, conventions,
 > points ouverts) que le README ne répète pas volontairement.
 >
@@ -42,7 +42,6 @@ WIM/
 ├── packages/
 │   └── types/              # Interfaces TS partagées entre api + web
 ├── render.yaml             # Blueprint Render pour le site statique
-├── CLAUDE.md               # Contexte de départ pour les nouveaux échanges
 └── .github/workflows/ci.yml
 ```
 
