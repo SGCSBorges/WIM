@@ -192,7 +192,10 @@ l'alerte.
 
 ![Classes (modèle de données)](./03-class-diagram.svg)
 
-Le modèle complet, fidèle à `schema.prisma` (les 30 tables) ; la **référence
+Le modèle complet, fidèle à `schema.prisma` (36 modèles) : 33 sont dessinés
+comme classes, les 3 tables de jonction (`ArticleTag`, `ArticleLocation`,
+`ArticleInsurance`) étant rendues en associations M:N conformément à la
+convention de notation ci-dessus ; la **référence
 exhaustive champ-par-champ** vit dans le
 [dictionnaire de données](../data-dictionary.md). Couvre l'inventaire, les
 garanties, les alertes, le partage, le transfert et la sécurité du compte, plus
