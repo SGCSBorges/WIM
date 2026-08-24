@@ -1,0 +1,258 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="1726px" preserveAspectRatio="none" style="width:1098px;height:1726px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1098 1726" width="1098px" zoomAndPan="magnify">
+<title>WIM - Cas d'utilisation : Administration &amp; exploitation</title>
+<defs/>
+<g>
+<g class="title" data-source-line="1">
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="427.0342" x="328.8679" y="22.9951">WIM - Cas d'utilisation : Administration &amp; exploitation</text>
+</g>
+<!--cluster Administration & exploitation-->
+<g class="cluster" data-entity="Administration . exploitation" data-source-line="14" data-uid="ent0004" id="cluster_Administration . exploitation">
+<rect fill="none" height="1230" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;" width="807.02" x="285.75" y="260.3969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="234.3975" x="572.0613" y="275.392">Administration &amp; exploitation</text>
+</g>
+<!--entity UC_Users-->
+<g class="entity" data-entity="UC_Users" data-source-line="15" data-uid="ent0005" id="entity_UC_Users">
+<ellipse cx="455.7595" cy="593.3928" fill="#F9F9F9" rx="129.8295" ry="28.3659" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240.2148" x="335.6521" y="598.0412">Lister / creer / modifier un compte</text>
+</g>
+<!--entity UC_Role-->
+<g class="entity" data-entity="UC_Role" data-source-line="16" data-uid="ent0006" id="entity_UC_Role">
+<ellipse cx="455.7642" cy="681.3997" fill="#F9F9F9" rx="110.9142" ry="24.5828" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="199.8555" x="355.8365" y="686.0482">Changer le role d'un compte</text>
+</g>
+<!--entity UC_ResetPwd-->
+<g class="entity" data-entity="UC_ResetPwd" data-source-line="17" data-uid="ent0007" id="entity_UC_ResetPwd">
+<ellipse cx="455.7638" cy="774.3996" fill="#F9F9F9" rx="154.0138" ry="33.2028" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="290.8281" x="310.3498" y="779.0481">Reinitialiser le mot de passe d'un compte</text>
+</g>
+<!--entity UC_ForceLogout-->
+<g class="entity" data-entity="UC_ForceLogout" data-source-line="18" data-uid="ent0008" id="entity_UC_ForceLogout">
+<ellipse cx="455.7645" cy="871.3938" fill="#F9F9F9" rx="133.4345" ry="29.0869" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="247.8164" x="331.8563" y="876.0422">Forcer la deconnexion d'un compte</text>
+</g>
+<!--entity UC_DeleteUser-->
+<g class="entity" data-entity="UC_DeleteUser" data-source-line="19" data-uid="ent0009" id="entity_UC_DeleteUser">
+<ellipse cx="455.7582" cy="962.3985" fill="#F9F9F9" rx="122.8582" ry="26.9716" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="225.4424" x="343.037" y="967.047">Supprimer un compte (cascade)</text>
+</g>
+<!--entity UC_Inspect-->
+<g class="entity" data-entity="UC_Inspect" data-source-line="20" data-uid="ent0010" id="entity_UC_Inspect">
+<ellipse cx="455.7564" cy="1052.3961" fill="#F9F9F9" rx="130.0464" ry="28.4093" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240.6729" x="335.4199" y="1057.0446">Inspecter l'inventaire d'un compte</text>
+</g>
+<!--entity UC_Audit-->
+<g class="entity" data-entity="UC_Audit" data-source-line="21" data-uid="ent0011" id="entity_UC_Audit">
+<ellipse cx="961.1742" cy="962.3977" fill="#F9F9F9" rx="106.3042" ry="23.6608" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189.8613" x="866.2435" y="967.0462">Consulter le journal d'audit</text>
+</g>
+<!--entity UC_Flags-->
+<g class="entity" data-entity="UC_Flags" data-source-line="22" data-uid="ent0012" id="entity_UC_Flags">
+<ellipse cx="455.7606" cy="1136.395" fill="#F9F9F9" rx="89.9906" ry="20.3981" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="153.7197" x="378.9007" y="1141.0434">Regler un feature flag</text>
+</g>
+<!--entity UC_Grant-->
+<g class="entity" data-entity="UC_Grant" data-source-line="23" data-uid="ent0013" id="entity_UC_Grant">
+<ellipse cx="961.1719" cy="1394.3973" fill="#F9F9F9" rx="115.6019" ry="25.5204" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="209.9453" x="856.1992" y="1399.0457">Octroyer un acces temporaire</text>
+</g>
+<!--entity UC_Revoke-->
+<g class="entity" data-entity="UC_Revoke" data-source-line="24" data-uid="ent0014" id="entity_UC_Revoke">
+<ellipse cx="455.7586" cy="1300.4006" fill="#F9F9F9" rx="118.4686" ry="26.0937" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.084" x="347.7166" y="1305.049">Revoquer un acces temporaire</text>
+</g>
+<!--entity UC_Jobs-->
+<g class="entity" data-entity="UC_Jobs" data-source-line="25" data-uid="ent0015" id="entity_UC_Jobs">
+<ellipse cx="961.1688" cy="541.3946" fill="#F9F9F9" rx="91.2888" ry="20.6578" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="156.6523" x="882.8426" y="546.0431">Suivre les files de jobs</text>
+</g>
+<!--entity UC_Failed-->
+<g class="entity" data-entity="UC_Failed" data-source-line="26" data-uid="ent0016" id="entity_UC_Failed">
+<ellipse cx="455.7578" cy="1215.3924" fill="#F9F9F9" rx="106.6278" ry="23.7256" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="190.5654" x="360.4751" y="1220.0409">Inspecter les jobs en echec</text>
+</g>
+<!--entity UC_ExportDb-->
+<g class="entity" data-entity="UC_ExportDb" data-source-line="27" data-uid="ent0017" id="entity_UC_ExportDb">
+<ellipse cx="455.7617" cy="1382.3932" fill="#F9F9F9" rx="94.9317" ry="21.3863" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164.8213" x="373.3511" y="1387.0417">Exporter la base (JSON)</text>
+</g>
+<!--entity UC_ImportDb-->
+<g class="entity" data-entity="UC_ImportDb" data-source-line="28" data-uid="ent0018" id="entity_UC_ImportDb">
+<ellipse cx="455.756" cy="1456.3981" fill="#F9F9F9" rx="76.956" ry="17.7912" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.4434" x="394.0343" y="1461.0465">Restaurer la base</text>
+</g>
+<!--entity UC_DbStats-->
+<g class="entity" data-entity="UC_DbStats" data-source-line="29" data-uid="ent0019" id="entity_UC_DbStats">
+<ellipse cx="455.7645" cy="408.3938" fill="#F9F9F9" rx="136.1845" ry="29.6369" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="253.5996" x="328.9647" y="413.0422">Consulter les statistiques de la base</text>
+</g>
+<!--entity UC_Demo-->
+<g class="entity" data-entity="UC_Demo" data-source-line="30" data-uid="ent0020" id="entity_UC_Demo">
+<ellipse cx="455.7649" cy="501.3999" fill="#F9F9F9" rx="131.7149" ry="28.743" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="244.1934" x="333.6682" y="506.0483">Recharger le jeu de demonstration</text>
+</g>
+<!--entity UC_Purge-->
+<g class="entity" data-entity="UC_Purge" data-source-line="31" data-uid="ent0021" id="entity_UC_Purge">
+<ellipse cx="455.763" cy="319.3975" fill="#F9F9F9" rx="108.403" ry="24.0806" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.4209" x="358.5526" y="324.0459">Purger la corbeille (planifie)</text>
+</g>
+<!--entity Admin-->
+<g class="entity" data-entity="Admin" data-source-line="11" data-uid="ent0002" id="entity_Admin">
+<ellipse cx="67.9818" cy="946.5969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M67.9818,954.5969 L67.9818,981.5969 M54.9818,962.5969 L80.9818,962.5969 M67.9818,981.5969 L54.9818,996.5969 M67.9818,981.5969 L80.9818,996.5969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104.6035" x="15.68" y="1011.092">Administrateur</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89.2363" x="15.68" y="1027.3889">(role ADMIN)</text>
+</g>
+<!--entity Scheduler-->
+<g class="entity" data-entity="Scheduler" data-source-line="12" data-uid="ent0003" id="entity_Scheduler">
+<ellipse cx="67.978" cy="163.5969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M67.978,171.5969 L67.978,198.5969 M54.978,179.5969 L80.978,179.5969 M67.978,198.5969 L54.978,213.5969 M67.978,198.5969 L80.978,213.5969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.3652" x="6" y="228.092">Ordonnanceur</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="6" y="244.3889">BullMQ (systeme)</text>
+</g>
+<g class="entity" data-entity="GMN45" data-source-line="64" data-uid="ent0046" id="entity_GMN45">
+<path d="M190.96,43.2969 L190.96,189.4922 A0,0 0 0 0 190.96,189.4922 L451.76,189.4922 L455.76,295.2069 L459.76,189.4922 L720.5723,189.4922 A0,0 0 0 0 720.5723,189.4922 L720.5723,53.2969 L710.5723,43.2969
+L190.96,43.2969 A0,0 0 0 0 190.96,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M710.5723,43.2969 L710.5723,53.2969 L720.5723,53.2969 L710.5723,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="92.0918" x="196.96" y="60.3638">Le role ADMIN</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="43.9702" x="293.1841" y="60.3638">herite</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="364.2856" x="341.2867" y="60.3638">des options Power User sans abonnement. Deux gardes</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="442.2031" x="196.96" y="75.4966">structurent ce paquetage : le dernier administrateur ne peut etre ni</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="232.8574" x="196.96" y="90.6294">retrograde ni supprime (verification</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="183.3584" x="433.9497" y="90.6294">relue dans la transaction</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.7432" x="617.3081" y="90.6294">, un</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="440.2544" x="196.96" y="105.7622">instantane pris avant etant perime par definition), et les operations</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="479.5591" x="196.96" y="120.895">destructrices passent par un limiteur dedie (10 par heure, clef derivee
+du</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="452.5815" x="196.96" y="136.0278">jeton d'authentification hache avec repli sur l'adresse IP). Les feature</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="404.2378" x="196.96" y="151.1606">flags permettent d'abaisser ou de relever le niveau requis par</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="478.1245" x="196.96" y="166.2935">fonctionnalite sans redeploiement, et les octrois temporaires portent une</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115.1719" x="196.96" y="181.4263">date d'expiration.</text>
+</g>
+<!--link Admin to UC_Users-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Users" data-source-line="34" data-uid="lnk22" id="link_Admin_UC_Users">
+<path d="M71.11,937.8969 C77.23,862.7769 100.74,715.4669 190.96,639.3969 C228.27,607.9269 273.3913,595.1391 320.6713,590.2891" fill="none" id="Admin-to-UC_Users" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="326.64,589.6769,317.2788,586.6162,321.6661,590.1871,318.0952,594.5744,326.64,589.6769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Role-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Role" data-source-line="35" data-uid="lnk23" id="link_Admin_UC_Role">
+<path d="M77,937.8469 C89.9,878.1069 121.25,775.9169 190.96,723.3969 C235.12,690.1069 289.398,679.037 341.178,676.357" fill="none" id="Admin-to-UC_Role" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="347.17,676.0469,337.9753,672.5174,342.1767,676.3053,338.3888,680.5067,347.17,676.0469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_ResetPwd-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_ResetPwd" data-source-line="36" data-uid="lnk24" id="link_Admin_UC_ResetPwd">
+<path d="M92.1,937.8669 C112.85,901.1269 146.83,851.6569 190.96,824.3969 C225.46,803.0769 261.0799,791.567 300.8599,784.217" fill="none" id="Admin-to-UC_ResetPwd" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="306.76,783.1269,297.183,780.8287,301.8432,784.0353,298.6366,788.6955,306.76,783.1269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_ForceLogout-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_ForceLogout" data-source-line="37" data-uid="lnk25" id="link_Admin_UC_ForceLogout">
+<path d="M120.72,951.6369 C141.81,939.5769 166.86,926.8069 190.96,918.3969 C236.96,902.3169 283.5508,892.4457 329.5608,885.3157" fill="none" id="Admin-to-UC_ForceLogout" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="335.49,884.3969,325.9836,881.8223,330.549,885.1626,327.2087,889.7279,335.49,884.3969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_DeleteUser-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_DeleteUser" data-source-line="38" data-uid="lnk26" id="link_Admin_UC_DeleteUser">
+<path d="M120.61,981.4469 C175.53,978.3169 258.2797,973.5985 330.5197,969.4785" fill="none" id="Admin-to-UC_DeleteUser" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="336.51,969.1369,327.2968,965.6558,331.5181,969.4216,327.7524,973.6428,336.51,969.1369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Inspect-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Inspect" data-source-line="39" data-uid="lnk27" id="link_Admin_UC_Inspect">
+<path d="M120.6,993.7669 C142.32,997.6969 167.86,1002.2969 190.96,1006.3969 C244.29,1015.8469 297.7985,1025.1999 346.7285,1033.6999" fill="none" id="Admin-to-UC_Inspect" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="352.64,1034.7269,344.4574,1029.2455,347.7138,1033.8711,343.0882,1037.1275,352.64,1034.7269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Audit-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Audit" data-source-line="40" data-uid="lnk28" id="link_Admin_UC_Audit">
+<path d="M72.8,1030.9669 C83.29,1145.5669 116.81,1435.9769 190.96,1491.3969 C379.49,1632.3169 492.53,1549.7169 720.57,1491.3969 C767.2,1479.4669 785.22,1476.7569 815.57,1439.3969 C823.1,1430.1169 923.7061,1087.1257
+951.5361,991.9457" fill="none" id="Admin-to-UC_Audit" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="953.22,986.1869,946.855,993.7026,951.8168,990.9859,954.5335,995.9478,953.22,986.1869" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Flags-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Flags" data-source-line="41" data-uid="lnk29" id="link_Admin_UC_Flags">
+<path d="M106.45,1031.0869 C128.44,1055.1769 158.29,1082.7169 190.96,1098.3969 C245.19,1124.4169 306.3792,1133.4746 359.3792,1136.4146" fill="none" id="Admin-to-UC_Flags" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="365.37,1136.7469,356.6054,1132.2545,360.3777,1136.4699,356.1623,1140.2423,365.37,1136.7469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Grant-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Grant" data-source-line="42" data-uid="lnk30" id="link_Admin_UC_Grant">
+<path d="M71.06,1031.0869 C77.84,1158.9769 104.19,1509.7669 190.96,1576.3969 C377.65,1719.7469 497.49,1651.5069 720.57,1576.3969 C813.39,1545.1369 894.7075,1466.4431 933.7475,1424.2031" fill="none" id="Admin-to-UC_Grant"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="937.82,1419.7969,928.7738,1423.6913,934.4263,1423.4688,934.6488,1429.1212,937.82,1419.7969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Revoke-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Revoke" data-source-line="43" data-uid="lnk31" id="link_Admin_UC_Revoke">
+<path d="M76.14,1031.1769 C88.23,1093.0469 118.85,1200.7469 190.96,1256.3969 C232.4,1288.3769 282.5274,1300.2706 332.3474,1304.0706" fill="none" id="Admin-to-UC_Revoke" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="338.33,1304.5269,329.6603,1299.854,333.3445,1304.1466,329.0519,1307.8308,338.33,1304.5269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Jobs-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Jobs" data-source-line="44" data-uid="lnk32" id="link_Admin_UC_Jobs">
+<path d="M69.57,937.7269 C72.49,794.0169 89.67,362.6969 190.96,277.3969 C280.97,201.5769 612.96,229.7369 720.57,277.3969 C836.87,328.8969 917.9927,462.5509 946.5927,515.3609" fill="none" id="Admin-to-UC_Jobs"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="949.45,520.6369,948.6814,510.8181,947.0689,516.2402,941.6468,514.6278,949.45,520.6369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Failed-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Failed" data-source-line="45" data-uid="lnk33" id="link_Admin_UC_Failed">
+<path d="M85.75,1030.9069 C104.32,1075.3269 138.72,1140.3869 190.96,1174.3969 C237.47,1204.6769 292.2005,1215.2419 343.6605,1218.2919" fill="none" id="Admin-to-UC_Failed" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="349.65,1218.6469,340.9024,1214.1214,344.6588,1218.351,340.4291,1222.1074,349.65,1218.6469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_ExportDb-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_ExportDb" data-source-line="46" data-uid="lnk34" id="link_Admin_UC_ExportDb">
+<path d="M70.07,1030.9369 C74.6,1108.9369 95.81,1265.2869 190.96,1344.3969 C239.97,1385.1369 306.6218,1393.1841 363.2718,1391.7941" fill="none" id="Admin-to-UC_ExportDb" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="369.27,1391.6469,360.1746,1387.8688,364.2715,1391.7695,360.3708,1395.8664,369.27,1391.6469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_ImportDb-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_ImportDb" data-source-line="47" data-uid="lnk35" id="link_Admin_UC_ImportDb">
+<path d="M75.34,1031.0769 C90.24,1133.0769 130.77,1370.7369 190.96,1421.3969 C245.75,1467.5069 324.9194,1471.0891 383.5794,1466.3591" fill="none" id="Admin-to-UC_ImportDb" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="389.56,1465.8769,380.2676,1462.6132,384.5762,1466.2787,380.9106,1470.5873,389.56,1465.8769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_DbStats-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_DbStats" data-source-line="48" data-uid="lnk36" id="link_Admin_UC_DbStats">
+<path d="M73.01,937.9269 C84.13,821.1969 119.28,520.3369 190.96,455.3969 C225.86,423.7669 268.4599,410.4981 314.4199,405.1681" fill="none" id="Admin-to-UC_DbStats" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="320.38,404.4769,310.9791,401.5403,315.4133,405.0529,311.9007,409.487,320.38,404.4769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Demo-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Demo" data-source-line="49" data-uid="lnk37" id="link_Admin_UC_Demo">
+<path d="M75.47,937.8569 C90.63,836.1669 131.66,599.0869 190.96,547.3969 C227.49,515.5369 272.0417,502.6231 319.1117,497.7631" fill="none" id="Admin-to-UC_Demo" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="325.08,497.1469,315.7168,494.0924,320.1064,497.6604,316.5384,502.0501,325.08,497.1469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Scheduler to UC_Purge-->
+<g class="link" data-entity-1="Scheduler" data-entity-2="UC_Purge" data-source-line="51" data-uid="lnk38" id="link_Scheduler_UC_Purge">
+<path d="M130.11,220.0869 C201.28,241.8569 312.5622,275.9025 384.9722,298.0425" fill="none" id="Scheduler-to-UC_Purge" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="390.71,299.7969,383.2729,293.3401,385.9285,298.3349,380.9337,300.9905,390.71,299.7969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_Role to UC_Audit-->
+<g class="link" data-entity-1="UC_Role" data-entity-2="UC_Audit" data-source-line="54" data-uid="lnk39" id="link_UC_Role_UC_Audit">
+<path d="M565.33,676.9069 C641.29,678.8669 741.93,692.1569 815.57,741.3969 C889.52,790.8269 932.3143,886.6423 949.7343,932.8723" fill="none" id="UC_Role-to-UC_Audit" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="951.85,938.4869,952.4196,928.6545,950.087,933.808,944.9334,931.4754,951.85,938.4869" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="751.57" y="706.3438">&#171;include&#187;</text>
+</g>
+<!--link UC_DeleteUser to UC_Audit-->
+<g class="link" data-entity-1="UC_DeleteUser" data-entity-2="UC_Audit" data-source-line="55" data-uid="lnk40" id="link_UC_DeleteUser_UC_Audit">
+<path d="M578.94,962.3969 C663.19,962.3969 768.05,962.3969 848.49,962.3969" fill="none" id="UC_DeleteUser-to-UC_Audit" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="854.49,962.3969,845.49,958.3969,849.49,962.3969,845.49,966.3969,854.49,962.3969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="751.57" y="958.4638">&#171;include&#187;</text>
+</g>
+<!--link UC_ResetPwd to UC_Audit-->
+<g class="link" data-entity-1="UC_ResetPwd" data-entity-2="UC_Audit" data-source-line="56" data-uid="lnk41" id="link_UC_ResetPwd_UC_Audit">
+<path d="M590.62,790.8269 C633,798.3769 679.48,809.1669 720.57,824.3969 C800.24,853.9169 879.3612,905.151 923.6412,936.081" fill="none" id="UC_ResetPwd-to-UC_Audit" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="928.56,939.5169,923.4723,931.0839,924.461,936.6537,918.8912,937.6423,928.56,939.5169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="751.57" y="834.7038">&#171;include&#187;</text>
+</g>
+<!--link UC_ImportDb to UC_Audit-->
+<g class="link" data-entity-1="UC_ImportDb" data-entity-2="UC_Audit" data-source-line="57" data-uid="lnk42" id="link_UC_ImportDb_UC_Audit">
+<path d="M525.42,1464.2869 C606.51,1469.4569 739.92,1464.2469 815.57,1387.3969 C874.48,1327.5469 935.3623,1073.1504 953.5623,992.3004" fill="none" id="UC_ImportDb-to-UC_Audit" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="954.88,986.4469,949.0011,994.3487,953.7819,991.3248,956.8058,996.1056,954.88,986.4469" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="751.57" y="1383.4638">&#171;include&#187;</text>
+</g>
+<!--link UC_Revoke to UC_Grant-->
+<g class="link" data-entity-1="UC_Revoke" data-entity-2="UC_Grant" data-source-line="60" data-uid="lnk43" id="link_UC_Revoke_UC_Grant">
+<path d="M554.37,1315.1569 C604.2,1322.9769 665.73,1333.0969 720.57,1343.3969 C773.44,1353.3269 826.7098,1364.6091 872.9898,1374.7791" fill="none" id="UC_Revoke-to-UC_Grant" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="878.85,1376.0669,870.9183,1370.2284,873.9665,1374.9937,869.2012,1378.042,878.85,1376.0669" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="752.57" y="1345.7738">&#171;extend&#187;</text>
+</g>
+<!--link UC_Failed to UC_Jobs-->
+<g class="link" data-entity-1="UC_Failed" data-entity-2="UC_Jobs" data-source-line="61" data-uid="lnk44" id="link_UC_Failed_UC_Jobs">
+<path d="M548.96,1227.2569 C606.63,1229.1169 677.85,1220.2669 720.57,1174.3969 C775.43,1115.4769 711,883.4969 750.57,813.3969 C768.09,782.3469 791.06,792.2869 815.57,766.3969 C877.97,700.4669 926.7306,609.3903
+947.5506,567.4803" fill="none" id="UC_Failed-to-UC_Jobs" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="950.22,562.1069,942.6335,568.3875,947.9955,566.5848,949.7982,571.9467,950.22,562.1069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="752.57" y="762.4638">&#171;extend&#187;</text>
+</g>
+</g>
+</svg>

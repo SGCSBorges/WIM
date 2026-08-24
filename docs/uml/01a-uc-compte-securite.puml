@@ -1,0 +1,69 @@
+@startuml
+title WIM – Cas d'utilisation : Compte & securite (modules auth, profile)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #f9f9f9
+  BorderColor #555
+  ArrowColor #555
+}
+
+actor "Visiteur\n(non authentifie)" as Guest
+actor "Utilisateur" as User
+actor "Administrateur" as Admin
+actor "Resend\n(e-mail)" as Mail
+
+rectangle "Compte & securite" {
+  usecase "Creer un compte" as UC_Register
+  usecase "Se connecter" as UC_Login
+  usecase "Verifier le second facteur (TOTP)" as UC_Totp
+  usecase "S'authentifier par passkey (WebAuthn)" as UC_Passkey
+  usecase "Se deconnecter" as UC_Logout
+  usecase "Reinitialiser le mot de passe" as UC_Reset
+  usecase "Verifier son adresse e-mail" as UC_VerifyMail
+  usecase "Activer / desactiver le TOTP" as UC_TotpSetup
+  usecase "Regenerer les codes de secours" as UC_Backup
+  usecase "Lister et revoquer ses sessions" as UC_Sessions
+  usecase "Consulter l'historique de connexion" as UC_History
+  usecase "Changer mot de passe / e-mail" as UC_Credentials
+  usecase "Regler ses preferences\n(theme, langue, devise, format de date)" as UC_Prefs
+  usecase "Choisir ses canaux de rappel\n(push, e-mail, J-n, digest)" as UC_Reminders
+  usecase "Exporter ses donnees (RGPD)" as UC_Export
+  usecase "Supprimer son compte (cascade)" as UC_Delete
+}
+
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_Reset
+Guest --> UC_VerifyMail
+
+User --> UC_Logout
+User --> UC_TotpSetup
+User --> UC_Backup
+User --> UC_Sessions
+User --> UC_History
+User --> UC_Credentials
+User --> UC_Prefs
+User --> UC_Reminders
+User --> UC_Export
+User --> UC_Delete
+
+Admin --> UC_Sessions : deconnexion forcee\nd'un autre compte
+
+' Include : la connexion execute toujours ces sous-cas quand ils sont armes.
+UC_Login ..> UC_Totp : <<include>>
+UC_Passkey ..> UC_Login : <<extend>>
+UC_TotpSetup ..> UC_Backup : <<include>>
+
+UC_Reset ..> Mail
+UC_VerifyMail ..> Mail
+
+note bottom
+Le jeton JWT est porte par un cookie httpOnly ; la revocation combine une
+denylist Redis (jti) et un compteur `tokenVersion` sur l'utilisateur, si bien
+qu'un changement de mot de passe **ou d'adresse e-mail** invalide toutes les
+sessions. La suppression du compte efface en cascade l'integralite du graphe
+de donnees (droit a l'effacement). Routes : `/api/auth/*`, `/api/profile/me/*`.
+end note
+@enduml

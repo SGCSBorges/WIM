@@ -1,0 +1,75 @@
+@startuml
+title WIM – Cas d'utilisation : Pilotage, valorisation & facturation
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #f9f9f9
+  BorderColor #555
+  ArrowColor #555
+}
+
+actor "Utilisateur" as User
+actor "Power User" as PowerUser
+actor "Stripe" as Stripe
+
+rectangle "Pilotage & valorisation" {
+  usecase "Consulter le tableau de bord" as UC_Dash
+  usecase "Suivre la valeur de l'inventaire\n(prix unitaire x quantite)" as UC_Value
+  usecase "Suivre la valeur depreciee" as UC_Depreciation
+  usecase "Voir la repartition par emplacement" as UC_ByLocation
+  usecase "Analyser les depenses (analytics)" as UC_Analytics
+  usecase "Definir un budget de depenses" as UC_Budget
+  usecase "Exporter un rapport d'inventaire (PDF)" as UC_Report
+  usecase "Imprimer des etiquettes QR (PDF)" as UC_Labels
+}
+
+rectangle "Facturation" {
+  usecase "Souscrire l'offre Power User" as UC_Subscribe
+  usecase "Gerer son abonnement (portail client)" as UC_Portal
+  usecase "Synchroniser le role via webhook" as UC_Webhook
+  usecase "Retrograder a l'expiration" as UC_Downgrade
+}
+
+User --> UC_Dash
+User --> UC_Value
+User --> UC_Depreciation
+User --> UC_Subscribe
+
+PowerUser --|> User
+PowerUser --> UC_ByLocation
+PowerUser --> UC_Analytics
+PowerUser --> UC_Budget
+PowerUser --> UC_Report
+PowerUser --> UC_Labels
+PowerUser --> UC_Portal
+
+UC_Subscribe --> Stripe
+UC_Portal --> Stripe
+Stripe --> UC_Webhook : evenement signe (HMAC)
+
+' Include / extend
+UC_Value ..> UC_Dash : <<include>>
+UC_Depreciation ..> UC_Value : <<extend>>
+UC_ByLocation ..> UC_Dash : <<extend>>
+UC_Budget ..> UC_Analytics : <<extend>>
+UC_Labels ..> UC_Report : <<extend>>
+UC_Webhook ..> UC_Downgrade : <<extend>>
+
+' Dependance stereotypee : l'abonnement deverrouille les options payantes.
+UC_Webhook ..> UC_Analytics : <<unlock>>
+UC_Webhook ..> UC_Report : <<unlock>>
+
+note bottom
+La valeur d'un article est **le prix unitaire multiplie par la quantite** :
+`purchasePrice` est stocke par unite, et toute agregation applique
+`max(1, quantity)`. La valeur depreciee suit un amortissement lineaire
+(`purchasePrice x (1 - taux/100 x anciennete)`, plancher a zero) calcule a
+partir de la date d'achat de la garantie, a defaut de la date de creation.
+Les tarifs de l'abonnement ne sont pas codes dans l'application : ils sont
+definis dans Stripe. Le webhook est monte **avant** `express.json()` afin de
+disposer du corps brut necessaire a la verification de signature, et son
+idempotence repose sur la table `ProcessedStripeEvent`, dont la cle primaire
+est l'identifiant naturel de l'evenement Stripe.
+end note
+@enduml

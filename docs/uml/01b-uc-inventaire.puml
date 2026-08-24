@@ -1,0 +1,85 @@
+@startuml
+title WIM – Cas d'utilisation : Inventaire (articles, tags, emplacements, pieces jointes)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #f9f9f9
+  BorderColor #555
+  ArrowColor #555
+}
+
+actor "Utilisateur" as User
+actor "Power User" as PowerUser
+actor "Open Food Facts /\nOpen Products Facts" as OFF
+
+rectangle "Inventaire" {
+  usecase "Creer / modifier / supprimer un article" as UC_Crud
+  usecase "Rechercher et filtrer\n(plein-texte trigram, statut, etat, categorie)" as UC_Search
+  usecase "Scanner un code-barres" as UC_Barcode
+  usecase "Numeriser un ticket de caisse (OCR)" as UC_Ocr
+  usecase "Joindre une piece (PDF / image)" as UC_Attach
+  usecase "Organiser par etiquettes (couleurs)" as UC_Tags
+  usecase "Organiser par emplacements (hierarchie)" as UC_Locations
+  usecase "Annoter un article (notes)" as UC_Notes
+  usecase "Renseigner des champs personnalises" as UC_Custom
+  usecase "Marquer comme favori" as UC_Fav
+  usecase "Verifier physiquement un article" as UC_Verify
+  usecase "Regrouper des articles en lot" as UC_Bundle
+  usecase "Dupliquer un article" as UC_Duplicate
+  usecase "Corbeille : supprimer, restaurer, purger" as UC_Trash
+  usecase "Editer en masse\n(statut, categorie, etat, quantite)" as UC_Bulk
+  usecase "Utiliser un modele d'article" as UC_Template
+  usecase "Enregistrer une vue filtree" as UC_Views
+  usecase "Definir une vue par defaut\net la partager au foyer" as UC_ViewShare
+  usecase "Importer un CSV (validation a blanc)" as UC_Import
+  usecase "Exporter en CSV" as UC_Export
+}
+
+User --> UC_Crud
+User --> UC_Search
+User --> UC_Barcode
+User --> UC_Ocr
+User --> UC_Attach
+User --> UC_Tags
+User --> UC_Locations
+User --> UC_Notes
+User --> UC_Custom
+User --> UC_Fav
+User --> UC_Verify
+User --> UC_Bundle
+User --> UC_Duplicate
+User --> UC_Trash
+
+PowerUser --|> User
+PowerUser --> UC_Bulk
+PowerUser --> UC_Template
+PowerUser --> UC_Views
+PowerUser --> UC_ViewShare
+PowerUser --> UC_Import
+PowerUser --> UC_Export
+
+UC_Barcode ..> OFF : appel direct\ndepuis le navigateur
+
+' Extend : cas optionnels greffes sur la creation/modification d'un article.
+UC_Attach ..> UC_Crud : <<extend>>
+UC_Tags ..> UC_Crud : <<extend>>
+UC_Locations ..> UC_Crud : <<extend>>
+UC_Custom ..> UC_Crud : <<extend>>
+UC_Barcode ..> UC_Crud : <<extend>>
+UC_Ocr ..> UC_Crud : <<extend>>
+UC_Template ..> UC_Crud : <<extend>>
+UC_ViewShare ..> UC_Views : <<extend>>
+
+note bottom
+Les etiquettes et les emplacements sont des relations M:N (tables de jonction
+ArticleTag / ArticleLocation) ; les emplacements sont hierarchiques. La
+suppression est douce (`deletedAt`) et alimente la corbeille, seule table du
+modele a pratiquer le soft-delete ; une purge planifiee vide la corbeille.
+Le scan de code-barres et l'OCR sont **entierement gratuits** : lookup public
+sans cle d'API et tesseract.js (WASM) execute dans le navigateur.
+Import/export CSV, edition en masse, modeles et vues enregistrees sont
+reserves au niveau Power User (`csv_import`, `csv_export`, `bulk_edit`,
+`templates`, `saved_views`).
+end note
+@enduml

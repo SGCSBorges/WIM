@@ -1,0 +1,70 @@
+@startuml
+title WIM – Cas d'utilisation : Cycle de vie du bien (prets, assurance, entretien, souhaits)
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #f9f9f9
+  BorderColor #555
+  ArrowColor #555
+}
+
+actor "Power User" as PowerUser
+actor "Ordonnanceur\nBullMQ (systeme)" as Scheduler
+
+rectangle "Cycle de vie du bien" {
+  usecase "Preter un article\n(emprunteur, echeance)" as UC_Lend
+  usecase "Marquer un pret comme rendu" as UC_Return
+  usecase "Consulter l'historique des prets" as UC_LoanHist
+  usecase "Enregistrer une police d'assurance" as UC_Policy
+  usecase "Rattacher / detacher des articles couverts" as UC_Cover
+  usecase "Suivre l'echeance de renouvellement" as UC_Renewal
+  usecase "Exporter le portefeuille d'assurance (PDF)" as UC_InsPdf
+  usecase "Journaliser un entretien\n(cout, prestataire)" as UC_Service
+  usecase "Programmer le prochain entretien" as UC_NextDue
+  usecase "Definir une recurrence d'entretien" as UC_Interval
+  usecase "Suivre la depense d'entretien cumulee" as UC_Spend
+  usecase "Tenir une liste de souhaits" as UC_Wishlist
+  usecase "Convertir un souhait en article" as UC_Convert
+  usecase "Planifier les rappels d'echeance" as UC_Schedule
+}
+
+PowerUser --> UC_Lend
+PowerUser --> UC_Return
+PowerUser --> UC_LoanHist
+PowerUser --> UC_Policy
+PowerUser --> UC_Cover
+PowerUser --> UC_Renewal
+PowerUser --> UC_InsPdf
+PowerUser --> UC_Service
+PowerUser --> UC_NextDue
+PowerUser --> UC_Interval
+PowerUser --> UC_Spend
+PowerUser --> UC_Wishlist
+PowerUser --> UC_Convert
+
+Scheduler --> UC_Schedule
+
+' Include : preter un article planifie toujours le rappel d'echeance.
+UC_Lend ..> UC_Schedule : <<include>>
+UC_NextDue ..> UC_Schedule : <<include>>
+UC_Renewal ..> UC_Schedule : <<include>>
+
+' Extend : cas optionnels.
+UC_Return ..> UC_Lend : <<extend>>
+UC_Cover ..> UC_Policy : <<extend>>
+UC_InsPdf ..> UC_Policy : <<extend>>
+UC_NextDue ..> UC_Service : <<extend>>
+UC_Interval ..> UC_NextDue : <<extend>>
+UC_Convert ..> UC_Wishlist : <<extend>>
+
+note bottom
+Ces quatre modules sont reserves au niveau Power User (`loans`, `insurance`,
+`maintenance`, `wishlist`). Preter un article bascule son statut a `LOANED`
+et, si une echeance est saisie, met en file un rappel ; le retour retablit le
+statut. Seul **le dernier** enregistrement d'entretien porte l'echeance
+active : un entretien plus recent sans date de prochaine intervention annule
+la programmation precedente. Les echeances de ces trois modules alimentent
+aussi l'agenda et le flux iCal (voir 01c).
+end note
+@enduml

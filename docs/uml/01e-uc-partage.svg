@@ -1,0 +1,314 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="1593px" preserveAspectRatio="none" style="width:1710px;height:1593px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
+<title>WIM - Cas d'utilisation : Partage &amp; collaboration</title>
+<defs/>
+<g>
+<g class="title" data-source-line="1">
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="380.8916" x="657.9957" y="22.9951">WIM - Cas d'utilisation : Partage &amp; collaboration</text>
+</g>
+<!--cluster Partage & collaboration-->
+<g class="cluster" data-entity="Partage . collaboration" data-source-line="17" data-uid="ent0007" id="cluster_Partage . collaboration">
+<rect fill="none" height="772" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;" width="1244.42" x="301.42" y="589.6569"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="188.2549" x="829.5026" y="604.652">Partage &amp; collaboration</text>
+</g>
+<!--entity UC_Share-->
+<g class="entity" data-entity="UC_Share" data-source-line="18" data-uid="ent0008" id="entity_UC_Share">
+<ellipse cx="988.4532" cy="736.6615" fill="#F9F9F9" rx="114.9732" ry="25.3946" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164.5957" x="906.1554" y="734.2728">Partager son inventaire</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.8818" x="918.0123" y="750.5697">(lecture ou ecriture)</text>
+</g>
+<!--entity UC_Invite-->
+<g class="entity" data-entity="UC_Invite" data-source-line="19" data-uid="ent0009" id="entity_UC_Invite">
+<ellipse cx="1383.4108" cy="749.653" fill="#F9F9F9" rx="120.5308" ry="26.5062" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="220.4863" x="1273.1676" y="754.3015">Inviter par jeton (expiration 7 j)</text>
+</g>
+<!--entity UC_Accept-->
+<g class="entity" data-entity="UC_Accept" data-source-line="20" data-uid="ent0010" id="entity_UC_Accept">
+<ellipse cx="988.4471" cy="1318.6523" fill="#F9F9F9" rx="123.5271" ry="27.1054" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="226.8643" x="875.0149" y="1323.3007">Accepter / refuser une invitation</text>
+</g>
+<!--entity UC_Revoke-->
+<g class="entity" data-entity="UC_Revoke" data-source-line="21" data-uid="ent0011" id="entity_UC_Revoke">
+<ellipse cx="463.6561" cy="818.6581" fill="#F9F9F9" rx="87.8061" ry="19.9612" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.7568" x="389.2777" y="823.3065">Revoquer un partage</text>
+</g>
+<!--entity UC_ViewShared-->
+<g class="entity" data-entity="UC_ViewShared" data-source-line="22" data-uid="ent0012" id="entity_UC_ViewShared">
+<ellipse cx="463.6566" cy="997.6582" fill="#F9F9F9" rx="115.3566" ry="25.4713" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="209.4189" x="358.9471" y="1002.3066">Consulter l'inventaire partage</text>
+</g>
+<!--entity UC_Household-->
+<g class="entity" data-entity="UC_Household" data-source-line="23" data-uid="ent0013" id="entity_UC_Household">
+<ellipse cx="463.6583" cy="652.6525" fill="#F9F9F9" rx="125.6783" ry="27.5357" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231.4307" x="347.943" y="657.301">Creer un foyer (6 membres max)</text>
+</g>
+<!--entity UC_Members-->
+<g class="entity" data-entity="UC_Members" data-source-line="24" data-uid="ent0014" id="entity_UC_Members">
+<ellipse cx="463.659" cy="739.6547" fill="#F9F9F9" rx="109.839" ry="24.3678" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197.5313" x="364.8934" y="744.3031">Gerer les membres du foyer</text>
+</g>
+<!--entity UC_HouseholdStats-->
+<g class="entity" data-entity="UC_HouseholdStats" data-source-line="25" data-uid="ent0015" id="entity_UC_HouseholdStats">
+<ellipse cx="463.6568" cy="905.6542" fill="#F9F9F9" rx="146.2368" ry="31.6474" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="274.6406" x="326.3365" y="910.3027">Consulter la valeur consolidee du foyer</text>
+</g>
+<!--entity UC_Thread-->
+<g class="entity" data-entity="UC_Thread" data-source-line="26" data-uid="ent0016" id="entity_UC_Thread">
+<ellipse cx="1383.4131" cy="932.6575" fill="#F9F9F9" rx="96.9531" ry="21.7906" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169.3193" x="1298.7534" y="937.3059">Ouvrir une conversation</text>
+</g>
+<!--entity UC_Offer-->
+<g class="entity" data-entity="UC_Offer" data-source-line="27" data-uid="ent0017" id="entity_UC_Offer">
+<ellipse cx="988.4535" cy="1232.6536" fill="#F9F9F9" rx="105.8835" ry="23.5767" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="188.9453" x="893.9808" y="1237.302">Formuler une offre chiffree</text>
+</g>
+<!--entity UC_AcceptOffer-->
+<g class="entity" data-entity="UC_AcceptOffer" data-source-line="28" data-uid="ent0018" id="entity_UC_AcceptOffer">
+<ellipse cx="463.6551" cy="1327.6519" fill="#F9F9F9" rx="79.8751" ry="18.375" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130.3818" x="398.4642" y="1332.3003">Accepter une offre</text>
+</g>
+<!--entity UC_Push-->
+<g class="entity" data-entity="UC_Push" data-source-line="29" data-uid="ent0019" id="entity_UC_Push">
+<ellipse cx="988.4512" cy="650.6611" fill="#F9F9F9" rx="116.5712" ry="25.7142" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="212.0234" x="882.4394" y="655.3095">Transferer la propriete (PUSH)</text>
+</g>
+<!--entity UC_Pull-->
+<g class="entity" data-entity="UC_Pull" data-source-line="30" data-uid="ent0020" id="entity_UC_Pull">
+<ellipse cx="463.663" cy="1083.6595" fill="#F9F9F9" rx="116.013" ry="25.6026" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="210.8271" x="358.2495" y="1088.3079">Demander un transfert (PULL)</text>
+</g>
+<!--entity UC_AcceptTransfer-->
+<g class="entity" data-entity="UC_AcceptTransfer" data-source-line="31" data-uid="ent0021" id="entity_UC_AcceptTransfer">
+<ellipse cx="463.6633" cy="1169.6615" fill="#F9F9F9" rx="117.1233" ry="25.8247" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="213.2061" x="357.0603" y="1174.31">Accepter / refuser un transfert</text>
+</g>
+<!--entity UC_Public-->
+<g class="entity" data-entity="UC_Public" data-source-line="32" data-uid="ent0022" id="entity_UC_Public">
+<ellipse cx="1383.4102" cy="656.6529" fill="#F9F9F9" rx="146.4302" ry="31.686" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="275.0439" x="1245.8882" y="661.3014">Publier une fiche publique (jeton + QR)</text>
+</g>
+<!--entity UC_ViewPublic-->
+<g class="entity" data-entity="UC_ViewPublic" data-source-line="33" data-uid="ent0023" id="entity_UC_ViewPublic">
+<ellipse cx="988.4508" cy="1149.655" fill="#F9F9F9" rx="111.7408" ry="24.7482" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="201.6396" x="887.631" y="1154.3035">Consulter une fiche publique</text>
+</g>
+<!--entity UC_Found-->
+<g class="entity" data-entity="UC_Found" data-source-line="34" data-uid="ent0024" id="entity_UC_Found">
+<ellipse cx="463.6632" cy="1252.6535" fill="#F9F9F9" rx="97.0332" ry="21.8066" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169.4971" x="378.9147" y="1257.3019">Signaler un objet trouve</text>
+</g>
+<!--entity Owner-->
+<g class="entity" data-entity="Owner" data-source-line="11" data-uid="ent0002" id="entity_Owner">
+<ellipse cx="66.2022" cy="265.8569" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M66.2022,273.8569 L66.2022,300.8569 M53.2022,281.8569 L79.2022,281.8569 M66.2022,300.8569 L53.2022,315.8569 M66.2022,300.8569 L79.2022,315.8569" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.1875" x="19.4" y="330.352">Power User</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="93.6045" x="19.4" y="346.6489">(proprietaire)</text>
+</g>
+<!--entity Peer-->
+<g class="entity" data-entity="Peer" data-source-line="12" data-uid="ent0003" id="entity_Peer">
+<ellipse cx="66.198" cy="1094.8569" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M66.198,1102.8569 L66.198,1129.8569 M53.198,1110.8569 L79.198,1110.8569 M66.198,1129.8569 L53.198,1144.8569 M66.198,1129.8569 L79.198,1144.8569" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.1875" x="18.76" y="1159.352">Power User</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="94.876" x="18.76" y="1175.6489">(destinataire)</text>
+</g>
+<!--entity Member-->
+<g class="entity" data-entity="Member" data-source-line="13" data-uid="ent0004" id="entity_Member">
+<ellipse cx="66.1973" cy="922.0069" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M66.1973,930.0069 L66.1973,957.0069 M53.1973,938.0069 L79.1973,938.0069 M66.1973,957.0069 L53.1973,972.0069 M66.1973,957.0069 L79.1973,972.0069" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120.3945" x="6" y="986.502">Membre du foyer</text>
+</g>
+<!--entity Visitor-->
+<g class="entity" data-entity="Visitor" data-source-line="14" data-uid="ent0005" id="entity_Visitor">
+<ellipse cx="66.1935" cy="1343.8569" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M66.1935,1351.8569 L66.1935,1378.8569 M53.1935,1359.8569 L79.1935,1359.8569 M66.1935,1378.8569 L53.1935,1393.8569 M66.1935,1378.8569 L79.1935,1393.8569" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53.3818" x="7.63" y="1408.352">Visiteur</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117.127" x="7.63" y="1424.6489">(lien public / QR)</text>
+</g>
+<!--entity Mail-->
+<g class="entity" data-entity="Mail" data-source-line="15" data-uid="ent0006" id="entity_Mail">
+<ellipse cx="1648.3615" cy="385.0069" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1648.3615,393.0069 L1648.3615,420.0069 M1635.3615,401.0069 L1661.3615,401.0069 M1648.3615,420.0069 L1635.3615,435.0069 M1648.3615,420.0069 L1661.3615,435.0069" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111.043" x="1592.84" y="449.502">Resend (e-mail)</text>
+</g>
+<g class="entity" data-entity="GMN52" data-source-line="74" data-uid="ent0053" id="entity_GMN52">
+<path d="M187.39,427.5569 L187.39,573.7522 L739.9173,573.7522 L739.9173,437.5569 L729.9173,427.5569 L187.39,427.5569" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M729.9173,427.5569 L729.9173,437.5569 L739.9173,437.5569 L729.9173,427.5569" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="269.8452" x="193.39" y="444.6238">Trois granularites de partage coexistent :</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="44.4844" x="467.3675" y="444.6238">public</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="70.5796" x="515.9842" y="444.6238">(indicateur</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="265.2051" x="193.39" y="459.7566">`sharedWithPowerUsers`, lecture seule),</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="105.0601" x="462.7274" y="459.7566">par utilisateur</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="37.9971" x="571.9198" y="459.7566">(table</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="280.3315" x="193.39" y="474.8894">`InventoryShare`, droit READ ou WRITE) et</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="38.2891" x="477.8539" y="474.8894">foyer</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="173.2656" x="520.2753" y="474.8894">(`Household`, implemente</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="526.2334" x="193.39" y="490.0222">comme un maillage automatique de partages en ecriture, six membres au plus).</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="459.2085" x="193.39" y="505.155">Les invitations sont a jeton avec expiration a 7 jours ; leur acceptation</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="531.5273" x="193.39" y="520.2878">passe par un `updateMany` conditionnel afin que deux requetes concurrentes
+ne</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="477.3057" x="193.39" y="535.4206">puissent pas consommer deux fois le meme jeton. La fiche publique et le</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="230.4897" x="193.39" y="550.5535">signalement d'objet trouve sont les</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="38.0034" x="428.0121" y="550.5535">seuls</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="176.7441" x="470.1478" y="550.5535">points d'entree accessibles</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="503.5532" x="193.39" y="565.6863">sans authentification, proteges par un jeton de 64 caracteres hexadecimaux.</text>
+</g>
+<!--link Owner to UC_Share-->
+<g class="link" data-entity-1="Owner" data-entity-2="UC_Share" data-source-line="37" data-uid="lnk25" id="link_Owner_UC_Share">
+<path d="M113.36,297.0469 C231.25,282.8069 547.65,261.5869 739.92,409.6569 C849.19,493.7969 763.72,599.9669 864.92,693.6569 C876.59,704.4469 885.5644,710.2907 900.4944,716.3807" fill="none" id="Owner-to-UC_Share"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="906.05,718.6469,899.2274,711.5439,901.4203,716.7584,896.2059,718.9514,906.05,718.6469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Owner to UC_Invite-->
+<g class="link" data-entity-1="Owner" data-entity-2="UC_Invite" data-source-line="38" data-uid="lnk26" id="link_Owner_UC_Invite">
+<path d="M89.12,256.9769 C109.06,220.5569 142.28,172.5869 187.39,150.6569 C408.25,43.2969 500.8,94.7369 739.92,150.6569 C878.91,183.1569 1100.33,396.8169 1111.98,410.6569 C1170.46,480.1769 1174.09,506.9569
+1206.98,591.6569 C1225.94,640.4969 1200.61,667.9369 1236.98,705.6569 C1249.7,718.8469 1260.6232,726.0169 1277.9532,732.5269" fill="none" id="Owner-to-UC_Invite" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1283.57,734.6369,1276.5515,727.7275,1278.8894,732.8786,1273.7382,735.2165,1283.57,734.6369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Owner to UC_Revoke-->
+<g class="link" data-entity-1="Owner" data-entity-2="UC_Revoke" data-source-line="39" data-uid="lnk27" id="link_Owner_UC_Revoke">
+<path d="M72.15,350.1469 C84.75,458.9269 121.76,725.0969 187.39,781.6569 C242.1,828.7869 321.0046,833.8545 382.0546,829.5945" fill="none" id="Owner-to-UC_Revoke" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="388.04,829.1769,378.7834,825.8131,383.0521,829.5249,379.3403,833.7937,388.04,829.1769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Owner to UC_Household-->
+<g class="link" data-entity-1="Owner" data-entity-2="UC_Household" data-source-line="40" data-uid="lnk28" id="link_Owner_UC_Household">
+<path d="M73.27,350.3369 C84.21,414.7069 113.43,529.7669 187.39,591.6569 C229.16,626.5969 280.6647,641.8882 332.2747,648.9082" fill="none" id="Owner-to-UC_Household" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="338.22,649.7169,329.8412,644.5404,333.2656,649.043,328.763,652.4674,338.22,649.7169" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Owner to UC_Members-->
+<g class="link" data-entity-1="Owner" data-entity-2="UC_Members" data-source-line="41" data-uid="lnk29" id="link_Owner_UC_Members">
+<path d="M66.54,350.3269 C68.11,433.8769 84.35,608.5369 187.39,697.6569 C234.56,738.4469 298.09,748.7739 355.46,748.9939" fill="none" id="Owner-to-UC_Members" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="361.46,749.0169,352.4754,744.9824,356.46,748.9977,352.4447,752.9823,361.46,749.0169" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Owner to UC_Push-->
+<g class="link" data-entity-1="Owner" data-entity-2="UC_Push" data-source-line="42" data-uid="lnk30" id="link_Owner_UC_Push">
+<path d="M113.39,285.1369 C241.99,236.9169 609.44,122.0669 834.92,284.6569 C950.36,367.8969 978.2423,549.4347 984.9223,618.4947" fill="none" id="Owner-to-UC_Push" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="985.5,624.4669,988.6149,615.1236,985.0186,619.4901,980.6521,615.8938,985.5,624.4669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Owner to UC_Public-->
+<g class="link" data-entity-1="Owner" data-entity-2="UC_Public" data-source-line="43" data-uid="lnk31" id="link_Owner_UC_Public">
+<path d="M108.34,257.0369 C129.62,236.4569 157.4,214.4969 187.39,203.6569 C418.33,120.1469 502.22,141.9769 739.92,203.6569 C1017.68,275.7169 1268.5217,530.5293 1350.7517,620.8893" fill="none" id="Owner-to-UC_Public"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1354.79,625.3269,1351.6909,615.9783,1351.4247,621.6289,1345.7742,621.3627,1354.79,625.3269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Peer to UC_Accept-->
+<g class="link" data-entity-1="Peer" data-entity-2="UC_Accept" data-source-line="45" data-uid="lnk32" id="link_Peer_UC_Accept">
+<path d="M81.74,1179.2069 C108.36,1262.9369 164.29,1431.7369 187.39,1447.6569 C389.63,1586.9469 501.41,1506.0769 739.92,1447.6569 C820.88,1427.8269 899.833,1379.7875 946.183,1348.1775" fill="none" id="Peer-to-UC_Accept"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="951.14,1344.7969,941.4508,1346.5631,947.0092,1347.614,945.9583,1353.1724,951.14,1344.7969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Peer to UC_ViewShared-->
+<g class="link" data-entity-1="Peer" data-entity-2="UC_ViewShared" data-source-line="46" data-uid="lnk33" id="link_Peer_UC_ViewShared">
+<path d="M113.96,1088.1069 C134.89,1070.6069 160.82,1052.0169 187.39,1040.6569 C238.32,1018.8769 292.7829,1008.6044 344.0329,1003.2144" fill="none" id="Peer-to-UC_ViewShared" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="350,1002.5869,340.631,999.5502,345.0274,1003.1098,341.4677,1007.5063,350,1002.5869" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Peer to UC_Thread-->
+<g class="link" data-entity-1="Peer" data-entity-2="UC_Thread" data-source-line="47" data-uid="lnk34" id="link_Peer_UC_Thread">
+<path d="M93.93,1086.0469 C105.83,1063.1469 118.85,1034.7169 126.39,1007.6569 C162.28,878.9869 88.26,499.1869 187.39,409.6569 C533.26,97.2769 924.88,283.6769 1206.98,654.6569 C1245.23,704.9569 1206.11,738.5069
+1236.98,793.6569 C1265.21,844.0969 1312.8603,883.8879 1346.4603,908.2179" fill="none" id="Peer-to-UC_Thread" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1351.32,911.7369,1346.3764,903.2186,1347.2702,908.8044,1341.6844,909.6982,1351.32,911.7369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Peer to UC_Offer-->
+<g class="link" data-entity-1="Peer" data-entity-2="UC_Offer" data-source-line="48" data-uid="lnk35" id="link_Peer_UC_Offer">
+<path d="M76.41,1179.3569 C90.06,1234.4769 121.5,1323.6569 187.39,1363.6569 C397.32,1491.0669 506.21,1439.0369 739.92,1363.6569 C805.07,1342.6369 804,1304.8669 864.92,1273.6569 C882.29,1264.7569 896.3057,1259.0578
+914.7657,1252.9278" fill="none" id="Peer-to-UC_Offer" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="920.46,1251.0369,910.658,1250.077,915.7148,1252.6126,913.1792,1257.6694,920.46,1251.0369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Peer to UC_Pull-->
+<g class="link" data-entity-1="Peer" data-entity-2="UC_Pull" data-source-line="49" data-uid="lnk36" id="link_Peer_UC_Pull">
+<path d="M114.11,1126.8369 C174.78,1119.3269 276.1155,1106.7647 355.6855,1096.9047" fill="none" id="Peer-to-UC_Pull" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="361.64,1096.1669,352.2164,1093.304,356.678,1096.7818,353.2002,1101.2433,361.64,1096.1669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Peer to UC_AcceptTransfer-->
+<g class="link" data-entity-1="Peer" data-entity-2="UC_AcceptTransfer" data-source-line="50" data-uid="lnk37" id="link_Peer_UC_AcceptTransfer">
+<path d="M114.11,1137.0469 C173.14,1142.5669 270.3361,1151.6576 349.1661,1159.0376" fill="none" id="Peer-to-UC_AcceptTransfer" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="355.14,1159.5969,346.552,1154.7754,350.1618,1159.1308,345.8063,1162.7406,355.14,1159.5969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Member to UC_HouseholdStats-->
+<g class="link" data-entity-1="Member" data-entity-2="UC_HouseholdStats" data-source-line="52" data-uid="lnk38" id="link_Member_UC_HouseholdStats">
+<path d="M126.83,944.7169 C181.53,938.3569 258.4302,929.4101 328.1502,921.3001" fill="none" id="Member-to-UC_HouseholdStats" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="334.11,920.6069,324.7081,917.6736,329.1435,921.1846,325.6325,925.62,334.11,920.6069" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Member to UC_ViewShared-->
+<g class="link" data-entity-1="Member" data-entity-2="UC_ViewShared" data-source-line="53" data-uid="lnk39" id="link_Member_UC_ViewShared">
+<path d="M126.83,958.5869 C188.76,965.7969 280.8202,976.5036 355.0102,985.1336" fill="none" id="Member-to-UC_ViewShared" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="360.97,985.8269,352.4925,980.8138,356.0035,985.2492,351.5681,988.7602,360.97,985.8269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Visitor to UC_ViewPublic-->
+<g class="link" data-entity-1="Visitor" data-entity-2="UC_ViewPublic" data-source-line="55" data-uid="lnk40" id="link_Visitor_UC_ViewPublic">
+<path d="M125.09,1391.5369 C244.18,1409.4269 523.6,1438.7869 739.92,1363.6569 C789.72,1346.3569 804.77,1335.8969 834.92,1292.6569 C861.7,1254.2369 832.5,1225.4469 864.92,1191.6569 C875.66,1180.4569 883.98,1174.5508
+898.48,1168.5208" fill="none" id="Visitor-to-UC_ViewPublic" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="904.02,1166.2169,894.174,1165.9794,899.4033,1168.1368,897.2459,1173.3661,904.02,1166.2169" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Visitor to UC_Found-->
+<g class="link" data-entity-1="Visitor" data-entity-2="UC_Found" data-source-line="56" data-uid="lnk41" id="link_Visitor_UC_Found">
+<path d="M117.79,1334.8569 C138.04,1318.6369 162.46,1301.9569 187.39,1291.6569 C244.05,1268.2469 306.2555,1258.8976 360.5855,1254.9876" fill="none" id="Visitor-to-UC_Found" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="366.57,1254.5569,357.3061,1251.2132,361.5829,1254.9158,357.8803,1259.1926,366.57,1254.5569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_Invite to Mail-->
+<g class="link" data-entity-1="UC_Invite" data-entity-2="Mail" data-source-line="58" data-uid="lnk42" id="link_UC_Invite_Mail">
+<path d="M1493,738.5069 C1515.29,731.8369 1537.05,721.5169 1553.84,705.6569 C1625.49,637.9669 1642.0266,521.2852 1645.9066,459.0652" fill="none" id="UC_Invite-to-Mail" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1646.28,453.0769,1641.7276,461.8105,1645.9688,458.0672,1649.7121,462.3084,1646.28,453.0769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_Found to Mail-->
+<g class="link" data-entity-1="UC_Found" data-entity-2="Mail" data-source-line="59" data-uid="lnk43" id="link_UC_Found_Mail">
+<path d="M543.58,1265.3769 C606.35,1270.5569 691.42,1265.6369 739.92,1212.6569 C780.12,1168.7369 741.59,730.0169 769.92,677.6569 C794.88,631.5269 817.44,629.9169 864.92,607.6569 C1121.44,487.3769 1455.764,437.3424
+1586.774,421.3824" fill="none" id="UC_Found-to-Mail" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1592.73,420.6569,1583.3123,417.7746,1587.7667,421.2615,1584.2798,425.7159,1592.73,420.6569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_Share to UC_Invite-->
+<g class="link" data-entity-1="UC_Share" data-entity-2="UC_Invite" data-source-line="62" data-uid="lnk44" id="link_UC_Share_UC_Invite">
+<path d="M1102.58,740.3969 C1153.14,742.0669 1206.7433,743.8377 1257.9233,745.5377" fill="none" id="UC_Share-to-UC_Invite" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1263.92,745.7369,1255.0578,741.4403,1258.9228,745.5709,1254.7922,749.4359,1263.92,745.7369" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="1142.98" y="738.0538">&#171;include&#187;</text>
+</g>
+<!--link UC_Accept to UC_Invite-->
+<g class="link" data-entity-1="UC_Accept" data-entity-2="UC_Invite" data-source-line="63" data-uid="lnk45" id="link_UC_Accept_UC_Invite">
+<path d="M1067.83,1297.5769 C1118.05,1279.4169 1178.89,1247.5369 1206.98,1194.6569 C1270.04,1075.9169 1179.12,1015.0069 1236.98,893.6569 C1260.98,843.2969 1305.4171,804.1162 1339.9271,778.5762" fill="none"
+id="UC_Accept-to-UC_Invite" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1344.75,775.0069,1335.1362,777.1456,1340.7309,777.9813,1339.8952,783.5761,1344.75,775.0069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="1143.98" y="1190.7238">&#171;extend&#187;</text>
+</g>
+<!--link UC_Offer to UC_Thread-->
+<g class="link" data-entity-1="UC_Offer" data-entity-2="UC_Thread" data-source-line="64" data-uid="lnk46" id="link_UC_Offer_UC_Thread">
+<path d="M1059.85,1214.9769 C1077.56,1208.9769 1096.04,1201.2769 1111.98,1191.6569 C1223.55,1124.2669 1322.4946,1008.2443 1361.7746,959.0843" fill="none" id="UC_Offer-to-UC_Thread" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1365.52,954.3969,1356.777,958.9311,1362.3989,958.3031,1363.0269,963.925,1365.52,954.3969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="1143.98" y="1121.0838">&#171;extend&#187;</text>
+</g>
+<!--link UC_AcceptOffer to UC_Offer-->
+<g class="link" data-entity-1="UC_AcceptOffer" data-entity-2="UC_Offer" data-source-line="65" data-uid="lnk47" id="link_UC_AcceptOffer_UC_Offer">
+<path d="M537.42,1320.2269 C593.1,1314.0369 671.67,1304.2169 739.92,1291.6569 C801.07,1280.3969 864.0003,1265.186 913.4903,1252.416" fill="none" id="UC_AcceptOffer-to-UC_Offer" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="919.3,1250.9169,909.586,1249.2924,914.4586,1252.1661,911.5848,1257.0387,919.3,1250.9169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="771.92" y="1269.0838">&#171;extend&#187;</text>
+</g>
+<!--link UC_Found to UC_ViewPublic-->
+<g class="link" data-entity-1="UC_Found" data-entity-2="UC_ViewPublic" data-source-line="66" data-uid="lnk48" id="link_UC_Found_UC_ViewPublic">
+<path d="M550.3,1242.5569 C604.83,1235.5569 676.82,1225.2369 739.92,1212.6569 C800.7,1200.5369 863.0934,1184.4629 912.4934,1170.9229" fill="none" id="UC_Found-to-UC_ViewPublic" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="918.28,1169.3369,908.5428,1167.8582,913.4579,1170.6586,910.6575,1175.5737,918.28,1169.3369" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="771.92" y="1188.6838">&#171;extend&#187;</text>
+</g>
+<!--link UC_ViewPublic to UC_Public-->
+<g class="link" data-entity-1="UC_ViewPublic" data-entity-2="UC_Public" data-source-line="67" data-uid="lnk49" id="link_UC_ViewPublic_UC_Public">
+<path d="M997.57,1124.5169 C1026.83,1034.2869 1125.93,731.2569 1141.98,716.6569 C1170.21,690.9569 1201.9309,677.247 1238.9509,668.497" fill="none" id="UC_ViewPublic-to-UC_Public" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1244.79,667.1169,1235.1112,665.2943,1239.9241,668.267,1236.9514,673.0798,1244.79,667.1169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="1143.98" y="675.5238">&#171;extend&#187;</text>
+</g>
+<!--link UC_AcceptOffer to UC_Push-->
+<g class="link" data-entity-1="UC_AcceptOffer" data-entity-2="UC_Push" data-source-line="70" data-uid="lnk50" id="link_UC_AcceptOffer_UC_Push">
+<path d="M529.06,1338.4969 C591.14,1345.0169 683.72,1343.7469 739.92,1291.6569 C752.37,1280.1169 853.74,706.4169 864.92,693.6569 C874.73,682.4669 882.1391,676.6281 895.8791,670.5081" fill="none" id="UC_AcceptOffer-to-UC_Push"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="901.36,668.0669,891.5111,668.0749,896.7926,670.1013,894.7662,675.3827,901.36,668.0669" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="59.8076" x="772.92" y="837.4938">&#171;trigger&#187;</text>
+</g>
+<!--link UC_Household to UC_Share-->
+<g class="link" data-entity-1="UC_Household" data-entity-2="UC_Share" data-source-line="71" data-uid="lnk51" id="link_UC_Household_UC_Share">
+<path d="M566.08,668.9469 C661.24,684.2369 796.456,705.9646 888.716,720.7946" fill="none" id="UC_Household-to-UC_Share" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="894.64,721.7469,886.3889,716.3692,889.7034,720.9534,885.1192,724.2678,894.64,721.7469" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="770.92" y="698.2438">&#171;include&#187;</text>
+</g>
+<!--link UC_Found to GMN52-->
+<g class="link" data-entity-1="UC_Found" data-entity-2="GMN52" data-source-line="74" data-uid="lnk54" id="link_UC_Found_GMN52">
+<path d="M385.63,1266.0369 C309.99,1273.9069 200.48,1270.4069 156.89,1195.1569 C125.21,1140.4469 125.21,680.8669 156.89,626.1569 C168.79,605.6169 184.82,588.4369 203.33,574.0669" fill="none" id="UC_Found-GMN52"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+</g>
+</g>
+</svg>

@@ -1,0 +1,253 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="1454px" preserveAspectRatio="none" style="width:1605px;height:1454px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1605 1454" width="1605px" zoomAndPan="magnify">
+<title>WIM - Cas d'utilisation : Compte &amp; securite (modules auth, profile)</title>
+<defs/>
+<g>
+<g class="title" data-source-line="1">
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="526.627" x="532.3465" y="22.9951">WIM - Cas d'utilisation : Compte &amp; securite (modules
+auth, profile)</text>
+</g>
+<!--cluster Compte & securite-->
+<g class="cluster" data-entity="Compte . securite" data-source-line="16" data-uid="ent0006" id="cluster_Compte . securite">
+<rect fill="none" height="1133" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;" width="1187.53" x="411.79" y="200.1269"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="146.6309" x="932.2396" y="215.122">Compte &amp; securite</text>
+</g>
+<!--entity UC_Register-->
+<g class="entity" data-entity="UC_Register" data-source-line="17" data-uid="ent0007" id="entity_UC_Register">
+<ellipse cx="577.1407" cy="516.131" fill="#F9F9F9" rx="74.7207" ry="17.3441" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118.0498" x="518.1158" y="520.7795">Creer un compte</text>
+</g>
+<!--entity UC_Login-->
+<g class="entity" data-entity="UC_Login" data-source-line="18" data-uid="ent0008" id="entity_UC_Login">
+<ellipse cx="1087.5165" cy="263.1262" fill="#F9F9F9" rx="64.4965" ry="15.2993" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="92.1279" x="1041.4525" y="267.7746">Se connecter</text>
+</g>
+<!--entity UC_Totp-->
+<g class="entity" data-entity="UC_Totp" data-source-line="19" data-uid="ent0009" id="entity_UC_Totp">
+<ellipse cx="1458.9431" cy="263.1235" fill="#F9F9F9" rx="124.3831" ry="27.2766" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="228.6826" x="1344.6018" y="267.7719">Verifier le second facteur (TOTP)</text>
+</g>
+<!--entity UC_Passkey-->
+<g class="entity" data-entity="UC_Passkey" data-source-line="20" data-uid="ent0010" id="entity_UC_Passkey">
+<ellipse cx="577.1409" cy="266.1291" fill="#F9F9F9" rx="145.0609" ry="31.4122" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="272.1865" x="441.0476" y="270.7775">S'authentifier par passkey (WebAuthn)</text>
+</g>
+<!--entity UC_Logout-->
+<g class="entity" data-entity="UC_Logout" data-source-line="21" data-uid="ent0011" id="entity_UC_Logout">
+<ellipse cx="577.1371" cy="1037.1263" fill="#F9F9F9" rx="71.2971" ry="16.6594" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109.6279" x="522.3232" y="1041.7747">Se deconnecter</text>
+</g>
+<!--entity UC_Reset-->
+<g class="entity" data-entity="UC_Reset" data-source-line="22" data-uid="ent0012" id="entity_UC_Reset">
+<ellipse cx="577.1431" cy="357.1295" fill="#F9F9F9" rx="110.3131" ry="24.4626" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="198.5566" x="477.8648" y="361.7779">Reinitialiser le mot de passe</text>
+</g>
+<!--entity UC_VerifyMail-->
+<g class="entity" data-entity="UC_VerifyMail" data-source-line="23" data-uid="ent0013" id="entity_UC_VerifyMail">
+<ellipse cx="577.1396" cy="440.1288" fill="#F9F9F9" rx="105.3596" ry="23.4719" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="187.8037" x="483.2377" y="444.7772">Verifier son adresse e-mail</text>
+</g>
+<!--entity UC_TotpSetup-->
+<g class="entity" data-entity="UC_TotpSetup" data-source-line="24" data-uid="ent0014" id="entity_UC_TotpSetup">
+<ellipse cx="577.1376" cy="1113.1284" fill="#F9F9F9" rx="108.2076" ry="24.0415" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193.9971" x="480.1391" y="1117.7768">Activer / desactiver le TOTP</text>
+</g>
+<!--entity UC_Backup-->
+<g class="entity" data-entity="UC_Backup" data-source-line="25" data-uid="ent0015" id="entity_UC_Backup">
+<ellipse cx="1087.5189" cy="1241.1247" fill="#F9F9F9" rx="122.0389" ry="26.8078" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="223.6992" x="975.6693" y="1245.7731">Regenerer les codes de secours</text>
+</g>
+<!--entity UC_Sessions-->
+<g class="entity" data-entity="UC_Sessions" data-source-line="26" data-uid="ent0016" id="entity_UC_Sessions">
+<ellipse cx="577.1421" cy="594.1313" fill="#F9F9F9" rx="118.6221" ry="26.1244" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.4121" x="468.9361" y="598.7797">Lister et revoquer ses sessions</text>
+</g>
+<!--entity UC_History-->
+<g class="entity" data-entity="UC_History" data-source-line="27" data-uid="ent0017" id="entity_UC_History">
+<ellipse cx="577.1412" cy="1201.1291" fill="#F9F9F9" rx="133.5612" ry="29.1122" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="248.083" x="453.0997" y="1205.7775">Consulter l'historique de connexion</text>
+</g>
+<!--entity UC_Credentials-->
+<g class="entity" data-entity="UC_Credentials" data-source-line="28" data-uid="ent0018" id="entity_UC_Credentials">
+<ellipse cx="577.1367" cy="1291.1282" fill="#F9F9F9" rx="118.3567" ry="26.0713" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="215.8447" x="469.2143" y="1295.7766">Changer mot de passe / e-mail</text>
+</g>
+<!--entity UC_Prefs-->
+<g class="entity" data-entity="UC_Prefs" data-source-line="29" data-uid="ent0019" id="entity_UC_Prefs">
+<ellipse cx="577.137" cy="687.1263" fill="#F9F9F9" rx="149.347" ry="32.2694" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161.2324" x="496.5208" y="675.4949">Regler ses preferences</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="281.0732" x="436.6003" y="691.7918">(theme, langue, devise, format de date)</text>
+</g>
+<!--entity UC_Reminders-->
+<g class="entity" data-entity="UC_Reminders" data-source-line="30" data-uid="ent0020" id="entity_UC_Reminders">
+<ellipse cx="577.1375" cy="782.1244" fill="#F9F9F9" rx="128.2375" ry="28.0475" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.043" x="476.1161" y="780.1171">Choisir ses canaux de rappel</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="176.3262" x="488.9745" y="796.4139">(push, e-mail, J-n, digest)</text>
+</g>
+<!--entity UC_Export-->
+<g class="entity" data-entity="UC_Export" data-source-line="31" data-uid="ent0021" id="entity_UC_Export">
+<ellipse cx="577.1389" cy="870.1307" fill="#F9F9F9" rx="114.3189" ry="25.2638" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="207.1904" x="473.5437" y="874.7791">Exporter ses donnees (RGPD)</text>
+</g>
+<!--entity UC_Delete-->
+<g class="entity" data-entity="UC_Delete" data-source-line="32" data-uid="ent0022" id="entity_UC_Delete">
+<ellipse cx="577.1391" cy="958.1267" fill="#F9F9F9" rx="126.1491" ry="27.6298" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="232.4287" x="460.9248" y="962.7751">Supprimer son compte (cascade)</text>
+</g>
+<!--entity Guest-->
+<g class="entity" data-entity="Guest" data-source-line="11" data-uid="ent0002" id="entity_Guest">
+<ellipse cx="64.8984" cy="366.3369" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M64.8984,374.3369 L64.8984,401.3369 M51.8984,382.3369 L77.8984,382.3369 M64.8984,401.3369 L51.8984,416.3369 M64.8984,401.3369 L77.8984,416.3369" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53.3818" x="6" y="430.832">Visiteur</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117.7969" x="6" y="447.1289">(non authentifie)</text>
+</g>
+<!--entity User-->
+<g class="entity" data-entity="User" data-source-line="12" data-uid="ent0003" id="entity_User">
+<ellipse cx="64.8949" cy="953.4769" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M64.8949,961.4769 L64.8949,988.4769 M51.8949,969.4769 L77.8949,969.4769 M64.8949,988.4769 L51.8949,1003.4769 M64.8949,988.4769 L77.8949,1003.4769" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="28.89" y="1017.972">Utilisateur</text>
+</g>
+<!--entity Admin-->
+<g class="entity" data-entity="Admin" data-source-line="13" data-uid="ent0004" id="entity_Admin">
+<ellipse cx="64.9018" cy="564.4769" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M64.9018,572.4769 L64.9018,599.4769 M51.9018,580.4769 L77.9018,580.4769 M64.9018,599.4769 L51.9018,614.4769 M64.9018,599.4769 L77.9018,614.4769" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104.6035" x="12.6" y="628.972">Administrateur</text>
+</g>
+<!--entity Mail-->
+<g class="entity" data-entity="Mail" data-source-line="14" data-uid="ent0005" id="entity_Mail">
+<ellipse cx="1087.5125" cy="1365.3369" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1087.5125,1373.3369 L1087.5125,1400.3369 M1074.5125,1381.3369 L1100.5125,1381.3369 M1087.5125,1400.3369 L1074.5125,1415.3369 M1087.5125,1400.3369 L1100.5125,1415.3369" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52.0078" x="1060.22" y="1429.832">Resend</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="54.585" x="1060.22" y="1446.1289">(e-mail)</text>
+</g>
+<g class="entity" data-entity="GMN43" data-source-line="62" data-uid="ent0044" id="entity_GMN43">
+<path d="M313.8,43.2969 L313.8,128.9609 L840.4797,128.9609 L840.4797,53.2969 L830.4797,43.2969 L313.8,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M830.4797,43.2969 L830.4797,53.2969 L840.4797,53.2969 L830.4797,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="483.0059" x="319.8" y="60.3638">Le jeton JWT est porte par un cookie httpOnly ; la revocation combine une</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="477.3818" x="319.8" y="75.4966">denylist Redis (jti) et un compteur `tokenVersion` sur l'utilisateur, si
+bien</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="235.022" x="319.8" y="90.6294">qu'un changement de mot de passe</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="143.5649" x="558.9543" y="90.6294">ou d'adresse e-mail</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118.79" x="706.6516" y="90.6294">invalide toutes les</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="505.6797" x="319.8" y="105.7622">sessions. La suppression du compte efface en cascade l'integralite du graphe</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="497.3198" x="319.8" y="120.895">de donnees (droit a l'effacement). Routes : `/api/auth/*`, `/api/profile/me/*`.</text>
+</g>
+<!--link Guest to UC_Register-->
+<g class="link" data-entity-1="Guest" data-entity-2="UC_Register" data-source-line="35" data-uid="lnk23" id="link_Guest_UC_Register">
+<path d="M124.25,425.3169 C174.02,442.6469 247.78,466.5869 313.8,481.1269 C378.41,495.3669 447.3707,504.061 500.5707,509.461" fill="none" id="Guest-to-UC_Register" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="506.54,510.0669,497.9899,505.1785,501.5656,509.562,497.1821,513.1376,506.54,510.0669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Guest to UC_Login-->
+<g class="link" data-entity-1="Guest" data-entity-2="UC_Login" data-source-line="36" data-uid="lnk24" id="link_Guest_UC_Login">
+<path d="M108.97,357.3769 C154.66,311.5469 231.49,244.6869 313.8,217.1269 C582.05,127.2969 925.8496,214.5844 1041.6296,249.0644" fill="none" id="Guest-to-UC_Login" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1047.38,250.7769,1039.896,244.3745,1042.588,249.3498,1037.6127,252.0417,1047.38,250.7769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Guest to UC_Reset-->
+<g class="link" data-entity-1="Guest" data-entity-2="UC_Reset" data-source-line="37" data-uid="lnk25" id="link_Guest_UC_Reset">
+<path d="M123.93,398.7869 C209.21,390.9269 363.6453,376.7075 468.6853,367.0275" fill="none" id="Guest-to-UC_Reset" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="474.66,366.4769,465.3309,363.3197,469.6811,366.9357,466.065,371.2859,474.66,366.4769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Guest to UC_VerifyMail-->
+<g class="link" data-entity-1="Guest" data-entity-2="UC_VerifyMail" data-source-line="38" data-uid="lnk26" id="link_Guest_UC_VerifyMail">
+<path d="M123.93,408.2269 C209.61,414.2669 365.1049,425.2445 470.1149,432.6545" fill="none" id="Guest-to-UC_VerifyMail" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="476.1,433.0769,467.4039,428.4533,471.1124,432.7249,466.8408,436.4334,476.1,433.0769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Logout-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Logout" data-source-line="40" data-uid="lnk27" id="link_User_UC_Logout">
+<path d="M101.37,986.8869 C186.35,995.8769 396.5933,1018.1255 505.4633,1029.6455" fill="none" id="User-to-UC_Logout" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="511.43,1030.2769,502.9009,1025.352,506.4578,1029.7507,502.0591,1033.3076,511.43,1030.2769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_TotpSetup-->
+<g class="link" data-entity-1="User" data-entity-2="UC_TotpSetup" data-source-line="41" data-uid="lnk28" id="link_User_UC_TotpSetup">
+<path d="M101.39,998.0469 C148.95,1017.4969 236.36,1051.3669 313.8,1071.1269 C368.21,1085.0169 424.2556,1094.3823 474.3156,1101.2423" fill="none" id="User-to-UC_TotpSetup" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="480.26,1102.0569,471.8864,1096.872,475.3063,1101.378,470.8003,1104.7979,480.26,1102.0569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Backup-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Backup" data-source-line="42" data-uid="lnk29" id="link_User_UC_Backup">
+<path d="M70.13,1021.3769 C77.96,1076.2269 99.22,1177.8969 153.8,1244.1269 C205.82,1307.2669 234.71,1314.2169 313.8,1335.1269 C540.1,1394.9869 610.28,1377.6069 840.48,1335.1269 C911.75,1321.9769 983.6638,1291.6584
+1032.2338,1268.5084" fill="none" id="User-to-UC_Backup" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1037.65,1265.9269,1027.8046,1266.1884,1033.1365,1268.0782,1031.2467,1273.41,1037.65,1265.9269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Sessions-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Sessions" data-source-line="43" data-uid="lnk30" id="link_User_UC_Sessions">
+<path d="M75.95,944.5369 C88.85,899.9769 114.39,825.9069 153.8,772.1269 C208.79,697.0769 229.29,676.0569 313.8,637.1269 C359.38,616.1269 407.622,605.9252 454.892,600.3052" fill="none" id="User-to-UC_Sessions"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="460.85,599.5969,451.4407,596.6874,455.885,600.1872,452.3852,604.6314,460.85,599.5969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_History-->
+<g class="link" data-entity-1="User" data-entity-2="UC_History" data-source-line="44" data-uid="lnk31" id="link_User_UC_History">
+<path d="M100.08,1021.6469 C115.52,1037.7769 134.6,1056.0069 153.8,1070.1269 C218.66,1117.8469 237.64,1128.9669 313.8,1155.1269 C359.28,1170.7569 405.1695,1180.366 450.6795,1187.356" fill="none" id="User-to-UC_History"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="456.61,1188.2669,448.3216,1182.9469,451.668,1187.5078,447.1071,1190.8542,456.61,1188.2669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Credentials-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Credentials" data-source-line="45" data-uid="lnk32" id="link_User_UC_Credentials">
+<path d="M79.03,1021.4669 C93.06,1058.1069 118.2,1113.2169 153.8,1151.1269 C234.43,1237.0069 362.9236,1269.447 458.4536,1282.297" fill="none" id="User-to-UC_Credentials" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="464.4,1283.0969,456.0136,1277.9328,459.4446,1282.4303,454.9471,1285.8614,464.4,1283.0969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Prefs-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Prefs" data-source-line="46" data-uid="lnk33" id="link_User_UC_Prefs">
+<path d="M85.48,944.5169 C101.35,915.6169 125.64,876.2169 153.8,847.1269 C213.99,784.9369 233.93,769.4769 313.8,736.1269 C353.88,719.3869 393.8778,709.3595 435.9678,702.0795" fill="none" id="User-to-UC_Prefs"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="441.88,701.0569,432.3299,698.6493,436.9532,701.909,433.6934,706.5322,441.88,701.0569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Reminders-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Reminders" data-source-line="47" data-uid="lnk34" id="link_User_UC_Reminders">
+<path d="M101.04,949.1869 C116.51,935.2069 135.34,919.4469 153.8,907.1269 C219.94,863.0069 238.25,851.8969 313.8,827.1269 C360.89,811.6969 408.6345,802.1642 455.1145,795.2942" fill="none" id="User-to-UC_Reminders"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="461.05,794.4169,451.5619,791.7758,456.1037,795.148,452.7316,799.6898,461.05,794.4169" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Export-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Export" data-source-line="48" data-uid="lnk35" id="link_User_UC_Export">
+<path d="M101.4,968.0169 C117.25,961.6369 136.26,954.4569 153.8,949.1269 C261.92,916.2469 384.0386,895.4531 470.5786,883.2731" fill="none" id="User-to-UC_Export" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="476.52,882.4369,467.0504,879.7302,471.5688,883.1337,468.1653,887.6522,476.52,882.4369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Delete-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Delete" data-source-line="49" data-uid="lnk36" id="link_User_UC_Delete">
+<path d="M101.37,981.3969 C173.07,977.8769 332.2072,970.0807 447.4472,964.4307" fill="none" id="User-to-UC_Delete" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="453.44,964.1369,444.2549,960.5824,448.446,964.3817,444.6467,968.5728,453.44,964.1369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Admin to UC_Sessions-->
+<g class="link" data-entity-1="Admin" data-entity-2="UC_Sessions" data-source-line="51" data-uid="lnk37" id="link_Admin_UC_Sessions">
+<path d="M117.63,594.1269 C196.93,594.1269 344.63,594.1269 452.12,594.1269" fill="none" id="Admin-to-UC_Sessions" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="458.12,594.1269,449.12,590.1269,453.12,594.1269,449.12,598.1269,458.12,594.1269" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="128.4766" x="154.8" y="575.1938">deconnexion forcee</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="120.3262" x="158.8752" y="590.3266">d'un autre compte</text>
+</g>
+<!--link UC_Login to UC_Totp-->
+<g class="link" data-entity-1="UC_Login" data-entity-2="UC_Totp" data-source-line="54" data-uid="lnk38" id="link_UC_Login_UC_Totp">
+<path d="M1152.44,263.1269 C1202.42,263.1269 1267.4,263.1269 1328.37,263.1269" fill="none" id="UC_Login-to-UC_Totp" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1334.37,263.1269,1325.37,259.1269,1329.37,263.1269,1325.37,267.1269,1334.37,263.1269" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="1240.55" y="259.1938">&#171;include&#187;</text>
+</g>
+<!--link UC_Passkey to UC_Login-->
+<g class="link" data-entity-1="UC_Passkey" data-entity-2="UC_Login" data-source-line="55" data-uid="lnk39" id="link_UC_Passkey_UC_Login">
+<path d="M722.46,265.2769 C821.39,264.6969 941.8101,263.9821 1016.6701,263.5421" fill="none" id="UC_Passkey-to-UC_Login" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1022.67,263.5069,1013.6466,259.5598,1017.6701,263.5363,1013.6937,267.5597,1022.67,263.5069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="872.48" y="260.1638">&#171;extend&#187;</text>
+</g>
+<!--link UC_TotpSetup to UC_Backup-->
+<g class="link" data-entity-1="UC_TotpSetup" data-entity-2="UC_Backup" data-source-line="56" data-uid="lnk40" id="link_UC_TotpSetup_UC_Backup">
+<path d="M674.63,1123.8669 C724.58,1130.5169 786.29,1140.4369 840.48,1154.1269 C906.37,1170.7769 973.9313,1195.5783 1023.2113,1215.0883" fill="none" id="UC_TotpSetup-to-UC_Backup" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1028.79,1217.2969,1021.8943,1210.2648,1024.1411,1215.4564,1018.9495,1217.7031,1028.79,1217.2969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="871.48" y="1159.5338">&#171;include&#187;</text>
+</g>
+<!--link UC_Reset to Mail-->
+<g class="link" data-entity-1="UC_Reset" data-entity-2="Mail" data-source-line="58" data-uid="lnk41" id="link_UC_Reset_Mail">
+<path d="M674.1,345.0869 C731.1,343.7469 799.95,353.3869 840.48,399.1269 C898.73,464.8769 843.63,1105.4869 870.48,1189.1269 C893.91,1262.1369 909.69,1280.5369 965.48,1333.1269 C993.74,1359.7769 1028.4773,1377.9974
+1054.6673,1389.7674" fill="none" id="UC_Reset-to-Mail" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1060.14,1392.2269,1053.5706,1384.8891,1055.5794,1390.1773,1050.2912,1392.1861,1060.14,1392.2269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_VerifyMail to Mail-->
+<g class="link" data-entity-1="UC_VerifyMail" data-entity-2="Mail" data-source-line="59" data-uid="lnk42" id="link_UC_VerifyMail_Mail">
+<path d="M668,427.8669 C726.11,425.4469 798.48,433.8069 840.48,481.1269 C902.03,550.4869 817.36,1239.1269 870.48,1315.1269 C914.67,1378.3669 1006.7533,1395.5859 1054.0333,1400.5859" fill="none" id="UC_VerifyMail-to-Mail"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1060,1401.2169,1051.4706,1396.2926,1055.0277,1400.691,1050.6292,1404.2482,1060,1401.2169" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_Delete to GMN43-->
+<g class="link" data-entity-1="UC_Delete" data-entity-2="GMN43" data-source-line="62" data-uid="lnk45" id="link_UC_Delete_GMN43">
+<path d="M469.03,972.6269 C386.79,976.9169 277.99,966.7269 218.8,895.6269 C116.14,772.3269 119.71,299.8269 218.8,173.6269 C243.22,142.5269 276.71,121.3369 313.47,107.0869" fill="none" id="UC_Delete-GMN43"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+</g>
+</g>
+</svg>

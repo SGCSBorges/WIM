@@ -1,0 +1,324 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="2094px" preserveAspectRatio="none" style="width:1308px;height:2094px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1308 2094" width="1308px" zoomAndPan="magnify">
+<title>WIM - Cas d'utilisation : Inventaire (articles, tags, emplacements, pieces jointes)</title>
+<defs/>
+<g>
+<g class="title" data-source-line="1">
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="639.4883" x="327.6859" y="22.9951">WIM - Cas d'utilisation : Inventaire (articles, tags,
+emplacements, pieces jointes)</text>
+</g>
+<!--cluster Inventaire-->
+<g class="cluster" data-entity="Inventaire" data-source-line="15" data-uid="ent0005" id="cluster_Inventaire">
+<rect fill="none" height="1601" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;" width="936.43" x="366.43" y="378.7969"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="81.1016" x="794.0942" y="393.792">Inventaire</text>
+</g>
+<!--entity UC_Crud-->
+<g class="entity" data-entity="UC_Crud" data-source-line="16" data-uid="ent0006" id="entity_UC_Crud">
+<ellipse cx="1144.7231" cy="1018.7935" fill="#F9F9F9" rx="142.1331" ry="30.8266" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="266.0684" x="1011.6889" y="1023.4419">Creer / modifier / supprimer un article</text>
+</g>
+<!--entity UC_Search-->
+<g class="entity" data-entity="UC_Search" data-source-line="17" data-uid="ent0007" id="entity_UC_Search">
+<ellipse cx="543.3937" cy="704.7996" fill="#F9F9F9" rx="160.9637" ry="34.5927" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.5449" x="472.6212" y="693.1512">Rechercher et filtrer</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="305.2383" x="390.7746" y="709.4481">(plein-texte trigram, statut, etat, categorie)</text>
+</g>
+<!--entity UC_Barcode-->
+<g class="entity" data-entity="UC_Barcode" data-source-line="18" data-uid="ent0008" id="entity_UC_Barcode">
+<ellipse cx="543.39" cy="795.7949" fill="#F9F9F9" rx="96.19" ry="21.638" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="167.624" x="459.578" y="800.4433">Scanner un code-barres</text>
+</g>
+<!--entity UC_Ocr-->
+<g class="entity" data-entity="UC_Ocr" data-source-line="19" data-uid="ent0009" id="entity_UC_Ocr">
+<ellipse cx="543.3941" cy="881.7997" fill="#F9F9F9" rx="136.6141" ry="29.7228" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="254.502" x="416.1432" y="886.4481">Numeriser un ticket de caisse (OCR)</text>
+</g>
+<!--entity UC_Attach-->
+<g class="entity" data-entity="UC_Attach" data-source-line="20" data-uid="ent0010" id="entity_UC_Attach">
+<ellipse cx="543.3878" cy="972.7924" fill="#F9F9F9" rx="121.0278" ry="26.6056" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="221.5459" x="432.6149" y="977.4409">Joindre une piece (PDF / image)</text>
+</g>
+<!--entity UC_Tags-->
+<g class="entity" data-entity="UC_Tags" data-source-line="21" data-uid="ent0011" id="entity_UC_Tags">
+<ellipse cx="543.3852" cy="1063.7939" fill="#F9F9F9" rx="133.0352" ry="29.007" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="246.9756" x="419.8974" y="1068.4424">Organiser par etiquettes (couleurs)</text>
+</g>
+<!--entity UC_Locations-->
+<g class="entity" data-entity="UC_Locations" data-source-line="22" data-uid="ent0012" id="entity_UC_Locations">
+<ellipse cx="543.389" cy="1160.8007" fill="#F9F9F9" rx="153.869" ry="33.1738" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="290.5273" x="398.1253" y="1165.4491">Organiser par emplacements (hierarchie)</text>
+</g>
+<!--entity UC_Notes-->
+<g class="entity" data-entity="UC_Notes" data-source-line="23" data-uid="ent0013" id="entity_UC_Notes">
+<ellipse cx="543.3877" cy="1251.7924" fill="#F9F9F9" rx="102.0277" ry="22.8055" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="180.5166" x="453.1294" y="1256.4409">Annoter un article (notes)</text>
+</g>
+<!--entity UC_Custom-->
+<g class="entity" data-entity="UC_Custom" data-source-line="24" data-uid="ent0014" id="entity_UC_Custom">
+<ellipse cx="543.3888" cy="1340.7926" fill="#F9F9F9" rx="143.3788" ry="31.0758" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="268.6729" x="409.0524" y="1345.4411">Renseigner des champs personnalises</text>
+</g>
+<!--entity UC_Fav-->
+<g class="entity" data-entity="UC_Fav" data-source-line="25" data-uid="ent0015" id="entity_UC_Fav">
+<ellipse cx="543.3883" cy="1427.7965" fill="#F9F9F9" rx="92.5983" ry="20.9197" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159.5986" x="463.589" y="1432.445">Marquer comme favori</text>
+</g>
+<!--entity UC_Verify-->
+<g class="entity" data-entity="UC_Verify" data-source-line="26" data-uid="ent0016" id="entity_UC_Verify">
+<ellipse cx="543.3876" cy="1510.7944" fill="#F9F9F9" rx="123.2376" ry="27.0475" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="226.249" x="430.2631" y="1515.4428">Verifier physiquement un article</text>
+</g>
+<!--entity UC_Bundle-->
+<g class="entity" data-entity="UC_Bundle" data-source-line="27" data-uid="ent0017" id="entity_UC_Bundle">
+<ellipse cx="543.3905" cy="438.793" fill="#F9F9F9" rx="112.3305" ry="24.8661" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="202.9111" x="441.9349" y="443.4414">Regrouper des articles en lot</text>
+</g>
+<!--entity UC_Duplicate-->
+<g class="entity" data-entity="UC_Duplicate" data-source-line="28" data-uid="ent0018" id="entity_UC_Duplicate">
+<ellipse cx="543.3854" cy="517.8" fill="#F9F9F9" rx="83.5654" ry="19.1131" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="139.0088" x="473.881" y="522.4484">Dupliquer un article</text>
+</g>
+<!--entity UC_Trash-->
+<g class="entity" data-entity="UC_Trash" data-source-line="29" data-uid="ent0019" id="entity_UC_Trash">
+<ellipse cx="543.3859" cy="603.7921" fill="#F9F9F9" rx="147.0759" ry="31.8152" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="276.3906" x="405.1906" y="608.4405">Corbeille : supprimer, restaurer, purger</text>
+</g>
+<!--entity UC_Bulk-->
+<g class="entity" data-entity="UC_Bulk" data-source-line="30" data-uid="ent0020" id="entity_UC_Bulk">
+<ellipse cx="543.3886" cy="1669.8006" fill="#F9F9F9" rx="129.2686" ry="28.2537" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113.2852" x="486.7461" y="1660.0272">Editer en masse</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231.793" x="427.4921" y="1676.3241">(statut, categorie, etat, quantite)</text>
+</g>
+<!--entity UC_Template-->
+<g class="entity" data-entity="UC_Template" data-source-line="31" data-uid="ent0021" id="entity_UC_Template">
+<ellipse cx="543.388" cy="1756.8005" fill="#F9F9F9" rx="105.918" ry="23.5836" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189.0205" x="448.8777" y="1761.4489">Utiliser un modele d'article</text>
+</g>
+<!--entity UC_Views-->
+<g class="entity" data-entity="UC_Views" data-source-line="32" data-uid="ent0022" id="entity_UC_Views">
+<ellipse cx="1144.716" cy="1912.8001" fill="#F9F9F9" rx="103.816" ry="23.1632" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184.4336" x="1052.4992" y="1917.4485">Enregistrer une vue filtree</text>
+</g>
+<!--entity UC_ViewShare-->
+<g class="entity" data-entity="UC_ViewShare" data-source-line="33" data-uid="ent0023" id="entity_UC_ViewShare">
+<ellipse cx="543.3888" cy="1841.7926" fill="#F9F9F9" rx="121.8288" ry="26.7658" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="185.2539" x="450.7619" y="1839.7026">Definir une vue par defaut</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="158.5186" x="464.1296" y="1855.9994">et la partager au foyer</text>
+</g>
+<!--entity UC_Import-->
+<g class="entity" data-entity="UC_Import" data-source-line="34" data-uid="ent0024" id="entity_UC_Import">
+<ellipse cx="543.3937" cy="1933.7976" fill="#F9F9F9" rx="137.0537" ry="29.8107" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="255.4248" x="415.6813" y="1938.446">Importer un CSV (validation a blanc)</text>
+</g>
+<!--entity UC_Export-->
+<g class="entity" data-entity="UC_Export" data-source-line="35" data-uid="ent0025" id="entity_UC_Export">
+<ellipse cx="543.389" cy="1589.7967" fill="#F9F9F9" rx="73.399" ry="17.0798" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="114.8232" x="485.9774" y="1594.4451">Exporter en CSV</text>
+</g>
+<!--entity User-->
+<g class="entity" data-entity="User" data-source-line="11" data-uid="ent0002" id="entity_User">
+<ellipse cx="182.1949" cy="943.1469" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M182.1949,951.1469 L182.1949,978.1469 M169.1949,959.1469 L195.1949,959.1469 M182.1949,978.1469 L169.1949,993.1469 M182.1949,978.1469 L195.1949,993.1469" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="146.19" y="1007.642">Utilisateur</text>
+</g>
+<!--entity PowerUser-->
+<g class="entity" data-entity="PowerUser" data-source-line="12" data-uid="ent0003" id="entity_PowerUser">
+<ellipse cx="45.5938" cy="1727.1469" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M45.5938,1735.1469 L45.5938,1762.1469 M32.5938,1743.1469 L58.5938,1743.1469 M45.5938,1762.1469 L32.5938,1777.1469 M45.5938,1762.1469 L58.5938,1777.1469" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.1875" x="6" y="1791.642">Power User</text>
+</g>
+<!--entity OFF-->
+<g class="entity" data-entity="OFF" data-source-line="13" data-uid="ent0004" id="entity_OFF">
+<ellipse cx="1144.7246" cy="278.9969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1144.7246,286.9969 L1144.7246,313.9969 M1131.7246,294.9969 L1157.7246,294.9969 M1144.7246,313.9969 L1131.7246,328.9969 M1144.7246,313.9969 L1157.7246,328.9969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="126.6426" x="1072.52" y="343.492">Open Food Facts /</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="144.4092" x="1072.52" y="359.7889">Open Products Facts</text>
+</g>
+<g class="entity" data-entity="GMN56" data-source-line="74" data-uid="ent0057" id="entity_GMN56">
+<path d="M279.2,216.6969 L279.2,362.8922 L807.5936,362.8922 L807.5936,226.6969 L797.5936,216.6969 L279.2,216.6969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M797.5936,216.6969 L797.5936,226.6969 L807.5936,226.6969 L797.5936,216.6969" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="507.3936" x="285.2" y="233.7638">Les etiquettes et les emplacements sont des relations M:N (tables de jonction</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="460.6304" x="285.2" y="248.8966">ArticleTag / ArticleLocation) ; les emplacements sont hierarchiques. La</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="490.8896" x="285.2" y="264.0294">suppression est douce (`deletedAt`) et alimente la corbeille, seule table
+du</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="465.2642" x="285.2" y="279.1622">modele a pratiquer le soft-delete ; une purge planifiee vide la corbeille.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="240.8174" x="285.2" y="294.295">Le scan de code-barres et l'OCR sont</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="153.5117" x="530.1497" y="294.295">entierement gratuits</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="95.2974" x="687.7938" y="294.295">: lookup public</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="426.8101" x="285.2" y="309.4278">sans cle d'API et tesseract.js (WASM) execute dans le navigateur.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="473.2559" x="285.2" y="324.5606">Import/export CSV, edition en masse, modeles et vues enregistrees sont</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="471.25" x="285.2" y="339.6935">reserves au niveau Power User (`csv_import`, `csv_export`, `bulk_edit`,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190.8169" x="285.2" y="354.8263">`templates`, `saved_views`).</text>
+</g>
+<!--link User to UC_Crud-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Crud" data-source-line="38" data-uid="lnk26" id="link_User_UC_Crud">
+<path d="M185.03,934.3669 C192.56,784.8969 223.36,248.1369 279.2,198.7969 C455.18,43.2969 594.92,99.1869 807.59,198.7969 C1117.6,343.9969 1142.583,850.2271 1143.833,981.8071" fill="none" id="User-to-UC_Crud"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1143.89,987.8069,1147.8043,978.7693,1143.8425,982.8071,1139.8047,978.8453,1143.89,987.8069" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Search-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Search" data-source-line="39" data-uid="lnk27" id="link_User_UC_Search">
+<path d="M189.26,934.2169 C199.1,885.1269 223.4,801.3469 279.2,756.7969 C309.13,732.8869 341.1271,720.2055 378.7471,712.3355" fill="none" id="User-to-UC_Search" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="384.62,711.1069,374.9916,709.0345,379.7259,712.1307,376.6298,716.865,384.62,711.1069" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Barcode-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Barcode" data-source-line="40" data-uid="lnk28" id="link_User_UC_Barcode">
+<path d="M199.34,934.2369 C214.89,902.1469 241.62,858.0969 279.2,834.7969 C329.45,803.6369 389.2541,794.1077 442.4841,792.1477" fill="none" id="User-to-UC_Barcode" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="448.48,791.9269,439.3389,788.2608,443.4834,792.1109,439.6333,796.2553,448.48,791.9269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Ocr-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Ocr" data-source-line="41" data-uid="lnk29" id="link_User_UC_Ocr">
+<path d="M218.36,954.0769 C236.17,945.2769 258.37,935.3069 279.2,928.7969 C325.49,914.3069 371.9258,904.7673 417.6758,897.4273" fill="none" id="User-to-UC_Ocr" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="423.6,896.4769,414.08,893.9531,418.6631,897.2689,415.3473,901.8521,423.6,896.4769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Attach-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Attach" data-source-line="42" data-uid="lnk30" id="link_User_UC_Attach">
+<path d="M218.62,972.7969 C265.61,972.7969 344.93,972.7969 416.19,972.7969" fill="none" id="User-to-UC_Attach" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="422.19,972.7969,413.19,968.7969,417.19,972.7969,413.19,976.7969,422.19,972.7969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Tags-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Tags" data-source-line="43" data-uid="lnk31" id="link_User_UC_Tags">
+<path d="M218.36,991.5169 C236.17,1000.3169 258.37,1010.2769 279.2,1016.7969 C326.49,1031.5869 374.1741,1041.2766 420.6241,1048.6466" fill="none" id="User-to-UC_Tags" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="426.55,1049.5869,418.288,1044.2259,421.6118,1048.8034,417.0344,1052.1271,426.55,1049.5869" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Locations-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Locations" data-source-line="44" data-uid="lnk32" id="link_User_UC_Locations">
+<path d="M199.74,1011.2969 C215.46,1043.1169 242.22,1086.8169 279.2,1110.7969 C312.95,1132.6869 348.0516,1144.3973 387.5316,1151.7573" fill="none" id="User-to-UC_Locations" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="393.43,1152.8569,385.3155,1147.2752,388.5147,1151.9405,383.8494,1155.1397,393.43,1152.8569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Notes-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Notes" data-source-line="45" data-uid="lnk33" id="link_User_UC_Notes">
+<path d="M186.99,1011.1669 C194.51,1065.0569 216.45,1162.1069 279.2,1211.7969 C325.85,1248.7369 386.1505,1258.5574 440.5305,1259.2774" fill="none" id="User-to-UC_Notes" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="446.53,1259.3569,437.5837,1255.2381,441.5304,1259.2907,437.4778,1263.2374,446.53,1259.3569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Custom-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Custom" data-source-line="46" data-uid="lnk34" id="link_User_UC_Custom">
+<path d="M182.75,1011.3769 C184.21,1078.9769 197.62,1218.6069 279.2,1291.7969 C311.98,1321.2069 350.6152,1334.675 393.7552,1341.085" fill="none" id="User-to-UC_Custom" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="399.69,1341.9669,391.3756,1336.6876,394.7443,1341.232,390.1998,1344.6007,399.69,1341.9669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Fav-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Fav" data-source-line="47" data-uid="lnk35" id="link_User_UC_Fav">
+<path d="M186.51,1011.1269 C195.41,1104.3369 223.01,1338.9469 279.2,1389.7969 C327.98,1433.9369 398.0064,1440.9936 455.8364,1438.3236" fill="none" id="User-to-UC_Fav" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="461.83,1438.0469,452.6551,1434.4662,456.8353,1438.2775,453.0241,1442.4577,461.83,1438.0469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Verify-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Verify" data-source-line="48" data-uid="lnk36" id="link_User_UC_Verify">
+<path d="M184.96,1011.0769 C190.64,1115.9869 212.17,1404.3969 279.2,1465.7969 C317.74,1501.0969 367.3939,1513.6291 417.6039,1517.0491" fill="none" id="User-to-UC_Verify" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="423.59,1517.4569,414.8826,1512.8545,418.6016,1517.1171,414.339,1520.836,423.59,1517.4569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Bundle-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Bundle" data-source-line="49" data-uid="lnk37" id="link_User_UC_Bundle">
+<path d="M184.78,934.3869 C190.01,829.1369 210.47,540.0269 279.2,480.7969 C321.78,444.0969 377.2334,432.9678 430.0534,431.1978" fill="none" id="User-to-UC_Bundle" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="436.05,430.9969,426.9211,427.3005,431.0528,431.1643,427.189,435.2961,436.05,430.9969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Duplicate-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Duplicate" data-source-line="50" data-uid="lnk38" id="link_User_UC_Duplicate">
+<path d="M186.36,934.2169 C194.92,840.4369 221.81,604.5469 279.2,554.7969 C331.23,509.6869 406.0714,504.2274 464.4214,507.8274" fill="none" id="User-to-UC_Duplicate" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="470.41,508.1969,461.6734,503.6503,465.4195,507.889,461.1808,511.6351,470.41,508.1969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link User to UC_Trash-->
+<g class="link" data-entity-1="User" data-entity-2="UC_Trash" data-source-line="51" data-uid="lnk39" id="link_User_UC_Trash">
+<path d="M182.7,934.3669 C184.07,866.6569 197.31,726.3269 279.2,652.7969 C311.01,624.2269 348.0246,610.8102 389.9846,604.1302" fill="none" id="User-to-UC_Trash" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="395.91,603.1869,386.393,600.6516,390.9722,603.973,387.6508,608.5521,395.91,603.1869" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to User-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="User" data-source-line="53" data-uid="lnk40" id="link_PowerUser_User">
+<path d="M53.22,1718.1869 C76.13,1584.7369 148.7742,1161.6273 171.5842,1028.7673" fill="none" id="PowerUser-to-User" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="none" points="174.63,1011.0269,165.6708,1027.7521,177.4977,1029.7826,174.63,1011.0269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Bulk-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Bulk" data-source-line="54" data-uid="lnk41" id="link_PowerUser_UC_Bulk">
+<path d="M85.65,1740.2969 C95.18,1736.7369 105.44,1733.3069 115.19,1730.7969 C217.12,1704.5469 329.8818,1689.3539 416.2618,1680.4239" fill="none" id="PowerUser-to-UC_Bulk" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="422.23,1679.8069,412.8664,1676.7536,417.2565,1680.321,413.689,1684.7112,422.23,1679.8069" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Template-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Template" data-source-line="55" data-uid="lnk42" id="link_PowerUser_UC_Template">
+<path d="M85.5,1756.7969 C160.43,1756.7969 321.08,1756.7969 431.04,1756.7969" fill="none" id="PowerUser-to-UC_Template" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="437.04,1756.7969,428.04,1752.7969,432.04,1756.7969,428.04,1760.7969,437.04,1756.7969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Views-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Views" data-source-line="56" data-uid="lnk43" id="link_PowerUser_UC_Views">
+<path d="M70.88,1795.0969 C107.96,1849.3869 184.47,1945.9869 279.2,1980.7969 C568.54,2087.1069 942.3929,1981.7793 1082.7529,1934.5793" fill="none" id="PowerUser-to-UC_Views" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1088.44,1932.6669,1078.6345,1931.7442,1083.7008,1934.2606,1081.1844,1939.3269,1088.44,1932.6669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_ViewShare-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_ViewShare" data-source-line="57" data-uid="lnk44" id="link_PowerUser_UC_ViewShare">
+<path d="M85.67,1763.7969 C131.88,1772.0369 211.1,1786.1069 279.2,1797.7969 C333.99,1807.2069 389.3212,1816.473 438.9512,1824.723" fill="none" id="PowerUser-to-UC_ViewShare" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="444.87,1825.7069,436.6477,1820.2852,439.9377,1824.887,435.3359,1828.1769,444.87,1825.7069" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Import-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Import" data-source-line="58" data-uid="lnk45" id="link_PowerUser_UC_Import">
+<path d="M85.46,1783.5769 C130.18,1813.1269 206.8,1859.9069 279.2,1885.7969 C324.25,1901.9069 369.7263,1911.8633 415.0763,1919.1633" fill="none" id="PowerUser-to-UC_Import" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="421,1920.1169,412.7501,1914.7374,416.0635,1919.3223,411.4787,1922.6357,421,1920.1169" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Export-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Export" data-source-line="59" data-uid="lnk46" id="link_PowerUser_UC_Export">
+<path d="M85.58,1725.2269 C95.03,1718.1469 105.27,1710.9269 115.19,1704.7969 C184.34,1662.0469 201.38,1647.3269 279.2,1623.7969 C342.26,1604.7269 411.014,1596.7672 464.704,1593.0872" fill="none" id="PowerUser-to-UC_Export"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="470.69,1592.6769,461.4375,1589.3017,465.7017,1593.0188,461.9846,1597.2829,470.69,1592.6769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_Barcode to OFF-->
+<g class="link" data-entity-1="UC_Barcode" data-entity-2="OFF" data-source-line="61" data-uid="lnk47" id="link_UC_Barcode_OFF">
+<path d="M636.21,801.7769 C690.5,800.8369 758.09,791.4069 807.59,756.7969 C956.4,652.7569 875.71,527.6869 1002.59,397.7969 C1022.33,377.5869 1042.9013,363.6405 1067.0713,350.6905" fill="none" id="UC_Barcode-to-OFF"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1072.36,347.8569,1062.5378,348.5815,1067.9527,350.2182,1066.316,355.6331,1072.36,347.8569" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="77.6636" x="866.4626" y="417.6638">appel direct</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="133.4087" x="838.59" y="432.7966">depuis le navigateur</text>
+</g>
+<!--link UC_Attach to UC_Crud-->
+<g class="link" data-entity-1="UC_Attach" data-entity-2="UC_Crud" data-source-line="64" data-uid="lnk48" id="link_UC_Attach_UC_Crud">
+<path d="M658.18,981.5269 C758.33,989.2169 898.2776,999.9579 1003.9876,1008.0679" fill="none" id="UC_Attach-to-UC_Crud" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1009.97,1008.5269,1001.3023,1003.8501,1004.9846,1008.1444,1000.6904,1011.8267,1009.97,1008.5269" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="991.8638">&#171;extend&#187;</text>
+</g>
+<!--link UC_Tags to UC_Crud-->
+<g class="link" data-entity-1="UC_Tags" data-entity-2="UC_Crud" data-source-line="65" data-uid="lnk49" id="link_UC_Tags_UC_Crud">
+<path d="M676.87,1064.4569 C761.65,1063.6469 873.85,1060.2969 972.59,1049.7969 C994.66,1047.4469 1012.2488,1044.9254 1034.5488,1041.0454" fill="none" id="UC_Tags-to-UC_Crud" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1040.46,1040.0169,1030.9075,1037.6188,1035.534,1040.874,1032.2789,1045.5004,1040.46,1040.0169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="1045.8638">&#171;extend&#187;</text>
+</g>
+<!--link UC_Locations to UC_Crud-->
+<g class="link" data-entity-1="UC_Locations" data-entity-2="UC_Crud" data-source-line="66" data-uid="lnk50" id="link_UC_Locations_UC_Crud">
+<path d="M677.05,1143.9769 C762.38,1131.5169 875.13,1111.9669 972.59,1084.7969 C1008.94,1074.6669 1042.7605,1062.0478 1074.5605,1048.9778" fill="none" id="UC_Locations-to-UC_Crud" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1080.11,1046.6969,1070.2651,1046.4185,1075.4854,1048.5976,1073.3063,1053.8179,1080.11,1046.6969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="1080.8638">&#171;extend&#187;</text>
+</g>
+<!--link UC_Custom to UC_Crud-->
+<g class="link" data-entity-1="UC_Custom" data-entity-2="UC_Crud" data-source-line="67" data-uid="lnk51" id="link_UC_Custom_UC_Crud">
+<path d="M677.19,1329.1869 C720.2,1322.0369 767.2,1310.4769 807.59,1291.7969 C939.29,1230.9069 1059.3862,1111.0619 1112.5262,1053.6019" fill="none" id="UC_Custom-to-UC_Crud" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1116.6,1049.1969,1107.5526,1053.0885,1113.2052,1052.8677,1113.4259,1058.5203,1116.6,1049.1969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="1186.0338">&#171;extend&#187;</text>
+</g>
+<!--link UC_Barcode to UC_Crud-->
+<g class="link" data-entity-1="UC_Barcode" data-entity-2="UC_Crud" data-source-line="68" data-uid="lnk52" id="link_UC_Barcode_UC_Crud">
+<path d="M635.01,802.8069 C686.41,808.3669 751.48,818.0869 807.59,834.7969 C884.97,857.8369 901.63,872.2769 972.59,910.7969 C1017.36,935.0969 1061.3268,963.19 1095.3668,985.87" fill="none" id="UC_Barcode-to-UC_Crud"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1100.36,989.1969,1095.0881,980.8778,1096.199,986.4245,1090.6523,987.5354,1100.36,989.1969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="841.3938">&#171;extend&#187;</text>
+</g>
+<!--link UC_Ocr to UC_Crud-->
+<g class="link" data-entity-1="UC_Ocr" data-entity-2="UC_Crud" data-source-line="69" data-uid="lnk53" id="link_UC_Ocr_UC_Crud">
+<path d="M654.23,899.5769 C701.57,907.7169 757.46,917.9569 807.59,928.7969 C881.55,944.7869 899.49,951.2469 972.59,970.7969 C1000.16,978.1669 1024.3741,984.8625 1051.4341,992.4725" fill="none" id="UC_Ocr-to-UC_Crud"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1057.21,994.0969,1049.629,987.8097,1052.3967,992.7433,1047.4632,995.511,1057.21,994.0969" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="931.9038">&#171;extend&#187;</text>
+</g>
+<!--link UC_Template to UC_Crud-->
+<g class="link" data-entity-1="UC_Template" data-entity-2="UC_Crud" data-source-line="70" data-uid="lnk54" id="link_UC_Template_UC_Crud">
+<path d="M646.7,1762.5269 C699.35,1760.4569 761.9,1749.6769 807.59,1715.7969 C1042.04,1541.9669 1119.6597,1167.1263 1138.0897,1055.8363" fill="none" id="UC_Template-to-UC_Crud" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1139.07,1049.9169,1133.6533,1058.1424,1138.2531,1054.8497,1141.5458,1059.4495,1139.07,1049.9169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="1525.5038">&#171;extend&#187;</text>
+</g>
+<!--link UC_ViewShare to UC_Views-->
+<g class="link" data-entity-1="UC_ViewShare" data-entity-2="UC_Views" data-source-line="71" data-uid="lnk55" id="link_UC_ViewShare_UC_Views">
+<path d="M651.54,1854.4869 C765.68,1868.0069 938.4817,1888.4809 1046.2517,1901.2509" fill="none" id="UC_ViewShare-to-UC_Views" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1052.21,1901.9569,1043.7432,1896.9256,1047.2447,1901.3685,1042.8018,1904.8701,1052.21,1901.9569" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="874.59" y="1873.3638">&#171;extend&#187;</text>
+</g>
+<!--link UC_Export to GMN56-->
+<g class="link" data-entity-1="UC_Export" data-entity-2="GMN56" data-source-line="74" data-uid="lnk58" id="link_UC_Export_GMN56">
+<path d="M487.24,1601.2169 C415.23,1612.1369 294.25,1616.9469 248.7,1538.2969 C217.43,1484.3069 217.43,469.2869 248.7,415.2969 C260.61,394.7269 276.76,377.5269 295.41,363.1369" fill="none" id="UC_Export-GMN56"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+</g>
+</g>
+</svg>

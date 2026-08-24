@@ -1,0 +1,130 @@
+@startuml
+title WIM – Diagramme de paquetages (monorepo)
+
+skinparam packageStyle rectangle
+skinparam package {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+skinparam linetype ortho
+
+' ---------------------------------------------------------------------------
+' Les dependances ci-dessous sont extraites des imports reels entre
+' apps/api/src/modules/* : seules les relations structurantes sont tracees,
+' celles vers `common` (present dans presque tous les modules) etant
+' resumees par une note plutot que dessinees 21 fois.
+' ---------------------------------------------------------------------------
+
+package "packages/types" as Types #f5f5f5 {
+  package "interfaces partagees\n(aucune dependance)" as TypesCore
+}
+
+package "apps/web (React 19 / PWA)" as Web #f5f5f5 {
+  package "components (par domaine)" as WebComp
+  package "services/api.ts" as WebApi
+  package "features (gating)\ni18n · theme · preferences" as WebCross
+}
+
+package "apps/api (Express + Prisma)" as Api #f5f5f5 {
+
+  package "Noyau technique" as Kernel {
+    package "common\n(schemas, http, erreurs)" as Common
+    package "auth\n(JWT, garde, sessions, TOTP,\npasskeys)" as Auth
+    package "features\n(feature flags + roles)" as Features
+    package "audit" as Audit
+  }
+
+  package "Canaux sortants" as Channels {
+    package "email (Resend)" as Email
+    package "push (VAPID)" as PushMod
+    package "alerts\n(planification BullMQ)" as Alerts
+  }
+
+  package "Inventaire" as InvPkg {
+    package "articles\n(+ notes, partage, transferts,\nliens publics, modeles)" as Articles
+    package "tags" as Tags
+    package "locations" as Locations
+    package "attachments" as Attachments
+    package "saved-views" as SavedViews
+  }
+
+  package "Cycle de vie du bien" as LifePkg {
+    package "warranties" as Warranties
+    package "loans" as Loans
+    package "insurance" as Insurance
+    package "service-records" as Service
+    package "wishlist" as Wishlist
+  }
+
+  package "Collaboration" as CollabPkg {
+    package "shares · shared" as Shares
+    package "household" as Household
+    package "messages" as Messages
+    package "public\n(fiche QR, objet trouve)" as Public
+  }
+
+  package "Pilotage" as SteerPkg {
+    package "statistics · reports" as Stats
+    package "calendar\n(agenda + flux iCal)" as Calendar
+  }
+
+  package "billing (Stripe)" as Billing
+  package "admin" as Admin
+  package "demo" as Demo
+}
+
+' --- dependances inter-workspaces ---
+Web ..> Types : <<use>>
+Api ..> Types : <<use>>
+WebApi ..> Api : HTTP / REST\n(cookie httpOnly)
+
+' --- noyau ---
+Auth ..> Common
+Features ..> Auth
+Common ..> Audit
+
+' --- gating : tout module premium interroge `features` ---
+InvPkg ..> Features
+LifePkg ..> Features
+CollabPkg ..> Features
+SteerPkg ..> Features
+
+' --- planification des echeances ---
+Warranties ..> Alerts
+Loans ..> Alerts
+Insurance ..> Alerts
+Service ..> Alerts
+Articles ..> Alerts
+
+' --- canaux ---
+Alerts ..> PushMod
+Alerts ..> Email
+Warranties ..> Email
+Household ..> Email
+Messages ..> Email
+Public ..> PushMod
+
+' --- relations metier structurantes ---
+Articles ..> Attachments
+Messages ..> Articles : offre acceptee\n-> transfert
+Shares ..> Household
+Billing ..> Shares : retrogradation\n(purge des partages)
+Billing ..> Audit
+Admin ..> Features
+Admin ..> Shares
+Auth ..> Demo : amorcage du jeu de demonstration
+
+note bottom of Kernel
+`common` est le noyau partage : 21 modules l'importent (schemas Zod
+reutilisables, `asyncHandler`, erreurs HTTP). `auth` fournit `authGuard`
+et est importe par presque tous les modules de routes. Ces deux
+dependances quasi universelles ne sont pas tracees individuellement
+pour garder le diagramme lisible.
+end note
+
+note bottom of Types
+`packages/types` ne contient que des interfaces TypeScript simples (ni Zod
+ni Prisma) : c'est le seul paquetage sans dependance sortante, ce qui lui
+permet d'etre importe par les deux runtimes sans les coupler.
+end note
+@enduml

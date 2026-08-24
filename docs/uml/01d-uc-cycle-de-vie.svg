@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="1431px" preserveAspectRatio="none" style="width:1529px;height:1431px;background:#FFFFFF;"
+version="1.1" viewBox="0 0 1529 1431" width="1529px" zoomAndPan="magnify">
+<title>WIM - Cas d'utilisation : Cycle de vie du bien (prets, assurance, entretien, souhaits)</title>
+<defs/>
+<g>
+<g class="title" data-source-line="1">
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="661.8828" x="427.0025" y="22.9951">WIM - Cas d'utilisation : Cycle de vie du bien (prets,
+assurance, entretien, souhaits)</text>
+</g>
+<!--cluster Cycle de vie du bien-->
+<g class="cluster" data-entity="Cycle de vie du bien" data-source-line="14" data-uid="ent0004" id="cluster_Cycle de vie du bien">
+<rect fill="none" height="671" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;" width="1260.37" x="132.19" y="175.2669"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="158.6963" x="683.0269" y="190.262">Cycle de vie du bien</text>
+</g>
+<!--entity UC_Lend-->
+<g class="entity" data-entity="UC_Lend" data-source-line="15" data-uid="ent0005" id="entity_UC_Lend">
+<ellipse cx="722.8152" cy="616.2659" fill="#F9F9F9" rx="112.7452" ry="24.949" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113.2305" x="666.1999" y="610.2599">Preter un article</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="170.7549" x="637.4377" y="626.5568">(emprunteur, echeance)</text>
+</g>
+<!--entity UC_Return-->
+<g class="entity" data-entity="UC_Return" data-source-line="16" data-uid="ent0006" id="entity_UC_Return">
+<ellipse cx="304.1438" cy="717.2716" fill="#F9F9F9" rx="118.4238" ry="26.0848" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="215.9883" x="196.1497" y="721.9201">Marquer un pret comme rendu</text>
+</g>
+<!--entity UC_LoanHist-->
+<g class="entity" data-entity="UC_LoanHist" data-source-line="17" data-uid="ent0007" id="entity_UC_LoanHist">
+<ellipse cx="304.1386" cy="804.2706" fill="#F9F9F9" rx="119.9186" ry="26.3837" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="219.1807" x="194.5483" y="808.919">Consulter l'historique des prets</text>
+</g>
+<!--entity UC_Policy-->
+<g class="entity" data-entity="UC_Policy" data-source-line="18" data-uid="ent0008" id="entity_UC_Policy">
+<ellipse cx="722.82" cy="347.2669" fill="#F9F9F9" rx="131.3" ry="28.66" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="243.3184" x="601.1608" y="351.9153">Enregistrer une police d'assurance</text>
+</g>
+<!--entity UC_Cover-->
+<g class="entity" data-entity="UC_Cover" data-source-line="19" data-uid="ent0009" id="entity_UC_Cover">
+<ellipse cx="304.1433" cy="244.2675" fill="#F9F9F9" rx="155.9533" ry="33.5907" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="294.8545" x="156.7161" y="248.916">Rattacher / detacher des articles couverts</text>
+</g>
+<!--entity UC_Renewal-->
+<g class="entity" data-entity="UC_Renewal" data-source-line="20" data-uid="ent0010" id="entity_UC_Renewal">
+<ellipse cx="722.8197" cy="706.2628" fill="#F9F9F9" rx="139.7297" ry="30.3459" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="261.0371" x="592.3012" y="710.9113">Suivre l'echeance de renouvellement</text>
+</g>
+<!--entity UC_InsPdf-->
+<g class="entity" data-entity="UC_InsPdf" data-source-line="21" data-uid="ent0011" id="entity_UC_InsPdf">
+<ellipse cx="304.1407" cy="346.269" fill="#F9F9F9" rx="155.0607" ry="33.4121" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="293.002" x="157.6397" y="350.9175">Exporter le portefeuille d'assurance (PDF)</text>
+</g>
+<!--entity UC_Service-->
+<g class="entity" data-entity="UC_Service" data-source-line="22" data-uid="ent0012" id="entity_UC_Service">
+<ellipse cx="1255.2189" cy="800.2687" fill="#F9F9F9" rx="113.2089" ry="25.0418" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="165.0742" x="1172.6818" y="798.4592">Journaliser un entretien</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="127.3945" x="1191.5217" y="814.7561">(cout, prestataire)</text>
+</g>
+<!--entity UC_NextDue-->
+<g class="entity" data-entity="UC_NextDue" data-source-line="23" data-uid="ent0013" id="entity_UC_NextDue">
+<ellipse cx="722.8161" cy="800.2701" fill="#F9F9F9" rx="129.1661" ry="28.2332" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="238.8135" x="603.4094" y="804.9185">Programmer le prochain entretien</text>
+</g>
+<!--entity UC_Interval-->
+<g class="entity" data-entity="UC_Interval" data-source-line="24" data-uid="ent0014" id="entity_UC_Interval">
+<ellipse cx="304.1444" cy="443.2678" fill="#F9F9F9" rx="129.5544" ry="28.3109" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="239.6338" x="184.3275" y="447.9162">Definir une recurrence d'entretien</text>
+</g>
+<!--entity UC_Spend-->
+<g class="entity" data-entity="UC_Spend" data-source-line="25" data-uid="ent0015" id="entity_UC_Spend">
+<ellipse cx="304.1402" cy="538.2629" fill="#F9F9F9" rx="144.7302" ry="31.346" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="271.4961" x="168.3922" y="542.9114">Suivre la depense d'entretien cumulee</text>
+</g>
+<!--entity UC_Wishlist-->
+<g class="entity" data-entity="UC_Wishlist" data-source-line="26" data-uid="ent0016" id="entity_UC_Wishlist">
+<ellipse cx="722.8176" cy="233.2664" fill="#F9F9F9" rx="104.2476" ry="23.2495" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="185.377" x="630.1291" y="237.9148">Tenir une liste de souhaits</text>
+</g>
+<!--entity UC_Convert-->
+<g class="entity" data-entity="UC_Convert" data-source-line="27" data-uid="ent0017" id="entity_UC_Convert">
+<ellipse cx="304.137" cy="630.2703" fill="#F9F9F9" rx="117.267" ry="25.8534" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="213.5137" x="197.3802" y="634.9187">Convertir un souhait en article</text>
+</g>
+<!--entity UC_Schedule-->
+<g class="entity" data-entity="UC_Schedule" data-source-line="28" data-uid="ent0018" id="entity_UC_Schedule">
+<ellipse cx="1255.2191" cy="681.2647" fill="#F9F9F9" rx="121.3391" ry="26.6678" style="stroke:#555555;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="222.209" x="1144.1146" y="685.9131">Planifier les rappels d'echeance</text>
+</g>
+<!--entity PowerUser-->
+<g class="entity" data-entity="PowerUser" data-source-line="11" data-uid="ent0002" id="entity_PowerUser">
+<ellipse cx="45.5938" cy="687.6169" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M45.5938,695.6169 L45.5938,722.6169 M32.5938,703.6169 L58.5938,703.6169 M45.5938,722.6169 L32.5938,737.6169 M45.5938,722.6169 L58.5938,737.6169" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.1875" x="6" y="752.112">Power User</text>
+</g>
+<!--entity Scheduler-->
+<g class="entity" data-entity="Scheduler" data-source-line="12" data-uid="ent0003" id="entity_Scheduler">
+<ellipse cx="722.828" cy="872.4669" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M722.828,880.4669 L722.828,907.4669 M709.828,888.4669 L735.828,888.4669 M722.828,907.4669 L709.828,922.4669 M722.828,907.4669 L735.828,922.4669" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.3652" x="660.85" y="936.962">Ordonnanceur</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="660.85" y="953.2589">BullMQ (systeme)</text>
+</g>
+<g class="entity" data-entity="GMN42" data-source-line="61" data-uid="ent0043" id="entity_GMN42">
+<path d="M987.55,43.2969 L987.55,159.2266 A0,0 0 0 0 987.55,159.2266 L1251.22,159.2266 L1255.22,654.3569 L1259.22,159.2266 L1522.8879,159.2266 A0,0 0 0 0 1522.8879,159.2266 L1522.8879,53.2969 L1512.8879,43.2969
+L987.55,43.2969 A0,0 0 0 0 987.55,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<path d="M1512.8879,43.2969 L1512.8879,53.2969 L1522.8879,53.2969 L1512.8879,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="514.3379" x="993.55" y="60.3638">Ces quatre modules sont reserves au niveau Power User (`loans`, `insurance`,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="493.4287" x="993.55" y="75.4966">`maintenance`, `wishlist`). Preter un article bascule son statut a `LOANED`</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="471.7959" x="993.55" y="90.6294">et, si une echeance est saisie, met en file un rappel ; le retour retablit
+le</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="74.6357" x="993.55" y="105.7622">statut. Seul</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="71.2715" x="1072.3181" y="105.7622">le dernier</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="289.0659" x="1147.7219" y="105.7622">enregistrement d'entretien porte l'echeance</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="497.6372" x="993.55" y="120.895">active : un entretien plus recent sans date de prochaine intervention annule</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="513.0176" x="993.55" y="136.0278">la programmation precedente. Les echeances de ces trois modules alimentent</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="253.811" x="993.55" y="151.1606">aussi l'agenda et le flux iCal (voir 01c).</text>
+</g>
+<!--link PowerUser to UC_Lend-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Lend" data-source-line="31" data-uid="lnk19" id="link_PowerUser_UC_Lend">
+<path d="M47.93,755.5769 C51.81,800.8769 65.85,874.4969 115.19,909.2669 C194.74,965.3169 480.32,973.8669 553.09,909.2669 C595.11,871.9769 547,701.3069 583.09,658.2669 C594.33,644.8669 604.0905,637.8021
+620.5105,631.4821" fill="none" id="PowerUser-to-UC_Lend" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="626.11,629.3269,616.2739,628.8267,621.4437,631.1229,619.1475,636.2928,626.11,629.3269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Return-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Return" data-source-line="32" data-uid="lnk20" id="link_PowerUser_UC_Return">
+<path d="M85.56,717.2669 C112.33,717.2669 143.41,717.2669 179.38,717.2669" fill="none" id="PowerUser-to-UC_Return" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="185.38,717.2669,176.38,713.2669,180.38,717.2669,176.38,721.2669,185.38,717.2669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_LoanHist-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_LoanHist" data-source-line="33" data-uid="lnk21" id="link_PowerUser_UC_LoanHist">
+<path d="M85.41,742.0869 C97.48,749.0369 111.08,756.0869 124.19,761.2669 C151.68,772.1169 176.8256,779.3793 205.1956,785.9693" fill="none" id="PowerUser-to-UC_LoanHist" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="211.04,787.3269,203.1785,781.3942,206.1697,786.1956,201.3684,789.1868,211.04,787.3269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Policy-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Policy" data-source-line="34" data-uid="lnk22" id="link_PowerUser_UC_Policy">
+<path d="M57.66,755.6369 C68.88,786.7569 89.62,828.5669 124.19,848.2669 C253.89,922.1869 321.7,904.2669 460.09,848.2669 C513.41,826.6869 526.45,809.2369 553.09,758.2669 C591.48,684.8369 554.29,651.9569
+583.09,574.2669 C611.76,496.9669 664.2699,421.8741 695.6299,380.6041" fill="none" id="PowerUser-to-UC_Policy" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="699.26,375.8269,690.63,380.5727,696.2349,379.8079,696.9997,385.4128,699.26,375.8269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Cover-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Cover" data-source-line="35" data-uid="lnk23" id="link_PowerUser_UC_Cover">
+<path d="M48.59,678.7169 C54.2,585.5069 73.16,351.4369 124.19,295.2669 C137.44,280.6769 148.9945,272.4376 167.3445,264.8576" fill="none" id="PowerUser-to-UC_Cover" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="172.89,262.5669,163.0446,262.306,168.2688,264.4758,166.0989,269.7,172.89,262.5669" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Renewal-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Renewal" data-source-line="36" data-uid="lnk24" id="link_PowerUser_UC_Renewal">
+<path d="M50.91,755.7469 C59.22,821.9569 79.81,952.9269 115.19,980.2669 C192.19,1039.7569 479.9,1044.3869 553.09,980.2669 C629.31,913.4969 519,832.7469 583.09,754.2669 C592.69,742.5169 599.9186,736.2698
+613.6586,729.5598" fill="none" id="PowerUser-to-UC_Renewal" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="619.05,726.9269,609.2075,727.282,614.5571,729.121,612.7181,734.4706,619.05,726.9269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_InsPdf-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_InsPdf" data-source-line="37" data-uid="lnk25" id="link_PowerUser_UC_InsPdf">
+<path d="M51.06,678.8469 C60.63,602.9269 85.47,437.5569 124.19,397.2669 C138.07,382.8269 150.151,374.6198 168.931,367.0898" fill="none" id="PowerUser-to-UC_InsPdf" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="174.5,364.8569,164.6578,364.4936,169.8592,366.7177,167.6351,371.919,174.5,364.8569" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Service-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Service" data-source-line="38" data-uid="lnk26" id="link_PowerUser_UC_Service">
+<path d="M47.84,755.8269 C51.74,848.9569 67.11,1081.9369 124.19,1129.2669 C479.66,1424.0369 1083.6276,945.8319 1221.3776,828.7919" fill="none" id="PowerUser-to-UC_Service" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1225.95,824.9069,1216.5014,827.6861,1222.1397,828.1444,1221.6814,833.7826,1225.95,824.9069" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_NextDue-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_NextDue" data-source-line="39" data-uid="lnk27" id="link_PowerUser_UC_NextDue">
+<path d="M50.18,755.6969 C58.23,832.3769 80.51,999.9869 124.19,1034.2669 C274.27,1152.0369 418.68,1152.6469 553.09,1017.2669 C607.46,962.5069 532.67,904.6669 583.09,846.2669 C593.71,833.9669 602.1895,827.3664
+617.1895,820.7564" fill="none" id="PowerUser-to-UC_NextDue" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="622.68,818.3369,612.8312,818.3058,618.1045,820.3531,616.0572,825.6265,622.68,818.3369" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Interval-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Interval" data-source-line="40" data-uid="lnk28" id="link_PowerUser_UC_Interval">
+<path d="M48.77,679.0369 C53.77,628.2869 70.2,539.2769 124.19,489.2669 C141.6,473.1369 158.1612,464.2378 181.0712,457.2478" fill="none" id="PowerUser-to-UC_Interval" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="186.81,455.4969,177.0345,454.2974,182.0276,456.956,179.3691,461.9492,186.81,455.4969" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Spend-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Spend" data-source-line="41" data-uid="lnk29" id="link_PowerUser_UC_Spend">
+<path d="M60.34,678.7469 C72.7,649.5069 93.64,610.4869 124.19,587.2669 C142.27,573.5169 158.252,565.4758 180.202,558.3658" fill="none" id="PowerUser-to-UC_Spend" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="185.91,556.5169,176.1154,555.4849,181.1533,558.0576,178.5806,563.0956,185.91,556.5169" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Wishlist-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Wishlist" data-source-line="42" data-uid="lnk30" id="link_PowerUser_UC_Wishlist">
+<path d="M46.13,678.6969 C45.7,568.5369 51.08,256.3469 124.19,193.2669 C284.8,54.6869 563.4778,159.884 672.2878,209.344" fill="none" id="PowerUser-to-UC_Wishlist" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="677.75,211.8269,671.212,204.4611,673.1982,209.7578,667.9015,211.744,677.75,211.8269" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link PowerUser to UC_Convert-->
+<g class="link" data-entity-1="PowerUser" data-entity-2="UC_Convert" data-source-line="43" data-uid="lnk31" id="link_PowerUser_UC_Convert">
+<path d="M85.41,692.4369 C97.48,685.4869 111.08,678.4369 124.19,673.2669 C152.28,662.1769 178.1628,654.7622 207.0228,648.1222" fill="none" id="PowerUser-to-UC_Convert" style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="212.87,646.7769,203.2023,644.8967,207.9973,647.898,204.996,652.693,212.87,646.7769" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link Scheduler to UC_Schedule-->
+<g class="link" data-entity-1="Scheduler" data-entity-2="UC_Schedule" data-source-line="45" data-uid="lnk32" id="link_Scheduler_UC_Schedule">
+<path d="M785.3,894.9369 C836.15,879.7669 907.86,852.3169 957.55,808.2669 C977.23,790.8169 966.75,773.3569 987.55,757.2669 C1032.87,722.2169 1087.7914,704.4775 1139.8914,694.2975" fill="none" id="Scheduler-to-UC_Schedule"
+style="stroke:#555555;stroke-width:1;"/>
+<polygon fill="#555555" points="1145.78,693.1469,1136.18,690.947,1140.8728,694.1057,1137.7141,698.7985,1145.78,693.1469" style="stroke:#555555;stroke-width:1;"/>
+</g>
+<!--link UC_Lend to UC_Schedule-->
+<g class="link" data-entity-1="UC_Lend" data-entity-2="UC_Schedule" data-source-line="48" data-uid="lnk33" id="link_UC_Lend_UC_Schedule">
+<path d="M822.34,628.3369 C915.07,639.6969 1047.5445,655.9372 1142.5445,667.5772" fill="none" id="UC_Lend-to-UC_Schedule" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1148.5,668.3069,1140.0533,663.242,1143.5371,667.6988,1139.0803,671.1826,1148.5,668.3069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="893.55" y="633.3538">&#171;include&#187;</text>
+</g>
+<!--link UC_NextDue to UC_Schedule-->
+<g class="link" data-entity-1="UC_NextDue" data-entity-2="UC_Schedule" data-source-line="49" data-uid="lnk34" id="link_UC_NextDue_UC_Schedule">
+<path d="M814.4,779.9469 C913.67,757.6669 1065.8356,723.5304 1162.9956,701.7304" fill="none" id="UC_NextDue-to-UC_Schedule" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1168.85,700.4169,1159.1926,698.4843,1163.9713,701.5115,1160.944,706.2902,1168.85,700.4169" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="893.55" y="743.9538">&#171;include&#187;</text>
+</g>
+<!--link UC_Renewal to UC_Schedule-->
+<g class="link" data-entity-1="UC_Renewal" data-entity-2="UC_Schedule" data-source-line="50" data-uid="lnk35" id="link_UC_Renewal_UC_Schedule">
+<path d="M859.73,699.8569 C945.21,695.8269 1048.4266,690.9589 1130.2566,687.1089" fill="none" id="UC_Renewal-to-UC_Schedule" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1136.25,686.8269,1127.072,683.2543,1131.2555,687.0619,1127.4479,691.2454,1136.25,686.8269" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63.0068" x="893.55" y="691.3238">&#171;include&#187;</text>
+</g>
+<!--link UC_Return to UC_Lend-->
+<g class="link" data-entity-1="UC_Return" data-entity-2="UC_Lend" data-source-line="53" data-uid="lnk36" id="link_UC_Return_UC_Lend">
+<path d="M384.99,697.9069 C460.02,679.7269 565.6889,654.1103 639.5789,636.2003" fill="none" id="UC_Return-to-UC_Lend" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="645.41,634.7869,635.721,633.0195,640.5507,635.9647,637.6055,640.7944,645.41,634.7869" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="491.09" y="653.7838">&#171;extend&#187;</text>
+</g>
+<!--link UC_Cover to UC_Policy-->
+<g class="link" data-entity-1="UC_Cover" data-entity-2="UC_Policy" data-source-line="54" data-uid="lnk37" id="link_UC_Cover_UC_Policy">
+<path d="M402.43,270.6269 C430.66,278.1169 461.57,286.1669 490.09,293.2669 C536.19,304.7369 581.7925,315.4528 624.4725,325.2628" fill="none" id="UC_Cover-to-UC_Policy" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="630.32,326.6069,622.4448,320.6924,625.4471,325.4868,620.6527,328.4891,630.32,326.6069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="491.09" y="289.3338">&#171;extend&#187;</text>
+</g>
+<!--link UC_InsPdf to UC_Policy-->
+<g class="link" data-entity-1="UC_InsPdf" data-entity-2="UC_Policy" data-source-line="55" data-uid="lnk38" id="link_UC_InsPdf_UC_Policy">
+<path d="M458.57,349.9369 C489.84,350.3469 522.53,350.5369 553.09,350.2669 C565.69,350.1569 572.8206,350.0838 585.9406,349.8938" fill="none" id="UC_InsPdf-to-UC_Policy" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="591.94,349.8069,582.883,345.9376,586.9405,349.8793,582.9989,353.9368,591.94,349.8069" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="491.09" y="346.3338">&#171;extend&#187;</text>
+</g>
+<!--link UC_NextDue to UC_Service-->
+<g class="link" data-entity-1="UC_NextDue" data-entity-2="UC_Service" data-source-line="56" data-uid="lnk39" id="link_UC_NextDue_UC_Service">
+<path d="M852.22,800.2669 C940.67,800.2669 1051.08,800.2669 1135.86,800.2669" fill="none" id="UC_NextDue-to-UC_Service" style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="1141.86,800.2669,1132.86,796.2669,1136.86,800.2669,1132.86,804.2669,1141.86,800.2669" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="894.55" y="796.3338">&#171;extend&#187;</text>
+</g>
+<!--link UC_Interval to UC_NextDue-->
+<g class="link" data-entity-1="UC_Interval" data-entity-2="UC_NextDue" data-source-line="57" data-uid="lnk40" id="link_UC_Interval_UC_NextDue">
+<path d="M414.08,458.3669 C431.56,465.2669 447.88,475.1569 460.09,489.2669 C520.64,559.2269 439.77,617.6269 490.09,695.2669 C519.76,741.0369 568.9834,765.3615 617.9434,780.0615" fill="none" id="UC_Interval-to-UC_NextDue"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="623.69,781.7869,616.2204,775.3678,618.9012,780.3491,613.9199,783.0299,623.69,781.7869" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="491.09" y="691.3338">&#171;extend&#187;</text>
+</g>
+<!--link UC_Convert to UC_Wishlist-->
+<g class="link" data-entity-1="UC_Convert" data-entity-2="UC_Wishlist" data-source-line="58" data-uid="lnk41" id="link_UC_Convert_UC_Wishlist">
+<path d="M410.6,619.2969 C429.53,612.6669 447.27,602.5669 460.09,587.2669 C505.26,533.3669 442.19,323.7369 490.09,272.2669 C524.14,235.6769 572.6713,225.3029 620.2713,224.3029" fill="none" id="UC_Convert-to-UC_Wishlist"
+style="stroke:#555555;stroke-width:1;stroke-dasharray:7,7;"/>
+<polygon fill="#555555" points="626.27,224.1769,617.188,220.3668,621.2711,224.2819,617.356,228.365,626.27,224.1769" style="stroke:#555555;stroke-width:1;"/>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61.1851" x="491.09" y="232.8038">&#171;extend&#187;</text>
+</g>
+</g>
+</svg>

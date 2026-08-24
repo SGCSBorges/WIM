@@ -42,23 +42,137 @@ Les `.svg` versionnés à côté de chaque `.puml` sont la version **rendue**
 
 ## Analyse des diagrammes
 
-### `01-use-cases.puml` — Cas d'utilisation
+### `12-contexte.puml` — Contexte (niveau 0)
+
+![Diagramme de contexte](./12-contexte.svg)
+
+Situe WIM comme **boîte noire** face à son environnement. PostgreSQL et Redis
+n'y figurent pas : ils appartiennent au système et restent à l'intérieur de la
+frontière (leur topologie est décrite par `07`). Quatre acteurs humains —
+`Utilisateur`, `Power User` (qui en hérite), `Administrateur` et le `Visiteur`
+non authentifié qui consulte une fiche publique par QR — et quatre systèmes
+tiers : Stripe (bidirectionnel : Checkout sortant, webhooks signés entrants),
+Resend pour l'e-mail transactionnel, le service Web Push du navigateur, et
+Open Food Facts / Open Products Facts. Ce dernier est le seul appelé
+**directement par le navigateur**, sans clé d'API et sans transiter par
+l'API : c'est ce qui rend la recherche par code-barres gratuite. La
+reconnaissance de ticket de caisse n'apparaît pas comme acteur externe parce
+qu'elle s'exécute intégralement dans le navigateur (tesseract.js en WASM).
+
+### `13-paquetages.puml` — Paquetages
+
+![Diagramme de paquetages](./13-paquetages.svg)
+
+Donne la structure du monorepo et, surtout, le **sens** de ses dépendances.
+`packages/types` est le seul paquetage sans dépendance sortante, ce qui lui
+permet d'être importé par les deux runtimes sans les coupler. Côté API, deux
+paquetages jouent un rôle de noyau : `common` (schémas Zod réutilisables,
+`asyncHandler`, erreurs HTTP), importé par vingt-et-un modules, et `auth`, qui
+fournit `authGuard` à presque toutes les routes — ces deux dépendances quasi
+universelles sont résumées par une note plutôt que tracées individuellement,
+faute de quoi le diagramme deviendrait illisible. Le reste des arêtes est
+extrait des imports réels : `warranties`, `loans`, `insurance`,
+`service-records` et `articles` dépendent tous d'`alerts` pour la
+planification BullMQ ; `alerts` dépend à son tour des canaux `push` et
+`email` ; `billing` dépend de `shares` pour purger les partages lors d'une
+rétrogradation ; `messages` dépend d'`articles` parce qu'une offre acceptée
+déclenche un transfert. Les modules premium dépendent tous de `features`,
+qui porte le paywall.
+
+### `01-use-cases.puml` — Cas d'utilisation (vue d'ensemble)
 
 ![Cas d'utilisation](./01-use-cases.svg)
 
-Cartographie les fonctionnalités offertes et **qui** y accède. Trois acteurs :
-l'`Utilisateur` (socle — y compris la sécurité du compte 2FA/sessions, les
-modèles d'articles et le renouvellement de garantie), le `Power User` qui en
-hérite (`--|>`) et débloque le **paywall** : partage, transfert de propriété,
-messagerie/offres, prêts, assurance, entretien, budgets, analytics et page
-publique d'article. L'`Administrateur` (utilisateurs, audit, jobs, sauvegarde
-BDD, feature flags) hérite du tout sans abonnement. Les relations
-`<<include>>` / `<<extend>>` encodent les dépendances réelles : une garantie
-*étend* un article, des alertes *étendent* une garantie, l'envoi d'une alerte
-*inclut* une notification, l'abonnement *inclut* le déblocage du partage/
-transfert, et une **offre acceptée** dans la messagerie *inclut* un transfert
-PUSH. La note de portée liste l'état actuel (lifecycle add-ons, messagerie,
-budgets/analytics, page publique) face au MVP d'origine, beaucoup plus restreint.
+Cette vue ne porte que la **carte des acteurs** : elle relie les cinq acteurs
+aux sept paquetages fonctionnels, sans détailler les cas. Le détail — cas,
+`<<include>>`, `<<extend>>` et dépendances stéréotypées — est réparti dans
+`01a` à `01g`, qui reprennent exactement le découpage du diagramme de
+paquetages. Ce choix est délibéré : la version précédente rassemblait
+vingt-neuf cas d'utilisation sur un seul diagramme, ce qui la rendait
+difficilement lisible à l'impression et masquait les relations entre cas.
+
+La hiérarchie d'acteurs encode le modèle de droits réel :
+`Power User --|> Utilisateur` et `Administrateur --|> Power User`, l'ADMIN
+héritant donc des options payantes **sans abonnement**. Un acteur système,
+l'ordonnanceur BullMQ, apparaît explicitement : il déclenche les rappels
+d'échéance et la purge planifiée de la corbeille sans intervention humaine.
+
+### `01a-uc-compte-securite.puml` — Compte & sécurité
+
+![Compte & sécurité](./01a-uc-compte-securite.svg)
+
+Couvre `/api/auth/*` et `/api/profile/me/*`. Le `Visiteur` porte les cas
+pré-authentification (inscription, connexion, réinitialisation, vérification
+d'adresse) ; l'`Utilisateur` porte la gestion du compte. La connexion
+*inclut* la vérification TOTP lorsqu'elle est armée, et la passkey WebAuthn
+*étend* la connexion comme second chemin. La note rappelle l'invariant
+central : la révocation combine denylist Redis et `tokenVersion`, si bien
+qu'un changement de mot de passe **ou d'adresse e-mail** invalide toutes les
+sessions.
+
+### `01b-uc-inventaire.puml` — Inventaire
+
+![Inventaire](./01b-uc-inventaire.svg)
+
+Le cœur gratuit du produit. Tous les cas d'enrichissement d'un article
+(pièces jointes, étiquettes, emplacements, champs personnalisés, scan,
+OCR, modèle) *étendent* la création/modification : ils sont optionnels par
+construction. La frontière du paywall est visible d'un coup d'œil —
+l'`Utilisateur` porte la saisie et l'organisation, le `Power User` l'édition
+en masse, les modèles, les vues enregistrées et l'import/export CSV.
+
+### `01c-uc-garanties-alertes.puml` — Garanties, alertes & échéances
+
+![Garanties & alertes](./01c-uc-garanties-alertes.svg)
+
+Enregistrer une garantie *inclut* la configuration de ses alertes, qui
+*inclut* à son tour leur planification ; la planification *inclut* les deux
+canaux de notification. L'ordonnanceur BullMQ figure comme acteur système.
+La note documente l'ordre contraignant du traitement (push attendu avant le
+marquage `SENT`, e-mail best-effort), qui est la raison d'être de cette
+séquence.
+
+### `01d-uc-cycle-de-vie.puml` — Cycle de vie du bien
+
+![Cycle de vie du bien](./01d-uc-cycle-de-vie.svg)
+
+Les quatre modules entièrement réservés au Power User : prêts, assurance,
+entretien, liste de souhaits. Trois de leurs cas *incluent* la planification
+d'un rappel, ce qui les relie à `01c`. La note consigne la règle non
+évidente de l'entretien : seul le **dernier** enregistrement porte
+l'échéance active.
+
+### `01e-uc-partage.puml` — Partage & collaboration
+
+![Partage & collaboration](./01e-uc-partage.svg)
+
+Distingue les rôles de part et d'autre d'un partage (propriétaire,
+destinataire, membre du foyer) plutôt que de les fondre dans un acteur
+unique. Une offre acceptée porte une dépendance `<<trigger>>` vers le
+transfert PUSH — ni un `include` ni un `extend`, conformément à la convention
+de notation du dossier. Le `Visiteur` n'accède qu'aux deux seuls points
+d'entrée non authentifiés du système.
+
+### `01f-uc-pilotage-facturation.puml` — Pilotage, valorisation & facturation
+
+![Pilotage & facturation](./01f-uc-pilotage-facturation.svg)
+
+Réunit ce qui mesure et ce qui monétise. Le webhook Stripe porte deux
+dépendances `<<unlock>>` vers les cas payants, matérialisant le paywall, et
+une `<<extend>>` vers la rétrogradation. La note rappelle les deux règles de
+calcul qui sous-tendent tous les chiffres affichés : valeur = prix
+**unitaire** × quantité, et amortissement linéaire planché à zéro.
+
+### `01g-uc-administration.puml` — Administration & exploitation
+
+![Administration](./01g-uc-administration.svg)
+
+Les actions sensibles (changement de rôle, suppression de compte,
+réinitialisation de mot de passe, restauration de la base) *incluent* toutes
+l'écriture au journal d'audit. La note consigne les deux garde-fous du
+paquetage : l'impossibilité de supprimer ou rétrograder le dernier
+administrateur — vérification **relue dans la transaction** — et le limiteur
+dédié aux opérations destructrices.
 
 ### `02-activity-core-flows.puml` — Activités (ajout & rappels)
 
@@ -232,7 +346,16 @@ séquence du partage (`06`) côté transfert.
 
 | Fichier | Type | Sujet |
 | --- | --- | --- |
-| `01-use-cases.puml` | Cas d'utilisation | Acteurs + fonctionnalités |
+| `12-contexte.puml` | Contexte | Frontière du système + acteurs et tiers |
+| `13-paquetages.puml` | Paquetages | Modules du monorepo et leurs dépendances |
+| `01-use-cases.puml` | Cas d'utilisation | Vue d'ensemble : acteurs → paquetages |
+| `01a-uc-compte-securite.puml` | Cas d'utilisation | Authentification, 2FA, sessions, RGPD |
+| `01b-uc-inventaire.puml` | Cas d'utilisation | Articles, étiquettes, emplacements, pièces jointes |
+| `01c-uc-garanties-alertes.puml` | Cas d'utilisation | Garanties, réclamations, rappels, iCal |
+| `01d-uc-cycle-de-vie.puml` | Cas d'utilisation | Prêts, assurance, entretien, souhaits |
+| `01e-uc-partage.puml` | Cas d'utilisation | Partage, foyer, messagerie, transferts, page publique |
+| `01f-uc-pilotage-facturation.puml` | Cas d'utilisation | Tableau de bord, valeur, rapports, Stripe |
+| `01g-uc-administration.puml` | Cas d'utilisation | Comptes, feature flags, audit, jobs, sauvegarde |
 | `02-activity-core-flows.puml` | Activités | Ajout article/garantie + cycle des rappels |
 | `03-class-diagram.puml` | Classes | Modèle de données complet |
 | `04-sequence-add-item.puml` | Séquence | Ajout article + garantie + alertes |

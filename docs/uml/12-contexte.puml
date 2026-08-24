@@ -1,0 +1,66 @@
+@startuml
+title WIM – Diagramme de contexte (niveau 0)
+
+skinparam componentStyle rectangle
+skinparam rectangle {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+skinparam actor {
+  BackgroundColor #f9f9f9
+  BorderColor #555555
+}
+skinparam cloud {
+  BackgroundColor #ffffff
+  BorderColor #555555
+}
+
+' ---------------------------------------------------------------------------
+' Le systeme est une boite noire : PostgreSQL et Redis lui appartiennent et
+' restent DANS la frontiere (ils sont detailles dans 07-composants). Seuls
+' figurent ici les acteurs humains et les systemes tiers.
+' ---------------------------------------------------------------------------
+
+actor "Utilisateur\n(role USER)" as User
+actor "Power User\n(abonne payant)" as PowerUser
+actor "Administrateur\n(role ADMIN)" as Admin
+actor "Visiteur\n(lien public / QR,\nnon authentifie)" as Visitor
+
+rectangle "**WIM**\nGestion d'inventaire personnel\net de garanties (PWA + API REST)" as WIM #f5f5f5
+
+cloud "Stripe" as Stripe
+cloud "Resend\n(e-mail transactionnel)" as Resend
+cloud "Service Web Push\n(navigateur, VAPID)" as Push
+cloud "Open Food Facts /\nOpen Products Facts" as OFF
+
+PowerUser --|> User : herite des droits
+
+User --> WIM : gere articles, garanties,\npieces jointes, alertes
+PowerUser --> WIM : partage, transferts, prets,\nassurance, entretien, analytics
+Admin --> WIM : comptes, roles, feature flags,\naudit, jobs, sauvegarde
+Visitor --> WIM : consulte une fiche publique\net signale un objet trouve
+
+WIM --> Stripe : Checkout, portail client,\nsynchronisation de l'abonnement
+Stripe --> WIM : webhooks signes (HMAC)\n-> octroi / retrait du role POWER_USER
+WIM --> Resend : rappels d'echeance, digest hebdomadaire,\nverification e-mail, invitations
+WIM --> Push : notifications d'echeance (J-30 / J-7 / J-1)
+
+note right of OFF
+Seule dependance tierce appelee **directement par le
+navigateur**, sans cle d'API : la recherche par code-barres
+interroge les deux services en cascade (services/barcodeLookup.ts).
+L'API n'intervient pas dans cet echange.
+La reconnaissance de ticket de caisse (tesseract.js, WASM)
+s'execute entierement dans le navigateur, sans service tiers.
+end note
+
+User .right.> OFF : scan code-barres\n(depuis le navigateur)
+
+note bottom of WIM
+Frontiere du systeme : l'API Express, l'interface React/PWA, les workers
+BullMQ, PostgreSQL et Redis sont **internes** a WIM et deployes sur Render.
+Aucune donnee personnelle n'est envoyee a un service tiers en dehors de
+l'adresse e-mail transmise a Resend pour l'acheminement des rappels et de
+l'identifiant client cote Stripe.
+end note
+@enduml

@@ -41,7 +41,15 @@ chacun accompagné d'une analyse écrite et des instructions de rendu dans
 
 | # | Diagramme | Type |
 |---|---|---|
-| 01 | [Cas d'utilisation](./uml/01-use-cases.puml) | Use case |
+| 00 | [Diagramme de contexte](./uml/12-contexte.puml) | Context |
+| 01 | [Cas d'utilisation — vue d'ensemble](./uml/01-use-cases.puml) | Use case |
+| 01a | [Compte & sécurité](./uml/01a-uc-compte-securite.puml) | Use case |
+| 01b | [Inventaire](./uml/01b-uc-inventaire.puml) | Use case |
+| 01c | [Garanties, alertes & échéances](./uml/01c-uc-garanties-alertes.puml) | Use case |
+| 01d | [Cycle de vie du bien](./uml/01d-uc-cycle-de-vie.puml) | Use case |
+| 01e | [Partage & collaboration](./uml/01e-uc-partage.puml) | Use case |
+| 01f | [Pilotage, valorisation & facturation](./uml/01f-uc-pilotage-facturation.puml) | Use case |
+| 01g | [Administration & exploitation](./uml/01g-uc-administration.puml) | Use case |
 | 02 | [Flux applicatifs cœur](./uml/02-activity-core-flows.puml) | Activity |
 | 03 | [Diagramme de classes](./uml/03-class-diagram.puml) | Class / ERD |
 | 04 | [Ajout d'un article](./uml/04-sequence-add-item.puml) | Sequence |
@@ -52,6 +60,7 @@ chacun accompagné d'une analyse écrite et des instructions de rendu dans
 | 09 | [Authentification & session](./uml/09-sequence-auth.puml) | Sequence |
 | 10 | [Facturation Stripe](./uml/10-sequence-billing.puml) | Sequence |
 | 11 | [Transfert de propriété](./uml/11-state-transfer.puml) | State |
+| 13 | [Diagramme de paquetages](./uml/13-paquetages.puml) | Package |
 
 ---
 
