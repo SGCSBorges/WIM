@@ -1,5 +1,5 @@
 @startuml
-title WIM – Cas d'utilisation : Compte & securite (modules auth, profile)
+title WIM – Cas d'utilisation : Compte & sécurité (modules auth, profile)
 
 left to right direction
 skinparam packageStyle rectangle
@@ -9,27 +9,27 @@ skinparam usecase {
   ArrowColor #555
 }
 
-actor "Visiteur\n(non authentifie)" as Guest
+actor "Visiteur\n(non authentifié)" as Guest
 actor "Utilisateur" as User
 actor "Administrateur" as Admin
 actor "Resend\n(e-mail)" as Mail
 
-rectangle "Compte & securite" {
-  usecase "Creer un compte" as UC_Register
+rectangle "Compte & sécurité" {
+  usecase "Créer un compte" as UC_Register
   usecase "Se connecter" as UC_Login
-  usecase "Verifier le second facteur (TOTP)" as UC_Totp
+  usecase "Vérifier le second facteur (TOTP)" as UC_Totp
   usecase "S'authentifier par passkey (WebAuthn)" as UC_Passkey
   usecase "Se deconnecter" as UC_Logout
-  usecase "Reinitialiser le mot de passe" as UC_Reset
-  usecase "Verifier son adresse e-mail" as UC_VerifyMail
-  usecase "Activer / desactiver le TOTP" as UC_TotpSetup
-  usecase "Regenerer les codes de secours" as UC_Backup
-  usecase "Lister et revoquer ses sessions" as UC_Sessions
+  usecase "Réinitialiser le mot de passe" as UC_Reset
+  usecase "Vérifier son adresse e-mail" as UC_VerifyMail
+  usecase "Activer / désactiver le TOTP" as UC_TotpSetup
+  usecase "Régénérer les codes de secours" as UC_Backup
+  usecase "Lister et révoquer ses sessions" as UC_Sessions
   usecase "Consulter l'historique de connexion" as UC_History
   usecase "Changer mot de passe / e-mail" as UC_Credentials
-  usecase "Regler ses preferences\n(theme, langue, devise, format de date)" as UC_Prefs
+  usecase "Regler ses préférences\n(theme, langue, devise, format de date)" as UC_Prefs
   usecase "Choisir ses canaux de rappel\n(push, e-mail, J-n, digest)" as UC_Reminders
-  usecase "Exporter ses donnees (RGPD)" as UC_Export
+  usecase "Exporter ses données (RGPD)" as UC_Export
   usecase "Supprimer son compte (cascade)" as UC_Delete
 }
 
@@ -49,9 +49,9 @@ User --> UC_Reminders
 User --> UC_Export
 User --> UC_Delete
 
-Admin --> UC_Sessions : deconnexion forcee\nd'un autre compte
+Admin --> UC_Sessions : déconnexion forcee\nd'un autre compte
 
-' Include : la connexion execute toujours ces sous-cas quand ils sont armes.
+' Include : la connexion exécute toujours ces sous-cas quand ils sont armés.
 UC_Login ..> UC_Totp : <<include>>
 UC_Passkey ..> UC_Login : <<extend>>
 UC_TotpSetup ..> UC_Backup : <<include>>
@@ -60,10 +60,10 @@ UC_Reset ..> Mail
 UC_VerifyMail ..> Mail
 
 note bottom
-Le jeton JWT est porte par un cookie httpOnly ; la revocation combine une
+Le jeton JWT est porte par un cookie httpOnly ; la révocation combine une
 denylist Redis (jti) et un compteur `tokenVersion` sur l'utilisateur, si bien
 qu'un changement de mot de passe **ou d'adresse e-mail** invalide toutes les
 sessions. La suppression du compte efface en cascade l'integralite du graphe
-de donnees (droit a l'effacement). Routes : `/api/auth/*`, `/api/profile/me/*`.
+de données (droit a l'effacement). Routes : `/api/auth/*`, `/api/profile/me/*`.
 end note
 @enduml

@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="1454px" preserveAspectRatio="none" style="width:1605px;height:1454px;background:#FFFFFF;"
 version="1.1" viewBox="0 0 1605 1454" width="1605px" zoomAndPan="magnify">
-<title>WIM - Cas d'utilisation : Compte &amp; securite (modules auth, profile)</title>
+<title>WIM - Cas d'utilisation : Compte &amp; s&#233;curit&#233; (modules auth, profile)</title>
 <defs/>
 <g>
 <g class="title" data-source-line="1">
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="526.627" x="532.3465" y="22.9951">WIM - Cas d'utilisation : Compte &amp; securite (modules
-auth, profile)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="526.627" x="532.3465" y="22.9951">WIM - Cas d'utilisation : Compte &amp; s&#233;curit&#233;
+(modules auth, profile)</text>
 </g>
-<!--cluster Compte & securite-->
-<g class="cluster" data-entity="Compte . securite" data-source-line="16" data-uid="ent0006" id="cluster_Compte . securite">
+<!--cluster Compte & s?curit?-->
+<g class="cluster" data-entity="Compte . s.curit." data-source-line="16" data-uid="ent0006" id="cluster_Compte . s.curit.">
 <rect fill="none" height="1133" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;" width="1187.53" x="411.79" y="200.1269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="146.6309" x="932.2396" y="215.122">Compte &amp; securite</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="146.6309" x="932.2396" y="215.122">Compte &amp; s&#233;curit&#233;</text>
 </g>
 <!--entity UC_Register-->
 <g class="entity" data-entity="UC_Register" data-source-line="17" data-uid="ent0007" id="entity_UC_Register">
 <ellipse cx="577.1407" cy="516.131" fill="#F9F9F9" rx="74.7207" ry="17.3441" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118.0498" x="518.1158" y="520.7795">Creer un compte</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118.0498" x="518.1158" y="520.7795">Cr&#233;er un compte</text>
 </g>
 <!--entity UC_Login-->
 <g class="entity" data-entity="UC_Login" data-source-line="18" data-uid="ent0008" id="entity_UC_Login">
@@ -25,7 +25,7 @@ auth, profile)</text>
 <!--entity UC_Totp-->
 <g class="entity" data-entity="UC_Totp" data-source-line="19" data-uid="ent0009" id="entity_UC_Totp">
 <ellipse cx="1458.9431" cy="263.1235" fill="#F9F9F9" rx="124.3831" ry="27.2766" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="228.6826" x="1344.6018" y="267.7719">Verifier le second facteur (TOTP)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="228.6826" x="1344.6018" y="267.7719">V&#233;rifier le second facteur (TOTP)</text>
 </g>
 <!--entity UC_Passkey-->
 <g class="entity" data-entity="UC_Passkey" data-source-line="20" data-uid="ent0010" id="entity_UC_Passkey">
@@ -40,27 +40,27 @@ auth, profile)</text>
 <!--entity UC_Reset-->
 <g class="entity" data-entity="UC_Reset" data-source-line="22" data-uid="ent0012" id="entity_UC_Reset">
 <ellipse cx="577.1431" cy="357.1295" fill="#F9F9F9" rx="110.3131" ry="24.4626" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="198.5566" x="477.8648" y="361.7779">Reinitialiser le mot de passe</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="198.5566" x="477.8648" y="361.7779">R&#233;initialiser le mot de passe</text>
 </g>
 <!--entity UC_VerifyMail-->
 <g class="entity" data-entity="UC_VerifyMail" data-source-line="23" data-uid="ent0013" id="entity_UC_VerifyMail">
 <ellipse cx="577.1396" cy="440.1288" fill="#F9F9F9" rx="105.3596" ry="23.4719" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="187.8037" x="483.2377" y="444.7772">Verifier son adresse e-mail</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="187.8037" x="483.2377" y="444.7772">V&#233;rifier son adresse e-mail</text>
 </g>
 <!--entity UC_TotpSetup-->
 <g class="entity" data-entity="UC_TotpSetup" data-source-line="24" data-uid="ent0014" id="entity_UC_TotpSetup">
 <ellipse cx="577.1376" cy="1113.1284" fill="#F9F9F9" rx="108.2076" ry="24.0415" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193.9971" x="480.1391" y="1117.7768">Activer / desactiver le TOTP</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193.9971" x="480.1391" y="1117.7768">Activer / d&#233;sactiver le TOTP</text>
 </g>
 <!--entity UC_Backup-->
 <g class="entity" data-entity="UC_Backup" data-source-line="25" data-uid="ent0015" id="entity_UC_Backup">
 <ellipse cx="1087.5189" cy="1241.1247" fill="#F9F9F9" rx="122.0389" ry="26.8078" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="223.6992" x="975.6693" y="1245.7731">Regenerer les codes de secours</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="223.6992" x="975.6693" y="1245.7731">R&#233;g&#233;n&#233;rer les codes de secours</text>
 </g>
 <!--entity UC_Sessions-->
 <g class="entity" data-entity="UC_Sessions" data-source-line="26" data-uid="ent0016" id="entity_UC_Sessions">
 <ellipse cx="577.1421" cy="594.1313" fill="#F9F9F9" rx="118.6221" ry="26.1244" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.4121" x="468.9361" y="598.7797">Lister et revoquer ses sessions</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.4121" x="468.9361" y="598.7797">Lister et r&#233;voquer ses sessions</text>
 </g>
 <!--entity UC_History-->
 <g class="entity" data-entity="UC_History" data-source-line="27" data-uid="ent0017" id="entity_UC_History">
@@ -75,7 +75,7 @@ auth, profile)</text>
 <!--entity UC_Prefs-->
 <g class="entity" data-entity="UC_Prefs" data-source-line="29" data-uid="ent0019" id="entity_UC_Prefs">
 <ellipse cx="577.137" cy="687.1263" fill="#F9F9F9" rx="149.347" ry="32.2694" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161.2324" x="496.5208" y="675.4949">Regler ses preferences</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161.2324" x="496.5208" y="675.4949">Regler ses pr&#233;f&#233;rences</text>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="281.0732" x="436.6003" y="691.7918">(theme, langue, devise, format de date)</text>
 </g>
 <!--entity UC_Reminders-->
@@ -87,7 +87,7 @@ auth, profile)</text>
 <!--entity UC_Export-->
 <g class="entity" data-entity="UC_Export" data-source-line="31" data-uid="ent0021" id="entity_UC_Export">
 <ellipse cx="577.1389" cy="870.1307" fill="#F9F9F9" rx="114.3189" ry="25.2638" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="207.1904" x="473.5437" y="874.7791">Exporter ses donnees (RGPD)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="207.1904" x="473.5437" y="874.7791">Exporter ses donn&#233;es (RGPD)</text>
 </g>
 <!--entity UC_Delete-->
 <g class="entity" data-entity="UC_Delete" data-source-line="32" data-uid="ent0022" id="entity_UC_Delete">
@@ -99,7 +99,7 @@ auth, profile)</text>
 <ellipse cx="64.8984" cy="366.3369" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M64.8984,374.3369 L64.8984,401.3369 M51.8984,382.3369 L77.8984,382.3369 M64.8984,401.3369 L51.8984,416.3369 M64.8984,401.3369 L77.8984,416.3369" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53.3818" x="6" y="430.832">Visiteur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117.7969" x="6" y="447.1289">(non authentifie)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117.7969" x="6" y="447.1289">(non authentifi&#233;)</text>
 </g>
 <!--entity User-->
 <g class="entity" data-entity="User" data-source-line="12" data-uid="ent0003" id="entity_User">
@@ -123,14 +123,15 @@ auth, profile)</text>
 <g class="entity" data-entity="GMN43" data-source-line="62" data-uid="ent0044" id="entity_GMN43">
 <path d="M313.8,43.2969 L313.8,128.9609 L840.4797,128.9609 L840.4797,53.2969 L830.4797,43.2969 L313.8,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M830.4797,43.2969 L830.4797,53.2969 L840.4797,53.2969 L830.4797,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="483.0059" x="319.8" y="60.3638">Le jeton JWT est porte par un cookie httpOnly ; la revocation combine une</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="483.0059" x="319.8" y="60.3638">Le jeton JWT est porte par un cookie httpOnly ; la r&#233;vocation combine
+une</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="477.3818" x="319.8" y="75.4966">denylist Redis (jti) et un compteur `tokenVersion` sur l'utilisateur, si
 bien</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="235.022" x="319.8" y="90.6294">qu'un changement de mot de passe</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="143.5649" x="558.9543" y="90.6294">ou d'adresse e-mail</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="118.79" x="706.6516" y="90.6294">invalide toutes les</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="505.6797" x="319.8" y="105.7622">sessions. La suppression du compte efface en cascade l'integralite du graphe</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="497.3198" x="319.8" y="120.895">de donnees (droit a l'effacement). Routes : `/api/auth/*`, `/api/profile/me/*`.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="497.3198" x="319.8" y="120.895">de donn&#233;es (droit a l'effacement). Routes : `/api/auth/*`, `/api/profile/me/*`.</text>
 </g>
 <!--link Guest to UC_Register-->
 <g class="link" data-entity-1="Guest" data-entity-2="UC_Register" data-source-line="35" data-uid="lnk23" id="link_Guest_UC_Register">
@@ -211,7 +212,7 @@ style="stroke:#555555;stroke-width:1;"/>
 <g class="link" data-entity-1="Admin" data-entity-2="UC_Sessions" data-source-line="51" data-uid="lnk37" id="link_Admin_UC_Sessions">
 <path d="M117.63,594.1269 C196.93,594.1269 344.63,594.1269 452.12,594.1269" fill="none" id="Admin-to-UC_Sessions" style="stroke:#555555;stroke-width:1;"/>
 <polygon fill="#555555" points="458.12,594.1269,449.12,590.1269,453.12,594.1269,449.12,598.1269,458.12,594.1269" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="128.4766" x="154.8" y="575.1938">deconnexion forcee</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="128.4766" x="154.8" y="575.1938">d&#233;connexion forcee</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="120.3262" x="158.8752" y="590.3266">d'un autre compte</text>
 </g>
 <!--link UC_Login to UC_Totp-->

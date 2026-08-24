@@ -1,5 +1,5 @@
 @startuml
-title WIM – Cas d'utilisation : Garanties, alertes & echeances
+title WIM – Cas d'utilisation : Garanties, alertes & échéances
 
 left to right direction
 skinparam packageStyle rectangle
@@ -11,28 +11,28 @@ skinparam usecase {
 
 actor "Utilisateur" as User
 actor "Power User" as PowerUser
-actor "Ordonnanceur\nBullMQ (systeme)" as Scheduler
+actor "Ordonnanceur\nBullMQ (système)" as Scheduler
 actor "Service Web Push" as Push
 actor "Resend (e-mail)" as Mail
 actor "Client calendrier\n(iCal)" as Cal
 
-rectangle "Garanties, alertes & echeances" {
-  usecase "Enregistrer une garantie\n(date de fin calculee)" as UC_Warranty
+rectangle "Garanties, alertes & échéances" {
+  usecase "Enregistrer une garantie\n(date de fin calculée)" as UC_Warranty
   usecase "Renouveler une garantie" as UC_Renew
   usecase "Prolonger une garantie" as UC_Extend
   usecase "Consulter l'historique de la garantie" as UC_History
-  usecase "Suivre une reclamation\n(NONE -> OPEN -> ... -> RESOLVED)" as UC_Claim
-  usecase "Joindre des pieces au dossier de reclamation" as UC_ClaimDoc
-  usecase "Exporter le dossier de reclamation (PDF)" as UC_ClaimPdf
-  usecase "Reutiliser un fournisseur deja saisi" as UC_Provider
+  usecase "Suivre une réclamation\n(NONE -> OPEN -> ... -> RESOLVED)" as UC_Claim
+  usecase "Joindre des pièces au dossier de réclamation" as UC_ClaimDoc
+  usecase "Exporter le dossier de réclamation (PDF)" as UC_ClaimPdf
+  usecase "Réutiliser un fournisseur déjà saisi" as UC_Provider
   usecase "Configurer les alertes J-30 / J-7 / J-1" as UC_Alerts
   usecase "Personnaliser les jours de rappel" as UC_AlertDays
-  usecase "Creer une alerte libre (recurrente)" as UC_Custom
+  usecase "Créer une alerte libre (récurrente)" as UC_Custom
   usecase "Planifier les rappels" as UC_Schedule
   usecase "Notifier par push" as UC_Push
   usecase "Notifier par e-mail" as UC_Mail
   usecase "Recevoir le digest hebdomadaire" as UC_Digest
-  usecase "Consulter l'agenda des echeances" as UC_Agenda
+  usecase "Consulter l'agenda des échéances" as UC_Agenda
   usecase "S'abonner au flux iCal" as UC_Ical
 }
 
@@ -69,17 +69,17 @@ UC_ClaimDoc ..> UC_Claim : <<extend>>
 UC_ClaimPdf ..> UC_Claim : <<extend>>
 UC_AlertDays ..> UC_Alerts : <<extend>>
 
-' Include : enregistrer une garantie planifie toujours ses rappels.
+' Include : enregistrer une garantie planifié toujours ses rappels.
 UC_Warranty ..> UC_Alerts : <<include>>
 UC_Alerts ..> UC_Schedule : <<include>>
 
 note bottom
 La planification passe par des jobs BullMQ **retardes** sur la file
-`wim-alerts` ; les echeances deja passees ne sont pas mises en file. L'ordre
+`wim-alerts` ; les échéances déjà passées ne sont pas mises en file. L'ordre
 du traitement est contraignant : chargement -> push (attendu, leve en cas
-d'echec dur pour que BullMQ rejoue) -> e-mail (best-effort) -> marquage
-`SENT`, afin qu'un push en echec ne consomme pas la notification. Le flux
-iCal est une capacite portee par un jeton de 64 caracteres, lisible **sans
+d'échec dur pour que BullMQ rejoue) -> e-mail (best-effort) -> marquage
+`SENT`, afin qu'un push en échec ne consomme pas la notification. Le flux
+iCal est une capacite portée par un jeton de 64 caractères, lisible **sans
 cookie** par un client calendrier externe. Le renouvellement et la
 prolongation conservent une trace dans l'historique de la garantie.
 end note

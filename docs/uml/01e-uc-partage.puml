@@ -9,30 +9,30 @@ skinparam usecase {
   ArrowColor #555
 }
 
-actor "Power User\n(proprietaire)" as Owner
+actor "Power User\n(propriétaire)" as Owner
 actor "Power User\n(destinataire)" as Peer
 actor "Membre du foyer" as Member
 actor "Visiteur\n(lien public / QR)" as Visitor
 actor "Resend (e-mail)" as Mail
 
 rectangle "Partage & collaboration" {
-  usecase "Partager son inventaire\n(lecture ou ecriture)" as UC_Share
+  usecase "Partager son inventaire\n(lecture ou écriture)" as UC_Share
   usecase "Inviter par jeton (expiration 7 j)" as UC_Invite
   usecase "Accepter / refuser une invitation" as UC_Accept
-  usecase "Revoquer un partage" as UC_Revoke
+  usecase "Révoquer un partage" as UC_Revoke
   usecase "Consulter l'inventaire partage" as UC_ViewShared
-  usecase "Creer un foyer (6 membres max)" as UC_Household
-  usecase "Gerer les membres du foyer" as UC_Members
-  usecase "Consulter la valeur consolidee du foyer" as UC_HouseholdStats
+  usecase "Créer un foyer (6 membres max)" as UC_Household
+  usecase "Gérer les membres du foyer" as UC_Members
+  usecase "Consulter la valeur consolidée du foyer" as UC_HouseholdStats
   usecase "Ouvrir une conversation" as UC_Thread
-  usecase "Formuler une offre chiffree" as UC_Offer
+  usecase "Formuler une offre chiffrée" as UC_Offer
   usecase "Accepter une offre" as UC_AcceptOffer
-  usecase "Transferer la propriete (PUSH)" as UC_Push
+  usecase "Transférer la propriete (PUSH)" as UC_Push
   usecase "Demander un transfert (PULL)" as UC_Pull
   usecase "Accepter / refuser un transfert" as UC_AcceptTransfer
   usecase "Publier une fiche publique (jeton + QR)" as UC_Public
   usecase "Consulter une fiche publique" as UC_ViewPublic
-  usecase "Signaler un objet trouve" as UC_Found
+  usecase "Signaler un objet trouvé" as UC_Found
 }
 
 Owner --> UC_Share
@@ -67,19 +67,19 @@ UC_AcceptOffer ..> UC_Offer : <<extend>>
 UC_Found ..> UC_ViewPublic : <<extend>>
 UC_ViewPublic ..> UC_Public : <<extend>>
 
-' Dependance stereotypee : une offre acceptee declenche un transfert PUSH.
+' Dépendance stéréotypée : une offre acceptée déclenche un transfert PUSH.
 UC_AcceptOffer ..> UC_Push : <<trigger>>
 UC_Household ..> UC_Share : <<include>>
 
 note bottom
-Trois granularites de partage coexistent : **public** (indicateur
+Trois granularités de partage coexistent : **public** (indicateur
 `sharedWithPowerUsers`, lecture seule), **par utilisateur** (table
-`InventoryShare`, droit READ ou WRITE) et **foyer** (`Household`, implemente
-comme un maillage automatique de partages en ecriture, six membres au plus).
-Les invitations sont a jeton avec expiration a 7 jours ; leur acceptation
+`InventoryShare`, droit READ ou WRITE) et **foyer** (`Household`, implémenté
+comme un maillage automatique de partages en écriture, six membres au plus).
+Les invitations sont à jeton avec expiration à 7 jours ; leur acceptation
 passe par un `updateMany` conditionnel afin que deux requetes concurrentes ne
-puissent pas consommer deux fois le meme jeton. La fiche publique et le
-signalement d'objet trouve sont les **seuls** points d'entree accessibles
-sans authentification, proteges par un jeton de 64 caracteres hexadecimaux.
+puissent pas consommer deux fois le même jeton. La fiche publique et le
+signalement d'objet trouvé sont les **seuls** points d'entree accessibles
+sans authentification, proteges par un jeton de 64 caractères hexadecimaux.
 end note
 @enduml

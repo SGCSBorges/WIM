@@ -1,22 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="1618px" preserveAspectRatio="none" style="width:2730px;height:1618px;background:#FFFFFF;"
 version="1.1" viewBox="0 0 2730 1618" width="2730px" zoomAndPan="magnify">
-<title>WIM - Cas d'utilisation : Garanties, alertes &amp; echeances</title>
+<title>WIM - Cas d'utilisation : Garanties, alertes &amp; &#233;ch&#233;ances</title>
 <defs/>
 <g>
 <g class="title" data-source-line="1">
 <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="439.3252" x="1138.3658" y="22.9951">WIM - Cas d'utilisation : Garanties, alertes &amp;
-echeances</text>
+&#233;ch&#233;ances</text>
 </g>
-<!--cluster Garanties, alertes & echeances-->
-<g class="cluster" data-entity="Garanties. alertes . echeances" data-source-line="18" data-uid="ent0008" id="cluster_Garanties. alertes . echeances">
+<!--cluster Garanties, alertes & ?ch?ances-->
+<g class="cluster" data-entity="Garanties. alertes . .ch.ances" data-source-line="18" data-uid="ent0008" id="cluster_Garanties. alertes . .ch.ances">
 <rect fill="none" height="757" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:1;" width="2194.81" x="355.78" y="302.8269"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="246.6885" x="1329.8408" y="317.822">Garanties, alertes &amp; echeances</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="246.6885" x="1329.8408" y="317.822">Garanties, alertes &amp; &#233;ch&#233;ances</text>
 </g>
 <!--entity UC_Warranty-->
 <g class="entity" data-entity="UC_Warranty" data-source-line="19" data-uid="ent0009" id="entity_UC_Warranty">
 <ellipse cx="1447.3936" cy="928.8316" fill="#F9F9F9" rx="117.5736" ry="25.9147" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="171.6982" x="1361.5445" y="926.4534">Enregistrer une garantie</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.8867" x="1372.9502" y="942.7503">(date de fin calculee)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.8867" x="1372.9502" y="942.7503">(date de fin calcul&#233;e)</text>
 </g>
 <!--entity UC_Renew-->
 <g class="entity" data-entity="UC_Renew" data-source-line="20" data-uid="ent0010" id="entity_UC_Renew">
@@ -36,23 +36,23 @@ echeances</text>
 <!--entity UC_Claim-->
 <g class="entity" data-entity="UC_Claim" data-source-line="23" data-uid="ent0013" id="entity_UC_Claim">
 <ellipse cx="1058.9356" cy="856.826" fill="#F9F9F9" rx="141.1456" ry="30.6291" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="163.1328" x="977.3692" y="847.3239">Suivre une reclamation</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="163.1328" x="977.3692" y="847.3239">Suivre une r&#233;clamation</text>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="256.3955" x="930.7379" y="863.6208">(NONE -&gt; OPEN -&gt; ... -&gt; RESOLVED)</text>
 </g>
 <!--entity UC_ClaimDoc-->
 <g class="entity" data-entity="UC_ClaimDoc" data-source-line="24" data-uid="ent0014" id="entity_UC_ClaimDoc">
 <ellipse cx="537.0011" cy="1008.8291" fill="#F9F9F9" rx="165.2111" ry="35.4422" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="314.0225" x="379.9899" y="1013.4775">Joindre des pieces au dossier de reclamation</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="314.0225" x="379.9899" y="1013.4775">Joindre des pi&#232;ces au dossier de r&#233;clamation</text>
 </g>
 <!--entity UC_ClaimPdf-->
 <g class="entity" data-entity="UC_ClaimPdf" data-source-line="25" data-uid="ent0015" id="entity_UC_ClaimPdf">
 <ellipse cx="536.9985" cy="445.8226" fill="#F9F9F9" rx="150.9785" ry="32.5957" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="284.5186" x="394.7392" y="450.471">Exporter le dossier de reclamation (PDF)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="284.5186" x="394.7392" y="450.471">Exporter le dossier de r&#233;clamation (PDF)</text>
 </g>
 <!--entity UC_Provider-->
 <g class="entity" data-entity="UC_Provider" data-source-line="26" data-uid="ent0016" id="entity_UC_Provider">
 <ellipse cx="537.0022" cy="541.8273" fill="#F9F9F9" rx="130.3022" ry="28.4604" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="241.2129" x="416.3957" y="546.4757">Reutiliser un fournisseur deja saisi</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="241.2129" x="416.3957" y="546.4757">R&#233;utiliser un fournisseur d&#233;j&#224; saisi</text>
 </g>
 <!--entity UC_Alerts-->
 <g class="entity" data-entity="UC_Alerts" data-source-line="27" data-uid="ent0017" id="entity_UC_Alerts">
@@ -67,7 +67,7 @@ echeances</text>
 <!--entity UC_Custom-->
 <g class="entity" data-entity="UC_Custom" data-source-line="29" data-uid="ent0019" id="entity_UC_Custom">
 <ellipse cx="537.0047" cy="633.8258" fill="#F9F9F9" rx="129.5447" ry="28.3089" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="239.6133" x="417.198" y="638.4742">Creer une alerte libre (recurrente)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="239.6133" x="417.198" y="638.4742">Cr&#233;er une alerte libre (r&#233;currente)</text>
 </g>
 <!--entity UC_Schedule-->
 <g class="entity" data-entity="UC_Schedule" data-source-line="30" data-uid="ent0020" id="entity_UC_Schedule">
@@ -92,7 +92,7 @@ echeances</text>
 <!--entity UC_Agenda-->
 <g class="entity" data-entity="UC_Agenda" data-source-line="34" data-uid="ent0024" id="entity_UC_Agenda">
 <ellipse cx="537.0019" cy="815.8292" fill="#F9F9F9" rx="129.8619" ry="28.3724" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240.2832" x="416.8603" y="820.4777">Consulter l'agenda des echeances</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240.2832" x="416.8603" y="820.4777">Consulter l'agenda des &#233;ch&#233;ances</text>
 </g>
 <!--entity UC_Ical-->
 <g class="entity" data-entity="UC_Ical" data-source-line="35" data-uid="ent0025" id="entity_UC_Ical">
@@ -116,7 +116,7 @@ echeances</text>
 <ellipse cx="1829.138" cy="1084.0369" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M1829.138,1092.0369 L1829.138,1119.0369 M1816.138,1100.0369 L1842.138,1100.0369 M1829.138,1119.0369 L1816.138,1134.0369 M1829.138,1119.0369 L1842.138,1134.0369" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.3652" x="1767.16" y="1148.532">Ordonnanceur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="1767.16" y="1164.8289">BullMQ (systeme)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="1767.16" y="1164.8289">BullMQ (syst&#232;me)</text>
 </g>
 <!--entity Push-->
 <g class="entity" data-entity="Push" data-source-line="14" data-uid="ent0005" id="entity_Push">
@@ -144,12 +144,16 @@ A0,0 0 0 0 279.2,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="274.6567" x="285.2" y="60.3638">La planification passe par des jobs BullMQ</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="62.4863" x="563.9891" y="60.3638">retardes</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="59.998" x="630.6077" y="60.3638">sur la file</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="494.5967" x="285.2" y="75.4966">`wim-alerts` ; les echeances deja passees ne sont pas mises en file. L'ordre</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="494.5967" x="285.2" y="75.4966">`wim-alerts` ; les &#233;ch&#233;ances d&#233;j&#224; pass&#233;es ne sont
+pas mises en file. L'ordre</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="490.0137" x="285.2" y="90.6294">du traitement est contraignant : chargement -&gt; push (attendu, leve en
 cas</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="476.7344" x="285.2" y="105.7622">d'echec dur pour que BullMQ rejoue) -&gt; e-mail (best-effort) -&gt; marquage</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="486.8589" x="285.2" y="120.895">`SENT`, afin qu'un push en echec ne consomme pas la notification. Le flux</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="472.9004" x="285.2" y="136.0278">iCal est une capacite portee par un jeton de 64 caracteres, lisible **sans</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="476.7344" x="285.2" y="105.7622">d'&#233;chec dur pour que BullMQ rejoue) -&gt; e-mail (best-effort) -&gt;
+marquage</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="486.8589" x="285.2" y="120.895">`SENT`, afin qu'un push en &#233;chec ne consomme pas la notification. Le
+flux</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="472.9004" x="285.2" y="136.0278">iCal est une capacite port&#233;e par un jeton de 64 caract&#232;res, lisible
+**sans</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="428.7461" x="285.2" y="151.1606">cookie** par un client calendrier externe. Le renouvellement et la</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="436.0205" x="285.2" y="166.2935">prolongation conservent une trace dans l'historique de la garantie.</text>
 </g>

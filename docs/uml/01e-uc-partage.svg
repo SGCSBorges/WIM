@@ -15,7 +15,7 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <g class="entity" data-entity="UC_Share" data-source-line="18" data-uid="ent0008" id="entity_UC_Share">
 <ellipse cx="988.4532" cy="736.6615" fill="#F9F9F9" rx="114.9732" ry="25.3946" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164.5957" x="906.1554" y="734.2728">Partager son inventaire</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.8818" x="918.0123" y="750.5697">(lecture ou ecriture)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140.8818" x="918.0123" y="750.5697">(lecture ou &#233;criture)</text>
 </g>
 <!--entity UC_Invite-->
 <g class="entity" data-entity="UC_Invite" data-source-line="19" data-uid="ent0009" id="entity_UC_Invite">
@@ -30,7 +30,7 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <!--entity UC_Revoke-->
 <g class="entity" data-entity="UC_Revoke" data-source-line="21" data-uid="ent0011" id="entity_UC_Revoke">
 <ellipse cx="463.6561" cy="818.6581" fill="#F9F9F9" rx="87.8061" ry="19.9612" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.7568" x="389.2777" y="823.3065">Revoquer un partage</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="148.7568" x="389.2777" y="823.3065">R&#233;voquer un partage</text>
 </g>
 <!--entity UC_ViewShared-->
 <g class="entity" data-entity="UC_ViewShared" data-source-line="22" data-uid="ent0012" id="entity_UC_ViewShared">
@@ -40,17 +40,17 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <!--entity UC_Household-->
 <g class="entity" data-entity="UC_Household" data-source-line="23" data-uid="ent0013" id="entity_UC_Household">
 <ellipse cx="463.6583" cy="652.6525" fill="#F9F9F9" rx="125.6783" ry="27.5357" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231.4307" x="347.943" y="657.301">Creer un foyer (6 membres max)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231.4307" x="347.943" y="657.301">Cr&#233;er un foyer (6 membres max)</text>
 </g>
 <!--entity UC_Members-->
 <g class="entity" data-entity="UC_Members" data-source-line="24" data-uid="ent0014" id="entity_UC_Members">
 <ellipse cx="463.659" cy="739.6547" fill="#F9F9F9" rx="109.839" ry="24.3678" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197.5313" x="364.8934" y="744.3031">Gerer les membres du foyer</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197.5313" x="364.8934" y="744.3031">G&#233;rer les membres du foyer</text>
 </g>
 <!--entity UC_HouseholdStats-->
 <g class="entity" data-entity="UC_HouseholdStats" data-source-line="25" data-uid="ent0015" id="entity_UC_HouseholdStats">
 <ellipse cx="463.6568" cy="905.6542" fill="#F9F9F9" rx="146.2368" ry="31.6474" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="274.6406" x="326.3365" y="910.3027">Consulter la valeur consolidee du foyer</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="274.6406" x="326.3365" y="910.3027">Consulter la valeur consolid&#233;e du foyer</text>
 </g>
 <!--entity UC_Thread-->
 <g class="entity" data-entity="UC_Thread" data-source-line="26" data-uid="ent0016" id="entity_UC_Thread">
@@ -60,7 +60,7 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <!--entity UC_Offer-->
 <g class="entity" data-entity="UC_Offer" data-source-line="27" data-uid="ent0017" id="entity_UC_Offer">
 <ellipse cx="988.4535" cy="1232.6536" fill="#F9F9F9" rx="105.8835" ry="23.5767" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="188.9453" x="893.9808" y="1237.302">Formuler une offre chiffree</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="188.9453" x="893.9808" y="1237.302">Formuler une offre chiffr&#233;e</text>
 </g>
 <!--entity UC_AcceptOffer-->
 <g class="entity" data-entity="UC_AcceptOffer" data-source-line="28" data-uid="ent0018" id="entity_UC_AcceptOffer">
@@ -70,7 +70,7 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <!--entity UC_Push-->
 <g class="entity" data-entity="UC_Push" data-source-line="29" data-uid="ent0019" id="entity_UC_Push">
 <ellipse cx="988.4512" cy="650.6611" fill="#F9F9F9" rx="116.5712" ry="25.7142" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="212.0234" x="882.4394" y="655.3095">Transferer la propriete (PUSH)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="212.0234" x="882.4394" y="655.3095">Transf&#233;rer la propriete (PUSH)</text>
 </g>
 <!--entity UC_Pull-->
 <g class="entity" data-entity="UC_Pull" data-source-line="30" data-uid="ent0020" id="entity_UC_Pull">
@@ -95,14 +95,14 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <!--entity UC_Found-->
 <g class="entity" data-entity="UC_Found" data-source-line="34" data-uid="ent0024" id="entity_UC_Found">
 <ellipse cx="463.6632" cy="1252.6535" fill="#F9F9F9" rx="97.0332" ry="21.8066" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169.4971" x="378.9147" y="1257.3019">Signaler un objet trouve</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169.4971" x="378.9147" y="1257.3019">Signaler un objet trouv&#233;</text>
 </g>
 <!--entity Owner-->
 <g class="entity" data-entity="Owner" data-source-line="11" data-uid="ent0002" id="entity_Owner">
 <ellipse cx="66.2022" cy="265.8569" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M66.2022,273.8569 L66.2022,300.8569 M53.2022,281.8569 L79.2022,281.8569 M66.2022,300.8569 L53.2022,315.8569 M66.2022,300.8569 L79.2022,315.8569" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.1875" x="19.4" y="330.352">Power User</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="93.6045" x="19.4" y="346.6489">(proprietaire)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="93.6045" x="19.4" y="346.6489">(propri&#233;taire)</text>
 </g>
 <!--entity Peer-->
 <g class="entity" data-entity="Peer" data-source-line="12" data-uid="ent0003" id="entity_Peer">
@@ -133,7 +133,7 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <g class="entity" data-entity="GMN52" data-source-line="74" data-uid="ent0053" id="entity_GMN52">
 <path d="M187.39,427.5569 L187.39,573.7522 L739.9173,573.7522 L739.9173,437.5569 L729.9173,427.5569 L187.39,427.5569" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M729.9173,427.5569 L729.9173,437.5569 L739.9173,437.5569 L729.9173,427.5569" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="269.8452" x="193.39" y="444.6238">Trois granularites de partage coexistent :</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="269.8452" x="193.39" y="444.6238">Trois granularit&#233;s de partage coexistent :</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="44.4844" x="467.3675" y="444.6238">public</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="70.5796" x="515.9842" y="444.6238">(indicateur</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="265.2051" x="193.39" y="459.7566">`sharedWithPowerUsers`, lecture seule),</text>
@@ -141,16 +141,19 @@ version="1.1" viewBox="0 0 1710 1593" width="1710px" zoomAndPan="magnify">
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="37.9971" x="571.9198" y="459.7566">(table</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="280.3315" x="193.39" y="474.8894">`InventoryShare`, droit READ ou WRITE) et</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="38.2891" x="477.8539" y="474.8894">foyer</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="173.2656" x="520.2753" y="474.8894">(`Household`, implemente</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="526.2334" x="193.39" y="490.0222">comme un maillage automatique de partages en ecriture, six membres au plus).</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="459.2085" x="193.39" y="505.155">Les invitations sont a jeton avec expiration a 7 jours ; leur acceptation</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="173.2656" x="520.2753" y="474.8894">(`Household`, impl&#233;ment&#233;</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="526.2334" x="193.39" y="490.0222">comme un maillage automatique de partages en &#233;criture, six membres
+au plus).</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="459.2085" x="193.39" y="505.155">Les invitations sont &#224; jeton avec expiration &#224; 7 jours ; leur
+acceptation</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="531.5273" x="193.39" y="520.2878">passe par un `updateMany` conditionnel afin que deux requetes concurrentes
 ne</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="477.3057" x="193.39" y="535.4206">puissent pas consommer deux fois le meme jeton. La fiche publique et le</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="230.4897" x="193.39" y="550.5535">signalement d'objet trouve sont les</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="477.3057" x="193.39" y="535.4206">puissent pas consommer deux fois le m&#234;me jeton. La fiche publique
+et le</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="230.4897" x="193.39" y="550.5535">signalement d'objet trouv&#233; sont les</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="38.0034" x="428.0121" y="550.5535">seuls</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="176.7441" x="470.1478" y="550.5535">points d'entree accessibles</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="503.5532" x="193.39" y="565.6863">sans authentification, proteges par un jeton de 64 caracteres hexadecimaux.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="503.5532" x="193.39" y="565.6863">sans authentification, proteges par un jeton de 64 caract&#232;res hexadecimaux.</text>
 </g>
 <!--link Owner to UC_Share-->
 <g class="link" data-entity-1="Owner" data-entity-2="UC_Share" data-source-line="37" data-uid="lnk25" id="link_Owner_UC_Share">

@@ -1,5 +1,5 @@
 @startuml
-title WIM – Cas d'utilisation : Inventaire (articles, tags, emplacements, pieces jointes)
+title WIM – Cas d'utilisation : Inventaire (articles, tags, emplacements, pièces jointes)
 
 left to right direction
 skinparam packageStyle rectangle
@@ -14,24 +14,24 @@ actor "Power User" as PowerUser
 actor "Open Food Facts /\nOpen Products Facts" as OFF
 
 rectangle "Inventaire" {
-  usecase "Creer / modifier / supprimer un article" as UC_Crud
-  usecase "Rechercher et filtrer\n(plein-texte trigram, statut, etat, categorie)" as UC_Search
+  usecase "Créer / modifier / supprimer un article" as UC_Crud
+  usecase "Rechercher et filtrer\n(plein-texte trigram, statut, état, catégorie)" as UC_Search
   usecase "Scanner un code-barres" as UC_Barcode
-  usecase "Numeriser un ticket de caisse (OCR)" as UC_Ocr
-  usecase "Joindre une piece (PDF / image)" as UC_Attach
-  usecase "Organiser par etiquettes (couleurs)" as UC_Tags
-  usecase "Organiser par emplacements (hierarchie)" as UC_Locations
+  usecase "Numériser un ticket de caisse (OCR)" as UC_Ocr
+  usecase "Joindre une pièce (PDF / image)" as UC_Attach
+  usecase "Organiser par étiquettes (couleurs)" as UC_Tags
+  usecase "Organiser par emplacements (hiérarchie)" as UC_Locations
   usecase "Annoter un article (notes)" as UC_Notes
-  usecase "Renseigner des champs personnalises" as UC_Custom
+  usecase "Renseigner des champs personnalisés" as UC_Custom
   usecase "Marquer comme favori" as UC_Fav
-  usecase "Verifier physiquement un article" as UC_Verify
+  usecase "Vérifier physiquement un article" as UC_Verify
   usecase "Regrouper des articles en lot" as UC_Bundle
   usecase "Dupliquer un article" as UC_Duplicate
   usecase "Corbeille : supprimer, restaurer, purger" as UC_Trash
-  usecase "Editer en masse\n(statut, categorie, etat, quantite)" as UC_Bulk
-  usecase "Utiliser un modele d'article" as UC_Template
+  usecase "Editer en masse\n(statut, catégorie, état, quantité)" as UC_Bulk
+  usecase "Utiliser un modèle d'article" as UC_Template
   usecase "Enregistrer une vue filtree" as UC_Views
-  usecase "Definir une vue par defaut\net la partager au foyer" as UC_ViewShare
+  usecase "Définir une vue par défaut\net la partager au foyer" as UC_ViewShare
   usecase "Importer un CSV (validation a blanc)" as UC_Import
   usecase "Exporter en CSV" as UC_Export
 }
@@ -61,7 +61,7 @@ PowerUser --> UC_Export
 
 UC_Barcode ..> OFF : appel direct\ndepuis le navigateur
 
-' Extend : cas optionnels greffes sur la creation/modification d'un article.
+' Extend : cas optionnels greffes sur la création/modification d'un article.
 UC_Attach ..> UC_Crud : <<extend>>
 UC_Tags ..> UC_Crud : <<extend>>
 UC_Locations ..> UC_Crud : <<extend>>
@@ -72,14 +72,14 @@ UC_Template ..> UC_Crud : <<extend>>
 UC_ViewShare ..> UC_Views : <<extend>>
 
 note bottom
-Les etiquettes et les emplacements sont des relations M:N (tables de jonction
+Les étiquettes et les emplacements sont des relations M:N (tables de jonction
 ArticleTag / ArticleLocation) ; les emplacements sont hierarchiques. La
 suppression est douce (`deletedAt`) et alimente la corbeille, seule table du
-modele a pratiquer le soft-delete ; une purge planifiee vide la corbeille.
-Le scan de code-barres et l'OCR sont **entierement gratuits** : lookup public
-sans cle d'API et tesseract.js (WASM) execute dans le navigateur.
-Import/export CSV, edition en masse, modeles et vues enregistrees sont
-reserves au niveau Power User (`csv_import`, `csv_export`, `bulk_edit`,
+modèle a pratiquer le soft-delete ; une purge planifiée vide la corbeille.
+Le scan de code-barres et l'OCR sont **entièrement gratuits** : lookup public
+sans clé d'API et tesseract.js (WASM) exécute dans le navigateur.
+Import/export CSV, edition en masse, modèles et vues enregistrées sont
+réservés au niveau Power User (`csv_import`, `csv_export`, `bulk_edit`,
 `templates`, `saved_views`).
 end note
 @enduml

@@ -14,7 +14,7 @@ version="1.1" viewBox="0 0 1204 927" width="1204px" zoomAndPan="magnify">
 <!--entity P_Auth-->
 <g class="entity" data-entity="P_Auth" data-source-line="28" data-uid="ent0008" id="entity_P_Auth">
 <ellipse cx="920.8715" cy="393.0874" fill="#F9F9F9" rx="95.3615" ry="23.5305" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="146.6309" x="847.556" y="393.3977">Compte &amp; securite</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="146.6309" x="847.556" y="393.3977">Compte &amp; s&#233;curit&#233;</text>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="37.3174" x="902.2128" y="409.6946">(01a)</text>
 </g>
 <!--entity P_Inv-->
@@ -28,7 +28,7 @@ version="1.1" viewBox="0 0 1204 927" width="1204px" zoomAndPan="magnify">
 <ellipse cx="920.8723" cy="645.0861" fill="#F9F9F9" rx="104.9023" ry="25.8892" style="stroke:#555555;stroke-width:0.5;"/>
 <rect fill="#000000" height="3.5" width="3.5" x="859.344" y="634.6636"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="125.0566" x="866.344" y="641.3619">Garanties, alertes</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="145.1064" x="848.3191" y="657.6588">&amp; echeances** (01c)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="145.1064" x="848.3191" y="657.6588">&amp; &#233;ch&#233;ances** (01c)</text>
 </g>
 <!--entity P_Life-->
 <g class="entity" data-entity="P_Life" data-source-line="31" data-uid="ent0011" id="entity_P_Life">
@@ -62,7 +62,7 @@ version="1.1" viewBox="0 0 1204 927" width="1204px" zoomAndPan="magnify">
 <ellipse cx="373.7684" cy="343.2969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M373.7684,351.2969 L373.7684,378.2969 M360.7684,359.2969 L386.7684,359.2969 M373.7684,378.2969 L360.7684,393.2969 M373.7684,378.2969 L386.7684,393.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53.3818" x="314.87" y="407.792">Visiteur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117.7969" x="314.87" y="424.0889">(non authentifie)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117.7969" x="314.87" y="424.0889">(non authentifi&#233;)</text>
 </g>
 <!--entity User-->
 <g class="entity" data-entity="User" data-source-line="22" data-uid="ent0003" id="entity_User">
@@ -76,7 +76,7 @@ version="1.1" viewBox="0 0 1204 927" width="1204px" zoomAndPan="magnify">
 <ellipse cx="211.1938" cy="630.2969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M211.1938,638.2969 L211.1938,665.2969 M198.1938,646.2969 L224.1938,646.2969 M211.1938,665.2969 L198.1938,680.2969 M211.1938,665.2969 L224.1938,680.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.1875" x="171.6" y="694.792">Power User</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63.3145" x="171.6" y="711.0889">(abonne)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63.3145" x="171.6" y="711.0889">(abonn&#233;)</text>
 </g>
 <!--entity Admin-->
 <g class="entity" data-entity="Admin" data-source-line="24" data-uid="ent0005" id="entity_Admin">
@@ -90,29 +90,30 @@ version="1.1" viewBox="0 0 1204 927" width="1204px" zoomAndPan="magnify">
 <ellipse cx="373.768" cy="657.2969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M373.768,665.2969 L373.768,692.2969 M360.768,673.2969 L386.768,673.2969 M373.768,692.2969 L360.768,707.2969 M373.768,692.2969 L386.768,707.2969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.3652" x="311.79" y="721.792">Ordonnanceur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="311.79" y="738.0889">BullMQ (systeme)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="311.79" y="738.0889">BullMQ (syst&#232;me)</text>
 </g>
 <g class="entity" data-entity="GMN29" data-source-line="57" data-uid="ent0030" id="entity_GMN29">
 <path d="M644.75,43.2969 L644.75,234.8906 L1197.0044,234.8906 L1197.0044,53.2969 L1187.0044,43.2969 L644.75,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M1187.0044,43.2969 L1187.0044,53.2969 L1197.0044,53.2969 L1187.0044,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="128.4321" x="650.75" y="60.3638">Modele de droits.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="128.4321" x="650.75" y="60.3638">Mod&#232;le de droits.</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="325.2031" x="783.3145" y="60.3638">`USER` est le socle gratuit : inventaire, garanties,</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="526.9443" x="650.75" y="75.4966">alertes, tableau de bord. `POWER_USER` (abonnement Stripe) ajoute le partage,</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="432.9419" x="650.75" y="90.6294">les transferts, la messagerie, les prets, l'assurance, l'entretien, les</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="432.9419" x="650.75" y="90.6294">les transferts, la messagerie, les pr&#234;ts, l'assurance, l'entretien,
+les</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="486.8208" x="650.75" y="105.7622">budgets, les analyses, la page publique, l'import/export CSV et l'edition
 en</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="107.1167" x="650.75" y="120.895">masse. `ADMIN`</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="43.9702" x="761.999" y="120.895">herite</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="43.9702" x="761.999" y="120.895">h&#233;rite</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="363.0605" x="810.1016" y="120.895">de Power User sans abonnement et ouvre le paquetage</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="483.4629" x="650.75" y="136.0278">d'administration. Chaque fonctionnalite payante est portee par une cle
-de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="455.6475" x="650.75" y="151.1606">feature flag modifiable en base, si bien que le niveau requis peut etre</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="251.6084" x="650.75" y="166.2935">abaisse ou releve sans redeploiement.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="483.4629" x="650.75" y="136.0278">d'administration. Chaque fonctionnalit&#233; payante est port&#233;e par
+une cl&#233; de</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="455.6475" x="650.75" y="151.1606">feature flag modifiable en base, si bien que le niveau requis peut &#234;tre</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="251.6084" x="650.75" y="166.2935">abaiss&#233; ou relev&#233; sans red&#233;ploiement.</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4.1323" x="650.75" y="181.4263">&#160;</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="531.2544" x="650.75" y="196.5591">Les sept paquetages ci-dessus correspondent aux regroupements de modules
 du</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="498.9639" x="650.75" y="211.6919">diagramme de paquetages (`13-paquetages.puml`) ; le contexte externe du</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="282.896" x="650.75" y="226.8247">systeme est decrit par `12-contexte.puml`.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="282.896" x="650.75" y="226.8247">syst&#232;me est d&#233;crit par `12-contexte.puml`.</text>
 </g>
 <!--link Guest to P_Auth-->
 <g class="link" data-entity-1="Guest" data-entity-2="P_Auth" data-source-line="37" data-uid="lnk15" id="link_Guest_P_Auth">
@@ -126,7 +127,7 @@ du</text>
 <path d="M432.86,368.1269 C443.76,365.9369 455.07,363.8069 465.75,362.0869 C590.31,341.9969 729.3562,327.3672 821.3662,318.7372" fill="none" id="Guest-to-P_Share" style="stroke:#555555;stroke-width:1;"/>
 <polygon fill="#555555" points="827.34,318.1769,818.0058,315.0348,822.3618,318.6438,818.7529,322.9999,827.34,318.1769" style="stroke:#555555;stroke-width:1;"/>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="129.835" x="475.75" y="323.7238">fiche publique (QR),</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="79.3711" x="500.9819" y="338.8566">objet trouve</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="79.3711" x="500.9819" y="338.8566">objet trouv&#233;</text>
 </g>
 <!--link User to P_Auth-->
 <g class="link" data-entity-1="User" data-entity-2="P_Auth" data-source-line="40" data-uid="lnk17" id="link_User_P_Auth">
@@ -184,7 +185,7 @@ style="stroke:#555555;stroke-width:1;"/>
 <g class="link" data-entity-1="Scheduler" data-entity-2="P_Life" data-source-line="53" data-uid="lnk27" id="link_Scheduler_P_Life">
 <path d="M436.2,737.4769 C445.78,742.7269 455.81,747.4969 465.75,751.0869 C582.03,793.1369 718.2994,807.7515 812.2694,813.0115" fill="none" id="Scheduler-to-P_Life" style="stroke:#555555;stroke-width:1;"/>
 <polygon fill="#555555" points="818.26,813.3469,809.4976,808.8501,813.2678,813.0674,809.0505,816.8376,818.26,813.3469" style="stroke:#555555;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="124.8457" x="477.9949" y="732.1538">echeances de pret,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="124.8457" x="477.9949" y="732.1538">&#233;ch&#233;ances de pr&#234;t,</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="134.3354" x="473.25" y="747.2866">assurance, entretien</text>
 </g>
 <!--link Scheduler to P_Admin-->

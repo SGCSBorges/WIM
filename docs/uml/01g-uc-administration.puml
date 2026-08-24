@@ -9,27 +9,27 @@ skinparam usecase {
   ArrowColor #555
 }
 
-actor "Administrateur\n(role ADMIN)" as Admin
-actor "Ordonnanceur\nBullMQ (systeme)" as Scheduler
+actor "Administrateur\n(rôle ADMIN)" as Admin
+actor "Ordonnanceur\nBullMQ (système)" as Scheduler
 
 rectangle "Administration & exploitation" {
-  usecase "Lister / creer / modifier un compte" as UC_Users
-  usecase "Changer le role d'un compte" as UC_Role
-  usecase "Reinitialiser le mot de passe d'un compte" as UC_ResetPwd
-  usecase "Forcer la deconnexion d'un compte" as UC_ForceLogout
+  usecase "Lister / créer / modifier un compte" as UC_Users
+  usecase "Changer le rôle d'un compte" as UC_Role
+  usecase "Réinitialiser le mot de passe d'un compte" as UC_ResetPwd
+  usecase "Forcer la déconnexion d'un compte" as UC_ForceLogout
   usecase "Supprimer un compte (cascade)" as UC_DeleteUser
   usecase "Inspecter l'inventaire d'un compte" as UC_Inspect
   usecase "Consulter le journal d'audit" as UC_Audit
   usecase "Regler un feature flag" as UC_Flags
-  usecase "Octroyer un acces temporaire" as UC_Grant
-  usecase "Revoquer un acces temporaire" as UC_Revoke
+  usecase "Octroyer un accès temporaire" as UC_Grant
+  usecase "Révoquer un accès temporaire" as UC_Revoke
   usecase "Suivre les files de jobs" as UC_Jobs
-  usecase "Inspecter les jobs en echec" as UC_Failed
+  usecase "Inspecter les jobs en échec" as UC_Failed
   usecase "Exporter la base (JSON)" as UC_ExportDb
   usecase "Restaurer la base" as UC_ImportDb
   usecase "Consulter les statistiques de la base" as UC_DbStats
-  usecase "Recharger le jeu de demonstration" as UC_Demo
-  usecase "Purger la corbeille (planifie)" as UC_Purge
+  usecase "Recharger le jeu de démonstration" as UC_Demo
+  usecase "Purger la corbeille (planifié)" as UC_Purge
 }
 
 Admin --> UC_Users
@@ -62,14 +62,14 @@ UC_Revoke ..> UC_Grant : <<extend>>
 UC_Failed ..> UC_Jobs : <<extend>>
 
 note bottom
-Le role ADMIN **herite** des options Power User sans abonnement. Deux gardes
-structurent ce paquetage : le dernier administrateur ne peut etre ni
-retrograde ni supprime (verification **relue dans la transaction**, un
-instantane pris avant etant perime par definition), et les operations
-destructrices passent par un limiteur dedie (10 par heure, clef derivee du
+Le rôle ADMIN **hérite** des options Power User sans abonnement. Deux gardes
+structurent ce paquetage : le dernier administrateur ne peut être ni
+rétrogradé ni supprime (vérification **relue dans la transaction**, un
+instantane pris avant etant perime par definition), et les opérations
+destructrices passent par un limiteur dédié (10 par heure, clef derivee du
 jeton d'authentification hache avec repli sur l'adresse IP). Les feature
 flags permettent d'abaisser ou de relever le niveau requis par
-fonctionnalite sans redeploiement, et les octrois temporaires portent une
+fonctionnalité sans redéploiement, et les octrois temporaires portent une
 date d'expiration.
 end note
 @enduml

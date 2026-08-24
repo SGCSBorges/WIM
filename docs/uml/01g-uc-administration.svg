@@ -14,22 +14,22 @@ version="1.1" viewBox="0 0 1098 1726" width="1098px" zoomAndPan="magnify">
 <!--entity UC_Users-->
 <g class="entity" data-entity="UC_Users" data-source-line="15" data-uid="ent0005" id="entity_UC_Users">
 <ellipse cx="455.7595" cy="593.3928" fill="#F9F9F9" rx="129.8295" ry="28.3659" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240.2148" x="335.6521" y="598.0412">Lister / creer / modifier un compte</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240.2148" x="335.6521" y="598.0412">Lister / cr&#233;er / modifier un compte</text>
 </g>
 <!--entity UC_Role-->
 <g class="entity" data-entity="UC_Role" data-source-line="16" data-uid="ent0006" id="entity_UC_Role">
 <ellipse cx="455.7642" cy="681.3997" fill="#F9F9F9" rx="110.9142" ry="24.5828" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="199.8555" x="355.8365" y="686.0482">Changer le role d'un compte</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="199.8555" x="355.8365" y="686.0482">Changer le r&#244;le d'un compte</text>
 </g>
 <!--entity UC_ResetPwd-->
 <g class="entity" data-entity="UC_ResetPwd" data-source-line="17" data-uid="ent0007" id="entity_UC_ResetPwd">
 <ellipse cx="455.7638" cy="774.3996" fill="#F9F9F9" rx="154.0138" ry="33.2028" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="290.8281" x="310.3498" y="779.0481">Reinitialiser le mot de passe d'un compte</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="290.8281" x="310.3498" y="779.0481">R&#233;initialiser le mot de passe d'un compte</text>
 </g>
 <!--entity UC_ForceLogout-->
 <g class="entity" data-entity="UC_ForceLogout" data-source-line="18" data-uid="ent0008" id="entity_UC_ForceLogout">
 <ellipse cx="455.7645" cy="871.3938" fill="#F9F9F9" rx="133.4345" ry="29.0869" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="247.8164" x="331.8563" y="876.0422">Forcer la deconnexion d'un compte</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="247.8164" x="331.8563" y="876.0422">Forcer la d&#233;connexion d'un compte</text>
 </g>
 <!--entity UC_DeleteUser-->
 <g class="entity" data-entity="UC_DeleteUser" data-source-line="19" data-uid="ent0009" id="entity_UC_DeleteUser">
@@ -54,12 +54,12 @@ version="1.1" viewBox="0 0 1098 1726" width="1098px" zoomAndPan="magnify">
 <!--entity UC_Grant-->
 <g class="entity" data-entity="UC_Grant" data-source-line="23" data-uid="ent0013" id="entity_UC_Grant">
 <ellipse cx="961.1719" cy="1394.3973" fill="#F9F9F9" rx="115.6019" ry="25.5204" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="209.9453" x="856.1992" y="1399.0457">Octroyer un acces temporaire</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="209.9453" x="856.1992" y="1399.0457">Octroyer un acc&#232;s temporaire</text>
 </g>
 <!--entity UC_Revoke-->
 <g class="entity" data-entity="UC_Revoke" data-source-line="24" data-uid="ent0014" id="entity_UC_Revoke">
 <ellipse cx="455.7586" cy="1300.4006" fill="#F9F9F9" rx="118.4686" ry="26.0937" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.084" x="347.7166" y="1305.049">Revoquer un acces temporaire</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.084" x="347.7166" y="1305.049">R&#233;voquer un acc&#232;s temporaire</text>
 </g>
 <!--entity UC_Jobs-->
 <g class="entity" data-entity="UC_Jobs" data-source-line="25" data-uid="ent0015" id="entity_UC_Jobs">
@@ -69,7 +69,7 @@ version="1.1" viewBox="0 0 1098 1726" width="1098px" zoomAndPan="magnify">
 <!--entity UC_Failed-->
 <g class="entity" data-entity="UC_Failed" data-source-line="26" data-uid="ent0016" id="entity_UC_Failed">
 <ellipse cx="455.7578" cy="1215.3924" fill="#F9F9F9" rx="106.6278" ry="23.7256" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="190.5654" x="360.4751" y="1220.0409">Inspecter les jobs en echec</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="190.5654" x="360.4751" y="1220.0409">Inspecter les jobs en &#233;chec</text>
 </g>
 <!--entity UC_ExportDb-->
 <g class="entity" data-entity="UC_ExportDb" data-source-line="27" data-uid="ent0017" id="entity_UC_ExportDb">
@@ -89,44 +89,45 @@ version="1.1" viewBox="0 0 1098 1726" width="1098px" zoomAndPan="magnify">
 <!--entity UC_Demo-->
 <g class="entity" data-entity="UC_Demo" data-source-line="30" data-uid="ent0020" id="entity_UC_Demo">
 <ellipse cx="455.7649" cy="501.3999" fill="#F9F9F9" rx="131.7149" ry="28.743" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="244.1934" x="333.6682" y="506.0483">Recharger le jeu de demonstration</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="244.1934" x="333.6682" y="506.0483">Recharger le jeu de d&#233;monstration</text>
 </g>
 <!--entity UC_Purge-->
 <g class="entity" data-entity="UC_Purge" data-source-line="31" data-uid="ent0021" id="entity_UC_Purge">
 <ellipse cx="455.763" cy="319.3975" fill="#F9F9F9" rx="108.403" ry="24.0806" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.4209" x="358.5526" y="324.0459">Purger la corbeille (planifie)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194.4209" x="358.5526" y="324.0459">Purger la corbeille (planifi&#233;)</text>
 </g>
 <!--entity Admin-->
 <g class="entity" data-entity="Admin" data-source-line="11" data-uid="ent0002" id="entity_Admin">
 <ellipse cx="67.9818" cy="946.5969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M67.9818,954.5969 L67.9818,981.5969 M54.9818,962.5969 L80.9818,962.5969 M67.9818,981.5969 L54.9818,996.5969 M67.9818,981.5969 L80.9818,996.5969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104.6035" x="15.68" y="1011.092">Administrateur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89.2363" x="15.68" y="1027.3889">(role ADMIN)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89.2363" x="15.68" y="1027.3889">(r&#244;le ADMIN)</text>
 </g>
 <!--entity Scheduler-->
 <g class="entity" data-entity="Scheduler" data-source-line="12" data-uid="ent0003" id="entity_Scheduler">
 <ellipse cx="67.978" cy="163.5969" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M67.978,171.5969 L67.978,198.5969 M54.978,179.5969 L80.978,179.5969 M67.978,198.5969 L54.978,213.5969 M67.978,198.5969 L80.978,213.5969" fill="none" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100.3652" x="6" y="228.092">Ordonnanceur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="6" y="244.3889">BullMQ (systeme)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123.9561" x="6" y="244.3889">BullMQ (syst&#232;me)</text>
 </g>
 <g class="entity" data-entity="GMN45" data-source-line="64" data-uid="ent0046" id="entity_GMN45">
 <path d="M190.96,43.2969 L190.96,189.4922 A0,0 0 0 0 190.96,189.4922 L451.76,189.4922 L455.76,295.2069 L459.76,189.4922 L720.5723,189.4922 A0,0 0 0 0 720.5723,189.4922 L720.5723,53.2969 L710.5723,43.2969
 L190.96,43.2969 A0,0 0 0 0 190.96,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M710.5723,43.2969 L710.5723,53.2969 L720.5723,53.2969 L710.5723,43.2969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="92.0918" x="196.96" y="60.3638">Le role ADMIN</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="43.9702" x="293.1841" y="60.3638">herite</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="92.0918" x="196.96" y="60.3638">Le r&#244;le ADMIN</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="43.9702" x="293.1841" y="60.3638">h&#233;rite</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="364.2856" x="341.2867" y="60.3638">des options Power User sans abonnement. Deux gardes</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="442.2031" x="196.96" y="75.4966">structurent ce paquetage : le dernier administrateur ne peut etre ni</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="232.8574" x="196.96" y="90.6294">retrograde ni supprime (verification</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="442.2031" x="196.96" y="75.4966">structurent ce paquetage : le dernier administrateur ne peut &#234;tre ni</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="232.8574" x="196.96" y="90.6294">r&#233;trograd&#233; ni supprime (v&#233;rification</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="183.3584" x="433.9497" y="90.6294">relue dans la transaction</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="24.7432" x="617.3081" y="90.6294">, un</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="440.2544" x="196.96" y="105.7622">instantane pris avant etant perime par definition), et les operations</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="479.5591" x="196.96" y="120.895">destructrices passent par un limiteur dedie (10 par heure, clef derivee
-du</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="440.2544" x="196.96" y="105.7622">instantane pris avant etant perime par definition), et les op&#233;rations</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="479.5591" x="196.96" y="120.895">destructrices passent par un limiteur d&#233;di&#233; (10 par heure, clef
+derivee du</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="452.5815" x="196.96" y="136.0278">jeton d'authentification hache avec repli sur l'adresse IP). Les feature</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="404.2378" x="196.96" y="151.1606">flags permettent d'abaisser ou de relever le niveau requis par</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="478.1245" x="196.96" y="166.2935">fonctionnalite sans redeploiement, et les octrois temporaires portent une</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="478.1245" x="196.96" y="166.2935">fonctionnalit&#233; sans red&#233;ploiement, et les octrois temporaires
+portent une</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="115.1719" x="196.96" y="181.4263">date d'expiration.</text>
 </g>
 <!--link Admin to UC_Users-->

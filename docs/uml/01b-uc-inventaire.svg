@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="2094px" preserveAspectRatio="none" style="width:1308px;height:2094px;background:#FFFFFF;"
 version="1.1" viewBox="0 0 1308 2094" width="1308px" zoomAndPan="magnify">
-<title>WIM - Cas d'utilisation : Inventaire (articles, tags, emplacements, pieces jointes)</title>
+<title>WIM - Cas d'utilisation : Inventaire (articles, tags, emplacements, pi&#232;ces jointes)</title>
 <defs/>
 <g>
 <g class="title" data-source-line="1">
 <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="639.4883" x="327.6859" y="22.9951">WIM - Cas d'utilisation : Inventaire (articles, tags,
-emplacements, pieces jointes)</text>
+emplacements, pi&#232;ces jointes)</text>
 </g>
 <!--cluster Inventaire-->
 <g class="cluster" data-entity="Inventaire" data-source-line="15" data-uid="ent0005" id="cluster_Inventaire">
@@ -15,13 +15,13 @@ emplacements, pieces jointes)</text>
 <!--entity UC_Crud-->
 <g class="entity" data-entity="UC_Crud" data-source-line="16" data-uid="ent0006" id="entity_UC_Crud">
 <ellipse cx="1144.7231" cy="1018.7935" fill="#F9F9F9" rx="142.1331" ry="30.8266" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="266.0684" x="1011.6889" y="1023.4419">Creer / modifier / supprimer un article</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="266.0684" x="1011.6889" y="1023.4419">Cr&#233;er / modifier / supprimer un article</text>
 </g>
 <!--entity UC_Search-->
 <g class="entity" data-entity="UC_Search" data-source-line="17" data-uid="ent0007" id="entity_UC_Search">
 <ellipse cx="543.3937" cy="704.7996" fill="#F9F9F9" rx="160.9637" ry="34.5927" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="141.5449" x="472.6212" y="693.1512">Rechercher et filtrer</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="305.2383" x="390.7746" y="709.4481">(plein-texte trigram, statut, etat, categorie)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="305.2383" x="390.7746" y="709.4481">(plein-texte trigram, statut, &#233;tat, cat&#233;gorie)</text>
 </g>
 <!--entity UC_Barcode-->
 <g class="entity" data-entity="UC_Barcode" data-source-line="18" data-uid="ent0008" id="entity_UC_Barcode">
@@ -31,22 +31,22 @@ emplacements, pieces jointes)</text>
 <!--entity UC_Ocr-->
 <g class="entity" data-entity="UC_Ocr" data-source-line="19" data-uid="ent0009" id="entity_UC_Ocr">
 <ellipse cx="543.3941" cy="881.7997" fill="#F9F9F9" rx="136.6141" ry="29.7228" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="254.502" x="416.1432" y="886.4481">Numeriser un ticket de caisse (OCR)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="254.502" x="416.1432" y="886.4481">Num&#233;riser un ticket de caisse (OCR)</text>
 </g>
 <!--entity UC_Attach-->
 <g class="entity" data-entity="UC_Attach" data-source-line="20" data-uid="ent0010" id="entity_UC_Attach">
 <ellipse cx="543.3878" cy="972.7924" fill="#F9F9F9" rx="121.0278" ry="26.6056" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="221.5459" x="432.6149" y="977.4409">Joindre une piece (PDF / image)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="221.5459" x="432.6149" y="977.4409">Joindre une pi&#232;ce (PDF / image)</text>
 </g>
 <!--entity UC_Tags-->
 <g class="entity" data-entity="UC_Tags" data-source-line="21" data-uid="ent0011" id="entity_UC_Tags">
 <ellipse cx="543.3852" cy="1063.7939" fill="#F9F9F9" rx="133.0352" ry="29.007" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="246.9756" x="419.8974" y="1068.4424">Organiser par etiquettes (couleurs)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="246.9756" x="419.8974" y="1068.4424">Organiser par &#233;tiquettes (couleurs)</text>
 </g>
 <!--entity UC_Locations-->
 <g class="entity" data-entity="UC_Locations" data-source-line="22" data-uid="ent0012" id="entity_UC_Locations">
 <ellipse cx="543.389" cy="1160.8007" fill="#F9F9F9" rx="153.869" ry="33.1738" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="290.5273" x="398.1253" y="1165.4491">Organiser par emplacements (hierarchie)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="290.5273" x="398.1253" y="1165.4491">Organiser par emplacements (hi&#233;rarchie)</text>
 </g>
 <!--entity UC_Notes-->
 <g class="entity" data-entity="UC_Notes" data-source-line="23" data-uid="ent0013" id="entity_UC_Notes">
@@ -56,7 +56,7 @@ emplacements, pieces jointes)</text>
 <!--entity UC_Custom-->
 <g class="entity" data-entity="UC_Custom" data-source-line="24" data-uid="ent0014" id="entity_UC_Custom">
 <ellipse cx="543.3888" cy="1340.7926" fill="#F9F9F9" rx="143.3788" ry="31.0758" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="268.6729" x="409.0524" y="1345.4411">Renseigner des champs personnalises</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="268.6729" x="409.0524" y="1345.4411">Renseigner des champs personnalis&#233;s</text>
 </g>
 <!--entity UC_Fav-->
 <g class="entity" data-entity="UC_Fav" data-source-line="25" data-uid="ent0015" id="entity_UC_Fav">
@@ -66,7 +66,7 @@ emplacements, pieces jointes)</text>
 <!--entity UC_Verify-->
 <g class="entity" data-entity="UC_Verify" data-source-line="26" data-uid="ent0016" id="entity_UC_Verify">
 <ellipse cx="543.3876" cy="1510.7944" fill="#F9F9F9" rx="123.2376" ry="27.0475" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="226.249" x="430.2631" y="1515.4428">Verifier physiquement un article</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="226.249" x="430.2631" y="1515.4428">V&#233;rifier physiquement un article</text>
 </g>
 <!--entity UC_Bundle-->
 <g class="entity" data-entity="UC_Bundle" data-source-line="27" data-uid="ent0017" id="entity_UC_Bundle">
@@ -87,12 +87,12 @@ emplacements, pieces jointes)</text>
 <g class="entity" data-entity="UC_Bulk" data-source-line="30" data-uid="ent0020" id="entity_UC_Bulk">
 <ellipse cx="543.3886" cy="1669.8006" fill="#F9F9F9" rx="129.2686" ry="28.2537" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113.2852" x="486.7461" y="1660.0272">Editer en masse</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231.793" x="427.4921" y="1676.3241">(statut, categorie, etat, quantite)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231.793" x="427.4921" y="1676.3241">(statut, cat&#233;gorie, &#233;tat, quantit&#233;)</text>
 </g>
 <!--entity UC_Template-->
 <g class="entity" data-entity="UC_Template" data-source-line="31" data-uid="ent0021" id="entity_UC_Template">
 <ellipse cx="543.388" cy="1756.8005" fill="#F9F9F9" rx="105.918" ry="23.5836" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189.0205" x="448.8777" y="1761.4489">Utiliser un modele d'article</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189.0205" x="448.8777" y="1761.4489">Utiliser un mod&#232;le d'article</text>
 </g>
 <!--entity UC_Views-->
 <g class="entity" data-entity="UC_Views" data-source-line="32" data-uid="ent0022" id="entity_UC_Views">
@@ -102,7 +102,7 @@ emplacements, pieces jointes)</text>
 <!--entity UC_ViewShare-->
 <g class="entity" data-entity="UC_ViewShare" data-source-line="33" data-uid="ent0023" id="entity_UC_ViewShare">
 <ellipse cx="543.3888" cy="1841.7926" fill="#F9F9F9" rx="121.8288" ry="26.7658" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="185.2539" x="450.7619" y="1839.7026">Definir une vue par defaut</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="185.2539" x="450.7619" y="1839.7026">D&#233;finir une vue par d&#233;faut</text>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="158.5186" x="464.1296" y="1855.9994">et la partager au foyer</text>
 </g>
 <!--entity UC_Import-->
@@ -137,17 +137,20 @@ emplacements, pieces jointes)</text>
 <g class="entity" data-entity="GMN56" data-source-line="74" data-uid="ent0057" id="entity_GMN56">
 <path d="M279.2,216.6969 L279.2,362.8922 L807.5936,362.8922 L807.5936,226.6969 L797.5936,216.6969 L279.2,216.6969" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M797.5936,216.6969 L797.5936,226.6969 L807.5936,226.6969 L797.5936,216.6969" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="507.3936" x="285.2" y="233.7638">Les etiquettes et les emplacements sont des relations M:N (tables de jonction</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="507.3936" x="285.2" y="233.7638">Les &#233;tiquettes et les emplacements sont des relations M:N (tables de
+jonction</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="460.6304" x="285.2" y="248.8966">ArticleTag / ArticleLocation) ; les emplacements sont hierarchiques. La</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="490.8896" x="285.2" y="264.0294">suppression est douce (`deletedAt`) et alimente la corbeille, seule table
 du</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="465.2642" x="285.2" y="279.1622">modele a pratiquer le soft-delete ; une purge planifiee vide la corbeille.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="465.2642" x="285.2" y="279.1622">mod&#232;le a pratiquer le soft-delete ; une purge planifi&#233;e vide la
+corbeille.</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="240.8174" x="285.2" y="294.295">Le scan de code-barres et l'OCR sont</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="153.5117" x="530.1497" y="294.295">entierement gratuits</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="153.5117" x="530.1497" y="294.295">enti&#232;rement gratuits</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="95.2974" x="687.7938" y="294.295">: lookup public</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="426.8101" x="285.2" y="309.4278">sans cle d'API et tesseract.js (WASM) execute dans le navigateur.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="473.2559" x="285.2" y="324.5606">Import/export CSV, edition en masse, modeles et vues enregistrees sont</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="471.25" x="285.2" y="339.6935">reserves au niveau Power User (`csv_import`, `csv_export`, `bulk_edit`,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="426.8101" x="285.2" y="309.4278">sans cl&#233; d'API et tesseract.js (WASM) ex&#233;cute dans le navigateur.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="473.2559" x="285.2" y="324.5606">Import/export CSV, edition en masse, mod&#232;les et vues enregistr&#233;es
+sont</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="471.25" x="285.2" y="339.6935">r&#233;serv&#233;s au niveau Power User (`csv_import`, `csv_export`, `bulk_edit`,</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190.8169" x="285.2" y="354.8263">`templates`, `saved_views`).</text>
 </g>
 <!--link User to UC_Crud-->

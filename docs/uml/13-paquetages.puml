@@ -9,20 +9,20 @@ skinparam package {
 skinparam linetype ortho
 
 ' ---------------------------------------------------------------------------
-' Les dependances ci-dessous sont extraites des imports reels entre
-' apps/api/src/modules/* : seules les relations structurantes sont tracees,
+' Les dépendances ci-dessous sont extraites des imports reels entre
+' apps/api/src/modules/* : seules les relations structurantes sont tracées,
 ' celles vers `common` (present dans presque tous les modules) etant
-' resumees par une note plutot que dessinees 21 fois.
+' résumées par une note plutôt que dessinées 21 fois.
 ' ---------------------------------------------------------------------------
 
 package "packages/types" as Types #f5f5f5 {
-  package "interfaces partagees\n(aucune dependance)" as TypesCore
+  package "interfaces partagees\n(aucune dépendance)" as TypesCore
 }
 
 package "apps/web (React 19 / PWA)" as Web #f5f5f5 {
   package "components (par domaine)" as WebComp
   package "services/api.ts" as WebApi
-  package "features (gating)\ni18n · theme · preferences" as WebCross
+  package "features (gating)\ni18n · theme · préférences" as WebCross
 }
 
 package "apps/api (Express + Prisma)" as Api #f5f5f5 {
@@ -30,7 +30,7 @@ package "apps/api (Express + Prisma)" as Api #f5f5f5 {
   package "Noyau technique" as Kernel {
     package "common\n(schemas, http, erreurs)" as Common
     package "auth\n(JWT, garde, sessions, TOTP,\npasskeys)" as Auth
-    package "features\n(feature flags + roles)" as Features
+    package "features\n(feature flags + rôles)" as Features
     package "audit" as Audit
   }
 
@@ -41,7 +41,7 @@ package "apps/api (Express + Prisma)" as Api #f5f5f5 {
   }
 
   package "Inventaire" as InvPkg {
-    package "articles\n(+ notes, partage, transferts,\nliens publics, modeles)" as Articles
+    package "articles\n(+ notes, partage, transferts,\nliens publics, modèles)" as Articles
     package "tags" as Tags
     package "locations" as Locations
     package "attachments" as Attachments
@@ -60,7 +60,7 @@ package "apps/api (Express + Prisma)" as Api #f5f5f5 {
     package "shares · shared" as Shares
     package "household" as Household
     package "messages" as Messages
-    package "public\n(fiche QR, objet trouve)" as Public
+    package "public\n(fiche QR, objet trouvé)" as Public
   }
 
   package "Pilotage" as SteerPkg {
@@ -73,7 +73,7 @@ package "apps/api (Express + Prisma)" as Api #f5f5f5 {
   package "demo" as Demo
 }
 
-' --- dependances inter-workspaces ---
+' --- dépendances inter-workspaces ---
 Web ..> Types : <<use>>
 Api ..> Types : <<use>>
 WebApi ..> Api : HTTP / REST\n(cookie httpOnly)
@@ -89,7 +89,7 @@ LifePkg ..> Features
 CollabPkg ..> Features
 SteerPkg ..> Features
 
-' --- planification des echeances ---
+' --- planification des échéances ---
 Warranties ..> Alerts
 Loans ..> Alerts
 Insurance ..> Alerts
@@ -106,25 +106,25 @@ Public ..> PushMod
 
 ' --- relations metier structurantes ---
 Articles ..> Attachments
-Messages ..> Articles : offre acceptee\n-> transfert
+Messages ..> Articles : offre acceptée\n-> transfert
 Shares ..> Household
-Billing ..> Shares : retrogradation\n(purge des partages)
+Billing ..> Shares : rétrogradation\n(purge des partages)
 Billing ..> Audit
 Admin ..> Features
 Admin ..> Shares
-Auth ..> Demo : amorcage du jeu de demonstration
+Auth ..> Demo : amorçage du jeu de démonstration
 
 note bottom of Kernel
 `common` est le noyau partage : 21 modules l'importent (schemas Zod
-reutilisables, `asyncHandler`, erreurs HTTP). `auth` fournit `authGuard`
-et est importe par presque tous les modules de routes. Ces deux
-dependances quasi universelles ne sont pas tracees individuellement
+réutilisables, `asyncHandler`, erreurs HTTP). `auth` fournit `authGuard`
+et est importé par presque tous les modules de routes. Ces deux
+dépendances quasi universelles ne sont pas tracées individuellement
 pour garder le diagramme lisible.
 end note
 
 note bottom of Types
 `packages/types` ne contient que des interfaces TypeScript simples (ni Zod
-ni Prisma) : c'est le seul paquetage sans dependance sortante, ce qui lui
-permet d'etre importe par les deux runtimes sans les coupler.
+ni Prisma) : c'est le seul paquetage sans dépendance sortante, ce qui lui
+permet d'être importé par les deux runtimes sans les coupler.
 end note
 @enduml

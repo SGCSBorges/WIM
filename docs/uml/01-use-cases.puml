@@ -14,21 +14,21 @@ skinparam rectangle {
 }
 
 ' ---------------------------------------------------------------------------
-' Vue d'ensemble volontairement peu dense : chaque paquetage est detaille dans
-' son propre diagramme (01a a 01g), ou figurent les cas, les <<include>> et
+' Vue d'ensemble volontairement peu dense : chaque paquetage est détaillé dans
+' son propre diagramme (01a à 01g), ou figurent les cas, les <<include>> et
 ' les <<extend>>. Ce diagramme ne porte que la carte des acteurs.
 ' ---------------------------------------------------------------------------
 
-actor "Visiteur\n(non authentifie)" as Guest
+actor "Visiteur\n(non authentifié)" as Guest
 actor "Utilisateur\n(USER)" as User
-actor "Power User\n(abonne)" as PowerUser
+actor "Power User\n(abonné)" as PowerUser
 actor "Administrateur\n(ADMIN)" as Admin
-actor "Ordonnanceur\nBullMQ (systeme)" as Scheduler
+actor "Ordonnanceur\nBullMQ (système)" as Scheduler
 
 rectangle "WIM (PWA)" {
-  usecase "**Compte & securite**\n(01a)" as P_Auth
+  usecase "**Compte & sécurité**\n(01a)" as P_Auth
   usecase "**Inventaire**\n(01b)" as P_Inv
-  usecase "**Garanties, alertes\n& echeances** (01c)" as P_War
+  usecase "**Garanties, alertes\n& échéances** (01c)" as P_War
   usecase "**Cycle de vie du bien**\n(01d)" as P_Life
   usecase "**Partage &\ncollaboration** (01e)" as P_Share
   usecase "**Pilotage, valorisation\n& facturation** (01f)" as P_Steer
@@ -36,7 +36,7 @@ rectangle "WIM (PWA)" {
 }
 
 Guest --> P_Auth : inscription, connexion,\nreinitialisation
-Guest --> P_Share : fiche publique (QR),\nobjet trouve
+Guest --> P_Share : fiche publique (QR),\nobjet trouvé
 
 User --> P_Auth
 User --> P_Inv
@@ -51,21 +51,21 @@ Admin --|> PowerUser
 Admin --> P_Admin
 
 Scheduler --> P_War : rappels J-30 / J-7 / J-1
-Scheduler --> P_Life : echeances de pret,\nassurance, entretien
+Scheduler --> P_Life : échéances de prêt,\nassurance, entretien
 Scheduler --> P_Admin : purge de la corbeille
 
 note bottom
-**Modele de droits.** `USER` est le socle gratuit : inventaire, garanties,
+**Modèle de droits.** `USER` est le socle gratuit : inventaire, garanties,
 alertes, tableau de bord. `POWER_USER` (abonnement Stripe) ajoute le partage,
-les transferts, la messagerie, les prets, l'assurance, l'entretien, les
+les transferts, la messagerie, les prêts, l'assurance, l'entretien, les
 budgets, les analyses, la page publique, l'import/export CSV et l'edition en
-masse. `ADMIN` **herite** de Power User sans abonnement et ouvre le paquetage
-d'administration. Chaque fonctionnalite payante est portee par une cle de
-feature flag modifiable en base, si bien que le niveau requis peut etre
-abaisse ou releve sans redeploiement.
+masse. `ADMIN` **hérite** de Power User sans abonnement et ouvre le paquetage
+d'administration. Chaque fonctionnalité payante est portée par une clé de
+feature flag modifiable en base, si bien que le niveau requis peut être
+abaissé ou relevé sans redéploiement.
 
 Les sept paquetages ci-dessus correspondent aux regroupements de modules du
 diagramme de paquetages (`13-paquetages.puml`) ; le contexte externe du
-systeme est decrit par `12-contexte.puml`.
+système est décrit par `12-contexte.puml`.
 end note
 @enduml

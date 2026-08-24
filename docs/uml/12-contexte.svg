@@ -11,21 +11,21 @@ version="1.1" viewBox="0 0 2097 666" width="2097px" zoomAndPan="magnify">
 <ellipse cx="45.9526" cy="229.0369" fill="#F9F9F9" rx="8" ry="8" style="stroke:#555555;stroke-width:0.5;"/>
 <path d="M45.9526,237.0369 L45.9526,264.0369 M32.9526,245.0369 L58.9526,245.0369 M45.9526,264.0369 L32.9526,279.0369 M45.9526,264.0369 L58.9526,279.0369" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.0098" x="6" y="293.532">Utilisateur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.9053" x="6" y="309.8289">(role USER)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.9053" x="6" y="309.8289">(r&#244;le USER)</text>
 </g>
 <!--entity PowerUser-->
 <g class="entity" data-entity="PowerUser" data-source-line="24" data-uid="ent0003" id="entity_PowerUser">
 <ellipse cx="528.9485" cy="51.2969" fill="#F9F9F9" rx="8" ry="8" style="stroke:#555555;stroke-width:0.5;"/>
 <path d="M528.9485,59.2969 L528.9485,86.2969 M515.9485,67.2969 L541.9485,67.2969 M528.9485,86.2969 L515.9485,101.2969 M528.9485,86.2969 L541.9485,101.2969" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79.1875" x="470.72" y="115.792">Power User</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="116.457" x="470.72" y="132.0889">(abonne payant)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="116.457" x="470.72" y="132.0889">(abonn&#233; payant)</text>
 </g>
 <!--entity Admin-->
 <g class="entity" data-entity="Admin" data-source-line="25" data-uid="ent0004" id="entity_Admin">
 <ellipse cx="1301.9518" cy="229.0369" fill="#F9F9F9" rx="8" ry="8" style="stroke:#555555;stroke-width:0.5;"/>
 <path d="M1301.9518,237.0369 L1301.9518,264.0369 M1288.9518,245.0369 L1314.9518,245.0369 M1301.9518,264.0369 L1288.9518,279.0369 M1301.9518,264.0369 L1314.9518,279.0369" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104.6035" x="1249.65" y="293.532">Administrateur</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89.2363" x="1249.65" y="309.8289">(role ADMIN)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89.2363" x="1249.65" y="309.8289">(r&#244;le ADMIN)</text>
 </g>
 <!--entity Visitor-->
 <g class="entity" data-entity="Visitor" data-source-line="26" data-uid="ent0005" id="entity_Visitor">
@@ -33,7 +33,7 @@ version="1.1" viewBox="0 0 2097 666" width="2097px" zoomAndPan="magnify">
 <path d="M1489.9476,228.8869 L1489.9476,255.8869 M1476.9476,236.8869 L1502.9476,236.8869 M1489.9476,255.8869 L1476.9476,270.8869 M1489.9476,255.8869 L1502.9476,270.8869" fill="none" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53.3818" x="1431.89" y="285.382">Visiteur</text>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="116.1152" x="1431.89" y="301.6789">(lien public / QR,</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="112.335" x="1431.89" y="317.9757">non authentifie)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="112.335" x="1431.89" y="317.9757">non authentifi&#233;)</text>
 </g>
 <!--entity WIM-->
 <g class="entity" data-entity="WIM" data-source-line="28" data-uid="ent0006" id="entity_WIM">
@@ -98,36 +98,38 @@ C1369.565,627.1347 1369.5253,623.2789 1374.1191,618.2495 C1369.3682,613.8859 137
 <path d="M475.4,216.4369 L475.4,262.8369 L440.56,266.8369 L475.4,270.8369 L475.4,317.2338 A0,0 0 0 0 475.4,317.2338 L942.5069,317.2338 A0,0 0 0 0 942.5069,317.2338 L942.5069,226.4369 L932.5069,216.4369
 L475.4,216.4369 A0,0 0 0 0 475.4,216.4369" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M932.5069,216.4369 L932.5069,226.4369 L942.5069,226.4369 L932.5069,216.4369" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="356.1289" x="481.4" y="233.5038">Seule dependance tierce appelee **directement par le</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="382.1987" x="481.4" y="248.6366">navigateur**, sans cle d'API : la recherche par code-barres</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="356.1289" x="481.4" y="233.5038">Seule d&#233;pendance tierce appel&#233;e **directement par le</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="382.1987" x="481.4" y="248.6366">navigateur**, sans cl&#233; d'API : la recherche par code-barres</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="446.1069" x="481.4" y="263.7694">interroge les deux services en cascade (services/barcodeLookup.ts).</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="261.2251" x="481.4" y="278.9022">L'API n'intervient pas dans cet echange.</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="384.9854" x="481.4" y="294.035">La reconnaissance de ticket de caisse (tesseract.js, WASM)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="398.3853" x="481.4" y="309.1678">s'execute entierement dans le navigateur, sans service tiers.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="398.3853" x="481.4" y="309.1678">s'ex&#233;cute enti&#232;rement dans le navigateur, sans service tiers.</text>
 </g>
 <g class="entity" data-entity="GMN24" data-source-line="59" data-uid="ent0025" id="entity_GMN24">
 <path d="M1573.31,574.1769 L1573.31,659.8409 L2090.5952,659.8409 L2090.5952,584.1769 L2080.5952,574.1769 L1573.31,574.1769" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M2080.5952,574.1769 L2080.5952,584.1769 L2090.5952,584.1769 L2080.5952,574.1769" fill="#FEFFDD" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="465.5181" x="1579.31" y="591.2438">Frontiere du systeme : l'API Express, l'interface React/PWA, les workers</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="465.5181" x="1579.31" y="591.2438">Fronti&#232;re du syst&#232;me : l'API Express, l'interface React/PWA,
+les workers</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="218.3022" x="1579.31" y="606.3766">BullMQ, PostgreSQL et Redis sont</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="60.9629" x="1801.7446" y="606.3766">internes</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="199.5132" x="1866.8398" y="606.3766">a WIM et deployes sur Render.</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="483.0503" x="1579.31" y="621.5094">Aucune donnee personnelle n'est envoyee a un service tiers en dehors de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="496.2852" x="1579.31" y="636.6422">l'adresse e-mail transmise a Resend pour l'acheminement des rappels et
-de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="192.4736" x="1579.31" y="651.775">l'identifiant client cote Stripe.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="199.5132" x="1866.8398" y="606.3766">&#224; WIM et d&#233;ploy&#233;s sur Render.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="483.0503" x="1579.31" y="621.5094">Aucune donnee personnelle n'est envoy&#233;e &#224; un service tiers en
+dehors de</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="496.2852" x="1579.31" y="636.6422">l'adresse e-mail transmise &#224; Resend pour l'acheminement des rappels
+et de</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="192.4736" x="1579.31" y="651.775">l'identifiant client c&#244;t&#233; Stripe.</text>
 </g>
 <!--link PowerUser to User-->
 <g class="link" data-entity-1="PowerUser" data-entity-2="User" data-source-line="35" data-uid="lnk11" id="link_PowerUser_User">
 <path d="M470.69,111.2969 C371.33,147.4469 188.5055,213.9734 103.0955,245.0434" fill="none" id="PowerUser-to-User" style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="none" points="86.18,251.1969,105.1467,250.6819,101.0444,239.4049,86.18,251.1969" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="106.6089" x="317.37" y="178.4538">herite des droits</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="106.6089" x="317.37" y="178.4538">h&#233;rite des droits</text>
 </g>
 <!--link User to WIM-->
 <g class="link" data-entity-1="User" data-entity-2="WIM" data-source-line="37" data-uid="lnk12" id="link_User_WIM">
 <path d="M86.25,280.0069 C126.78,291.8869 191.24,309.8069 247.95,321.2869 C515.48,375.3969 827.1061,413.6095 1000.3861,432.7095" fill="none" id="User-to-WIM" style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="#181818" points="1006.35,433.3669,997.8424,428.4049,1001.3801,432.8191,996.9659,436.3567,1006.35,433.3669" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="154.9209" x="612.64" y="364.3538">gere articles, garanties,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="154.9209" x="612.64" y="364.3538">g&#232;re articles, garanties,</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="142.251" x="618.975" y="379.4866">pieces jointes, alertes</text>
 </g>
 <!--link PowerUser to WIM-->
@@ -135,14 +137,14 @@ de</text>
 <path d="M587.67,93.7069 C676.37,101.8369 846.24,128.0869 959.95,212.3869 C1006.17,246.6569 995.87,274.9369 1029.95,321.2869 C1053.59,353.4269 1078.9569,383.5632 1100.6069,408.2832" fill="none" id="PowerUser-to-WIM"
 style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="#181818" points="1104.56,412.7969,1101.6395,403.391,1101.2658,409.0355,1095.6213,408.6618,1104.56,412.7969" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="168.2129" x="1047.1968" y="263.9038">partage, transferts, prets,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="168.2129" x="1047.1968" y="263.9038">partage, transferts, pr&#234;ts,</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="200.7065" x="1030.95" y="279.0366">assurance, entretien, analytics</text>
 </g>
 <!--link Admin to WIM-->
 <g class="link" data-entity-1="Admin" data-entity-2="WIM" data-source-line="39" data-uid="lnk14" id="link_Admin_WIM">
 <path d="M1259.38,313.4369 C1230.49,344.3969 1196.9936,380.2602 1170.7336,408.4002" fill="none" id="Admin-to-WIM" style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="#181818" points="1166.64,412.7869,1175.7048,408.936,1170.0513,409.1313,1169.8559,403.4779,1166.64,412.7869" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190.7598" x="1224.46" y="364.3538">comptes, roles, feature flags,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190.7598" x="1224.46" y="364.3538">comptes, r&#244;les, feature flags,</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="152.769" x="1243.4554" y="379.4866">audit, jobs, sauvegarde</text>
 </g>
 <!--link Visitor to WIM-->
@@ -150,7 +152,7 @@ style="stroke:#181818;stroke-width:1;"/>
 <path d="M1470.72,321.4969 C1460.16,343.7469 1444.88,367.8969 1423.95,383.2869 C1398.03,402.3369 1334.2051,416.9213 1269.7351,427.8813" fill="none" id="Visitor-to-WIM" style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="#181818" points="1263.82,428.8869,1273.3631,431.3219,1268.7493,428.0489,1272.0223,423.4351,1263.82,428.8869" style="stroke:#181818;stroke-width:1;"/>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="179.9624" x="1454.34" y="364.3538">consulte une fiche publique</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="167.7939" x="1460.4242" y="379.4866">et signale un objet trouve</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="167.7939" x="1460.4242" y="379.4866">et signale un objet trouv&#233;</text>
 </g>
 <!--link WIM to Stripe-->
 <g class="link" data-entity-1="WIM" data-entity-2="Stripe" data-source-line="42" data-uid="lnk16" id="link_WIM_Stripe">
@@ -164,20 +166,20 @@ style="stroke:#181818;stroke-width:1;"/>
 <path d="M738.63,593.4669 C768.9,569.9069 819.69,533.4569 868.95,512.1769 C912.1,493.5369 955.8004,481.1172 1000.3504,471.3072" fill="none" id="Stripe-to-WIM" style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="#181818" points="1006.21,470.0169,996.5604,468.0459,1001.327,471.0921,998.2808,475.8587,1006.21,470.0169" style="stroke:#181818;stroke-width:1;"/>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="164.3472" x="914.482" y="525.2438">webhooks signes (HMAC)</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="253.4111" x="869.95" y="540.3766">-&gt; octroi / retrait du role POWER_USER</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="253.4111" x="869.95" y="540.3766">-&gt; octroi / retrait du r&#244;le POWER_USER</text>
 </g>
 <!--link WIM to Resend-->
 <g class="link" data-entity-1="WIM" data-entity-2="Resend" data-source-line="44" data-uid="lnk18" id="link_WIM_Resend">
 <path d="M1133.05,482.6269 C1132.6,492.1869 1132.18,502.5769 1131.95,512.1769 C1131.37,536.8769 1131.9919,558.8833 1132.9519,579.5733" fill="none" id="WIM-to-Resend" style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="#181818" points="1133.23,585.5669,1136.8086,576.3911,1132.9983,580.5722,1128.8172,576.7619,1133.23,585.5669" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="277.9004" x="1132.95" y="525.2438">rappels d'echeance, digest hebdomadaire,</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="277.9004" x="1132.95" y="525.2438">rappels d'&#233;ch&#233;ance, digest hebdomadaire,</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="193.686" x="1175.0572" y="540.3766">verification e-mail, invitations</text>
 </g>
 <!--link WIM to Push-->
 <g class="link" data-entity-1="WIM" data-entity-2="Push" data-source-line="45" data-uid="lnk19" id="link_WIM_Push">
 <path d="M1263.69,465.8669 C1325.78,476.4669 1391.76,491.9469 1414.95,512.1769 C1436.29,530.7769 1444.875,556.3495 1449.265,579.7795" fill="none" id="WIM-to-Push" style="stroke:#181818;stroke-width:1;"/>
 <polygon fill="#181818" points="1450.37,585.6769,1452.6441,576.0942,1449.4492,580.7624,1444.781,577.5675,1450.37,585.6769" style="stroke:#181818;stroke-width:1;"/>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="256.7944" x="1438.36" y="532.7438">notifications d'echeance (J-30 / J-7 / J-1)</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="256.7944" x="1438.36" y="532.7438">notifications d'&#233;ch&#233;ance (J-30 / J-7 / J-1)</text>
 </g>
 <!--link User to OFF-->
 <g class="link" data-entity-1="User" data-entity-2="OFF" data-source-line="56" data-uid="lnk23" id="link_User_OFF">

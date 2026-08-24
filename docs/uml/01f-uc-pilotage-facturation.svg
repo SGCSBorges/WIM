@@ -26,27 +26,27 @@ facturation</text>
 <g class="entity" data-entity="UC_Value" data-source-line="17" data-uid="ent0007" id="entity_UC_Value">
 <ellipse cx="1056.1023" cy="938.9493" fill="#F9F9F9" rx="130.5123" ry="28.5025" style="stroke:#555555;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="214.6689" x="948.7679" y="937.9786">Suivre la valeur de l'inventaire</text>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="172.0332" x="970.0857" y="954.2754">(prix unitaire x quantite)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="172.0332" x="970.0857" y="954.2754">(prix unitaire x quantit&#233;)</text>
 </g>
 <!--entity UC_Depreciation-->
 <g class="entity" data-entity="UC_Depreciation" data-source-line="18" data-uid="ent0008" id="entity_UC_Depreciation">
 <ellipse cx="423.0853" cy="924.9419" fill="#F9F9F9" rx="103.4753" ry="23.0951" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="183.6885" x="331.2411" y="929.5904">Suivre la valeur depreciee</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="183.6885" x="331.2411" y="929.5904">Suivre la valeur d&#233;pr&#233;ci&#233;e</text>
 </g>
 <!--entity UC_ByLocation-->
 <g class="entity" data-entity="UC_ByLocation" data-source-line="19" data-uid="ent0009" id="entity_UC_ByLocation">
 <ellipse cx="1056.1014" cy="1121.9432" fill="#F9F9F9" rx="135.2314" ry="29.4463" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="251.5967" x="930.3031" y="1126.5916">Voir la repartition par emplacement</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="251.5967" x="930.3031" y="1126.5916">Voir la r&#233;partition par emplacement</text>
 </g>
 <!--entity UC_Analytics-->
 <g class="entity" data-entity="UC_Analytics" data-source-line="20" data-uid="ent0010" id="entity_UC_Analytics">
 <ellipse cx="1056.0989" cy="1029.9507" fill="#F9F9F9" rx="127.1689" ry="27.8338" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="234.5889" x="938.8044" y="1034.5991">Analyser les depenses (analytics)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="234.5889" x="938.8044" y="1034.5991">Analyser les d&#233;penses (analytics)</text>
 </g>
 <!--entity UC_Budget-->
 <g class="entity" data-entity="UC_Budget" data-source-line="21" data-uid="ent0011" id="entity_UC_Budget">
 <ellipse cx="423.0873" cy="1099.9483" fill="#F9F9F9" rx="118.6573" ry="26.1315" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.4873" x="314.8437" y="1104.5968">Definir un budget de depenses</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="216.4873" x="314.8437" y="1104.5968">D&#233;finir un budget de d&#233;penses</text>
 </g>
 <!--entity UC_Report-->
 <g class="entity" data-entity="UC_Report" data-source-line="22" data-uid="ent0012" id="entity_UC_Report">
@@ -56,7 +56,7 @@ facturation</text>
 <!--entity UC_Labels-->
 <g class="entity" data-entity="UC_Labels" data-source-line="23" data-uid="ent0013" id="entity_UC_Labels">
 <ellipse cx="423.0945" cy="1010.9478" fill="#F9F9F9" rx="128.3545" ry="28.0709" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="237.0977" x="304.5457" y="1015.5962">Imprimer des etiquettes QR (PDF)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="237.0977" x="304.5457" y="1015.5962">Imprimer des &#233;tiquettes QR (PDF)</text>
 </g>
 <!--entity UC_Subscribe-->
 <g class="entity" data-entity="UC_Subscribe" data-source-line="27" data-uid="ent0015" id="entity_UC_Subscribe">
@@ -66,17 +66,17 @@ facturation</text>
 <!--entity UC_Portal-->
 <g class="entity" data-entity="UC_Portal" data-source-line="28" data-uid="ent0016" id="entity_UC_Portal">
 <ellipse cx="423.088" cy="397.9445" fill="#F9F9F9" rx="141.888" ry="30.7776" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="265.5557" x="290.3102" y="402.5929">Gerer son abonnement (portail client)</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="265.5557" x="290.3102" y="402.5929">G&#233;rer son abonnement (portail client)</text>
 </g>
 <!--entity UC_Webhook-->
 <g class="entity" data-entity="UC_Webhook" data-source-line="29" data-uid="ent0017" id="entity_UC_Webhook">
 <ellipse cx="423.091" cy="574.9451" fill="#F9F9F9" rx="126.091" ry="27.6182" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="232.3057" x="306.9382" y="579.5935">Synchroniser le role via webhook</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="232.3057" x="306.9382" y="579.5935">Synchroniser le r&#244;le via webhook</text>
 </g>
 <!--entity UC_Downgrade-->
 <g class="entity" data-entity="UC_Downgrade" data-source-line="30" data-uid="ent0018" id="entity_UC_Downgrade">
 <ellipse cx="1056.0994" cy="470.9467" fill="#F9F9F9" rx="102.0994" ry="22.8199" style="stroke:#555555;stroke-width:0.5;"/>
-<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="180.6738" x="965.7624" y="475.5952">Retrograder a l'expiration</text>
+<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="180.6738" x="965.7624" y="475.5952">Retrograder &#224; l'expiration</text>
 </g>
 <!--entity User-->
 <g class="entity" data-entity="User" data-source-line="11" data-uid="ent0002" id="entity_User">
@@ -101,19 +101,22 @@ facturation</text>
 L792.97,154.2869 A0,0 0 0 0 792.97,154.2869" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <path d="M1309.2307,154.2869 L1309.2307,164.2869 L1319.2307,164.2869 L1309.2307,154.2869" fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="161.5415" x="798.97" y="171.3538">La valeur d'un article est</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="291.5923" x="964.6438" y="171.3538">le prix unitaire multiplie par la quantite</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="291.5923" x="964.6438" y="171.3538">le prix unitaire multiplie par la quantit&#233;</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4.3799" x="1260.3684" y="171.3538">:</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="433.5513" x="798.97" y="186.4866">`purchasePrice` est stocke par unite, et toute agregation applique</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="462.6807" x="798.97" y="201.6194">`max(1, quantity)`. La valeur depreciee suit un amortissement lineaire</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="480.4224" x="798.97" y="216.7522">(`purchasePrice x (1 - taux/100 x anciennete)`, plancher a zero) calcule
-a</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="466.2671" x="798.97" y="231.885">partir de la date d'achat de la garantie, a defaut de la date de creation.</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="433.5513" x="798.97" y="186.4866">`purchasePrice` est stocke par unite, et toute agr&#233;gation applique</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="462.6807" x="798.97" y="201.6194">`max(1, quantity)`. La valeur d&#233;pr&#233;ci&#233;e suit un amortissement
+lineaire</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="480.4224" x="798.97" y="216.7522">(`purchasePrice x (1 - taux/100 x anciennet&#233;)`, plancher &#224; z&#233;ro)
+calcule a</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="466.2671" x="798.97" y="231.885">partir de la date d'achat de la garantie, a d&#233;faut de la date de cr&#233;ation.</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="473.0337" x="798.97" y="247.0178">Les tarifs de l'abonnement ne sont pas codes dans l'application : ils sont</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="277.3926" x="798.97" y="262.1506">definis dans Stripe. Le webhook est monte</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="41.4883" x="1080.4949" y="262.1506">avant</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="153.5942" x="1126.1155" y="262.1506">`express.json()` afin de</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="459.5195" x="798.97" y="277.2835">disposer du corps brut necessaire a la verification de signature, et son</text>
-<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="505.2607" x="798.97" y="292.4163">idempotence repose sur la table `ProcessedStripeEvent`, dont la cle primaire</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="459.5195" x="798.97" y="277.2835">disposer du corps brut n&#233;cessaire a la v&#233;rification de signature,
+et son</text>
+<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="505.2607" x="798.97" y="292.4163">idempotence repose sur la table `ProcessedStripeEvent`, dont la cl&#233;
+primaire</text>
 <text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="300.5615" x="798.97" y="307.5491">est l'identifiant naturel de l'evenement Stripe.</text>
 </g>
 <!--link User to UC_Dash-->
