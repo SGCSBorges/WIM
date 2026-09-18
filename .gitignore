@@ -43,3 +43,7 @@ commit.ps1
 
 # Agent worktrees (temporary isolated working copies)
 .claude/worktrees/
+
+# Runtime upload directory of a locally-run API (UPLOAD_DIR = cwd/uploads);
+# production uses S3/R2. Never commit user files.
+apps/api/uploads/
