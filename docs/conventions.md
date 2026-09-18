@@ -246,6 +246,18 @@ npm --workspace apps/web run test:e2e
   snapshot taken before `$transaction` is stale by definition — the
   admin last-admin guards re-fetch the target's role inside the tx and
   keep the outer read only for audit metadata.
+- **...and the guard must WRITE, not just read.** Serializable isolation
+  detects read/write dependency cycles, so two transactions that only *read*
+  the same count and write nothing have nothing to conflict on and both
+  commit. A guard whose transaction contains no write therefore protects
+  nothing once the operation it guards runs outside that transaction — which
+  is the case in `ProfileService.deleteAccount`, where the deletion is
+  deliberately chunked across many short transactions. That guard demotes the
+  departing admin to USER *inside* the counting transaction: the write is what
+  makes the isolation level bite, so a second admin deleting concurrently
+  now sees a count of 1 and is refused. Without it both callers passed and the
+  database could be left with no ADMIN at all — unrecoverable short of direct
+  DB access, since `bootstrap-admin` only ever promotes its one seed email.
 - **Timeout racing** goes through `utils/with-timeout.ts` (`withTimeout(p,
   ms, message)`), which cancels the timer when the promise settles; a
   hand-rolled `Promise.race` + `setTimeout` leaves it running.

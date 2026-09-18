@@ -273,14 +273,30 @@ export const ProfileService = {
       );
     }
 
-    // Last-admin guard runs first, in its own tx, before any destructive work.
+    // Last-admin guard, before any destructive work. The count and the
+    // caller's exit from the admin pool happen in ONE transaction: the
+    // deletion below is chunked across many short transactions, so a guard
+    // that only READ the count would protect nothing. Two admins deleting
+    // themselves at the same time would each see a count of 2, each pass, and
+    // both proceed — leaving zero admins, which only direct DB access can
+    // undo (bootstrap-admin only ever promotes its one hardcoded seed email).
+    // Serializable alone does not help: two read-only transactions have no
+    // read/write dependency to conflict on, so both commit. Demoting the row
+    // here is the write that makes the isolation level bite — the loser now
+    // sees a count of 1 and is refused.
     await prisma.$transaction(
       async (tx: TxClient) => {
-        if (user.role === "ADMIN") {
-          const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
-          if (adminCount <= 1)
-            throw createHttpError(400, "Cannot delete the last admin account");
-        }
+        if (user.role !== "ADMIN") return;
+        const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+        if (adminCount <= 1)
+          throw createHttpError(400, "Cannot delete the last admin account");
+        // Leaves a demoted-but-present account if a later chunk fails. That
+        // is the safe direction to fail: account deletion is already
+        // non-atomic by design, and a stranded USER row beats no admins.
+        await tx.user.update({
+          where: { userId },
+          data: { role: "USER" },
+        });
       },
       { isolationLevel: "Serializable" }
     );

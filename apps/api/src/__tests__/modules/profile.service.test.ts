@@ -144,7 +144,11 @@ describe("ProfileService.updateEmail", () => {
       "new@x.com",
       "correct-pw"
     );
-    expect(result).toMatchObject({ userId: 1, email: "new@x.com", role: "USER" });
+    expect(result).toMatchObject({
+      userId: 1,
+      email: "new@x.com",
+      role: "USER",
+    });
     expect(mockPrisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -211,6 +215,7 @@ const makeTx = (overrides: Record<string, unknown> = {}) => ({
   user: {
     delete: vi.fn().mockResolvedValue({}),
     count: vi.fn().mockResolvedValue(2),
+    update: vi.fn().mockResolvedValue({}),
   },
   ...overrides,
 });
@@ -242,6 +247,46 @@ describe("ProfileService.deleteAccount", () => {
     await expect(
       ProfileService.deleteAccount(99, "right-pw")
     ).rejects.toMatchObject({ status: 400 });
+  });
+
+  // The deletion itself is chunked across many short transactions, so the
+  // guard has to do more than READ the count: it must take the caller out of
+  // the admin pool in the SAME transaction. Otherwise two admins deleting
+  // themselves concurrently both see a count of 2, both pass, and the
+  // database is left with no admin at all.
+  it("demotes the departing admin inside the guard transaction", async () => {
+    const hash = await bcryptRef.realHash!("right-pw", 1);
+    mockPrisma.user.findUnique.mockResolvedValue({
+      userId: 42,
+      password: hash,
+      role: "ADMIN",
+    });
+    for (const m of [
+      mockPrisma.alerte,
+      mockPrisma.inventoryShare,
+      mockPrisma.shareInvite,
+      mockPrisma.auditLog,
+      mockPrisma.attachment,
+      mockPrisma.garantie,
+      mockPrisma.article,
+    ])
+      m.count.mockResolvedValue(0);
+
+    let guardTx: ReturnType<typeof makeTx> | undefined;
+    mockPrisma.$transaction.mockImplementation(async (cb: unknown) => {
+      if (typeof cb === "function") {
+        const tx = makeTx();
+        guardTx ??= tx;
+        return (cb as (tx: unknown) => Promise<unknown>)(tx);
+      }
+    });
+
+    await ProfileService.deleteAccount(42, "right-pw");
+
+    expect(guardTx!.user.update).toHaveBeenCalledWith({
+      where: { userId: 42 },
+      data: { role: "USER" },
+    });
   });
 
   it("deletes regular user successfully (no admin check)", async () => {
