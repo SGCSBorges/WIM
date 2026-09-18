@@ -298,8 +298,8 @@ Per-user inventory sharing between **share-capable** users. Sharing is the POWER
 | `POST`   | `/invites/accept` | POWER_USER | Redeem an invite token |
 | `GET`    | `/invites/sent` | POWER_USER | List own sent invites |
 | `DELETE` | `/invites/:id` | POWER_USER | Revoke a sent invite |
-| `GET`    | `/owned` | POWER_USER | List active outgoing shares |
-| `GET`    | `/received` | POWER_USER | List active incoming shares |
+| `GET`    | `/owned` | ✓ | List active outgoing shares (any role — a USER simply gets `[]`; the mutations below are what the role gates) |
+| `GET`    | `/received` | ✓ | List active incoming shares (any role) |
 | `PUT`    | `/:targetUserId` | POWER_USER | Update share permission (READ ↔ WRITE) |
 | `DELETE` | `/:targetUserId` | POWER_USER | Revoke an active share |
 
