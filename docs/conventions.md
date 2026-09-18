@@ -1243,6 +1243,19 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 
 ## Known gotchas
 
+- **A missing generated Prisma client fails `tsc`, not just the tests.**
+  `npm ci` wipes `node_modules/.prisma`, and the resulting build errors do
+  not say "run prisma generate" — they read like real regressions:
+  `Namespace 'Prisma' has no exported member 'AlerteCreateManyInput'`,
+  `Module '"@prisma/client"' has no exported member 'Location' / 'Garantie'`,
+  and a scatter of `TS7006 implicitly has an 'any' type` in
+  `statistics.service.ts` (the implicit-any ones are the most misleading —
+  they look like a typing regression in code nobody touched). The unit suite
+  fails differently, with ~25 API tests throwing
+  `TypeError: Cannot read properties of undefined (reading 'PENDING')`.
+  One command clears all of it:
+  `cd apps/api && ../../node_modules/.bin/prisma generate`. Do that before
+  investigating either symptom.
 - **Local git proxy regularly 403s on push.** Most reliable workaround is
   pushing via the GitHub MCP `push_files` tool. Useful for text-only
   commits; binary files don't survive that path (utf-8 corruption), so
