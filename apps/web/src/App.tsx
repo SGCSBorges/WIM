@@ -56,17 +56,10 @@ import AppShell from "./components/layout/AppShell";
 import { useFeature, useFeatures } from "./features/features";
 import { MessagesUnreadProvider } from "./messages/unread";
 
-const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
-function isStripeUrl(url: string): boolean {
-  try {
-    return STRIPE_HOSTS.has(new URL(url).hostname);
-  } catch {
-    return false;
-  }
-}
 import OnboardingChecklist from "./components/onboarding/OnboardingChecklist";
 import RecentlyViewed from "./components/common/RecentlyViewed";
 import { Button, Card } from "./components/ui";
+import { isStripeUrl } from "./utils/stripeUrl";
 import { NAV_ITEMS, type NavKey } from "./lib/navItems";
 import UpgradeTeaser from "./components/common/UpgradeTeaser";
 

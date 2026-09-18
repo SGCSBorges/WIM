@@ -45,13 +45,24 @@ const router = Router();
 const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
-const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "application/pdf",
+// The declared MIME type is the only thing the allowlist trusts, and
+// `verifyFileSignature` re-checks it against the file's magic bytes after the
+// write. The stored extension is therefore derived from the MIME type, NOT
+// from the client-supplied filename: the two are independent inputs, so
+// `Content-Type: image/png` with `originalname: x.html` used to land a
+// `.html` file in the upload dir. Nothing could execute it today (the serving
+// route sends the row's own MIME plus `X-Content-Type-Options: nosniff`, and
+// SVG is deliberately absent from this list), but the extension was the one
+// input in the pipeline that nothing validated.
+const MIME_EXTENSIONS = new Map([
+  ["image/jpeg", ".jpg"],
+  ["image/png", ".png"],
+  ["image/webp", ".webp"],
+  ["image/gif", ".gif"],
+  ["application/pdf", ".pdf"],
 ]);
+
+const ALLOWED_MIME_TYPES = new Set(MIME_EXTENSIONS.keys());
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -65,9 +76,9 @@ const upload = multer({
       file: Express.Multer.File,
       cb: (err: Error | null, name: string) => void
     ) => {
-      const ext = path.extname(
-        path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, "_")
-      );
+      // fileFilter has already rejected anything outside the allowlist, so the
+      // lookup always hits; the ?? is only there to keep this total.
+      const ext = MIME_EXTENSIONS.get(file.mimetype) ?? "";
       cb(null, `${crypto.randomBytes(12).toString("hex")}${ext}`);
     },
   }),

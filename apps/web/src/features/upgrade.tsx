@@ -18,6 +18,7 @@ import { Button } from "../components/ui";
 import { useI18n } from "../i18n/i18n";
 import { billingAPI } from "../services/api";
 import { getErrorMessage } from "../utils/error";
+import { isStripeUrl } from "../utils/stripeUrl";
 
 type Plan = "monthly" | "yearly";
 
@@ -38,15 +39,6 @@ const UpgradeContext = createContext<UpgradeContextValue>({
   busyPlan: null,
   checkoutError: null,
 });
-
-const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
-function isStripeUrl(url: string): boolean {
-  try {
-    return STRIPE_HOSTS.has(new URL(url).hostname);
-  } catch {
-    return false;
-  }
-}
 
 /** The benefits list shown in both the dialog and the teaser. */
 export function UpgradeBenefits() {

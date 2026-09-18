@@ -50,15 +50,8 @@ import {
 } from "../../services/api";
 import type { FetchedArticle } from "../../types";
 
-const STRIPE_HOSTS = new Set(["checkout.stripe.com", "billing.stripe.com"]);
-function isStripeUrl(url: string): boolean {
-  try {
-    return STRIPE_HOSTS.has(new URL(url).hostname);
-  } catch {
-    return false;
-  }
-}
 import { useI18n } from "../../i18n/i18n";
+import { isStripeUrl } from "../../utils/stripeUrl";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { useFeature, useFeatures } from "../../features/features";

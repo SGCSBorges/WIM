@@ -36,14 +36,17 @@ import { logger } from "../../config/logger";
 // Reject a create/update that references location rows the caller does not own.
 // A single round trip: count owned rows in the requested set and compare. Any
 // missing id is treated as "not yours" — same 403 either way to avoid leaking
-// which ids exist under other accounts.
+// which ids exist under other accounts. Takes the transaction client so the
+// check reads through the SAME snapshot as the write it guards; running it on
+// the module client would reopen the TOCTOU window the tx exists to close.
 async function assertLocationsOwned(
+  tx: Prisma.TransactionClient,
   ownerUserId: number,
   locationIds: number[]
 ) {
   if (locationIds.length === 0) return;
   const unique = Array.from(new Set(locationIds));
-  const owned = await prisma.location.count({
+  const owned = await tx.location.count({
     where: { locationId: { in: unique }, ownerUserId },
   });
   if (owned !== unique.length) {
@@ -53,10 +56,14 @@ async function assertLocationsOwned(
 
 // Same shape as assertLocationsOwned: any tag id not owned by the caller is a
 // 403 (no per-id leak of which exist under other accounts).
-async function assertTagsOwned(ownerUserId: number, tagIds: number[]) {
+async function assertTagsOwned(
+  tx: Prisma.TransactionClient,
+  ownerUserId: number,
+  tagIds: number[]
+) {
   if (tagIds.length === 0) return;
   const unique = Array.from(new Set(tagIds));
-  const owned = await prisma.tag.count({
+  const owned = await tx.tag.count({
     where: { tagId: { in: unique }, ownerUserId },
   });
   if (owned !== unique.length) {
@@ -258,21 +265,7 @@ export const ArticleService = {
     // insert sees, so the only way the FK can resolve to a foreign row is
     // if the read ran post-snapshot — which the transaction prevents.
     const created = await prisma.$transaction(async (tx) => {
-      if (locationIds.length > 0) {
-        const unique = Array.from(new Set(locationIds));
-        const owned = await tx.location.count({
-          where: {
-            locationId: { in: unique },
-            ownerUserId: articleData.ownerUserId,
-          },
-        });
-        if (owned !== unique.length) {
-          throw createHttpError(
-            403,
-            "One or more locations are not owned by you"
-          );
-        }
-      }
+      await assertLocationsOwned(tx, articleData.ownerUserId, locationIds);
 
       if (garantie?.garantieImageAttachmentId) {
         const ownedAttachment = await tx.attachment.findFirst({
@@ -289,17 +282,7 @@ export const ArticleService = {
           );
       }
 
-      if (tagIds && tagIds.length > 0) {
-        const unique = Array.from(new Set(tagIds));
-        const owned = await tx.tag.count({
-          where: {
-            tagId: { in: unique },
-            ownerUserId: articleData.ownerUserId,
-          },
-        });
-        if (owned !== unique.length)
-          throw createHttpError(403, "One or more tags are not owned by you");
-      }
+      await assertTagsOwned(tx, articleData.ownerUserId, tagIds ?? []);
 
       return tx.article.create({
         data: {
@@ -410,13 +393,8 @@ export const ArticleService = {
     if (locationIds && Array.isArray(locationIds) && locationIds.length === 0)
       throw createHttpError(400, "Article must have at least one location");
 
-    if (locationIds && locationIds.length > 0) {
-      await assertLocationsOwned(ownerUserId, locationIds);
-    }
-
-    if (tagIds && tagIds.length > 0) {
-      await assertTagsOwned(ownerUserId, tagIds);
-    }
+    // NOTE: the location/tag ownership checks run INSIDE the transaction
+    // below, not here — same rule as `create`.
 
     // We need current warranty state to decide create vs update vs delete.
     type ArticleWithGarantie = Prisma.ArticleGetPayload<{
@@ -447,6 +425,12 @@ export const ArticleService = {
         | { kind: "reschedule"; garantieId: number; garantieFin: Date }
         | null;
       let pending: PendingAlert = null;
+
+      // Ownership of every referenced location/tag is checked through the
+      // transaction's own snapshot, so a concurrent delete or re-assign can't
+      // slip a foreign id past the check and into the junction rows below.
+      await assertLocationsOwned(tx, ownerUserId, locationIds ?? []);
+      await assertTagsOwned(tx, ownerUserId, tagIds ?? []);
 
       // Apply warranty changes (if any) before updating the article itself.
       if (removeGarantie) {
@@ -968,10 +952,12 @@ export const ArticleService = {
     if (addLocationIds.length === 0 && addTagIds.length === 0)
       return { count: 0 };
 
-    await assertLocationsOwned(ownerUserId, addLocationIds);
-    await assertTagsOwned(ownerUserId, addTagIds);
-
     return prisma.$transaction(async (tx) => {
+      // Inside the tx, same as create/update — the junction rows written below
+      // must be guarded by a check that read the same snapshot.
+      await assertLocationsOwned(tx, ownerUserId, addLocationIds);
+      await assertTagsOwned(tx, ownerUserId, addTagIds);
+
       const owned = await tx.article.findMany({
         where: { articleId: { in: ids }, ownerUserId, deletedAt: null },
         select: { articleId: true },

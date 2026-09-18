@@ -58,6 +58,22 @@ function dateOnly(d: Date): string {
 
 type CalEvent = { uid: string; date: Date; summary: string };
 
+// The .ics feed is re-fetched in full by every subscribed calendar client
+// every 15-60 minutes, so it must be bounded at both ends. A calendar is a
+// scrollback surface (unlike the in-app agenda, which only looks forward), so
+// the past window is a full year rather than the agenda's 30 days.
+const FEED_PAST_DAYS = 365;
+const FEED_FUTURE_DAYS = 365;
+// Safety valve for a pathological account. Events are dropped furthest-from-
+// today first, so a capped feed keeps the dates that actually matter instead
+// of truncating the whole future.
+const FEED_MAX_EVENTS = 1000;
+// Bounds the maintenance history read. Ordering by articleId first means a
+// truncation drops whole trailing articles rather than cutting an article's
+// history mid-way, so the "latest record per article wins" rule stays exact
+// for every article the query does return.
+const FEED_MAX_SERVICE_ROWS = 5000;
+
 function vevent(e: CalEvent, stamp: string): string {
   // DTEND for an all-day event is the day after DTSTART (exclusive).
   const end = new Date(e.date);
@@ -134,10 +150,21 @@ export const CalendarService = {
       OR: [{ article: null }, { article: { deletedAt: null } }],
     };
 
+    // Bound every leg to the feed window (see FEED_PAST_DAYS above). Without
+    // this the feed serialized the account's entire history on every poll.
+    const now = new Date();
+    const windowStart = new Date(now.getTime() - FEED_PAST_DAYS * 86_400_000);
+    const windowEnd = new Date(now.getTime() + FEED_FUTURE_DAYS * 86_400_000);
+    const inWindow = { gte: windowStart, lte: windowEnd };
+
     const [warranties, alerts, claims, loans, policies, serviceRecords] =
       await Promise.all([
         prisma.garantie.findMany({
-          where: { ownerUserId: user.userId, ...liveArticleScope },
+          where: {
+            ownerUserId: user.userId,
+            garantieFin: inWindow,
+            ...liveArticleScope,
+          },
           select: { garantieId: true, garantieNom: true, garantieFin: true },
         }),
         // SCHEDULED captures both kinds (warranty J-30/J-7/J-1 reminders and
@@ -146,6 +173,7 @@ export const CalendarService = {
           where: {
             ownerUserId: user.userId,
             status: AlerteStatus.SCHEDULED,
+            alerteDate: inWindow,
             ...liveArticleScope,
           },
           select: { alerteId: true, alerteNom: true, alerteDate: true },
@@ -156,7 +184,7 @@ export const CalendarService = {
           where: {
             ownerUserId: user.userId,
             NOT: { claimStatus: "NONE" },
-            claimUpdatedAt: { not: null },
+            claimUpdatedAt: inWindow,
             ...liveArticleScope,
           },
           select: {
@@ -173,7 +201,7 @@ export const CalendarService = {
           where: {
             ownerUserId: user.userId,
             returnedAt: null,
-            dueAt: { not: null },
+            dueAt: inWindow,
             article: { deletedAt: null },
           },
           select: {
@@ -184,12 +212,17 @@ export const CalendarService = {
           },
         }),
         prisma.insurancePolicy.findMany({
-          where: { ownerUserId: user.userId, renewalAt: { not: null } },
+          where: { ownerUserId: user.userId, renewalAt: inWindow },
           select: { policyId: true, provider: true, renewalAt: true },
         }),
         prisma.serviceRecord.findMany({
+          // Can't filter on nextDueAt here: a NEWER record with a null
+          // nextDueAt is exactly what clears an older schedule, so dropping
+          // those rows would resurrect cancelled services. Bound by row count
+          // instead, on an articleId-major ordering (see the constant).
           where: { ownerUserId: user.userId, article: { deletedAt: null } },
-          orderBy: { performedAt: "desc" },
+          orderBy: [{ articleId: "asc" }, { performedAt: "desc" }],
+          take: FEED_MAX_SERVICE_ROWS,
           select: {
             serviceId: true,
             articleId: true,
@@ -237,8 +270,15 @@ export const CalendarService = {
         date: p.renewalAt as Date,
         summary: `${p.provider} — policy renewal`,
       })),
+      // The latest-per-article reduction has to happen before the window
+      // filter, not inside the query — see the note on the findMany above.
       ...[...latestService.values()]
-        .filter((r) => r.nextDueAt !== null)
+        .filter(
+          (r) =>
+            r.nextDueAt !== null &&
+            r.nextDueAt >= windowStart &&
+            r.nextDueAt <= windowEnd
+        )
         .map((r) => ({
           uid: `service-${r.serviceId}@wim`,
           date: r.nextDueAt as Date,
@@ -246,7 +286,21 @@ export const CalendarService = {
         })),
     ];
 
-    return buildCalendar(events);
+    // Cap furthest-from-today first so an over-cap feed keeps the dates
+    // nearest to now, then emit in chronological order.
+    const bounded =
+      events.length > FEED_MAX_EVENTS
+        ? [...events]
+            .sort(
+              (a, b) =>
+                Math.abs(a.date.getTime() - now.getTime()) -
+                Math.abs(b.date.getTime() - now.getTime())
+            )
+            .slice(0, FEED_MAX_EVENTS)
+        : events;
+    bounded.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    return buildCalendar(bounded);
   },
 
   /**

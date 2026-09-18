@@ -757,7 +757,18 @@ Smaller features added in one batch; each follows the existing patterns.
   claims, so the subscribed `.ics` matches the in-app agenda's five sources.
   Stable per-row UIDs (`loan-<id>@wim` etc.) so calendar clients don't
   duplicate; maintenance uses the latest-record-per-article rule like the
-  agenda.
+  agenda. **The feed is bounded**: every leg filters to a ±365-day window
+  (wider on the past side than the agenda's 30 days, because a calendar is a
+  scrollback surface), and the event list is capped at 1000 — dropping
+  furthest-from-today first, so an over-cap feed keeps the dates that matter
+  instead of truncating the future. This is not optional polish: subscribed
+  clients re-fetch the whole document every 15–60 minutes, and before the
+  window the feed serialized the account's entire history on each poll. The
+  maintenance leg can't be filtered on `nextDueAt` (a *newer* record with a
+  null `nextDueAt` is exactly what clears an older schedule, so those rows
+  have to be read), so it's bounded by row count on an `articleId`-major
+  ordering — a truncation then drops whole trailing articles rather than
+  cutting one article's history in half and mis-resolving its latest record.
 - **Maintenance spend**: dashboard `maintenanceSpend` = SQL `_sum(cost)` over
   `ServiceRecord.performedAt` in the trailing 12 months (live articles); a
   self-hiding money Stat tile (only when > 0). `MaintenanceSection` shows a

@@ -5,7 +5,7 @@
  * client-side filter + sort + search, and a download button
  * that normalizes API-hosted /uploads paths to absolute URLs.
  */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Paperclip,
   Plus,
@@ -111,15 +111,25 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     }
   };
 
+  // Keyed on articleId/garantieId, so a change to either re-runs this without
+  // unmounting and a slow earlier response could repaint the wrong item's
+  // files. No in-app link mutates those query params while this is mounted
+  // today, but the guard costs nothing and stops that from being a latent
+  // trap for whoever adds the first such link. Same idiom as ArticleDetail.
+  const requestSeqRef = useRef(0);
+
   const fetchAttachments = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     setFetchError(null);
     try {
       const data = await attachmentsAPI.getAll({
         articleId: articleId || undefined,
         garantieId: garantieId || undefined,
       });
+      if (seq !== requestSeqRef.current) return;
       setAttachments(data);
     } catch (e: unknown) {
+      if (seq !== requestSeqRef.current) return;
       setFetchError(getErrorMessage(e, t("common.errorOccurred")));
     }
   }, [articleId, garantieId, t]);
