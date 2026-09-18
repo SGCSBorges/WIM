@@ -4,6 +4,7 @@ vi.mock("../../libs/prisma", () => ({
   prisma: {
     article: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       findMany: vi.fn(),
       count: vi.fn(),
       create: vi.fn(),
@@ -42,7 +43,15 @@ vi.mock("../../libs/prisma", () => ({
         location: { count: p.location.count },
         tag: { count: p.tag.count },
         attachment: { findFirst: p.attachment.findFirst },
-        article: { create: p.article.create, findMany: p.article.findMany },
+        article: {
+          create: p.article.create,
+          findMany: p.article.findMany,
+          // update() re-reads ownership inside the tx and then writes; both
+          // are mocked so a MISSING ownership guard surfaces as a successful
+          // update rather than a TypeError on an unmocked method.
+          findUnique: p.article.findUnique,
+          update: p.article.update,
+        },
         articleLocation: { createMany: p.articleLocation.createMany },
         articleTag: { createMany: p.articleTag.createMany },
       };
@@ -135,6 +144,50 @@ describe("ArticleService.create — location ownership", () => {
       })
     ).rejects.toMatchObject({ status: 403 });
     expect(mockPrisma.article.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("ArticleService.update — location/tag ownership", () => {
+  // The ownership asserts run INSIDE the update transaction, so this also
+  // pins that createHttpError's status survives propagation out of
+  // $transaction rather than surfacing as a 500.
+  it("rejects a foreign locationId with a 403 and writes nothing", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue({
+      articleId: 1,
+      ownerUserId: 1,
+      deletedAt: null,
+      garantie: null,
+    });
+    mockPrisma.article.findUnique.mockResolvedValue({
+      ownerUserId: 1,
+      deletedAt: null,
+    });
+    mockPrisma.article.update.mockResolvedValue({ articleId: 1 });
+    mockPrisma.location.count.mockResolvedValue(0); // owns none of them
+    await expect(
+      ArticleService.update(1, 1, { locationIds: [99] })
+    ).rejects.toMatchObject({ status: 403 });
+    expect(mockPrisma.article.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects a foreign tagId with a 403 and writes nothing", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue({
+      articleId: 1,
+      ownerUserId: 1,
+      deletedAt: null,
+      garantie: null,
+    });
+    mockPrisma.article.findUnique.mockResolvedValue({
+      ownerUserId: 1,
+      deletedAt: null,
+    });
+    mockPrisma.article.update.mockResolvedValue({ articleId: 1 });
+    mockPrisma.location.count.mockResolvedValue(1);
+    mockPrisma.tag.count.mockResolvedValue(0);
+    await expect(
+      ArticleService.update(1, 1, { locationIds: [10], tagIds: [99] })
+    ).rejects.toMatchObject({ status: 403 });
+    expect(mockPrisma.article.update).not.toHaveBeenCalled();
   });
 });
 
