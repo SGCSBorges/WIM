@@ -11,12 +11,12 @@ import { X, LogOut, Lock } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import {
   visibleNavItems,
+  groupedNavItems,
   isActivePath,
   navItemFeatureKey,
 } from "../../lib/navItems";
 import { useFeatures } from "../../features/features";
 import { useMessagesUnread } from "../../messages/unread";
-import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import { Button } from "../ui";
 
 // Same focusable selector Modal.tsx uses for its Tab trap — kept local since
@@ -133,47 +133,62 @@ export default function MobileDrawer({
           aria-label="Mobile navigation"
           className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-3"
         >
-          {items.map((item, i) => {
-            const active = isActivePath(item.path, pathname);
-            const Icon = item.icon;
-            const locked = lockedFor(item);
-            const unread = item.key === "messages" ? unreadCount : 0;
-            return (
-              <button
-                key={item.path}
-                ref={i === 0 ? firstLinkRef : undefined}
-                type="button"
-                onClick={() => navigate(item.path)}
-                aria-current={active ? "page" : undefined}
-                title={locked ? t("upgrade.lockedHint") : undefined}
-                className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
-                  active ? "ui-nav-item-active" : "ui-btn-ghost"
-                }`}
-              >
-                <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                {t(`nav.${item.key}`)}
-                {unread > 0 && (
-                  <span
-                    className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-contrast"
-                    aria-label={t("messages.unread")}
+          {groupedNavItems(items).map(({ group, items: groupItems }, gi) => (
+            <div
+              key={group}
+              role="group"
+              aria-label={t(`nav.group.${group}`)}
+              className={`flex flex-col gap-1 ${gi > 0 ? "mt-3" : ""}`}
+            >
+              <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wider ui-text-muted">
+                {t(`nav.group.${group}`)}
+              </p>
+              {groupItems.map((item) => {
+                const active = isActivePath(item.path, pathname);
+                const Icon = item.icon;
+                const locked = lockedFor(item);
+                const unread = item.key === "messages" ? unreadCount : 0;
+                return (
+                  <button
+                    key={item.path}
+                    ref={
+                      gi === 0 && item === groupItems[0]
+                        ? firstLinkRef
+                        : undefined
+                    }
+                    type="button"
+                    onClick={() => navigate(item.path)}
+                    aria-current={active ? "page" : undefined}
+                    title={locked ? t("upgrade.lockedHint") : undefined}
+                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                      active ? "ui-nav-item-active" : "ui-btn-ghost"
+                    }`}
                   >
-                    <span aria-hidden="true">
-                      {unread > 99 ? "99+" : unread}
-                    </span>
-                  </span>
-                )}
-                {unread === 0 && locked && (
-                  <Lock
-                    className="ml-auto h-4 w-4 shrink-0 ui-text-muted"
-                    aria-label={t("upgrade.lockedHint")}
-                  />
-                )}
-              </button>
-            );
-          })}
+                    <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                    {t(`nav.${item.key}`)}
+                    {unread > 0 && (
+                      <span
+                        className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-contrast"
+                        aria-label={t("messages.unread")}
+                      >
+                        <span aria-hidden="true">
+                          {unread > 99 ? "99+" : unread}
+                        </span>
+                      </span>
+                    )}
+                    {unread === 0 && locked && (
+                      <Lock
+                        className="ml-auto h-4 w-4 shrink-0 ui-text-muted"
+                        aria-label={t("upgrade.lockedHint")}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t ui-divider px-3 py-3">
-          <LanguageThemeSelector />
+        <div className="flex shrink-0 items-center justify-end gap-3 border-t ui-divider px-3 py-3">
           <Button
             variant="ghost"
             size="sm"

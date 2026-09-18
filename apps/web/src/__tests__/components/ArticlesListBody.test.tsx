@@ -126,4 +126,65 @@ describe("<ArticlesTable /> (extracted from ArticlesList)", () => {
     fireEvent.click(screen.getByRole("button", { name: /delete/i }));
     expect(onDelete).toHaveBeenCalledWith(a);
   });
+
+  // The lifecycle badge used to be stacked under the warranty badge in the
+  // "Warranty" cell, where "Sold" read as a warranty state. It has its own
+  // column now; ACTIVE renders as muted text instead of a pill.
+  it("shows the item status in its own column, apart from the warranty", () => {
+    const a = article({ status: "SOLD" });
+    wrap(
+      <ArticlesTable
+        articles={[a]}
+        selectedIds={new Set()}
+        allPageSelected={false}
+        selectAllRef={() => {}}
+        onToggleSelectAll={() => {}}
+        onToggleSelected={() => {}}
+        getWarrantyStatus={() => ({ tone: "success", label: "Under warranty" })}
+        getDaysUntilExpiry={noDays}
+        currency="USD"
+        language="en"
+        isPowerUser={false}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
+        onShareChanged={() => {}}
+      />
+    );
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((h) => h.textContent);
+    expect(headers).toContain("Status");
+    expect(headers.indexOf("Status")).toBeLessThan(headers.indexOf("Warranty"));
+
+    const statusCell = screen.getByText("Sold").closest("td");
+    const warrantyCell = screen.getByText("Under warranty").closest("td");
+    expect(statusCell).not.toBeNull();
+    expect(statusCell).not.toBe(warrantyCell);
+  });
+
+  it("renders the default ACTIVE status as plain text, not a badge", () => {
+    wrap(
+      <ArticlesTable
+        articles={[article({ status: "ACTIVE" })]}
+        selectedIds={new Set()}
+        allPageSelected={false}
+        selectAllRef={() => {}}
+        onToggleSelectAll={() => {}}
+        onToggleSelected={() => {}}
+        getWarrantyStatus={noopWarranty}
+        getDaysUntilExpiry={noDays}
+        currency="USD"
+        language="en"
+        isPowerUser={false}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
+        onShareChanged={() => {}}
+      />
+    );
+    const active = screen.getByText("Active");
+    expect(active.tagName).toBe("SPAN");
+    expect(active.className).toContain("ui-text-muted");
+  });
 });

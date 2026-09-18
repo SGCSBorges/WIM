@@ -21,6 +21,11 @@ interface ModalProps {
   panelClassName?: string;
   /** Set to false to suppress backdrop-click dismissal. */
   closeOnBackdropClick?: boolean;
+  /** `center` (default) is the classic dialog. `side` pins the panel to the
+   *  right edge, full height, scrolling its own content — a slide-over for
+   *  focused editing (create / edit article) that keeps the list in place
+   *  behind it instead of pushing it down the page. */
+  variant?: "center" | "side";
 }
 
 /**
@@ -47,9 +52,15 @@ export default function Modal({
   onClose,
   titleId,
   children,
-  panelClassName = "ui-card rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4",
+  panelClassName,
   closeOnBackdropClick = true,
+  variant = "center",
 }: ModalProps) {
+  const panelClasses =
+    panelClassName ??
+    (variant === "side"
+      ? "ui-card h-full w-full max-w-2xl overflow-y-auto rounded-none p-5 shadow-2xl sm:p-6"
+      : "ui-card rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4");
   const panelRef = useRef<HTMLDivElement | null>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -130,8 +141,15 @@ export default function Modal({
   // taller than the viewport scrolls into reach instead of being clipped.
   // `pointer-events-none` on the wrapper lets backdrop clicks in the padding
   // pass through to the close button beneath; the panel re-enables them.
+  //
+  // The side variant needs the opposite: a fixed, full-height flex row with
+  // the panel at the end, and the panel (not the container) scrolling.
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-contain">
+    <div
+      className={`fixed inset-0 z-50 overscroll-contain ${
+        variant === "side" ? "flex justify-end" : "overflow-y-auto"
+      }`}
+    >
       <button
         type="button"
         aria-label="Close"
@@ -139,16 +157,23 @@ export default function Modal({
         onClick={() => closeOnBackdropClick && onClose()}
         className="ui-overlay fixed inset-0 h-full w-full cursor-default"
       />
-      <div className="pointer-events-none relative flex min-h-full items-center justify-center p-4">
+      <div
+        className={
+          variant === "side"
+            ? "pointer-events-none relative flex h-full w-full justify-end"
+            : "pointer-events-none relative flex min-h-full items-center justify-center p-4"
+        }
+      >
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
         <div
           ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
+          data-variant={variant}
           tabIndex={-1}
           onKeyDown={onKeyDown}
-          className={`pointer-events-auto relative ${panelClassName}`}
+          className={`pointer-events-auto relative animate-fade-in ${panelClasses}`}
         >
           {children}
         </div>

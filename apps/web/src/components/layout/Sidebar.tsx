@@ -8,6 +8,7 @@ import { PanelLeftClose, PanelLeft, Lock } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import {
   visibleNavItems,
+  groupedNavItems,
   isActivePath,
   navItemFeatureKey,
 } from "../../lib/navItems";
@@ -74,59 +75,81 @@ export default function Sidebar({
         aria-label="Primary"
         className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-1"
       >
-        {items.map((item) => {
-          const active = isActivePath(item.path, pathname);
-          const Icon = item.icon;
-          const label = t(`nav.${item.key}`);
-          const locked = lockedFor(item);
-          const unread = item.key === "messages" ? unreadCount : 0;
-          const title = collapsed
-            ? locked
-              ? `${label} — ${t("upgrade.lockedHint")}`
-              : label
-            : locked
-              ? t("upgrade.lockedHint")
-              : undefined;
-          return (
-            <button
-              key={item.path}
-              type="button"
-              onClick={() => navigate(item.path)}
-              title={title}
-              aria-current={active ? "page" : undefined}
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                collapsed ? "justify-center" : ""
-              } ${active ? "ui-nav-item-active" : "ui-btn-ghost"}`}
-            >
-              <span className="relative shrink-0">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-                {/* When collapsed there's no room for the count pill — a dot
-                    on the icon still signals "you have unread messages". */}
-                {collapsed && unread > 0 && (
-                  <span
-                    className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-[var(--nav-bg,transparent)]"
-                    aria-label={t("messages.unread")}
-                  />
-                )}
-              </span>
-              {!collapsed && <span className="truncate">{label}</span>}
-              {!collapsed && unread > 0 && (
-                <span
-                  className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-contrast"
-                  aria-label={t("messages.unread")}
+        {groupedNavItems(items).map(({ group, items: groupItems }, gi) => (
+          <div
+            key={group}
+            role="group"
+            aria-label={t(`nav.group.${group}`)}
+            className={`flex flex-col gap-1 ${gi > 0 ? "mt-2" : ""}`}
+          >
+            {/* Collapsed rail has no room for a label: a hairline marks the
+                section boundary instead. */}
+            {collapsed ? (
+              gi > 0 && (
+                <hr className="mx-2 mb-1 border-0 border-t ui-divider" />
+              )
+            ) : (
+              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider ui-text-muted">
+                {t(`nav.group.${group}`)}
+              </p>
+            )}
+            {groupItems.map((item) => {
+              const active = isActivePath(item.path, pathname);
+              const Icon = item.icon;
+              const label = t(`nav.${item.key}`);
+              const locked = lockedFor(item);
+              const unread = item.key === "messages" ? unreadCount : 0;
+              const title = collapsed
+                ? locked
+                  ? `${label} — ${t("upgrade.lockedHint")}`
+                  : label
+                : locked
+                  ? t("upgrade.lockedHint")
+                  : undefined;
+              return (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => navigate(item.path)}
+                  title={title}
+                  aria-current={active ? "page" : undefined}
+                  className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    collapsed ? "justify-center" : ""
+                  } ${active ? "ui-nav-item-active" : "ui-btn-ghost"}`}
                 >
-                  <span aria-hidden="true">{unread > 99 ? "99+" : unread}</span>
-                </span>
-              )}
-              {!collapsed && unread === 0 && locked && (
-                <Lock
-                  className="ml-auto h-3.5 w-3.5 shrink-0 ui-text-muted"
-                  aria-label={t("upgrade.lockedHint")}
-                />
-              )}
-            </button>
-          );
-        })}
+                  <span className="relative shrink-0">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                    {/* When collapsed there's no room for the count pill — a dot
+                    on the icon still signals "you have unread messages". */}
+                    {collapsed && unread > 0 && (
+                      <span
+                        className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-[var(--nav-bg,transparent)]"
+                        aria-label={t("messages.unread")}
+                      />
+                    )}
+                  </span>
+                  {!collapsed && <span className="truncate">{label}</span>}
+                  {!collapsed && unread > 0 && (
+                    <span
+                      className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-contrast"
+                      aria-label={t("messages.unread")}
+                    >
+                      <span aria-hidden="true">
+                        {unread > 99 ? "99+" : unread}
+                      </span>
+                    </span>
+                  )}
+                  {!collapsed && unread === 0 && locked && (
+                    <Lock
+                      className="ml-auto h-3.5 w-3.5 shrink-0 ui-text-muted"
+                      aria-label={t("upgrade.lockedHint")}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Collapse toggle */}

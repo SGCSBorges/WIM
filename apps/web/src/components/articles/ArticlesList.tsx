@@ -35,6 +35,7 @@ import {
   Users,
 } from "lucide-react";
 import ArticleForm from "./ArticleForm";
+import Modal from "../common/Modal";
 import ArticlesFilterBar from "./ArticlesFilterBar";
 import ArticlesTable from "./ArticlesTable";
 import ArticlesCardList from "./ArticlesCardList";
@@ -697,6 +698,12 @@ const ArticlesList: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingArticle(null);
+    setSharedDraft(null);
+  };
+
   // ⌘K / `c` shortcut + command-palette action navigate to /articles?new=1
   // to open the create form. Strip the param so a reload doesn't loop.
   useEffect(() => {
@@ -1143,19 +1150,26 @@ const ArticlesList: React.FC = () => {
         </div>
       )}
 
-      {showForm && (
-        <div className="mb-4">
-          <ArticleForm
-            article={editingArticle || sharedDraft || undefined}
-            onSubmit={handleSubmit}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingArticle(null);
-              setSharedDraft(null);
-            }}
-          />
-        </div>
-      )}
+      {/* Create / edit runs in a side sheet: the list stays put underneath
+          instead of being shoved 1 500 px down the page by an inline form,
+          and the form gets a focused, scrollable surface of its own. Backdrop
+          clicks don't dismiss it (a half-filled form is too easy to lose);
+          Esc and the form's own Cancel do. */}
+      <Modal
+        open={showForm}
+        onClose={closeForm}
+        titleId="article-form-title"
+        variant="side"
+        closeOnBackdropClick={false}
+      >
+        <ArticleForm
+          article={editingArticle || sharedDraft || undefined}
+          onSubmit={handleSubmit}
+          onCancel={closeForm}
+          titleId="article-form-title"
+          chrome="plain"
+        />
+      </Modal>
 
       <div className="ui-card overflow-hidden">
         {loading ? (
@@ -1175,6 +1189,7 @@ const ArticlesList: React.FC = () => {
                     t("articles.table.image"),
                     t("articles.table.name"),
                     t("articles.table.model"),
+                    t("articles.table.status"),
                     t("articles.table.description"),
                     t("articles.table.value"),
                     t("articles.table.warranty"),

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 
 vi.mock("../../services/api", () => ({
   profileAPI: {
@@ -48,16 +49,23 @@ const mockedBilling = billingAPI as unknown as {
   getBillingMe: ReturnType<typeof vi.fn>;
 };
 
-function renderProfile() {
+function renderProfile(path = "/profile") {
   render(
-    <I18nProvider>
-      <ThemeProvider>
-        <ToastProvider>
-          <ProfileView />
-        </ToastProvider>
-      </ThemeProvider>
-    </I18nProvider>
+    <MemoryRouter initialEntries={[path]}>
+      <I18nProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ProfileView />
+          </ToastProvider>
+        </ThemeProvider>
+      </I18nProvider>
+    </MemoryRouter>
   );
+}
+
+/** Email / password / delete live on the Security & data tab. */
+async function openSecurityTab() {
+  await userEvent.click(screen.getByRole("tab", { name: "Security & data" }));
 }
 
 beforeEach(() => {
@@ -84,6 +92,7 @@ describe("<ProfileView />", () => {
     });
     renderProfile();
     await screen.findByText("user@example.com");
+    await openSecurityTab();
 
     const user = userEvent.setup();
     const emailInput = screen.getByLabelText(/new email address/i);
@@ -107,6 +116,7 @@ describe("<ProfileView />", () => {
   it("gates account deletion behind a confirm step", async () => {
     renderProfile();
     await screen.findByText("user@example.com");
+    await openSecurityTab();
 
     const user = userEvent.setup();
     await user.click(
@@ -136,6 +146,7 @@ describe("<ProfileView />", () => {
 
     renderProfile();
     await screen.findByText("user@example.com");
+    await openSecurityTab();
     const user = userEvent.setup();
     await user.click(
       screen.getByRole("button", { name: /delete my account/i })
@@ -172,6 +183,7 @@ describe("<ProfileView />", () => {
 
     renderProfile();
     await screen.findByText("user@example.com");
+    await openSecurityTab();
     const user = userEvent.setup();
     await user.click(
       screen.getByRole("button", { name: /delete my account/i })
@@ -195,5 +207,43 @@ describe("<ProfileView />", () => {
     // setter, but the absence of an error toast + the deleteAccount mock
     // being called once is enough — there's no second-call retry, no
     // showFailure, so the path matched the idempotent 404 branch.
+  });
+
+  describe("tabs", () => {
+    it("opens on Account and keeps the other panels out of the DOM", async () => {
+      renderProfile();
+      await screen.findByText("user@example.com");
+      const tabs = screen.getAllByRole("tab").map((el) => el.textContent);
+      // USER without sharing: no Subscription / Sharing tab.
+      expect(tabs).toEqual(["Account", "Notifications", "Security & data"]);
+      expect(screen.getByRole("tab", { name: "Account" })).toHaveAttribute(
+        "aria-selected",
+        "true"
+      );
+      expect(
+        screen.queryByLabelText(/new email address/i)
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /delete my account/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it("deep-links to a tab through ?tab=", async () => {
+      renderProfile("/profile?tab=security");
+      // The signed-in-as card is on the Account tab; wait on the tab strip.
+      expect(
+        await screen.findByRole("tab", { name: "Security & data" })
+      ).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByLabelText(/new email address/i)).toBeInTheDocument();
+    });
+
+    it("falls back to Account for a tab the user does not have", async () => {
+      renderProfile("/profile?tab=billing");
+      await screen.findByText("user@example.com");
+      expect(screen.getByRole("tab", { name: "Account" })).toHaveAttribute(
+        "aria-selected",
+        "true"
+      );
+    });
   });
 });

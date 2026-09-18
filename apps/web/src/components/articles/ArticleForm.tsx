@@ -86,12 +86,20 @@ interface ArticleFormProps {
   article?: Article;
   onSubmit: (article: Omit<Article, "articleId">) => void | Promise<void>;
   onCancel?: () => void;
+  /** id for the form heading, so a wrapping dialog can point
+   *  `aria-labelledby` at it. */
+  titleId?: string;
+  /** `card` (default) draws its own panel; `plain` leaves the chrome to a
+   *  parent surface such as the create/edit side sheet. */
+  chrome?: "card" | "plain";
 }
 
 const ArticleForm: React.FC<ArticleFormProps> = ({
   article,
   onSubmit,
   onCancel,
+  titleId,
+  chrome = "card",
 }) => {
   const { t } = useI18n();
   const toast = useToast();
@@ -644,8 +652,15 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   };
 
   return (
-    <div className="ui-card p-6 sm:p-8 animate-fade-in">
-      <h2 className="mb-6 text-xl font-bold tracking-tight ui-title">
+    <div
+      className={
+        chrome === "card" ? "ui-card p-6 sm:p-8 animate-fade-in" : undefined
+      }
+    >
+      <h2
+        id={titleId}
+        className="mb-6 text-xl font-bold tracking-tight ui-title"
+      >
         {article ? t("articleForm.editTitle") : t("articleForm.createTitle")}
       </h2>
 

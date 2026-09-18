@@ -1,21 +1,34 @@
 /**
- * Two-dropdown widget shown in the nav: language (en/fr/pt/es/nl) and theme
+ * Two-dropdown widget: language (en/fr/pt/es/nl) and theme
  * (light/dark/ocean/cyber/sunset). Both choices persist to localStorage via
- * their respective providers; no API round-trip.
+ * their respective providers; no API round-trip. Inline on the login screen;
+ * stacked (`layout="stack"`) inside the top bar's settings popover.
  */
 import { useId } from "react";
 import { useI18n } from "../../i18n/i18n";
 import { Language } from "../../i18n/translations";
 import { useTheme, Theme } from "../../theme/theme";
 
-export default function LanguageThemeSelector() {
+export default function LanguageThemeSelector({
+  layout = "inline",
+}: {
+  layout?: "inline" | "stack";
+}) {
   const { t, language, setLanguage } = useI18n();
   const { theme, setTheme } = useTheme();
   const langId = useId();
   const themeId = useId();
+  const stack = layout === "stack";
+  const selectClass = stack
+    ? "ui-select w-full rounded-md px-2 py-1.5 text-sm"
+    : "ui-select px-2 py-1 rounded-md text-sm";
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div
+      className={
+        stack ? "flex flex-col gap-3" : "flex items-center gap-2 flex-wrap"
+      }
+    >
       <label htmlFor={langId} className="text-xs ui-text-muted">
         {t("nav.language")}
       </label>
@@ -23,7 +36,7 @@ export default function LanguageThemeSelector() {
         id={langId}
         value={language}
         onChange={(e) => setLanguage(e.target.value as Language)}
-        className="ui-select px-2 py-1 rounded-md text-sm"
+        className={selectClass}
       >
         <option value="en">English</option>
         <option value="fr">Français</option>
@@ -39,7 +52,7 @@ export default function LanguageThemeSelector() {
         id={themeId}
         value={theme}
         onChange={(e) => setTheme(e.target.value as Theme)}
-        className="ui-select px-2 py-1 rounded-md text-sm"
+        className={selectClass}
       >
         <option value="light">{t("theme.light")}</option>
         <option value="dark">{t("theme.dark")}</option>

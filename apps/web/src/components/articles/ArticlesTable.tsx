@@ -73,28 +73,34 @@ export default function ArticlesTable({
                 className="h-4 w-4 accent-[var(--primary)]"
               />
             </th>
-            {[
-              t("articles.table.image"),
-              t("articles.table.name"),
-              t("articles.table.model"),
-              t("articles.table.description"),
-              t("articles.table.value"),
-              t("articles.table.warranty"),
-              t("articles.table.expiresIn"),
-              t("articles.table.proof"),
-              t("articles.table.shared"),
-            ].map((h) => (
+            {(
+              [
+                [t("articles.table.image"), ""],
+                [t("articles.table.name"), "min-w-[12rem]"],
+                [t("articles.table.model"), ""],
+                [t("articles.table.status"), ""],
+                // Free text earns its width only on wide screens; below
+                // `xl` eleven columns already overflow and it degraded to a
+                // ten-character stub. The detail page has the full text.
+                [t("articles.table.description"), "hidden xl:table-cell"],
+                [t("articles.table.value"), ""],
+                [t("articles.table.warranty"), ""],
+                [t("articles.table.expiresIn"), ""],
+                [t("articles.table.proof"), ""],
+                [t("articles.table.shared"), ""],
+              ] as const
+            ).map(([h, extra]) => (
               <th
                 key={h}
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ui-text-muted"
+                className={`px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider ui-text-muted ${extra}`}
               >
                 {h}
               </th>
             ))}
             <th
               scope="col"
-              className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ui-text-muted"
+              className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider ui-text-muted"
             >
               {t("articles.table.actions")}
             </th>
@@ -106,7 +112,7 @@ export default function ArticlesTable({
             const days = getDaysUntilExpiry(article.garantie?.garantieFin);
             return (
               <tr key={article.articleId} className="hover-surface">
-                <td className="px-3 py-4">
+                <td className="px-3 py-2.5">
                   <input
                     type="checkbox"
                     aria-label={t("articles.bulk.selectRow").replace(
@@ -118,13 +124,14 @@ export default function ArticlesTable({
                     className="h-4 w-4 accent-[var(--primary)]"
                   />
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-2.5">
                   <ArticleThumb
                     src={article.productImageUrl}
                     alt={article.articleNom}
+                    size={40}
                   />
                 </td>
-                <td className="px-6 py-4 text-sm font-medium">
+                <td className="min-w-[12rem] px-4 py-2.5 text-sm font-medium">
                   <span className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -170,26 +177,44 @@ export default function ArticlesTable({
                     </div>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm ui-text-muted">
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm ui-text-muted">
                   {article.articleModele}
                 </td>
-                <td className="px-6 py-4 text-sm ui-text-muted">
-                  {article.articleDescription || "-"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm ui-text-muted tabular-nums">
-                  {article.purchasePrice != null
-                    ? formatMoney(article.purchasePrice, currency, language)
-                    : "—"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  <Badge tone={ws.tone}>{ws.label}</Badge>
-                  {!isDefaultStatus(article.status) && (
+                {/* Lifecycle state gets its own column: stacked under the
+                    warranty badge it read as a warranty state, and "Sold"
+                    is the first thing you scan a list for. ACTIVE is the
+                    resting state — muted text, no pill, so the exceptions
+                    stand out. */}
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm">
+                  {isDefaultStatus(article.status) ? (
+                    <span className="ui-text-muted">
+                      {t(articleStatusInfo(article.status).labelKey)}
+                    </span>
+                  ) : (
                     <Badge tone={articleStatusInfo(article.status).tone}>
                       {t(articleStatusInfo(article.status).labelKey)}
                     </Badge>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <td className="hidden max-w-[16rem] px-4 py-2.5 text-sm ui-text-muted xl:table-cell">
+                  {/* One line, full text on hover — the detail page has the
+                      rest; a paragraph per row was what made the list tall. */}
+                  <span
+                    className="line-clamp-1"
+                    title={article.articleDescription || undefined}
+                  >
+                    {article.articleDescription || "-"}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm ui-text-muted tabular-nums">
+                  {article.purchasePrice != null
+                    ? formatMoney(article.purchasePrice, currency, language)
+                    : "—"}
+                </td>
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm">
+                  <Badge tone={ws.tone}>{ws.label}</Badge>
+                </td>
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm">
                   {!article.garantie?.garantieFin || days === null ? (
                     <span className="ui-text-muted">—</span>
                   ) : days < 0 ? (
@@ -208,7 +233,7 @@ export default function ArticlesTable({
                     </span>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm">
                   <Badge
                     tone={
                       article.garantie?.garantieImageAttachmentId
@@ -221,7 +246,7 @@ export default function ArticlesTable({
                       : t("common.no")}
                   </Badge>
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <td className="whitespace-nowrap px-4 py-2.5 text-sm">
                   {article.sharedWithPowerUsers ? (
                     <Badge
                       tone="info"
@@ -234,7 +259,7 @@ export default function ArticlesTable({
                     <span className="ui-text-muted">—</span>
                   )}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-right">
+                <td className="whitespace-nowrap px-4 py-2.5 text-right">
                   <div className="inline-flex items-center gap-1">
                     <Button
                       variant="ghost"

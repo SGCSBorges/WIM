@@ -1,8 +1,10 @@
 /**
  * Top bar — a slim sticky header above the content area. On mobile it carries
  * the menu toggle + brand; on desktop it holds the utility cluster (PWA
- * install, language/theme, profile, logout). Primary navigation lives in the
- * Sidebar (desktop) and MobileDrawer (mobile).
+ * install, settings, profile, logout). Language and theme sit behind one
+ * gear button at every breakpoint — two labelled selects in the header
+ * were the widest thing in it and vanished entirely below `lg`. Primary
+ * navigation lives in the Sidebar (desktop) and MobileDrawer (mobile).
  */
 import { forwardRef } from "react";
 import { useNavigate, useLocation } from "react-router";
@@ -10,9 +12,9 @@ import { Menu, X, User, LogOut, Search, Plus } from "lucide-react";
 import { useI18n } from "../../i18n/i18n";
 import { useFeature } from "../../features/features";
 import { isActivePath } from "../../lib/navItems";
-import LanguageThemeSelector from "../common/LanguageThemeSelector";
 import InstallPwaButton from "../common/InstallPwaButton";
 import NotificationBell from "./NotificationBell";
+import SettingsMenu from "./SettingsMenu";
 import { Button } from "../ui";
 
 export interface TopBarProps {
@@ -109,9 +111,7 @@ const TopBar = forwardRef<HTMLButtonElement, TopBarProps>(function TopBar(
         <div className="hidden sm:block">
           <InstallPwaButton />
         </div>
-        <div className="hidden lg:block">
-          <LanguageThemeSelector />
-        </div>
+        <SettingsMenu />
 
         {showNotifications && <NotificationBell />}
 

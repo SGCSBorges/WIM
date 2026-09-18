@@ -14,6 +14,7 @@
  *     redirect (404 = already gone; everything else stays an error).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 import {
   User,
   Bell,
@@ -77,7 +78,19 @@ import {
   Input,
   Select,
   Badge,
+  Tabs,
 } from "../ui";
+
+/** Profile panels. Twelve stacked sections made the page a 4 000 px scroll
+ *  with "delete account" at the bottom of it; the tab is carried in
+ *  `?tab=` so the settings a page links to (e.g. `/profile?tab=security`)
+ *  open directly on them. */
+type ProfileTab =
+  | "account"
+  | "notifications"
+  | "billing"
+  | "sharing"
+  | "security";
 
 type Me = {
   userId: number;
@@ -110,6 +123,7 @@ function disconnectAndRedirect() {
 
 export default function ProfileView() {
   const { t, language } = useI18n();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     density,
     setDensity,
@@ -586,6 +600,22 @@ export default function ProfileView() {
     }
   };
 
+  const profileTabs: Array<{ id: ProfileTab; label: string }> = [
+    { id: "account", label: t("profile.tabs.account") },
+    { id: "notifications", label: t("profile.tabs.notifications") },
+    ...(me?.role === "POWER_USER"
+      ? [{ id: "billing" as const, label: t("profile.tabs.billing") }]
+      : []),
+    ...(canShare
+      ? [{ id: "sharing" as const, label: t("profile.tabs.sharing") }]
+      : []),
+    { id: "security", label: t("profile.tabs.security") },
+  ];
+  const requested = searchParams.get("tab");
+  const tab: ProfileTab = profileTabs.some((x) => x.id === requested)
+    ? (requested as ProfileTab)
+    : "account";
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -621,338 +651,379 @@ export default function ProfileView() {
         </div>
       )}
 
-      <div className="space-y-6">
-        {/* Identity / Signed-in-as */}
-        <Section
-          icon={<User className="h-5 w-5" />}
-          title={t("profile.signedInAs")}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p
-                className="truncate text-base font-semibold ui-title"
-                title={me?.email}
-              >
-                {me?.email}
-              </p>
-              <p className="mt-0.5 text-xs ui-text-muted">
-                {t("profile.role")}{" "}
-                {me?.role && (
-                  <Badge
-                    tone={
-                      me.role === "ADMIN"
-                        ? "admin"
-                        : me.role === "POWER_USER"
-                          ? "power"
-                          : "neutral"
-                    }
-                  >
-                    {me.role}
-                  </Badge>
-                )}
-              </p>
-            </div>
-            {me?.emailVerifiedAt ? (
-              <Badge tone="success" icon={<MailCheck className="h-3 w-3" />}>
-                {t("verifyEmail.verifiedBadge")}
-              </Badge>
-            ) : (
-              me && (
-                <div className="shrink-0 text-right">
-                  {verifySent ? (
-                    <p role="status" className="text-xs ui-text-success">
-                      {t("verifyEmail.resent")}
-                    </p>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={resendVerification}
-                      loading={verifySending}
-                      aria-busy={verifySending}
-                      leftIcon={
-                        verifySending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )
-                      }
-                    >
-                      {t("verifyEmail.resendButton")}
-                    </Button>
-                  )}
-                </div>
-              )
-            )}
-          </div>
-        </Section>
+      <Tabs
+        tabs={profileTabs}
+        value={tab}
+        onChange={(id) =>
+          setSearchParams(
+            (prev) => {
+              const next = new URLSearchParams(prev);
+              next.set("tab", id);
+              return next;
+            },
+            { replace: true }
+          )
+        }
+        idPrefix="profile-tab"
+        aria-label={t("profile.title")}
+        className="mb-6"
+      />
 
-        {/* Preferences: currency */}
-        <Section
-          icon={<Globe2 className="h-5 w-5" />}
-          title={t("profile.currency.title")}
-          description={t("profile.currency.subtitle")}
-        >
-          <Field label={t("profile.currency.title")} htmlFor="profile-currency">
-            <Select
-              id="profile-currency"
-              value={me?.currency ?? "USD"}
-              onChange={(e) => changeCurrency(e.target.value)}
-              className="max-w-[12rem]"
+      <div
+        className="space-y-6"
+        role="tabpanel"
+        aria-labelledby={`profile-tab-${tab}`}
+      >
+        {tab === "account" && (
+          <>
+            {/* Identity / Signed-in-as */}
+            <Section
+              icon={<User className="h-5 w-5" />}
+              title={t("profile.signedInAs")}
             >
-              {CURRENCIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </Section>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p
+                    className="truncate text-base font-semibold ui-title"
+                    title={me?.email}
+                  >
+                    {me?.email}
+                  </p>
+                  <p className="mt-0.5 text-xs ui-text-muted">
+                    {t("profile.role")}{" "}
+                    {me?.role && (
+                      <Badge
+                        tone={
+                          me.role === "ADMIN"
+                            ? "admin"
+                            : me.role === "POWER_USER"
+                              ? "power"
+                              : "neutral"
+                        }
+                      >
+                        {me.role}
+                      </Badge>
+                    )}
+                  </p>
+                </div>
+                {me?.emailVerifiedAt ? (
+                  <Badge
+                    tone="success"
+                    icon={<MailCheck className="h-3 w-3" />}
+                  >
+                    {t("verifyEmail.verifiedBadge")}
+                  </Badge>
+                ) : (
+                  me && (
+                    <div className="shrink-0 text-right">
+                      {verifySent ? (
+                        <p role="status" className="text-xs ui-text-success">
+                          {t("verifyEmail.resent")}
+                        </p>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={resendVerification}
+                          loading={verifySending}
+                          aria-busy={verifySending}
+                          leftIcon={
+                            verifySending ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Send className="h-4 w-4" />
+                            )
+                          }
+                        >
+                          {t("verifyEmail.resendButton")}
+                        </Button>
+                      )}
+                    </div>
+                  )
+                )}
+              </div>
+            </Section>
 
-        {/* Spend budgets — drive the dashboard budget card. Leave a field
+            {/* Preferences: currency */}
+            <Section
+              icon={<Globe2 className="h-5 w-5" />}
+              title={t("profile.currency.title")}
+              description={t("profile.currency.subtitle")}
+            >
+              <Field
+                label={t("profile.currency.title")}
+                htmlFor="profile-currency"
+              >
+                <Select
+                  id="profile-currency"
+                  value={me?.currency ?? "USD"}
+                  onChange={(e) => changeCurrency(e.target.value)}
+                  className="max-w-[12rem]"
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </Section>
+
+            {/* Spend budgets — drive the dashboard budget card. Leave a field
             blank to disable that period's budget. Paid feature: a locked notice
             stands in for non-entitled users. */}
-        {featuresLoaded && !canBudget && (
-          <LockedFeatureNotice
-            icon={<Wallet className="h-5 w-5" />}
-            title={t("budget.title")}
-          />
-        )}
-        {canBudget && (
-          <Section
-            icon={<Wallet className="h-5 w-5" />}
-            title={t("budget.title")}
-            description={t("budget.subtitle")}
-          >
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field
-                label={t("budget.monthly")}
-                htmlFor="profile-budget-monthly"
+            {featuresLoaded && !canBudget && (
+              <LockedFeatureNotice
+                icon={<Wallet className="h-5 w-5" />}
+                title={t("budget.title")}
+              />
+            )}
+            {canBudget && (
+              <Section
+                icon={<Wallet className="h-5 w-5" />}
+                title={t("budget.title")}
+                description={t("budget.subtitle")}
               >
-                <Input
-                  id="profile-budget-monthly"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  step="0.01"
-                  value={monthlyBudget}
-                  onChange={(e) => setMonthlyBudget(e.target.value)}
-                  placeholder={me?.currency ?? "USD"}
-                />
-              </Field>
-              <Field label={t("budget.annual")} htmlFor="profile-budget-annual">
-                <Input
-                  id="profile-budget-annual"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  step="0.01"
-                  value={annualBudget}
-                  onChange={(e) => setAnnualBudget(e.target.value)}
-                  placeholder={me?.currency ?? "USD"}
-                />
-              </Field>
-            </div>
-            <div className="mt-3">
-              <Button onClick={saveBudget} loading={budgetSaving}>
-                {t("common.save")}
-              </Button>
-            </div>
-          </Section>
-        )}
-
-        {/* Appearance: density toggle. Persisted locally (per-device) because
-            it's a cosmetic preference; theme / language already sync to the
-            account via the global selectors. */}
-        <Section
-          icon={<Rows3 className="h-5 w-5" />}
-          title={t("appearance.title")}
-        >
-          <div className="flex items-start gap-2 text-sm">
-            <input
-              id="profile-density"
-              type="checkbox"
-              checked={density === "compact"}
-              onChange={(e) =>
-                setDensity(e.target.checked ? "compact" : "comfortable")
-              }
-              className="mt-0.5 h-4 w-4 accent-[var(--primary)]"
-            />
-            <label htmlFor="profile-density">
-              <span className="block font-medium ui-title">
-                {t("appearance.density.label")}
-              </span>
-              <span className="block text-xs ui-text-muted">
-                {t("appearance.density.hint")}
-              </span>
-            </label>
-          </div>
-        </Section>
-
-        {/* Calendar feed — hidden when the feature is off, but kept visible
-            while a feed is still active so the user can always disable it. */}
-        {(canCalendarFeed || calendarUrl) && (
-          <Section
-            icon={<Calendar className="h-5 w-5" />}
-            title={t("calendar.title")}
-            description={t("calendar.subtitle")}
-          >
-            {calendarUrl ? (
-              <div className="space-y-2">
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Input
-                    readOnly
-                    value={calendarUrl}
-                    onFocus={(e) => e.currentTarget.select()}
-                    className="flex-1 font-mono text-xs"
-                    aria-label={t("calendar.url")}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard
-                        ?.writeText(calendarUrl)
-                        .then(() => showSuccess(t("calendar.copied")))
-                        .catch(() =>
-                          toast.show(t("alerts.copyFailed"), { kind: "error" })
-                        );
-                    }}
-                    leftIcon={<Copy className="h-4 w-4" />}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field
+                    label={t("budget.monthly")}
+                    htmlFor="profile-budget-monthly"
                   >
-                    {t("calendar.copy")}
+                    <Input
+                      id="profile-budget-monthly"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      step="0.01"
+                      value={monthlyBudget}
+                      onChange={(e) => setMonthlyBudget(e.target.value)}
+                      placeholder={me?.currency ?? "USD"}
+                    />
+                  </Field>
+                  <Field
+                    label={t("budget.annual")}
+                    htmlFor="profile-budget-annual"
+                  >
+                    <Input
+                      id="profile-budget-annual"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      step="0.01"
+                      value={annualBudget}
+                      onChange={(e) => setAnnualBudget(e.target.value)}
+                      placeholder={me?.currency ?? "USD"}
+                    />
+                  </Field>
+                </div>
+                <div className="mt-3">
+                  <Button onClick={saveBudget} loading={budgetSaving}>
+                    {t("common.save")}
                   </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={disableCalendar}
-                  className="text-danger"
-                  leftIcon={<XCircle className="h-4 w-4" />}
-                >
-                  {t("calendar.disable")}
-                </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={enableCalendar}
-                leftIcon={<Calendar className="h-4 w-4" />}
-              >
-                {t("calendar.enable")}
-              </Button>
+              </Section>
             )}
-          </Section>
-        )}
 
-        {/* Locked teaser when calendar feed is a paid feature the user lacks. */}
-        {!canCalendarFeed && !calendarUrl && featuresLoaded && (
-          <Section
-            icon={<Calendar className="h-5 w-5" />}
-            title={t("calendar.title")}
-            description={t("calendar.subtitle")}
-          >
-            <Button
-              variant="outline"
-              onClick={promptUpgrade}
-              leftIcon={<Lock className="h-4 w-4" />}
+            {/* Appearance: density toggle. Persisted locally (per-device) because
+            it's a cosmetic preference; theme / language already sync to the
+            account via the global selectors. */}
+            <Section
+              icon={<Rows3 className="h-5 w-5" />}
+              title={t("appearance.title")}
             >
-              {t("calendar.enable")}
-            </Button>
-          </Section>
-        )}
-
-        {/* Push notifications */}
-        {pushSupported() && (
-          <Section
-            icon={<Smartphone className="h-5 w-5" />}
-            title={t("push.title")}
-            description={t("push.subtitle")}
-          >
-            <Button
-              variant={pushOn ? "outline" : "primary"}
-              onClick={togglePush}
-              loading={pushBusy}
-              leftIcon={<Bell className="h-4 w-4" />}
-            >
-              {pushOn ? t("push.disable") : t("push.enable")}
-            </Button>
-          </Section>
-        )}
-
-        {/* Reminders + weekly digest */}
-        <Section
-          icon={<Mail className="h-5 w-5" />}
-          title={t("emailReminders.title")}
-          description={t("emailReminders.subtitle")}
-        >
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={me?.emailReminders ?? true}
-              onChange={(e) => toggleEmailReminders(e.target.checked)}
-              className="h-4 w-4 accent-[var(--primary)]"
-            />
-            {t("emailReminders.toggle")}
-          </label>
-          <div className="mt-3 border-t ui-divider pt-3">
-            <p className="text-sm font-medium ui-title">
-              {t("weeklyDigest.title")}
-            </p>
-            <p className="mt-0.5 mb-2 text-xs ui-text-muted">
-              {t("weeklyDigest.subtitle")}
-            </p>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={me?.weeklyDigest ?? false}
-                onChange={(e) => toggleWeeklyDigest(e.target.checked)}
-                className="h-4 w-4 accent-[var(--primary)]"
-              />
-              {t("weeklyDigest.toggle")}
-            </label>
-          </div>
-          <div className="mt-3 border-t ui-divider pt-3">
-            <p className="text-sm font-medium ui-title">
-              {t("reminderDays.title")}
-            </p>
-            <p className="mt-0.5 mb-2 text-xs ui-text-muted">
-              {t("reminderDays.subtitle")}
-            </p>
-            <div className="flex flex-wrap items-end gap-2">
-              <Field
-                label={t("reminderDays.label")}
-                htmlFor="profile-reminder-days"
-                className="max-w-[14rem]"
-              >
-                <Input
-                  id="profile-reminder-days"
-                  type="text"
-                  inputMode="numeric"
-                  value={reminderDaysInput}
-                  onChange={(e) => setReminderDaysInput(e.target.value)}
-                  placeholder={DEFAULT_REMINDER_DAYS}
+              <div className="flex items-start gap-2 text-sm">
+                <input
+                  id="profile-density"
+                  type="checkbox"
+                  checked={density === "compact"}
+                  onChange={(e) =>
+                    setDensity(e.target.checked ? "compact" : "comfortable")
+                  }
+                  className="mt-0.5 h-4 w-4 accent-[var(--primary)]"
                 />
-              </Field>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={saveReminderDays}
-                loading={reminderDaysSaving}
-                aria-busy={reminderDaysSaving}
+                <label htmlFor="profile-density">
+                  <span className="block font-medium ui-title">
+                    {t("appearance.density.label")}
+                  </span>
+                  <span className="block text-xs ui-text-muted">
+                    {t("appearance.density.hint")}
+                  </span>
+                </label>
+              </div>
+            </Section>
+          </>
+        )}
+
+        {tab === "notifications" && (
+          <>
+            {/* Calendar feed — hidden when the feature is off, but kept visible
+            while a feed is still active so the user can always disable it. */}
+            {(canCalendarFeed || calendarUrl) && (
+              <Section
+                icon={<Calendar className="h-5 w-5" />}
+                title={t("calendar.title")}
+                description={t("calendar.subtitle")}
               >
-                {t("common.save")}
-              </Button>
-            </div>
-            {reminderDaysError && (
-              <p role="alert" className="mt-1 text-sm ui-text-error">
-                {reminderDaysError}
-              </p>
+                {calendarUrl ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Input
+                        readOnly
+                        value={calendarUrl}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="flex-1 font-mono text-xs"
+                        aria-label={t("calendar.url")}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard
+                            ?.writeText(calendarUrl)
+                            .then(() => showSuccess(t("calendar.copied")))
+                            .catch(() =>
+                              toast.show(t("alerts.copyFailed"), {
+                                kind: "error",
+                              })
+                            );
+                        }}
+                        leftIcon={<Copy className="h-4 w-4" />}
+                      >
+                        {t("calendar.copy")}
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={disableCalendar}
+                      className="text-danger"
+                      leftIcon={<XCircle className="h-4 w-4" />}
+                    >
+                      {t("calendar.disable")}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={enableCalendar}
+                    leftIcon={<Calendar className="h-4 w-4" />}
+                  >
+                    {t("calendar.enable")}
+                  </Button>
+                )}
+              </Section>
             )}
-          </div>
-        </Section>
+
+            {/* Locked teaser when calendar feed is a paid feature the user lacks. */}
+            {!canCalendarFeed && !calendarUrl && featuresLoaded && (
+              <Section
+                icon={<Calendar className="h-5 w-5" />}
+                title={t("calendar.title")}
+                description={t("calendar.subtitle")}
+              >
+                <Button
+                  variant="outline"
+                  onClick={promptUpgrade}
+                  leftIcon={<Lock className="h-4 w-4" />}
+                >
+                  {t("calendar.enable")}
+                </Button>
+              </Section>
+            )}
+
+            {/* Push notifications */}
+            {pushSupported() && (
+              <Section
+                icon={<Smartphone className="h-5 w-5" />}
+                title={t("push.title")}
+                description={t("push.subtitle")}
+              >
+                <Button
+                  variant={pushOn ? "outline" : "primary"}
+                  onClick={togglePush}
+                  loading={pushBusy}
+                  leftIcon={<Bell className="h-4 w-4" />}
+                >
+                  {pushOn ? t("push.disable") : t("push.enable")}
+                </Button>
+              </Section>
+            )}
+
+            {/* Reminders + weekly digest */}
+            <Section
+              icon={<Mail className="h-5 w-5" />}
+              title={t("emailReminders.title")}
+              description={t("emailReminders.subtitle")}
+            >
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={me?.emailReminders ?? true}
+                  onChange={(e) => toggleEmailReminders(e.target.checked)}
+                  className="h-4 w-4 accent-[var(--primary)]"
+                />
+                {t("emailReminders.toggle")}
+              </label>
+              <div className="mt-3 border-t ui-divider pt-3">
+                <p className="text-sm font-medium ui-title">
+                  {t("weeklyDigest.title")}
+                </p>
+                <p className="mt-0.5 mb-2 text-xs ui-text-muted">
+                  {t("weeklyDigest.subtitle")}
+                </p>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={me?.weeklyDigest ?? false}
+                    onChange={(e) => toggleWeeklyDigest(e.target.checked)}
+                    className="h-4 w-4 accent-[var(--primary)]"
+                  />
+                  {t("weeklyDigest.toggle")}
+                </label>
+              </div>
+              <div className="mt-3 border-t ui-divider pt-3">
+                <p className="text-sm font-medium ui-title">
+                  {t("reminderDays.title")}
+                </p>
+                <p className="mt-0.5 mb-2 text-xs ui-text-muted">
+                  {t("reminderDays.subtitle")}
+                </p>
+                <div className="flex flex-wrap items-end gap-2">
+                  <Field
+                    label={t("reminderDays.label")}
+                    htmlFor="profile-reminder-days"
+                    className="max-w-[14rem]"
+                  >
+                    <Input
+                      id="profile-reminder-days"
+                      type="text"
+                      inputMode="numeric"
+                      value={reminderDaysInput}
+                      onChange={(e) => setReminderDaysInput(e.target.value)}
+                      placeholder={DEFAULT_REMINDER_DAYS}
+                    />
+                  </Field>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={saveReminderDays}
+                    loading={reminderDaysSaving}
+                    aria-busy={reminderDaysSaving}
+                  >
+                    {t("common.save")}
+                  </Button>
+                </div>
+                {reminderDaysError && (
+                  <p role="alert" className="mt-1 text-sm ui-text-error">
+                    {reminderDaysError}
+                  </p>
+                )}
+              </div>
+            </Section>
+          </>
+        )}
 
         {/* Billing (POWER_USER only) */}
-        {me?.role === "POWER_USER" && (
+        {tab === "billing" && me?.role === "POWER_USER" && (
           <Section
             icon={<CreditCard className="h-5 w-5" />}
             title={t("profile.subscription.title")}
@@ -1075,442 +1146,464 @@ export default function ProfileView() {
           </Section>
         )}
 
-        {/* "Articles you've shared publicly" */}
-        {canShare && (
-          <Section
-            icon={<Globe2 className="h-5 w-5" />}
-            title={t("profile.share.public.title")}
-            description={t("profile.share.public.subtitle")}
-          >
-            {!sharingLoaded ? (
-              <Skeleton height={64} />
-            ) : sharedPublic.length === 0 ? (
-              <p className="text-sm ui-text-muted">
-                {t("profile.share.public.empty")}
-              </p>
-            ) : (
-              <ul className="divide-y ui-divider">
-                {sharedPublic.map((a) => (
-                  <li
-                    key={a.articleId}
-                    className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <ArticleThumb
-                      src={a.productImageUrl}
-                      alt={a.articleNom}
-                      size={40}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="truncate font-medium ui-title"
-                        title={a.articleNom}
-                      >
-                        {a.articleNom}
-                      </div>
-                      <div
-                        className="truncate text-xs ui-text-muted"
-                        title={a.articleModele ?? undefined}
-                      >
-                        {a.articleModele}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => unshareOne(a.articleId)}
-                      loading={sharingBusy === `article:${a.articleId}`}
-                    >
-                      {t("profile.share.public.unshareOne")}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {sharedPublic.length > 0 && (
-              <div className="mt-3 border-t ui-divider pt-3">
-                {showUnshareAllConfirm ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm ui-text-error">
-                      {t("profile.share.public.unshareAllConfirm")}
-                    </span>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={unshareAll}
-                      loading={sharingBusy === "unshare-all"}
-                    >
-                      {t("common.yes")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowUnshareAllConfirm(false)}
-                    >
-                      {t("common.no")}
-                    </Button>
-                  </div>
+        {tab === "sharing" && canShare && (
+          <>
+            {/* "Articles you've shared publicly" */}
+            {canShare && (
+              <Section
+                icon={<Globe2 className="h-5 w-5" />}
+                title={t("profile.share.public.title")}
+                description={t("profile.share.public.subtitle")}
+              >
+                {!sharingLoaded ? (
+                  <Skeleton height={64} />
+                ) : sharedPublic.length === 0 ? (
+                  <p className="text-sm ui-text-muted">
+                    {t("profile.share.public.empty")}
+                  </p>
                 ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowUnshareAllConfirm(true)}
-                    className="text-danger"
-                    leftIcon={<XCircle className="h-4 w-4" />}
-                  >
-                    {t("profile.share.public.unshareAll")}
-                  </Button>
-                )}
-              </div>
-            )}
-          </Section>
-        )}
-
-        {/* "People you've invited" */}
-        {canShare && (
-          <Section
-            icon={<Users className="h-5 w-5" />}
-            title={t("profile.share.invited.title")}
-            description={t("profile.share.invited.scopeNote")}
-          >
-            <p className="mt-0.5 text-xs ui-text-muted">
-              {t("profile.share.invited.onlyPowerUsersNote")}
-            </p>
-
-            {!sharingLoaded ? (
-              <Skeleton height={64} className="mt-3" />
-            ) : sharesOwned.length === 0 &&
-              invitesSent.filter((i) => i.status === "PENDING").length === 0 ? (
-              <p className="mt-3 text-sm ui-text-muted">
-                {t("profile.share.invited.empty")}
-              </p>
-            ) : (
-              <div className="mt-3 space-y-4">
-                {sharesOwned.length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-medium ui-text-muted">
-                      {t("profile.share.invited.activeHeading")}
-                    </h3>
-                    <ul className="divide-y ui-divider">
-                      {sharesOwned.map((s) => (
-                        <li
-                          key={s.inventoryShareId}
-                          className="flex items-center gap-3 py-2"
-                        >
+                  <ul className="divide-y ui-divider">
+                    {sharedPublic.map((a) => (
+                      <li
+                        key={a.articleId}
+                        className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
+                      >
+                        <ArticleThumb
+                          src={a.productImageUrl}
+                          alt={a.articleNom}
+                          size={40}
+                        />
+                        <div className="min-w-0 flex-1">
                           <div
-                            className="min-w-0 flex-1 truncate font-medium ui-title"
-                            title={s.target.email}
+                            className="truncate font-medium ui-title"
+                            title={a.articleNom}
                           >
-                            {s.target.email}
+                            {a.articleNom}
                           </div>
-                          <Badge
-                            tone={
-                              s.permission === "WRITE" ? "warning" : "success"
-                            }
+                          <div
+                            className="truncate text-xs ui-text-muted"
+                            title={a.articleModele ?? undefined}
                           >
-                            {s.permission}
-                          </Badge>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => revokeShareWith(s.target.userId)}
-                            loading={sharingBusy === `share:${s.target.userId}`}
-                            className="text-danger"
-                            leftIcon={<Trash2 className="h-4 w-4" />}
-                          >
-                            {t("shares.action.revoke")}
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                            {a.articleModele}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => unshareOne(a.articleId)}
+                          loading={sharingBusy === `article:${a.articleId}`}
+                        >
+                          {t("profile.share.public.unshareOne")}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
 
-                {invitesSent.some((i) => i.status === "PENDING") && (
-                  <div>
-                    <h3 className="mb-2 text-sm font-medium ui-text-muted">
-                      {t("profile.share.invited.pendingHeading")}
-                    </h3>
-                    <ul className="divide-y ui-divider">
-                      {invitesSent
-                        .filter((i) => i.status === "PENDING")
-                        .map((i) => (
-                          <li
-                            key={i.shareInviteId}
-                            className="flex items-center gap-3 py-2"
-                          >
-                            <div
-                              className="min-w-0 flex-1 truncate font-medium ui-title"
-                              title={i.email}
-                            >
-                              {i.email}
-                            </div>
-                            <Badge
-                              tone={
-                                i.permission === "WRITE" ? "warning" : "success"
-                              }
-                            >
-                              {i.permission}
-                            </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => revokeInvite(i.shareInviteId)}
-                              loading={
-                                sharingBusy === `invite:${i.shareInviteId}`
-                              }
-                              className="text-danger"
-                              leftIcon={<Trash2 className="h-4 w-4" />}
-                            >
-                              {t("shares.action.revoke")}
-                            </Button>
-                          </li>
-                        ))}
-                    </ul>
+                {sharedPublic.length > 0 && (
+                  <div className="mt-3 border-t ui-divider pt-3">
+                    {showUnshareAllConfirm ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm ui-text-error">
+                          {t("profile.share.public.unshareAllConfirm")}
+                        </span>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={unshareAll}
+                          loading={sharingBusy === "unshare-all"}
+                        >
+                          {t("common.yes")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowUnshareAllConfirm(false)}
+                        >
+                          {t("common.no")}
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowUnshareAllConfirm(true)}
+                        className="text-danger"
+                        leftIcon={<XCircle className="h-4 w-4" />}
+                      >
+                        {t("profile.share.public.unshareAll")}
+                      </Button>
+                    )}
                   </div>
                 )}
-              </div>
+              </Section>
             )}
-          </Section>
+
+            {/* "People you've invited" */}
+            {canShare && (
+              <Section
+                icon={<Users className="h-5 w-5" />}
+                title={t("profile.share.invited.title")}
+                description={t("profile.share.invited.scopeNote")}
+              >
+                <p className="mt-0.5 text-xs ui-text-muted">
+                  {t("profile.share.invited.onlyPowerUsersNote")}
+                </p>
+
+                {!sharingLoaded ? (
+                  <Skeleton height={64} className="mt-3" />
+                ) : sharesOwned.length === 0 &&
+                  invitesSent.filter((i) => i.status === "PENDING").length ===
+                    0 ? (
+                  <p className="mt-3 text-sm ui-text-muted">
+                    {t("profile.share.invited.empty")}
+                  </p>
+                ) : (
+                  <div className="mt-3 space-y-4">
+                    {sharesOwned.length > 0 && (
+                      <div>
+                        <h3 className="mb-2 text-sm font-medium ui-text-muted">
+                          {t("profile.share.invited.activeHeading")}
+                        </h3>
+                        <ul className="divide-y ui-divider">
+                          {sharesOwned.map((s) => (
+                            <li
+                              key={s.inventoryShareId}
+                              className="flex items-center gap-3 py-2"
+                            >
+                              <div
+                                className="min-w-0 flex-1 truncate font-medium ui-title"
+                                title={s.target.email}
+                              >
+                                {s.target.email}
+                              </div>
+                              <Badge
+                                tone={
+                                  s.permission === "WRITE"
+                                    ? "warning"
+                                    : "success"
+                                }
+                              >
+                                {s.permission}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => revokeShareWith(s.target.userId)}
+                                loading={
+                                  sharingBusy === `share:${s.target.userId}`
+                                }
+                                className="text-danger"
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                              >
+                                {t("shares.action.revoke")}
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {invitesSent.some((i) => i.status === "PENDING") && (
+                      <div>
+                        <h3 className="mb-2 text-sm font-medium ui-text-muted">
+                          {t("profile.share.invited.pendingHeading")}
+                        </h3>
+                        <ul className="divide-y ui-divider">
+                          {invitesSent
+                            .filter((i) => i.status === "PENDING")
+                            .map((i) => (
+                              <li
+                                key={i.shareInviteId}
+                                className="flex items-center gap-3 py-2"
+                              >
+                                <div
+                                  className="min-w-0 flex-1 truncate font-medium ui-title"
+                                  title={i.email}
+                                >
+                                  {i.email}
+                                </div>
+                                <Badge
+                                  tone={
+                                    i.permission === "WRITE"
+                                      ? "warning"
+                                      : "success"
+                                  }
+                                >
+                                  {i.permission}
+                                </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => revokeInvite(i.shareInviteId)}
+                                  loading={
+                                    sharingBusy === `invite:${i.shareInviteId}`
+                                  }
+                                  className="text-danger"
+                                  leftIcon={<Trash2 className="h-4 w-4" />}
+                                >
+                                  {t("shares.action.revoke")}
+                                </Button>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Section>
+            )}
+          </>
         )}
 
-        <DataExportPanel />
+        {tab === "security" && (
+          <>
+            <DataExportPanel />
 
-        {/* Change email */}
-        <Section
-          icon={<Mail className="h-5 w-5" />}
-          title={t("profile.email.title")}
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={t("profile.email.new")} htmlFor="profile-email-new">
-              <Input
-                id="profile-email-new"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoCapitalize="none"
-                spellCheck={false}
-                required
-              />
-            </Field>
-            <Field
-              label={t("profile.email.currentPassword")}
-              htmlFor="profile-email-current-password"
+            {/* Change email */}
+            <Section
+              icon={<Mail className="h-5 w-5" />}
+              title={t("profile.email.title")}
             >
-              <div className="relative">
-                <Input
-                  id="profile-email-current-password"
-                  value={currentPasswordForEmail}
-                  onChange={(e) => setCurrentPasswordForEmail(e.target.value)}
-                  type={showEmailPw ? "text" : "password"}
-                  autoComplete="current-password"
-                  className="pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowEmailPw((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={
-                    showEmailPw
-                      ? t("auth.hidePassword")
-                      : t("auth.showPassword")
-                  }
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field
+                  label={t("profile.email.new")}
+                  htmlFor="profile-email-new"
                 >
-                  {showEmailPw ? (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                  )}
-                </button>
+                  <Input
+                    id="profile-email-new"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    required
+                  />
+                </Field>
+                <Field
+                  label={t("profile.email.currentPassword")}
+                  htmlFor="profile-email-current-password"
+                >
+                  <div className="relative">
+                    <Input
+                      id="profile-email-current-password"
+                      value={currentPasswordForEmail}
+                      onChange={(e) =>
+                        setCurrentPasswordForEmail(e.target.value)
+                      }
+                      type={showEmailPw ? "text" : "password"}
+                      autoComplete="current-password"
+                      className="pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowEmailPw((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                      aria-label={
+                        showEmailPw
+                          ? t("auth.hidePassword")
+                          : t("auth.showPassword")
+                      }
+                    >
+                      {showEmailPw ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </Field>
               </div>
-            </Field>
-          </div>
-          <div className="mt-3">
-            <Button
-              onClick={updateEmail}
-              loading={saving}
-              disabled={!email || !currentPasswordForEmail}
-              leftIcon={<Send className="h-4 w-4" />}
-            >
-              {t("profile.email.save")}
-            </Button>
-          </div>
-        </Section>
+              <div className="mt-3">
+                <Button
+                  onClick={updateEmail}
+                  loading={saving}
+                  disabled={!email || !currentPasswordForEmail}
+                  leftIcon={<Send className="h-4 w-4" />}
+                >
+                  {t("profile.email.save")}
+                </Button>
+              </div>
+            </Section>
 
-        {/* Security: login history + future 2FA / sessions placeholders. */}
-        <SecuritySection />
+            {/* Security: login history + future 2FA / sessions placeholders. */}
+            <SecuritySection />
 
-        {/* Change password */}
-        <Section
-          icon={<Lock className="h-5 w-5" />}
-          title={t("profile.password.title")}
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field
-              label={t("profile.password.current")}
-              htmlFor="profile-password-current"
+            {/* Change password */}
+            <Section
+              icon={<Lock className="h-5 w-5" />}
+              title={t("profile.password.title")}
             >
-              <div className="relative">
-                <Input
-                  id="profile-password-current"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  type={showCurrentPw ? "text" : "password"}
-                  autoComplete="current-password"
-                  className="pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPw((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={
-                    showCurrentPw
-                      ? t("auth.hidePassword")
-                      : t("auth.showPassword")
-                  }
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field
+                  label={t("profile.password.current")}
+                  htmlFor="profile-password-current"
                 >
-                  {showCurrentPw ? (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                  )}
-                </button>
-              </div>
-            </Field>
-            <Field
-              label={t("profile.password.new")}
-              htmlFor="profile-password-new"
-            >
-              <div className="relative">
-                <Input
-                  id="profile-password-new"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  type={showNewPw ? "text" : "password"}
-                  autoComplete="new-password"
-                  minLength={8}
-                  className="pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPw((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={
-                    showNewPw ? t("auth.hidePassword") : t("auth.showPassword")
-                  }
+                  <div className="relative">
+                    <Input
+                      id="profile-password-current"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      type={showCurrentPw ? "text" : "password"}
+                      autoComplete="current-password"
+                      className="pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPw((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                      aria-label={
+                        showCurrentPw
+                          ? t("auth.hidePassword")
+                          : t("auth.showPassword")
+                      }
+                    >
+                      {showCurrentPw ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </Field>
+                <Field
+                  label={t("profile.password.new")}
+                  htmlFor="profile-password-new"
                 >
-                  {showNewPw ? (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                  )}
-                </button>
+                  <div className="relative">
+                    <Input
+                      id="profile-password-new"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      type={showNewPw ? "text" : "password"}
+                      autoComplete="new-password"
+                      minLength={8}
+                      className="pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPw((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                      aria-label={
+                        showNewPw
+                          ? t("auth.hidePassword")
+                          : t("auth.showPassword")
+                      }
+                    >
+                      {showNewPw ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </Field>
               </div>
-            </Field>
-          </div>
-          <div className="mt-3">
-            <Button
-              onClick={updatePassword}
-              loading={saving}
-              disabled={!currentPassword || !newPassword}
-              leftIcon={<Lock className="h-4 w-4" />}
-            >
-              {t("profile.password.save")}
-            </Button>
-          </div>
-        </Section>
+              <div className="mt-3">
+                <Button
+                  onClick={updatePassword}
+                  loading={saving}
+                  disabled={!currentPassword || !newPassword}
+                  leftIcon={<Lock className="h-4 w-4" />}
+                >
+                  {t("profile.password.save")}
+                </Button>
+              </div>
+            </Section>
 
-        {/* Danger zone */}
-        <section className="ui-card border-l-4 border-l-danger p-5 sm:p-6">
-          <div className="mb-3 flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-danger/15 text-danger">
-              <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-            </span>
-            <div>
-              <h2 className="text-base font-semibold ui-text-error">
-                {t("profile.danger.title")}
-              </h2>
-              <p className="text-sm ui-text-muted">
-                {t("profile.danger.subtitle")}
-              </p>
-            </div>
-          </div>
-          <div className="max-w-sm">
-            <Field
-              label={t("profile.danger.currentPassword")}
-              htmlFor="profile-delete-password"
-            >
-              <div className="relative">
-                <Input
-                  id="profile-delete-password"
-                  value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
-                  type={showDeletePw ? "text" : "password"}
-                  autoComplete="current-password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowDeletePw((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
-                  aria-label={
-                    showDeletePw
-                      ? t("auth.hidePassword")
-                      : t("auth.showPassword")
-                  }
-                >
-                  {showDeletePw ? (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                  )}
-                </button>
-              </div>
-            </Field>
-          </div>
-          <div className="mt-3">
-            {!showDeleteConfirm ? (
-              <Button
-                variant="danger"
-                onClick={() => setShowDeleteConfirm(true)}
-                leftIcon={<Trash2 className="h-4 w-4" />}
-              >
-                {t("profile.danger.deleteButton")}
-              </Button>
-            ) : (
-              <div
-                role="alert"
-                className="space-y-2 rounded-lg border ui-alert-error p-3"
-              >
-                <p className="text-sm ui-text-error">
-                  {t("profile.danger.confirm")}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={deleteAccount}
-                    loading={deleting}
-                  >
-                    {t("common.yes")}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowDeleteConfirm(false)}
-                  >
-                    {t("common.no")}
-                  </Button>
+            {/* Danger zone */}
+            <section className="ui-card border-l-4 border-l-danger p-5 sm:p-6">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-danger/15 text-danger">
+                  <TriangleAlert className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold ui-text-error">
+                    {t("profile.danger.title")}
+                  </h2>
+                  <p className="text-sm ui-text-muted">
+                    {t("profile.danger.subtitle")}
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
-        </section>
+              <div className="max-w-sm">
+                <Field
+                  label={t("profile.danger.currentPassword")}
+                  htmlFor="profile-delete-password"
+                >
+                  <div className="relative">
+                    <Input
+                      id="profile-delete-password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      type={showDeletePw ? "text" : "password"}
+                      autoComplete="current-password"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDeletePw((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 ui-text-muted hover:ui-title"
+                      aria-label={
+                        showDeletePw
+                          ? t("auth.hidePassword")
+                          : t("auth.showPassword")
+                      }
+                    >
+                      {showDeletePw ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </Field>
+              </div>
+              <div className="mt-3">
+                {!showDeleteConfirm ? (
+                  <Button
+                    variant="danger"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    leftIcon={<Trash2 className="h-4 w-4" />}
+                  >
+                    {t("profile.danger.deleteButton")}
+                  </Button>
+                ) : (
+                  <div
+                    role="alert"
+                    className="space-y-2 rounded-lg border ui-alert-error p-3"
+                  >
+                    <p className="text-sm ui-text-error">
+                      {t("profile.danger.confirm")}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={deleteAccount}
+                        loading={deleting}
+                      >
+                        {t("common.yes")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowDeleteConfirm(false)}
+                      >
+                        {t("common.no")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );

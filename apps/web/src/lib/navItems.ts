@@ -42,10 +42,28 @@ export type NavKey =
   | "messages"
   | "admin";
 
+/** Sidebar / drawer sections, in display order. Seventeen flat entries had
+ *  become a wall; grouping is what makes "where is Insurance?" answerable
+ *  at a glance. Labels resolve via `t("nav.group.<group>")`. */
+export type NavGroup =
+  | "inventory"
+  | "planning"
+  | "insights"
+  | "collaborate"
+  | "admin";
+export const NAV_GROUPS: NavGroup[] = [
+  "inventory",
+  "planning",
+  "insights",
+  "collaborate",
+  "admin",
+];
+
 export interface NavItem {
   key: NavKey;
   path: string;
   icon: LucideIcon;
+  group: NavGroup;
   requires?: "share" | "admin";
   /** When set, the item is hidden unless this feature flag is enabled for
    *  the user (only honored when a feature map is passed to
@@ -54,54 +72,104 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: "home", path: "/", icon: Home },
-  { key: "dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { key: "articles", path: "/articles", icon: Package },
-  { key: "warranties", path: "/warranties", icon: ShieldCheck },
-  { key: "attachments", path: "/attachments", icon: Paperclip },
-  { key: "locations", path: "/locations", icon: MapPin },
-  { key: "alerts", path: "/alerts", icon: Bell },
-  { key: "agenda", path: "/agenda", icon: CalendarClock },
+  { key: "home", path: "/", icon: Home, group: "inventory" },
+  {
+    key: "dashboard",
+    path: "/dashboard",
+    icon: LayoutDashboard,
+    group: "inventory",
+  },
+  { key: "articles", path: "/articles", icon: Package, group: "inventory" },
+  {
+    key: "warranties",
+    path: "/warranties",
+    icon: ShieldCheck,
+    group: "inventory",
+  },
+  {
+    key: "attachments",
+    path: "/attachments",
+    icon: Paperclip,
+    group: "inventory",
+  },
+  { key: "locations", path: "/locations", icon: MapPin, group: "inventory" },
+  { key: "alerts", path: "/alerts", icon: Bell, group: "planning" },
+  { key: "agenda", path: "/agenda", icon: CalendarClock, group: "planning" },
   {
     key: "insurance",
     path: "/insurance",
     icon: Umbrella,
     feature: "insurance",
+    group: "planning",
   },
   {
     key: "wishlist",
     path: "/wishlist",
     icon: Gift,
     feature: "wishlist",
+    group: "planning",
   },
-  { key: "reports", path: "/reports", icon: FileText, feature: "reports" },
+  {
+    key: "reports",
+    path: "/reports",
+    icon: FileText,
+    feature: "reports",
+    group: "insights",
+  },
   {
     key: "analytics",
     path: "/analytics",
     icon: TrendingUp,
     feature: "analytics",
+    group: "insights",
   },
   {
     key: "locationValue",
     path: "/locations/value",
     icon: MapPinned,
     feature: "analytics",
+    group: "insights",
   },
-  { key: "sharing", path: "/sharing", icon: Share2, requires: "share" },
+  {
+    key: "sharing",
+    path: "/sharing",
+    icon: Share2,
+    requires: "share",
+    group: "collaborate",
+  },
   {
     key: "transfers",
     path: "/transfers",
     icon: ArrowRightLeft,
     requires: "share",
+    group: "collaborate",
   },
   {
     key: "messages",
     path: "/messages",
     icon: MessagesSquare,
     feature: "messaging",
+    group: "collaborate",
   },
-  { key: "admin", path: "/admin", icon: Settings, requires: "admin" },
+  {
+    key: "admin",
+    path: "/admin",
+    icon: Settings,
+    requires: "admin",
+    group: "admin",
+  },
 ];
+
+/** The visible items bucketed by group, in NAV_GROUPS order, with empty
+ *  groups dropped (a USER has nothing under "collaborate" or "admin"). */
+export function groupedNavItems(
+  items: NavItem[]
+): Array<{ group: NavGroup; items: NavItem[] }> {
+  return NAV_GROUPS.map((group) => ({
+    group,
+    items: items.filter((i) => i.group === group),
+  })).filter((g) => g.items.length > 0);
+}
 
 export function visibleNavItems(
   role: string | null,
