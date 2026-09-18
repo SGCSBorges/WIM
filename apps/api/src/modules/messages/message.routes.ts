@@ -14,6 +14,8 @@ import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { idParam } from "../common/schemas";
 import { EmailService } from "../email/email.service";
+import { emailTranslator } from "../email/email.i18n";
+import { recipientLanguage } from "../email/recipient-language";
 import { TransferService } from "../articles/transfer.service";
 import { MessageService } from "./message.service";
 import {
@@ -72,10 +74,17 @@ router.post(
     );
 
     if (result.ownerEmail) {
+      const lang = await recipientLanguage(result.ownerEmail);
+      const t = emailTranslator(lang);
       void EmailService.sendReminderEmail({
         to: result.ownerEmail,
-        subject: `WIM: New message about "${result.articleNom}"`,
-        body: `${result.senderEmail ?? "A Power User"} sent you a message about your shared item "${result.articleNom}":\n\n"${preview(body)}"\n\nOpen WIM to reply.`,
+        lang,
+        subject: t("message.new.subject", { name: result.articleNom }),
+        body: t("message.new.body", {
+          sender: result.senderEmail ?? t("powerUser"),
+          name: result.articleNom,
+          preview: preview(body),
+        }),
         path: `/messages?thread=${result.threadId}`,
       });
     }
@@ -121,10 +130,17 @@ router.post(
     // Only ping the recipient when they were caught up — otherwise they
     // already have an unread email for this thread and a second is just noise.
     if (result.notifyRecipient && result.recipientEmail) {
+      const lang = await recipientLanguage(result.recipientEmail);
+      const t = emailTranslator(lang);
       void EmailService.sendReminderEmail({
         to: result.recipientEmail,
-        subject: `WIM: New message about "${result.articleNom}"`,
-        body: `${result.senderEmail} replied about "${result.articleNom}":\n\n"${preview(body)}"\n\nOpen WIM to continue the conversation.`,
+        lang,
+        subject: t("message.new.subject", { name: result.articleNom }),
+        body: t("message.reply.body", {
+          sender: result.senderEmail,
+          name: result.articleNom,
+          preview: preview(body),
+        }),
         path: `/messages?thread=${id}`,
       });
     }
@@ -153,10 +169,17 @@ router.post(
     const result = await MessageService.makeOffer(id, req.user!.sub, amount);
 
     if (result.ownerEmail) {
+      const lang = await recipientLanguage(result.ownerEmail);
+      const t = emailTranslator(lang);
       void EmailService.sendReminderEmail({
         to: result.ownerEmail,
-        subject: `WIM: New offer on "${result.articleNom}"`,
-        body: `${result.senderEmail ?? "A Power User"} offered ${amount} for your item "${result.articleNom}".\n\nOpen WIM to accept or decline.`,
+        lang,
+        subject: t("offer.subject", { name: result.articleNom }),
+        body: t("offer.body", {
+          sender: result.senderEmail ?? t("powerUser"),
+          amount: String(amount),
+          name: result.articleNom,
+        }),
         path: `/messages?thread=${id}`,
       });
     }
@@ -209,10 +232,16 @@ router.post(
       throw err;
     }
 
+    const lang = await recipientLanguage(offer.requesterEmail);
+    const t = emailTranslator(lang);
     void EmailService.sendReminderEmail({
       to: offer.requesterEmail,
-      subject: `WIM: Offer accepted on "${offer.articleNom}"`,
-      body: `Your offer on "${offer.articleNom}" was accepted. Complete the transfer to your inventory.\n\nUse token: ${transfer.token}\n\nThis transfer expires in 7 days.`,
+      lang,
+      subject: t("offerAccepted.subject", { name: offer.articleNom }),
+      body: t("offerAccepted.body", {
+        name: offer.articleNom,
+        token: transfer.token,
+      }),
       path: `/transfers?token=${transfer.token}`,
     });
 

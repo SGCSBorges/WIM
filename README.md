@@ -62,20 +62,50 @@ Set `VITE_API_BASE_URL=http://localhost:3000/api` in `apps/web/.env.local` so th
 
 ### Required environment variables (API)
 
+Only `JWT_SECRET` and `DATABASE_URL` are hard requirements — the API exits at
+boot without them (`utils/validate-env.ts`). The rest of this table is
+validated with a **warning** in production: the process still starts, but the
+named feature is broken until the variable is set.
+
 | Variable | Description |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
 | `JWT_SECRET` | Signing secret (min 32 chars, random). App exits at boot if missing. |
-| `REDIS_URL` | `redis://host:port` — used for the JWT denylist + BullMQ |
-| `CORS_ORIGIN` | Allowed web origin, no trailing slash. Comma-list OK. |
-| `APP_URL` | Public web origin used for Stripe redirect URLs. **Single origin**, no trailing slash. |
+| `REDIS_URL` | `redis://` / `rediss://` URL or `host:port` — JWT denylist + BullMQ queues. Falls back to `REDIS_HOST`/`REDIS_PORT` (default `127.0.0.1:6379`); `REDIS_TLS=true` forces TLS (Upstash and most managed Redis) |
+| `CORS_ORIGIN` | Allowed web origin, no trailing slash. Comma-list OK. Production rejects every cross-origin request when unset. |
+| `APP_URL` | Public web origin used for Stripe redirect URLs and email links. **Single origin**, no trailing slash. Billing falls back to Render's `RENDER_EXTERNAL_URL` when unset. |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Stripe API key + webhook signing secret (required for billing; warn-only in dev) |
 
 ### Optional environment variables (API)
 
-| `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (+ optional `S3_REGION`, default `auto`) | Object storage for uploads (Cloudflare R2 / S3 / MinIO). **Strongly recommended in production** — without it files live on the ephemeral disk and are lost on every deploy. The API keeps serving bytes itself through the ACL'd `/uploads/*` route (never presigned URLs). |
-
 | Variable | Description |
 |---|---|
+| `PORT` | API port (default `3000`) |
+| `NODE_ENV` | `production` turns on secure cookies, strict CORS and the production warnings above |
+| `LOG_LEVEL` | pino level (default `info`) |
+| `STRIPE_POWER_USER_PRICE_MONTHLY` | `price_…` for monthly POWER_USER subscription |
+| `STRIPE_POWER_USER_PRICE_YEARLY`  | `price_…` for yearly POWER_USER subscription |
+| `STRIPE_WEBHOOK_MAX_AGE_SEC` | Drop webhook events older than this (default `300`) — replay guard |
+| `RATE_LIMIT_WINDOW_MS` | Rate-limit window (default `60000`) |
+| `RATE_LIMIT_MAX` | Max requests per window, global bucket (default `100`) |
+| `AUTH_RATE_LIMIT_MAX` | Max auth attempts per window (default `20`) |
+| `CREATE_RATE_LIMIT_MAX` | Max resource-creation requests per window (default `40`) |
+| `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (+ optional `S3_REGION`, default `auto`) | Object storage for uploads (Cloudflare R2 / S3 / MinIO). **Strongly recommended in production** — without it files live on the ephemeral disk and are lost on every deploy. The API keeps serving bytes itself through the ACL'd `/uploads/*` route (never presigned URLs). |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Web Push keys (+ `mailto:` contact, default `mailto:admin@wim.app`). Without the keys every push is a logged no-op. |
+| `RESEND_API_KEY` / `MAIL_FROM` | Transactional email via Resend (reminders, weekly digest, password reset, email verification, transfer/share/message notifications). Without both, every send is a logged no-op. Copy is written in the recipient's `User.language` (en/fr/pt/es/nl), English by default. |
+| `JOBS_ENABLED` | `false` skips the BullMQ workers and the Redis dependency (handy for tests / a stateless API replica). `DISABLE_WORKERS=1` is the older equivalent. |
+| `WARRANTY_DIGEST_ENABLED` | `false` turns off the weekly expiring-warranties email (default on) |
+| `AUDIT_RETENTION_DAYS` | Prune `AuditLog` rows older than N days (default `90`; `0` keeps everything) |
+| `ARTICLE_TRASH_RETENTION_DAYS` | Purge soft-deleted articles after N days (default `30`; `0` keeps everything) |
+| `DEMO_SEED_ENABLED` | `false` disables `POST /api/auth/seed-demo` |
+| `BOOTSTRAP_SECRET` | When set, `POST /api/auth/bootstrap-admin` also requires `{ secret }` in the body; unset leaves "no ADMIN exists yet" as the only gate (logged) |
+| `MIGRATE_ATTEMPTS` / `MIGRATE_RETRY_DELAY_MS` | Retries for `prisma migrate deploy` at boot on Render (defaults `10` / `5000`) |
+
+Script-only knobs (not read by the server): `SEED`, `SEED_DEMO_RESET`,
+`SEED_DEMO_FORCE` for `scripts/seed-demo.ts`; `SMOKE_EMAIL` for
+`scripts/smoke-locations.ts`.
+
+---|---|
 | `PORT` | API port (default `3000`) |
 | `STRIPE_SECRET_KEY` | Stripe secret key (required for billing) |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |

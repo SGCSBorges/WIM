@@ -19,6 +19,7 @@ import { security } from "../../config/security";
 import { auditAction } from "../common/audit";
 import { PushService } from "../push/push.service";
 import { EmailService } from "../email/email.service";
+import { emailTranslator } from "../email/email.i18n";
 import { logger } from "../../config/logger";
 
 const router = Router();
@@ -84,7 +85,9 @@ router.post(
         articleId: true,
         articleNom: true,
         ownerUserId: true,
-        owner: { select: { email: true, emailReminders: true } },
+        owner: {
+          select: { email: true, emailReminders: true, language: true },
+        },
       },
     });
     if (!article) return res.status(404).json({ error: "Not found" });
@@ -141,10 +144,14 @@ router.post(
       logger.warn({ err }, "[found-report] push failed");
     }
     if (article.owner.emailReminders) {
+      const t = emailTranslator(article.owner.language);
       void EmailService.sendReminderEmail({
         to: article.owner.email,
-        subject: `WIM: someone found "${article.articleNom}"`,
-        body: `A finder left a message about your lost item "${article.articleNom}":\n\n${message}${contact ? `\n\nContact: ${contact}` : ""}`,
+        lang: article.owner.language,
+        subject: t("found.subject", { name: article.articleNom }),
+        body:
+          t("found.body", { name: article.articleNom, message }) +
+          (contact ? `\n\n${t("found.contact", { contact })}` : ""),
         path: `/articles/${article.articleId}`,
       });
     }

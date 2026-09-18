@@ -1299,6 +1299,41 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   until the SW updates or they reinstall. Telling them to hard-refresh
   + DevTools → Application → Service Workers → "Update" usually works.
 
+## Email + push localisation
+
+Every outbound email and push notification is written in the recipient's
+`User.language` (en/fr/pt/es/nl — validated on write by
+`profile.schemas.ts`), falling back to English for unset, legacy or
+unknown values. The copy lives in one place,
+`apps/api/src/modules/email/email.i18n.ts`: a flat key map per language,
+`{placeholder}` interpolation (single pass — a value containing braces is
+never re-expanded), and a parity test that fails when a key or a
+placeholder is missing in any language. Bind a translator per recipient
+and pass `lang` through `EmailService.sendReminderEmail` so the
+"Open in WIM" link label matches:
+
+```ts
+const t = emailTranslator(user.language);
+await EmailService.sendReminderEmail({
+  to: user.email,
+  lang: user.language,
+  subject: t("warranty.reminder.subject", { name }),
+  body: t("warranty.reminder.body", { name, date }),
+  path,
+});
+```
+
+Senders that already hold the User row select `language` alongside
+`email`. Senders that only have an address (transfer offers, household
+invites, message notifications — the recipient may not be a user yet)
+resolve it with `recipientLanguage(email)` from
+`modules/email/recipient-language.ts`, which never throws (unknown
+address, DB error or a test double without `findFirst` all mean English)
+and imports Prisma lazily so the email module carries no DB dependency.
+The reminder processor reads the recipient once and uses the same
+translator for push and email, so the two channels can't disagree. Never
+hardcode an English sentence at a call site again — add a key.
+
 ## Known gotchas
 
 - **Never re-fetch from the 401 handler.** `App.tsx` registers a

@@ -290,8 +290,6 @@ export const translations = {
     "warranties.duration": "Duration",
     "warranties.months": "months",
     "warranties.articleId": "Article ID",
-    "warranties.note":
-      "Note: to create a warranty you need an existing Article ID (for now).",
     "warranties.error.fetch": "Failed to fetch warranties",
     "warranties.error.create": "Failed to create warranty",
 
@@ -776,8 +774,6 @@ export const translations = {
     "warranties.duration": "Durée",
     "warranties.months": "mois",
     "warranties.articleId": "ID de l'article",
-    "warranties.note":
-      "Note : pour créer une garantie, vous avez besoin d'un ID d'article existant (pour l'instant).",
     "warranties.error.fetch": "Impossible de charger les garanties",
     "warranties.error.create": "Impossible de créer la garantie",
 
@@ -1261,8 +1257,6 @@ export const translations = {
     "warranties.duration": "Duração",
     "warranties.months": "meses",
     "warranties.articleId": "ID do artigo",
-    "warranties.note":
-      "Nota: para criar uma garantia precisa de um ID de Artigo existente (por agora).",
     "warranties.error.fetch": "Falha ao obter garantias",
     "warranties.error.create": "Falha ao criar garantia",
 
@@ -1751,8 +1745,6 @@ export const translations = {
     "warranties.duration": "Duración",
     "warranties.months": "meses",
     "warranties.articleId": "ID del artículo",
-    "warranties.note":
-      "Nota: para crear una garantía necesitas un ID de artículo existente (por ahora).",
     "warranties.error.fetch": "No se pudieron obtener las garantías",
     "warranties.error.create": "No se pudo crear la garantía",
 
@@ -2244,8 +2236,6 @@ export const translations = {
     "warranties.duration": "Duur",
     "warranties.months": "maanden",
     "warranties.articleId": "Artikel-ID",
-    "warranties.note":
-      "Opmerking: om een garantie aan te maken heb je (voorlopig) een bestaand artikel-ID nodig.",
     "warranties.error.fetch": "Ophalen van garanties mislukt",
     "warranties.error.create": "Aanmaken van garantie mislukt",
 

@@ -12,27 +12,51 @@ import { AlertJobPayload } from "../../modules/alerts/alert.types";
 import { AlertService } from "../../modules/alerts/alert.service";
 import { PushService } from "../../modules/push/push.service";
 import { EmailService } from "../../modules/email/email.service";
+import {
+  emailTranslator,
+  type EmailTranslator,
+} from "../../modules/email/email.i18n";
 
 function shortDate(d: Date | null | undefined): string {
   return d ? new Date(d).toISOString().slice(0, 10) : "";
+}
+
+type Recipient = {
+  email: string;
+  emailReminders: boolean;
+  language?: string | null;
+};
+
+// The recipient's address, opt-in and language, read once per job so push
+// and email speak the same language. Never throws: a failed read means
+// English copy and no email — the push still goes out. (try/await rather
+// than `.catch()`, so a client that returns a non-promise can't throw.)
+async function loadRecipient(ownerUserId: number): Promise<Recipient | null> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { userId: ownerUserId },
+      select: { email: true, emailReminders: true, language: true },
+    });
+    return user ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // Best-effort email delivery alongside push. No-op when email isn't
 // configured or the user opted out; never throws so it can't re-fail a job
 // whose alert is already marked sent.
 async function emailReminder(
-  ownerUserId: number,
+  user: Recipient | null,
   msg: { subject: string; body: string; path?: string }
 ): Promise<void> {
   if (!EmailService.isConfigured()) return;
-  const user = await prisma.user
-    .findUnique({
-      where: { userId: ownerUserId },
-      select: { email: true, emailReminders: true },
-    })
-    .catch(() => null);
   if (!user || !user.emailReminders) return;
-  await EmailService.sendReminderEmail({ to: user.email, ...msg });
+  await EmailService.sendReminderEmail({
+    to: user.email,
+    lang: user.language,
+    ...msg,
+  });
 }
 
 export const ReminderProcessor = {
@@ -115,23 +139,26 @@ export const ReminderProcessor = {
       // new owner never gets the reminder at all. handleCustom already reads
       // the row for exactly this reason.
       const recipientUserId = alerte.ownerUserId;
+      const recipient = await loadRecipient(recipientUserId);
+      const t: EmailTranslator = emailTranslator(recipient?.language);
 
       // Deliver BEFORE markSent so a failed push (e.g., transient VAPID error)
       // causes BullMQ to retry instead of marking the alert sent and dropping
       // the notification on the floor. Push is the canonical channel; if it
       // throws, the catch below records markFailed + rethrows for retry.
+      const vars = { name: g.garantieNom, date: shortDate(g.garantieFin) };
       await PushService.sendToUser(recipientUserId, {
-        title: `Warranty reminder: ${g.garantieNom}`,
-        body: `Warranty expires ${shortDate(g.garantieFin)}.`,
+        title: t("warranty.reminder.subject", vars),
+        body: t("warranty.reminder.push", vars),
         url: path,
       });
 
       // Email is best-effort and never throws (see emailReminder above), so
       // we don't gate markSent on it — a failed SMTP doesn't justify a
       // duplicate push on retry.
-      await emailReminder(recipientUserId, {
-        subject: `Warranty reminder: ${g.garantieNom}`,
-        body: `Warranty "${g.garantieNom}" expires ${shortDate(g.garantieFin)}.`,
+      await emailReminder(recipient, {
+        subject: t("warranty.reminder.subject", vars),
+        body: t("warranty.reminder.body", vars),
         path,
       });
 
@@ -178,6 +205,8 @@ export const ReminderProcessor = {
       const path = alerte.alerteArticleId
         ? `/articles/${alerte.alerteArticleId}`
         : "/alerts";
+      const recipient = await loadRecipient(alerte.ownerUserId);
+      const t: EmailTranslator = emailTranslator(recipient?.language);
 
       // Default to the row's own copy (genuine CUSTOM alerts). A *snoozed
       // warranty* reminder is re-enqueued as a custom job (snooze re-keys every
@@ -186,15 +215,16 @@ export const ReminderProcessor = {
       // the raw label ("Warranty reminder J-30") + a misleading
       // "Maintenance reminder." body.
       let title = alerte.alerteNom;
-      let body = alerte.alerteDescription ?? "Maintenance reminder.";
+      let body = alerte.alerteDescription ?? t("custom.defaultBody");
       if (alerte.kind === "WARRANTY" && alerte.alerteGarantieId) {
         const g = await prisma.garantie.findUnique({
           where: { garantieId: alerte.alerteGarantieId },
           select: { garantieNom: true, garantieFin: true },
         });
         if (g) {
-          title = `Warranty reminder: ${g.garantieNom}`;
-          body = `Warranty expires ${shortDate(g.garantieFin)}.`;
+          const vars = { name: g.garantieNom, date: shortDate(g.garantieFin) };
+          title = t("warranty.reminder.subject", vars);
+          body = t("warranty.reminder.push", vars);
         }
       }
 
@@ -205,7 +235,7 @@ export const ReminderProcessor = {
         body,
         url: path,
       });
-      await emailReminder(alerte.ownerUserId, { subject: title, body, path });
+      await emailReminder(recipient, { subject: title, body, path });
 
       await AlertService.markSent(alerteId);
 

@@ -11,6 +11,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { EmailService } from "../email/email.service";
+import { emailTranslator } from "../email/email.i18n";
 import { createHttpError } from "../../utils/http-error";
 
 // 30 minutes is short enough that a leaked email link can't be replayed
@@ -33,7 +34,10 @@ export const PasswordResetService = {
    */
   async request(email: string): Promise<void> {
     const user = await prisma.user
-      .findUnique({ where: { email }, select: { userId: true, email: true } })
+      .findUnique({
+        where: { email },
+        select: { userId: true, email: true, language: true },
+      })
       .catch(() => null);
     if (!user) {
       // Avoid email enumeration: silently no-op for unknown addresses.
@@ -60,10 +64,12 @@ export const PasswordResetService = {
       return;
     }
 
+    const t = emailTranslator(user.language);
     await EmailService.sendReminderEmail({
       to: user.email,
-      subject: "Reset your WIM password",
-      body: "Someone (hopefully you) requested a password reset. Click the link below within 30 minutes to set a new password. If you didn't ask for this, ignore this message — your account is unchanged.",
+      lang: user.language,
+      subject: t("passwordReset.subject"),
+      body: t("passwordReset.body"),
       path: `/auth/reset?token=${token}`,
     });
   },

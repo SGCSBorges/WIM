@@ -5,6 +5,7 @@
  * logged so an email failure never re-fails the calling job.
  */
 import { logger } from "../../config/logger";
+import { emailT, normalizeEmailLang } from "./email.i18n";
 
 // Transactional email via Resend's REST API (no SDK dependency — a single
 // HTTPS POST). Mirrors PushService: a no-op that logs when the key/sender
@@ -23,6 +24,9 @@ export type ReminderEmail = {
   body: string;
   // Optional in-app path (e.g. "/articles/5") rendered as a link.
   path?: string;
+  // Recipient's language (User.language); only the link label is built
+  // here — subject/body arrive already localised by the caller.
+  lang?: string | null;
 };
 
 function escapeHtml(s: string): string {
@@ -40,9 +44,10 @@ export const EmailService = {
   sendReminderEmail: async (msg: ReminderEmail): Promise<void> => {
     if (!configured) return;
 
+    const openLabel = emailT(normalizeEmailLang(msg.lang), "openInApp");
     const link =
       msg.path && APP_URL
-        ? `<p><a href="${escapeHtml(APP_URL + msg.path)}">Open in WIM</a></p>`
+        ? `<p><a href="${escapeHtml(APP_URL + msg.path)}">${escapeHtml(openLabel)}</a></p>`
         : "";
     const html = `<div><p>${escapeHtml(msg.body)}</p>${link}</div>`;
 

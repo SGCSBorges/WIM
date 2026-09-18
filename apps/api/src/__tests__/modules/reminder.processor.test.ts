@@ -32,6 +32,7 @@ vi.mock("../../config/logger", () => ({
 }));
 
 import { prisma } from "../../libs/prisma";
+import { EmailService } from "../../modules/email/email.service";
 import { AlertService } from "../../modules/alerts/alert.service";
 import { PushService } from "../../modules/push/push.service";
 import { ReminderProcessor } from "../../jobs/processors/reminder.processor";
@@ -43,6 +44,7 @@ const push = PushService as unknown as {
 const mockPrisma = prisma as unknown as {
   garantie: { findUnique: ReturnType<typeof vi.fn> };
   alerte: { findUnique: ReturnType<typeof vi.fn> };
+  user: { findUnique: ReturnType<typeof vi.fn> };
 };
 const svc = AlertService as unknown as {
   markSent: ReturnType<typeof vi.fn>;
@@ -367,5 +369,80 @@ describe("ReminderProcessor", () => {
       })
     );
     expect(svc.markSent).not.toHaveBeenCalled();
+  });
+
+  // Push and email copy follow User.language; both channels read the same
+  // recipient row once, so they can never disagree with each other.
+  it("localises push + email to the owner's language", async () => {
+    const email = EmailService as unknown as {
+      isConfigured: ReturnType<typeof vi.fn>;
+      sendReminderEmail: ReturnType<typeof vi.fn>;
+    };
+    email.isConfigured.mockReturnValue(true);
+    mockPrisma.garantie.findUnique.mockResolvedValue({
+      garantieId: 5,
+      garantieNom: "AppleCare",
+      garantieFin: new Date("2027-01-31T00:00:00Z"),
+    });
+    mockPrisma.alerte.findUnique.mockResolvedValue({
+      status: "SCHEDULED",
+      ownerUserId: 1,
+    });
+    mockPrisma.user.findUnique.mockResolvedValue({
+      email: "marie@x.fr",
+      emailReminders: true,
+      language: "fr",
+    });
+    await ReminderProcessor.handle(
+      job({
+        type: "warranty_reminder",
+        ownerUserId: 1,
+        garantieId: 5,
+        reminderKind: "J30",
+        executeAt: new Date().toISOString(),
+        alerteId: 9,
+      })
+    );
+    expect(push.sendToUser).toHaveBeenCalledWith(1, {
+      title: "Rappel de garantie : AppleCare",
+      body: "La garantie expire le 2027-01-31.",
+      url: "/alerts",
+    });
+    expect(email.sendReminderEmail).toHaveBeenCalledWith({
+      to: "marie@x.fr",
+      lang: "fr",
+      subject: "Rappel de garantie : AppleCare",
+      body: "La garantie « AppleCare » expire le 2027-01-31.",
+      path: "/alerts",
+    });
+  });
+
+  it("falls back to English copy when the recipient row can't be read", async () => {
+    mockPrisma.garantie.findUnique.mockResolvedValue({
+      garantieId: 5,
+      garantieNom: "W",
+      garantieFin: new Date("2027-01-31T00:00:00Z"),
+    });
+    mockPrisma.alerte.findUnique.mockResolvedValue({
+      status: "SCHEDULED",
+      ownerUserId: 1,
+    });
+    mockPrisma.user.findUnique.mockRejectedValue(new Error("db down"));
+    await ReminderProcessor.handle(
+      job({
+        type: "warranty_reminder",
+        ownerUserId: 1,
+        garantieId: 5,
+        reminderKind: "J30",
+        executeAt: new Date().toISOString(),
+        alerteId: 9,
+      })
+    );
+    // The push still goes out, in English, and the alert is marked sent.
+    expect(push.sendToUser).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ title: "Warranty reminder: W" })
+    );
+    expect(svc.markSent).toHaveBeenCalledWith(9);
   });
 });

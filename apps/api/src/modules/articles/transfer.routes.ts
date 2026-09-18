@@ -5,6 +5,8 @@ import { requireFeature } from "../features/feature.service";
 import { TransferService } from "./transfer.service";
 import { auditAction } from "../common/audit";
 import { EmailService } from "../email/email.service";
+import { emailTranslator } from "../email/email.i18n";
+import { recipientLanguage } from "../email/recipient-language";
 import { prisma } from "../../libs/prisma";
 import { idParam } from "../common/schemas";
 
@@ -41,10 +43,19 @@ router.post(
         where: { articleId },
         select: { articleNom: true },
       });
+      // The recipient may not be a user yet; falls back to English.
+      const lang = await recipientLanguage(email);
+      const t = emailTranslator(lang);
       void EmailService.sendReminderEmail({
         to: email,
-        subject: `WIM: Article transfer request — ${article?.articleNom ?? "an article"}`,
-        body: `Someone has offered to transfer an article to your WIM inventory.\n\nArticle: ${article?.articleNom ?? "Article"}\n\nUse token: ${transfer.token}\n\nThis offer expires in 7 days.`,
+        lang,
+        subject: t("transfer.push.subject", {
+          name: article?.articleNom ?? t("transfer.anArticle"),
+        }),
+        body: t("transfer.push.body", {
+          name: article?.articleNom ?? t("transfer.article"),
+          token: transfer.token,
+        }),
         path: `/transfers?token=${transfer.token}`,
       });
 
@@ -86,7 +97,7 @@ router.post(
         }),
         prisma.user.findUnique({
           where: { userId: transfer.ownerId },
-          select: { email: true },
+          select: { email: true, language: true },
         }),
         prisma.user.findUnique({
           where: { userId: requesterId },
@@ -94,10 +105,18 @@ router.post(
         }),
       ]);
       if (owner?.email) {
+        const t = emailTranslator(owner.language);
         void EmailService.sendReminderEmail({
           to: owner.email,
-          subject: `WIM: Transfer request for "${article?.articleNom ?? "your article"}"`,
-          body: `${requesterUser?.email ?? "A Power User"} has requested to take ownership of your article.\n\nArticle: ${article?.articleNom ?? "Article"}\n\nUse token: ${transfer.token} to accept or reject from your WIM app.\n\nThis request expires in 7 days.`,
+          lang: owner.language,
+          subject: t("transfer.pull.subject", {
+            name: article?.articleNom ?? t("transfer.yourArticle"),
+          }),
+          body: t("transfer.pull.body", {
+            requester: requesterUser?.email ?? t("powerUser"),
+            name: article?.articleNom ?? t("transfer.article"),
+            token: transfer.token,
+          }),
           path: `/transfers?token=${transfer.token}`,
         });
       }

@@ -14,6 +14,7 @@ import { randomBytes, createHash } from "crypto";
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { EmailService } from "../email/email.service";
+import { emailTranslator } from "../email/email.i18n";
 import { createHttpError } from "../../utils/http-error";
 
 // Generous window — this is an ownership proof, not a credential reset.
@@ -33,7 +34,12 @@ export const EmailVerificationService = {
     try {
       const user = await prisma.user.findUnique({
         where: { userId },
-        select: { userId: true, email: true, emailVerifiedAt: true },
+        select: {
+          userId: true,
+          email: true,
+          emailVerifiedAt: true,
+          language: true,
+        },
       });
       if (!user || user.emailVerifiedAt) return;
 
@@ -54,10 +60,12 @@ export const EmailVerificationService = {
         return;
       }
 
+      const t = emailTranslator(user.language);
       await EmailService.sendReminderEmail({
         to: user.email,
-        subject: "Verify your WIM email address",
-        body: "Confirm this is your email address by clicking the link below. This keeps transfer and sharing notifications deliverable to you. The link is valid for 3 days.",
+        lang: user.language,
+        subject: t("verifyEmail.subject"),
+        body: t("verifyEmail.body"),
         path: `/verify-email?token=${token}`,
       });
     } catch (err) {

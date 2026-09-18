@@ -88,11 +88,22 @@ Définissez `VITE_API_BASE_URL=http://localhost:3000/api` dans
 | Variable | Description |
 |---|---|
 | `PORT` | Port de l'API (défaut `3000`) |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Facturation Stripe |
+| `NODE_ENV` | `production` active les cookies sécurisés, le CORS strict et les avertissements de démarrage |
+| `LOG_LEVEL` | Niveau pino (défaut `info`) |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Facturation Stripe (requis en production, avertissement seul en dev) |
 | `STRIPE_POWER_USER_PRICE_MONTHLY` / `_YEARLY` | ID de prix `price_…` de l'abonnement POWER_USER |
-| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Fenêtre et plafond de limitation de débit (défauts `60000` / `100`) |
-| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` | Web Push (sinon, les envois push sont des no-op journalisés) |
-| `RESEND_API_KEY` / `MAIL_FROM` | E-mails de rappel via Resend (sinon no-op) |
+| `STRIPE_WEBHOOK_MAX_AGE_SEC` | Rejette les événements webhook plus vieux que N secondes (défaut `300`) |
+| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Fenêtre et plafond global de limitation de débit (défauts `60000` / `100`) |
+| `AUTH_RATE_LIMIT_MAX` / `CREATE_RATE_LIMIT_MAX` | Plafonds des routes d'authentification et de création (défauts `20` / `40`) |
+| `REDIS_HOST` / `REDIS_PORT` / `REDIS_TLS` | Repli quand `REDIS_URL` est absent (défaut `127.0.0.1:6379`) ; `REDIS_TLS=true` force TLS |
+| `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (+ `S3_REGION`) | Stockage objet des pièces jointes (R2 / S3 / MinIO) — fortement recommandé en production, sinon disque éphémère |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Web Push (sinon, les envois push sont des no-op journalisés) |
+| `RESEND_API_KEY` / `MAIL_FROM` | E-mails transactionnels via Resend — rappels, récapitulatif hebdomadaire, réinitialisation, vérification, notifications de transfert/partage/messagerie (sinon no-op). Rédigés dans la langue du destinataire (`User.language`, en/fr/pt/es/nl ; anglais par défaut). |
+| `JOBS_ENABLED` | `false` désactive les workers BullMQ et la dépendance Redis |
+| `WARRANTY_DIGEST_ENABLED` | `false` coupe l'e-mail hebdomadaire des garanties qui expirent |
+| `AUDIT_RETENTION_DAYS` / `ARTICLE_TRASH_RETENTION_DAYS` | Rétention du journal d'audit et de la corbeille (défauts `90` / `30` jours ; `0` conserve tout) |
+| `DEMO_SEED_ENABLED` | `false` désactive `POST /api/auth/seed-demo` |
+| `BOOTSTRAP_SECRET` | S'il est défini, `POST /api/auth/bootstrap-admin` exige aussi `{ secret }` dans le corps |
 
 ---
 

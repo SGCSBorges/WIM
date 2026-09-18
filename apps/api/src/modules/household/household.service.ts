@@ -27,6 +27,8 @@ import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { roleAtLeast } from "../common/roles";
 import { EmailService } from "../email/email.service";
+import { emailTranslator } from "../email/email.i18n";
+import { recipientLanguage } from "../email/recipient-language";
 
 type Db = Prisma.TransactionClient | typeof prisma;
 
@@ -230,10 +232,17 @@ export const HouseholdService = {
       },
     });
 
+    // Invitees are Power Users already, so they normally have a language;
+    // an unknown address just gets English.
+    const lang = await recipientLanguage(email);
+    const t = emailTranslator(lang);
     void EmailService.sendReminderEmail({
       to: email,
-      subject: `WIM: you've been invited to the "${membership.household.name}" household`,
-      body: `A WIM Power User invited you to join their household — you'll see and manage each other's inventories. Open the link below to accept. The invite expires in 7 days.`,
+      lang,
+      subject: t("household.invite.subject", {
+        name: membership.household.name,
+      }),
+      body: t("household.invite.body"),
       path: `/sharing?householdToken=${token}`,
     });
 

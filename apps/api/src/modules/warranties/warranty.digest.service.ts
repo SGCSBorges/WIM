@@ -8,6 +8,7 @@
 import { prisma } from "../../libs/prisma";
 import { logger } from "../../config/logger";
 import { EmailService } from "../email/email.service";
+import { emailTranslator } from "../email/email.i18n";
 
 // Window of upcoming expirations included in the weekly digest. Matches the
 // existing "expiringSoon" notion the dashboard already surfaces (30 days).
@@ -58,6 +59,7 @@ export const WarrantyDigestService = {
       select: {
         userId: true,
         email: true,
+        language: true,
         warrantiesOwned: {
           where: {
             garantieFin: { gte: now, lte: cutoff },
@@ -78,20 +80,24 @@ export const WarrantyDigestService = {
     let emailsAttempted = 0;
     for (const u of users) {
       if (u.warrantiesOwned.length === 0) continue;
+      const t = emailTranslator(u.language);
       const lines = u.warrantiesOwned
-        .map((g) => {
-          const articleName = g.article?.articleNom ?? "(article gone)";
-          return `• ${articleName} — ${g.garantieNom} — expires ${fmtDate(
-            new Date(g.garantieFin)
-          )}`;
-        })
+        .map((g) =>
+          t("digest.line", {
+            article: g.article?.articleNom ?? t("digest.articleGone"),
+            warranty: g.garantieNom,
+            date: fmtDate(new Date(g.garantieFin)),
+          })
+        )
         .join("\n");
-      const body = `You have ${u.warrantiesOwned.length} warranty(ies) expiring in the next ${WINDOW_DAYS} days:\n\n${lines}`;
+      const count = u.warrantiesOwned.length;
+      const body = t("digest.body", { count, days: WINDOW_DAYS, lines });
       try {
         emailsAttempted++;
         await EmailService.sendReminderEmail({
           to: u.email,
-          subject: `Warranty digest — ${u.warrantiesOwned.length} expiring soon`,
+          lang: u.language,
+          subject: t("digest.subject", { count }),
           body,
           path: "/dashboard",
         });

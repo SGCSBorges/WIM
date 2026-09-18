@@ -98,4 +98,35 @@ describe("WarrantyDigestService.sendWeeklyDigests", () => {
     expect(range.gte).toEqual(now);
     expect(range.lte.getTime()).toBe(expectedCutoff.getTime());
   });
+
+  it("writes the digest in the user's language", async () => {
+    mockEmail.isConfigured.mockReturnValue(true);
+    mockEmail.sendReminderEmail.mockResolvedValue(undefined);
+    mockPrisma.user.findMany.mockResolvedValue([
+      {
+        userId: 2,
+        email: "joao@x.pt",
+        language: "pt",
+        warrantiesOwned: [
+          {
+            garantieNom: "AppleCare",
+            garantieFin: new Date("2026-06-30T00:00:00Z"),
+            article: { articleId: 9, articleNom: "Portátil" },
+          },
+        ],
+      },
+    ]);
+
+    await WarrantyDigestService.sendWeeklyDigests(
+      new Date("2026-06-01T00:00:00Z")
+    );
+
+    const arg = mockEmail.sendReminderEmail.mock.calls[0][0];
+    expect(arg.lang).toBe("pt");
+    expect(arg.subject).toBe("Resumo de garantias — 1 a expirar em breve");
+    expect(arg.body).toMatch(
+      /^Tem 1 garantia\(s\) a expirar nos próximos 30 dias:/
+    );
+    expect(arg.body).toContain("• Portátil — AppleCare — expira em 2026-06-30");
+  });
 });

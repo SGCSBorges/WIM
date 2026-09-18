@@ -240,8 +240,6 @@ export default function WarrantiesView() {
           }}
         />
       )}
-
-      <p className="mt-4 text-xs ui-text-muted">{t("warranties.note")}</p>
     </div>
   );
 }
