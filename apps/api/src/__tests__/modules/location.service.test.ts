@@ -63,6 +63,52 @@ describe("LocationService.list", () => {
       { locationId: 2, totalValue: 250 },
     ]);
   });
+
+  // totalValue is a VALUE figure, so it must reflect current holdings. The
+  // _count beside it deliberately keeps SOLD/DISPOSED/LOST rows. Without the
+  // exclusion here this page and /locations/value (getLocationBreakdown,
+  // which does exclude them) disagreed the moment an item was marked sold.
+  it("excludes not-owned statuses from the value query, but not the count", async () => {
+    mockPrisma.location.findMany.mockResolvedValue([
+      { locationId: 1, name: "Home", _count: { articles: 3 } },
+    ]);
+    mockPrisma.articleLocation.findMany.mockResolvedValue([]);
+
+    await LocationService.list(1);
+
+    expect(mockPrisma.articleLocation.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          article: expect.objectContaining({
+            status: { notIn: ["SOLD", "DISPOSED", "LOST"] },
+          }),
+        }),
+      })
+    );
+    // The count must NOT be narrowed the same way — you still own the record.
+    const countArg = mockPrisma.location.findMany.mock.calls[0][0];
+    expect(JSON.stringify(countArg)).not.toContain("SOLD");
+  });
+
+  // statistics.service accumulates in integer cents so repeated float
+  // addition can't drift the dashboard totals; this surface has to match or
+  // the two disagree by fractions of a cent on long lists.
+  it("accumulates in integer cents like the dashboard does", async () => {
+    mockPrisma.location.findMany.mockResolvedValue([
+      { locationId: 1, name: "Home", _count: { articles: 3 } },
+    ]);
+    mockPrisma.articleLocation.findMany.mockResolvedValue([
+      // 0.01 + 0.14 is one of the pairs where scaling to cents as floats and
+      // adding gives 0.15000000000000002; rounding to integer cents first
+      // gives exactly 0.15. Picked by search — most 2dp pairs do NOT drift,
+      // so an arbitrary pair here would pass either way and prove nothing.
+      { locationId: 1, article: { purchasePrice: "0.01", quantity: 1 } },
+      { locationId: 1, article: { purchasePrice: "0.14", quantity: 1 } },
+    ]);
+
+    const result = await LocationService.list(1);
+    expect(result[0].totalValue).toBe(0.15);
+  });
 });
 
 // ---------------------------------------------------------------------------

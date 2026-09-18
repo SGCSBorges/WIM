@@ -471,8 +471,16 @@ intentionally rely on native validation with **no** custom field messages
 - **Value totals reflect current holdings**: `NOT_OWNED_STATUSES`
   (`SOLD`/`DISPOSED`/`LOST`) are excluded from every *value* figure — the
   dashboard inventory/current/at-risk/per-location/per-tag value
-  (`statistics.service.ts` `ownedValueScope`/`ownedArticleRelation`) and the
+  (`statistics.service.ts` `ownedValueScope`/`ownedArticleRelation`), the
+  **Locations list** `totalValue` (`location.service.ts` `list`) and the
   portfolio report — while **counts keep them** (you still have the record).
+  The Locations list is the one that drifted: it filtered only `deletedAt`,
+  so its per-location total and `/locations/value`
+  (`getLocationBreakdown`, which excludes them) disagreed the moment an item
+  was marked SOLD. Note the `_count` on the same query is deliberately NOT
+  narrowed this way — count and value follow different rules on purpose.
+  Any new value figure needs both the status exclusion and integer-cent
+  accumulation (below).
   `IN_REPAIR`/`LOANED` are still owned, so they count. Every value figure is
   `purchasePrice × quantity` (per-unit price — see Round 6); counts stay
   per-record regardless of quantity.
@@ -496,6 +504,12 @@ intentionally rely on native validation with **no** custom field messages
 - Totals use the **same `currentValue`** depreciation helper as the
   dashboard + claim PDF (`apps/api/src/modules/common/depreciation.ts`),
   so figures don't drift between surfaces.
+- **Money is accumulated in integer cents, never by adding floats.**
+  `statistics.service.ts` and `location.service.ts` both fold
+  `Math.round(price * 100) * qty` and divide by 100 at the end. Adding
+  scaled floats instead drifts: 0.01 + 0.14 comes out as 0.15000000000000002.
+  Most 2-decimal pairs do *not* drift, so a test for this has to use a pair
+  that actually does or it passes either way and proves nothing.
 - **Insurance-aware** (additive — the warranty-based "uninsured/expired"
   exposure section is unchanged): one owner-scoped `ArticleInsurance` query
   over the report's articles drives a have/lack-a-policy count on the cover,

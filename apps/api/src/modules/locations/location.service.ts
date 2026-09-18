@@ -4,6 +4,7 @@
  * limit }` and filter `article.deletedAt: null` so trashed items don't
  * appear in a location's roster.
  */
+import { NOT_OWNED_STATUSES } from "@wim/types";
 import { prisma } from "../../libs/prisma";
 import { LocationCreateInput, LocationUpdateInput } from "./location.schemas";
 import { createHttpError } from "../../utils/http-error";
@@ -70,11 +71,21 @@ export const LocationService = {
 
     const ids = locations.map((l) => l.locationId);
     // Restrict to live articles the caller owns (defence-in-depth —
-    // locations are owner-scoped above already).
+    // locations are owner-scoped above already), and drop the not-owned
+    // statuses. This is a VALUE figure, so it must reflect current holdings:
+    // the `_count` above deliberately keeps SOLD/DISPOSED/LOST rows (you
+    // still have the record) while their money must not be counted. Without
+    // the exclusion this page and `/locations/value`
+    // (`getLocationBreakdown`, which does exclude them) reported different
+    // totals for the same location the moment an item was marked sold.
     const rows = await prisma.articleLocation.findMany({
       where: {
         locationId: { in: ids },
-        article: { ownerUserId, deletedAt: null },
+        article: {
+          ownerUserId,
+          deletedAt: null,
+          status: { notIn: NOT_OWNED_STATUSES },
+        },
       },
       select: {
         locationId: true,
@@ -82,18 +93,21 @@ export const LocationService = {
       },
     });
 
-    const sums = new Map<number, number>();
+    // Accumulate in integer cents, like statistics.service does, so repeated
+    // float addition can't drift this total away from the dashboard's.
+    const cents = new Map<number, number>();
     for (const r of rows) {
       // Line value: per-unit price × quantity.
-      const price = r.article.purchasePrice
-        ? Number(r.article.purchasePrice) * Math.max(1, r.article.quantity ?? 1)
+      const c = r.article.purchasePrice
+        ? Math.round(Number(r.article.purchasePrice) * 100) *
+          Math.max(1, r.article.quantity ?? 1)
         : 0;
-      sums.set(r.locationId, (sums.get(r.locationId) ?? 0) + price);
+      cents.set(r.locationId, (cents.get(r.locationId) ?? 0) + c);
     }
 
     return locations.map((l) => ({
       ...l,
-      totalValue: sums.get(l.locationId) ?? 0,
+      totalValue: (cents.get(l.locationId) ?? 0) / 100,
     }));
   },
 
