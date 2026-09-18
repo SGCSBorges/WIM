@@ -11,11 +11,9 @@
  * calendar, push, billing, profile, admin (incl. the audit log), statistics,
  * reports, features, loans, insurance, maintenance, wishlist, household,
  * the public item page (incl. the lost-and-found report), and the meta
- * endpoints — but NOT exhaustively. Around three dozen mounted routes have
- * no entry here, among them the whole TOTP setup flow, session management,
- * warranty renew/extend/history and the agenda. The exact list is the
- * UNDOCUMENTED set in `__tests__/openapi.coverage.test.ts`, which fails if a
- * NEW route is added without an entry, so the gap can shrink but not grow.
+ * endpoints — exhaustively: `__tests__/openapi.coverage.test.ts` reads every
+ * `router.<verb>()` the app mounts and fails when one has no entry here.
+ * Its UNDOCUMENTED allowlist is empty; keep it that way.
  */
 
 import { z } from "zod";
@@ -2343,6 +2341,430 @@ export function buildOpenApiDocument() {
             "Last failed jobs across both queues (cap 50) — ADMIN. Powers the Jobs tab's 'Recent failures' expander.",
           security: [cookieAuth],
           responses: { "200": { description: "{ items: FailedJob[] }" } },
+        },
+      },
+
+      // ---- Previously undocumented routes (the coverage test now requires
+      // every mounted route to appear here). ----
+      "/api/openapi.json": {
+        get: {
+          tags: ["meta"],
+          summary:
+            "This document, as JSON (the Swagger UI at /api/docs reads it).",
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/auth/bootstrap-admin": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "One-shot promotion of the seed admin email when no ADMIN exists yet; requires { secret } when BOOTSTRAP_SECRET is set.",
+          responses: { "200": { description: "Promoted (idempotent)" } },
+        },
+      },
+      "/api/auth/forgot-password": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Request a password-reset email ({ email }). Uniform 204 — never reveals whether the address exists.",
+          responses: { "204": { description: "Accepted" } },
+        },
+      },
+      "/api/auth/reset-password": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Consume an emailed reset token and set a new password ({ token, newPassword }); bumps tokenVersion so older sessions die.",
+          responses: { "204": { description: "Password changed" } },
+        },
+      },
+      "/api/auth/login/verify-totp": {
+        post: {
+          tags: ["auth"],
+          summary:
+            "Second step of a TOTP-protected login: { challengeToken, code } (or a backup code) → session cookie + UserSession row.",
+          responses: { "200": { description: "Signed in" } },
+        },
+      },
+      "/api/articles/bundles": {
+        get: {
+          tags: ["articles"],
+          summary:
+            "Distinct bundle labels the caller has used ({ items: string[] }) for the form datalist and filter.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/articles/shared-public": {
+        get: {
+          tags: ["articles"],
+          summary:
+            "The caller's articles currently shared with every Power User (sharing feature).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/articles/unshare-all": {
+        post: {
+          tags: ["articles"],
+          summary:
+            "Kill switch: unshare every publicly-shared article the caller owns (sharing feature).",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ count }" } },
+        },
+      },
+      "/api/articles/bulk-update": {
+        post: {
+          tags: ["articles"],
+          summary:
+            "Bulk-edit scalar/enum fields on many articles ({ ids, ...fields }); null clears nullable fields (bulk_edit feature).",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ count }" } },
+        },
+      },
+      "/api/articles/{id}/favorite": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["articles"],
+          summary: "Pin or unpin a favourite ({ favorite: boolean }).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated article" } },
+        },
+      },
+      "/api/attachments/warranty/{garantieId}": {
+        parameters: [
+          {
+            name: "garantieId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["attachments"],
+          summary: "Attachments linked to one warranty (claim evidence).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/alerts/notifications": {
+        get: {
+          tags: ["alerts"],
+          summary:
+            "Notification-bell feed: overdue and due-soon scheduled alerts plus the unseen count (notifications feature).",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ items, unseen }" } },
+        },
+      },
+      "/api/alerts/mark-seen": {
+        post: {
+          tags: ["alerts"],
+          summary:
+            "Clear the unseen badge by stamping the caller's high-water mark to now (notifications feature).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Cleared" } },
+        },
+      },
+      "/api/warranties/providers": {
+        get: {
+          tags: ["warranties"],
+          summary:
+            "Distinct warranty providers the caller has used, for form autofill.",
+          security: [cookieAuth],
+          responses: {
+            "200": { description: "{ items: [{ name, phone, url }] }" },
+          },
+        },
+      },
+      "/api/warranties/{id}/renew": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["warranties"],
+          summary:
+            "Renew in place: new purchase date + duration; snapshots the prior contract to history and reschedules reminders.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Renewed warranty" } },
+        },
+      },
+      "/api/warranties/{id}/extend": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        post: {
+          tags: ["warranties"],
+          summary:
+            "Extend the end date by N months in place ({ months }) and reschedule reminders.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Extended warranty" } },
+        },
+      },
+      "/api/warranties/{id}/history": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["warranties"],
+          summary: "Renewal / extension history of a warranty, newest first.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/locations/{id}/articles": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        get: {
+          tags: ["locations"],
+          summary:
+            "Articles in a location, paginated ({ items, total, page, limit }).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+        post: {
+          tags: ["locations"],
+          summary: "Attach an article to the location ({ articleId }).",
+          security: [cookieAuth],
+          responses: { "201": { description: "Attached" } },
+        },
+      },
+      "/api/locations/{id}/articles/{articleId}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+          {
+            name: "articleId",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["locations"],
+          summary: "Detach an article from the location.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Detached" } },
+        },
+      },
+      "/api/saved-views/shared": {
+        get: {
+          tags: ["saved-views"],
+          summary:
+            "Article-filter presets household members shared read-only; each carries ownerName.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/calendar/agenda": {
+        get: {
+          tags: ["calendar"],
+          summary:
+            "In-app agenda: upcoming and overdue warranty, maintenance, loan, insurance and alert events as JSON.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/shares/received": {
+        get: {
+          tags: ["shares"],
+          summary:
+            "Active incoming inventory shares (who shares with the caller, and with which permission).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/shares/invites/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["shares"],
+          summary: "Revoke a sent share invite the caller owns.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Revoked" } },
+        },
+      },
+      "/api/statistics/locations": {
+        get: {
+          tags: ["statistics"],
+          summary:
+            "Per-location value and warranty-exposure breakdown for the treemap (analytics feature).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/profile/me/preferences": {
+        put: {
+          tags: ["profile"],
+          summary:
+            "Update cross-device display preferences ({ theme?, language?, dateFormat? }); null clears a field to the device default.",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated preferences" } },
+        },
+      },
+      "/api/profile/me/login-history": {
+        get: {
+          tags: ["profile"],
+          summary: "The caller's last 50 login / logout events.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/profile/me/sessions": {
+        get: {
+          tags: ["profile"],
+          summary:
+            "Active sessions ({ items, currentJti }) — currentJti marks this device.",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/profile/me/sessions/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["profile"],
+          summary: "Revoke one session (denylists its jti).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Revoked" } },
+        },
+      },
+      "/api/profile/me/sessions/revoke-others": {
+        post: {
+          tags: ["profile"],
+          summary: "Revoke every session except the caller's own.",
+          security: [cookieAuth],
+          responses: { "200": { description: "{ revoked }" } },
+        },
+      },
+      "/api/profile/me/totp/setup": {
+        post: {
+          tags: ["profile"],
+          summary:
+            "Password-gated TOTP enrolment: returns { otpauthUrl, qrDataUrl, backupCodes } (plaintext codes, once).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/profile/me/totp/verify": {
+        post: {
+          tags: ["profile"],
+          summary:
+            "Confirm the first TOTP code and switch totpEnabled on ({ code }).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Enabled" } },
+        },
+      },
+      "/api/profile/me/totp": {
+        delete: {
+          tags: ["profile"],
+          summary:
+            "Password-gated: disable TOTP and drop the secret + backup codes.",
+          security: [cookieAuth],
+          responses: { "204": { description: "Disabled" } },
+        },
+      },
+      "/api/admin/db-stats": {
+        get: {
+          tags: ["admin"],
+          summary:
+            "Row counts per table plus recent users and articles (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/admin/features": {
+        get: {
+          tags: ["admin"],
+          summary:
+            "Feature-flag role overrides plus active temporary grants (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+      "/api/admin/features/{key}": {
+        parameters: [
+          {
+            name: "key",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        put: {
+          tags: ["admin"],
+          summary:
+            "Set the role a feature requires ({ requiredRole }); an absent row means the coded default (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "200": { description: "Updated flag" } },
+        },
+      },
+      "/api/admin/features/grants": {
+        post: {
+          tags: ["admin"],
+          summary:
+            "Time-bound a USER's access to a gated feature ({ featureKey, expiresAt, note? }) (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "201": { description: "Created grant" } },
+        },
+      },
+      "/api/admin/features/grants/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "integer", minimum: 1 },
+          },
+        ],
+        delete: {
+          tags: ["admin"],
+          summary: "Revoke a temporary feature grant (ADMIN only).",
+          security: [cookieAuth],
+          responses: { "204": { description: "Revoked" } },
         },
       },
 

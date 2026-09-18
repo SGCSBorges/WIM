@@ -6,6 +6,7 @@
 import React from "react";
 import { Link } from "react-router";
 import { ChevronRight } from "lucide-react";
+import { useI18nOptional } from "../../i18n/i18n";
 
 export interface Crumb {
   label: React.ReactNode;
@@ -19,8 +20,9 @@ export function Breadcrumbs({
   items: Crumb[];
   className?: string;
 }) {
+  const { t } = useI18nOptional();
   return (
-    <nav aria-label="Breadcrumb" className={className}>
+    <nav aria-label={t("a11y.breadcrumb")} className={className}>
       <ol className="flex flex-wrap items-center gap-1 text-xs ui-text-muted">
         {items.map((c, i) => {
           const last = i === items.length - 1;

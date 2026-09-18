@@ -7,11 +7,10 @@ describe stay in sync with what the server accepts:
 - **Swagger UI**: [`/api/docs`](https://wimapi.onrender.com/api/docs)
 - **OpenAPI 3.1 JSON**: [`/api/openapi.json`](https://wimapi.onrender.com/api/openapi.json)
 
-It is not yet exhaustive: roughly three dozen mounted routes have no entry,
-including the TOTP setup flow, session management, warranty
-renew/extend/history and the agenda. `openapi.coverage.test.ts` pins the
-exact list and fails when a new route is added without documenting it, so
-the shortfall is inventoried and can only shrink.
+It is exhaustive: `openapi.coverage.test.ts` reads every `router.<verb>()`
+the app mounts and fails when one has no entry in the document, and its
+allowlist of known-undocumented routes is empty. A new route ships with
+its spec entry or the API test suite goes red.
 
 This file covers the bits Swagger can't easily explain — auth model,
 deployment quirks, and a triage section for the common confusions.

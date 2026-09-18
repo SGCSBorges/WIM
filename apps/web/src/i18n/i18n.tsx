@@ -208,3 +208,20 @@ export function useI18n() {
   if (!ctx) throw new Error("useI18n must be used within an I18nProvider");
   return ctx;
 }
+
+// English-only `t` for the rare render outside the provider (design-system
+// primitives mounted bare in unit tests). Never used in the app tree.
+const FALLBACK_T: Pick<I18nContextValue, "t"> = {
+  t: (key) =>
+    (extras.en as Record<string, string>)[key] ??
+    (translations.en as Record<string, string>)[key] ??
+    key,
+};
+
+/** `t()` for primitives (Modal, Pagination, Breadcrumbs, skeletons, toasts)
+ *  whose screen-reader labels must follow the UI language, but which are
+ *  also rendered without an I18nProvider in tests. Falls back to English
+ *  instead of throwing. */
+export function useI18nOptional(): Pick<I18nContextValue, "t"> {
+  return useContext(I18nContext) ?? FALLBACK_T;
+}

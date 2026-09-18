@@ -5,6 +5,7 @@
  * real content lands). Theme-aware via the `.ui-skeleton` utility.
  */
 import React from "react";
+import { useI18nOptional } from "../../i18n/i18n";
 
 interface SkeletonProps {
   className?: string;
@@ -65,11 +66,12 @@ export function DashboardStatsSkeleton({ cards = 4 }: { cards?: number }) {
 }
 
 export function RouteFallbackSkeleton() {
+  const { t } = useI18nOptional();
   return (
     <div
       role="status"
       aria-busy="true"
-      aria-label="Loading"
+      aria-label={t("a11y.loading")}
       className="space-y-6"
     >
       <div className="space-y-2">

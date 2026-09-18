@@ -15,6 +15,7 @@ import React, {
   useState,
 } from "react";
 import { CheckCircle2, XCircle, Info, X } from "lucide-react";
+import { useI18nOptional } from "../../i18n/i18n";
 
 type ToastKind = "success" | "error" | "info";
 
@@ -65,6 +66,7 @@ const KIND_ICON: Record<ToastKind, React.ReactElement> = {
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const { t: tr } = useI18nOptional();
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(
     new Map()
@@ -192,7 +194,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             )}
             <button
               type="button"
-              aria-label="Dismiss"
+              aria-label={tr("a11y.dismiss")}
               onClick={() => dismiss(t.id)}
               className="text-current hover:opacity-70 shrink-0"
             >

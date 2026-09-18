@@ -11,6 +11,7 @@ import {
   useEffect,
   useRef,
 } from "react";
+import { useI18nOptional } from "../../i18n/i18n";
 
 interface ModalProps {
   open: boolean;
@@ -56,6 +57,7 @@ export default function Modal({
   closeOnBackdropClick = true,
   variant = "center",
 }: ModalProps) {
+  const { t } = useI18nOptional();
   const panelClasses =
     panelClassName ??
     (variant === "side"
@@ -152,7 +154,7 @@ export default function Modal({
     >
       <button
         type="button"
-        aria-label="Close"
+        aria-label={t("a11y.close")}
         tabIndex={-1}
         onClick={() => closeOnBackdropClick && onClose()}
         className="ui-overlay fixed inset-0 h-full w-full cursor-default"

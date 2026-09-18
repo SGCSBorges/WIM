@@ -135,7 +135,7 @@ export default function MobileDrawer({
           </button>
         </div>
         <nav
-          aria-label="Mobile navigation"
+          aria-label={t("a11y.mobileNav")}
           className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-3"
         >
           {groupedNavItems(items).map(({ group, items: groupItems }, gi) => (

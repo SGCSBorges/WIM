@@ -5,6 +5,7 @@
  */
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./Button";
+import { useI18nOptional } from "../../i18n/i18n";
 
 export interface PaginationProps {
   page: number;
@@ -28,12 +29,13 @@ export function Pagination({
   rangeLabel,
   className = "",
 }: PaginationProps) {
+  const { t } = useI18nOptional();
   const pages = Math.max(1, Math.ceil(total / limit));
   if (total <= limit) return null;
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={t("a11y.pagination")}
       className={`flex items-center justify-between gap-3 ${className}`}
     >
       <p className="text-sm ui-text-muted tabular-nums">{rangeLabel}</p>

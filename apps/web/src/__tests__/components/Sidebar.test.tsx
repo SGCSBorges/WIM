@@ -28,7 +28,7 @@ function renderSidebar(role: string, collapsed = false) {
 describe("<Sidebar />", () => {
   it("renders the navigation in labelled groups", () => {
     renderSidebar("ADMIN");
-    const nav = screen.getByRole("navigation", { name: "Primary" });
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
     const groups = within(nav).getAllByRole("group");
     expect(groups.map((g) => g.getAttribute("aria-label"))).toEqual([
       "Inventory",
@@ -50,7 +50,7 @@ describe("<Sidebar />", () => {
 
   it("drops the groups a plain user has nothing in", () => {
     renderSidebar("USER");
-    const nav = screen.getByRole("navigation", { name: "Primary" });
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
     expect(
       within(nav)
         .getAllByRole("group")
@@ -66,7 +66,7 @@ describe("<Sidebar />", () => {
 
   it("hides the group labels on the collapsed rail but keeps the groups", () => {
     renderSidebar("ADMIN", true);
-    const nav = screen.getByRole("navigation", { name: "Primary" });
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
     expect(within(nav).getAllByRole("group")).toHaveLength(5);
     expect(within(nav).queryByText("Inventory")).not.toBeInTheDocument();
     // Icon-only buttons still carry their name via title.

@@ -10,14 +10,12 @@ import path from "node:path";
  * Nothing enforced either claim, and 37 endpoints had drifted out of the
  * published spec — including the whole TOTP setup flow, session management,
  * warranty renew/extend/history and the agenda. This test makes the claim
- * checkable: every route the app mounts must either appear in the document
- * or be named in UNDOCUMENTED below.
+ * checkable: every route the app mounts must appear in the document (or,
+ * as a last resort, be named in UNDOCUMENTED below — currently empty).
  *
- * The allowlist is an inventory of the existing debt, not permission to add
- * more. Adding a new route without a spec entry fails here; removing an
- * entry from the allowlist as it gets documented is the intended direction
- * of travel. The test also fails when an allowlisted path turns out to be
- * documented after all, so the list can't rot.
+ * Adding a new route without a spec entry fails here. The test also fails
+ * when an allowlisted path turns out to be documented after all, so the
+ * list can't rot.
  *
  * Routes are read statically rather than by walking the Express stack:
  * `createApp()` pulls in Prisma and BullMQ, which is far too heavy (and too
@@ -99,48 +97,10 @@ function documentedPaths(): Set<string> {
 }
 
 /**
- * Known-undocumented endpoints, as of the review that added this test.
- * Shrink this list; do not grow it.
+ * Known-undocumented endpoints. Empty since every route got its entry;
+ * a new route belongs in the document, not here.
  */
-const UNDOCUMENTED = new Set<string>([
-  "/api/admin/db-stats",
-  "/api/admin/features",
-  "/api/admin/features/grants",
-  "/api/admin/features/grants/{p}",
-  "/api/admin/features/{p}",
-  "/api/alerts/mark-seen",
-  "/api/alerts/notifications",
-  "/api/articles/bulk-update",
-  "/api/articles/bundles",
-  "/api/articles/shared-public",
-  "/api/articles/unshare-all",
-  "/api/articles/{p}/favorite",
-  "/api/attachments/warranty/{p}",
-  "/api/auth/bootstrap-admin",
-  "/api/auth/forgot-password",
-  "/api/auth/login/verify-totp",
-  "/api/auth/reset-password",
-  "/api/calendar/agenda",
-  "/api/locations/{p}/articles",
-  "/api/locations/{p}/articles/{p}",
-  "/api/openapi.json",
-  "/api/profile/me/login-history",
-  "/api/profile/me/preferences",
-  "/api/profile/me/sessions",
-  "/api/profile/me/sessions/revoke-others",
-  "/api/profile/me/sessions/{p}",
-  "/api/profile/me/totp",
-  "/api/profile/me/totp/setup",
-  "/api/profile/me/totp/verify",
-  "/api/saved-views/shared",
-  "/api/shares/invites/{p}",
-  "/api/shares/received",
-  "/api/statistics/locations",
-  "/api/warranties/providers",
-  "/api/warranties/{p}/extend",
-  "/api/warranties/{p}/history",
-  "/api/warranties/{p}/renew",
-]);
+const UNDOCUMENTED = new Set<string>([]);
 
 describe("OpenAPI coverage", () => {
   const mounted = collectMountedRoutes();

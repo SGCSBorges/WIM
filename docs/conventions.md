@@ -1336,6 +1336,15 @@ hardcode an English sentence at a call site again — add a key.
 
 ## Known gotchas
 
+- **Screen-reader labels are translated too.** `aria-label` strings on the
+  primitives (`Modal` close, `Pagination`, `Breadcrumbs`, `RouteFallbackSkeleton`,
+  toast dismiss) and the nav landmarks come from `a11y.*` keys. Primitives
+  use `useI18nOptional()` — the same `t()`, but it falls back to English
+  instead of throwing when a unit test mounts the primitive without an
+  `I18nProvider`. App code keeps using `useI18n()`. Never write an English
+  literal into `aria-label`; the hardcoded-string grep in CI-less review is
+  `grep -rnE 'aria-label="[A-Z][a-z]' src/components`.
+
 - **Adding a UI string = English + four locale files.** Only English ships
   in the main bundle (`translations.ts` / `translations.extras.ts`); fr, pt,
   es and nl live in `i18n/locales/<lang>.ts` and load on demand (one Vite
