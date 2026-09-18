@@ -4,7 +4,10 @@
  * `authGuard` is the gatekeeper on every protected route. Per request it:
  *   1. Reads the JWT from the `wim_token` cookie and verifies the signature.
  *   2. Checks the Redis denylist by `jti`; tokens explicitly revoked on
- *      logout / password reset / admin force-logout fail-closed here.
+ *      logout / password reset / admin force-logout are rejected here. Note
+ *      the denylist itself fails OPEN when Redis is unreachable (see
+ *      token-denylist.ts for why) — the durable revocation guarantee is the
+ *      `tokenVersion` check below, which is a DB read.
  *   3. Re-reads `tokenVersion` and `role` from the DB (one cheap select).
  *      Bumping `User.tokenVersion` invalidates every token issued before the
  *      bump; updating `User.role` propagates immediately without re-login.
@@ -44,13 +47,33 @@ export async function authGuard(
 
   if (!token) return res.status(401).json({ error: "Missing token" });
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
+    // Pin the algorithm. JWT_SECRET is a symmetric secret, so nothing here
+    // should ever be asked to verify an asymmetric token; naming HS256
+    // explicitly keeps the whole alg-substitution class off the table rather
+    // than relying on the library's defaults staying strict.
+    const payload = jwt.verify(token, process.env.JWT_SECRET!, {
+      algorithms: ["HS256"],
+    }) as unknown as {
       sub: number;
       role: string;
       v?: number;
       jti?: string;
       exp?: number;
+      kind?: string;
     };
+    // A session token NEVER carries `kind`. The pre-auth challenge tokens do
+    // (`totp-challenge`, `webauthn-reg`, `webauthn-auth`) and they are signed
+    // with this same JWT_SECRET, so without this check they verify here as
+    // ordinary sessions. That is a second-factor bypass in both directions:
+    // the TOTP challenge is handed out after only a password, and
+    // POST /auth/webauthn/login/options is unauthenticated and mints one for
+    // any email at all. Neither carries `v`, so the tokenVersion comparison
+    // below does not stop them on an account that has never been bumped.
+    // The `kind` claim is what separates a challenge from a session — enforce
+    // it here, where the separation actually matters.
+    if (payload.kind) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
     if (payload.jti && (await isTokenDenied(payload.jti))) {
       return res.status(401).json({ error: "Token revoked" });
     }

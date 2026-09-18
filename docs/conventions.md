@@ -223,6 +223,22 @@ npm --workspace apps/web run test:e2e
   `expiresAt: { gt: now }`), checking `count === 0` — never
   read-then-update, which races. See `assertNotExpired`,
   `ShareService.revokeInvite/updateShare/revokeShare`, `acceptInvite`.
+- **Pre-auth challenge tokens are not sessions, and `authGuard` is what
+  enforces that.** The TOTP challenge (`kind:"totp-challenge"`) and both
+  WebAuthn challenges (`kind:"webauthn-reg"` / `"webauthn-auth"`) are signed
+  with the *same* `JWT_SECRET` as session tokens, so a signature check alone
+  cannot tell them apart — `authGuard` rejects any payload carrying a `kind`
+  claim, because a session token never has one. This is load-bearing, not
+  belt-and-braces: the TOTP challenge is issued after only a password (so
+  accepting it would bypass the second factor), and
+  `POST /auth/webauthn/login/options` is **unauthenticated** and mints one for
+  any email supplied (so accepting it would be full account takeover from an
+  email address alone, at whatever role the DB says). Neither challenge
+  carries the `v` claim, so the `tokenVersion` comparison does not catch them
+  on an account that has never been bumped — `tokenVersion` defaults to 0 and
+  only increments on a password reset, email change or force-logout. Any new
+  token minted off `JWT_SECRET` outside the session path must carry `kind`.
+  Every `jwt.verify` call also pins `algorithms: ["HS256"]`.
 - **Auth checks come BEFORE any state-mutating guard** (e.g. the lazy
   EXPIRED stamp in `assertNotExpired`) so an unauthorized caller can't
   trigger writes. Tests under "auth-before-expiry ordering" enforce it.
@@ -847,7 +863,9 @@ unchanged when `User.totpEnabled = false`.
   flag). Setup → verify → disable, all password-gated. Login: when
   `totpEnabled` is true, `/auth/login` returns a 5-minute pre-auth
   `challengeToken` (`kind:"totp-challenge"` so it can't be mistaken
-  for a session) instead of dropping a cookie; the client POSTs the
+  for a session — **`authGuard` enforces that by rejecting any token
+  carrying a `kind` claim**; see the pre-auth token rule below) instead
+  of dropping a cookie; the client POSTs the
   code to `/auth/login/verify-totp` to mint the real session cookie +
   `UserSession`. `otplib` is pinned at `^12.0.1` (v13 dropped the
   named `authenticator` export). `TotpService.verify` checks the code

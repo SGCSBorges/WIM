@@ -68,7 +68,9 @@ function verifyChallenge(
   token: string,
   kind: ChallengeKind
 ): { sub: number; challenge: string } {
-  const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
+  const payload = jwt.verify(token, process.env.JWT_SECRET!, {
+    algorithms: ["HS256"],
+  }) as unknown as {
     sub: number;
     kind: string;
     chal: string;

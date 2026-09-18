@@ -196,7 +196,9 @@ export const TotpService = {
   },
 
   async verifyChallenge(token: string): Promise<{ sub: number; role: string }> {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as unknown as {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!, {
+      algorithms: ["HS256"],
+    }) as unknown as {
       sub: number;
       role: string;
       kind: string;
