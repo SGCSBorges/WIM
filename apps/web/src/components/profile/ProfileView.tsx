@@ -670,6 +670,7 @@ export default function ProfileView() {
       />
 
       <div
+        id={`profile-tab-panel-${tab}`}
         className="space-y-6"
         role="tabpanel"
         aria-labelledby={`profile-tab-${tab}`}

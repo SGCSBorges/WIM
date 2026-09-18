@@ -372,12 +372,12 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <h3
+                        <h2
                           className="truncate text-base font-semibold ui-title"
                           title={share.target.email}
                         >
                           {share.target.email}
-                        </h3>
+                        </h2>
                         <Badge tone={permissionTone(share.permission)}>
                           {share.permission}
                         </Badge>
@@ -468,12 +468,12 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <h3
+                        <h2
                           className="truncate text-base font-semibold ui-title"
                           title={invite.email}
                         >
                           {invite.email}
-                        </h3>
+                        </h2>
                         <Badge tone={permissionTone(invite.permission)}>
                           {invite.permission}
                         </Badge>

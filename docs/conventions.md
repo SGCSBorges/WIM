@@ -1336,6 +1336,30 @@ hardcode an English sentence at a call site again — add a key.
 
 ## Known gotchas
 
+- **Clear the SW articles cache when the session changes.** `public/sw.js`
+  keeps GET `/api/articles` in the Cache API (stale-while-revalidate) so the
+  list opens offline. The Cache API is keyed by URL, not by cookie, so on a
+  shared device the next account would be served the previous account's
+  list first. `services/offlineCache.clearApiCache()` runs on logout, on
+  the 401 handler and on login; the cache name is pinned to `sw.js` by a
+  test. Any new API cache in the SW needs the same treatment.
+- **Coloured text picks black/white by WCAG ratio, not by luminance.**
+  `TagChip.contrastText` compares `contrastRatio(bg, black)` against
+  `contrastRatio(bg, white)`; the old "luminance > 150" cut-off put white on
+  the green/red/blue/orange presets at 2.3–3.8:1. Reuse `contrastRatio`
+  for any user-chosen colour. Semantic tokens: light `--text-success` /
+  `--text-warn` are the -800 shades (the -700s were 4.4:1 on tinted
+  badges); the dark theme's `--primary` is a button fill, so links and
+  info badges there use `--primary-hover`.
+- **Headings.** `EmptyState` renders an `h2` (it sits directly under a page
+  `h1`); `AttachmentsList` renders `h1` standalone and `h2` embedded; the
+  login form's title is the page `h1` inside a `<main>` (the brand aside is
+  hidden below `lg`). An interactive `Card` always renders a `div` —
+  `role="button"` is not allowed on `article`/`section`.
+- **Esc inside the article sheet.** `ArticleForm` intercepts Escape on its
+  root and routes it through `handleCancel` (discard confirm when dirty),
+  stopping propagation so `Modal` doesn't close a dirty form silently.
+
 - **Never re-fetch from the 401 handler.** `App.tsx` registers a
   `register401Handler` callback that flips the session to unauthed. It used
   to call `refreshFeatures()` there to drop granted flags; `/api/features`

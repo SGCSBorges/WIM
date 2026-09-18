@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { authAPI, API_BASE_URL } from "../../services/api";
+import { API_CACHE_NAME } from "../../services/offlineCache";
 
 describe("API_BASE_URL", () => {
   it("defaults to localhost in dev when VITE_API_BASE_URL is unset", () => {
@@ -68,5 +69,25 @@ describe("authAPI.login", () => {
     await expect(authAPI.login("alice@example.com", "x")).rejects.toThrow(
       "Login failed"
     );
+  });
+});
+
+describe("authAPI.logout", () => {
+  const realFetch = global.fetch;
+  afterEach(() => {
+    global.fetch = realFetch;
+    vi.unstubAllGlobals();
+  });
+
+  // The SW keeps GET /api/articles in the Cache API, keyed by URL only —
+  // without this the next account on the device gets the old list first.
+  it("drops the offline articles cache after signing out", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }));
+    const del = vi.fn().mockResolvedValue(true);
+    vi.stubGlobal("caches", { delete: del });
+    await authAPI.logout();
+    expect(del).toHaveBeenCalledWith(API_CACHE_NAME);
   });
 });

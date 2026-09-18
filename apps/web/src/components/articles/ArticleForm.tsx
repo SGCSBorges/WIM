@@ -334,6 +334,16 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     onCancel?.();
   };
 
+  // In the side sheet, Esc reaches the dialog's own close handler, which
+  // would drop a half-filled form without the discard confirm that Cancel
+  // has. Handle it here first and stop it bubbling to the dialog.
+  const onFormKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Escape" || !onCancel) return;
+    e.stopPropagation();
+    e.preventDefault();
+    handleCancel();
+  };
+
   const { formatDate } = usePreferences();
 
   // Live "Warranty expires on …" hint under the duration field.
@@ -652,10 +662,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   };
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className={
         chrome === "card" ? "ui-card p-6 sm:p-8 animate-fade-in" : undefined
       }
+      onKeyDown={onFormKeyDown}
     >
       <h2
         id={titleId}

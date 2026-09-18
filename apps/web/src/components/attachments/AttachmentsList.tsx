@@ -272,6 +272,10 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     );
   }
 
+  const Heading = articleId || garantieId ? "h2" : "h1";
+  // Row titles sit one level under the list heading.
+  const RowHeading = articleId || garantieId ? "h3" : "h2";
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -280,7 +284,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary bg-gradient-brand text-primary-contrast shadow-md">
             <Paperclip className="h-5 w-5" aria-hidden="true" />
           </span>
-          <h2 className="truncate text-2xl font-bold tracking-tight ui-title">
+          {/* Standalone /attachments is a page (needs the h1); embedded in an
+              article or warranty it sits under that page's own h1. */}
+          <Heading className="truncate text-2xl font-bold tracking-tight ui-title">
             {t("attachments.title")}
             {(articleId || garantieId) && (
               <span className="ml-2 text-lg font-normal ui-text-muted">
@@ -290,7 +296,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                   : t("attachments.for.warranty")}
               </span>
             )}
-          </h2>
+          </Heading>
         </div>
         <Button
           onClick={() => {
@@ -469,12 +475,12 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
 
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex items-center justify-between gap-2">
-                    <h3
+                    <RowHeading
                       className="truncate text-sm font-medium ui-title"
                       title={attachment.fileName}
                     >
                       {attachment.fileName}
-                    </h3>
+                    </RowHeading>
                     <Badge tone={typeTone(attachment.type)}>
                       {attachment.type}
                     </Badge>

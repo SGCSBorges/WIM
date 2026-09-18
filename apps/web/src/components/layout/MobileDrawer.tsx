@@ -102,6 +102,11 @@ export default function MobileDrawer({
     <div
       className={`md:hidden fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}
       aria-hidden={!open}
+      // The drawer stays mounted (so the slide transition runs both ways),
+      // which left ~18 focusable nav buttons reachable by Tab and exposed to
+      // assistive tech while "hidden". `inert` removes the subtree from the
+      // tab order and the accessibility tree until it opens.
+      inert={!open}
     >
       <button
         type="button"

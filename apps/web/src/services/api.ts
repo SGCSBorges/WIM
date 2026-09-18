@@ -63,6 +63,7 @@ import type {
   WarrantyRenewRequest,
 } from "../types";
 import { compressImageFile } from "../utils/imageCompress";
+import { clearApiCache } from "./offlineCache";
 
 // Re-export shared response shapes so existing `import { X } from
 // "../services/api"` sites keep working after the move into @wim/types.
@@ -383,6 +384,9 @@ export const authAPI = {
       method: "POST",
     }).catch(() => undefined);
     _cachedRole = null;
+    // The service worker's offline copy of the articles list belongs to the
+    // account that just left; never let the next sign-in on this device see it.
+    await clearApiCache();
   },
 
   async getMe(): Promise<{

@@ -228,6 +228,17 @@ describe("<ProfileView />", () => {
       ).not.toBeInTheDocument();
     });
 
+    it("points each tab's aria-controls at a real tabpanel id", async () => {
+      renderProfile();
+      await screen.findByText("user@example.com");
+      const tab = screen.getByRole("tab", { name: "Account" });
+      const panelId = tab.getAttribute("aria-controls")!;
+      const panel = document.getElementById(panelId);
+      expect(panel).not.toBeNull();
+      expect(panel).toHaveAttribute("role", "tabpanel");
+      expect(panel).toHaveAttribute("aria-labelledby", tab.id);
+    });
+
     it("deep-links to a tab through ?tab=", async () => {
       renderProfile("/profile?tab=security");
       // The signed-in-as card is on the Account tab; wait on the tab strip.

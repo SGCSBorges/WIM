@@ -61,6 +61,7 @@ import RecentlyViewed from "./components/common/RecentlyViewed";
 import { Button, Card } from "./components/ui";
 import { isStripeUrl } from "./utils/stripeUrl";
 import { NAV_ITEMS, type NavKey } from "./lib/navItems";
+import { clearApiCache } from "./services/offlineCache";
 import UpgradeTeaser from "./components/common/UpgradeTeaser";
 
 // Route-level code splitting: each lazy import becomes its own chunk so the
@@ -407,6 +408,9 @@ export default function App() {
     register401Handler(() => {
       setAuthStatus("unauthed");
       setRole(null);
+      // Session ended without a logout call (expiry, revocation): drop the
+      // offline articles cache too, for the same reason logout does.
+      void clearApiCache();
       // Clear any granted feature access so a re-login starts from a clean
       // map. This must NOT be a re-fetch: /api/features itself answers 401
       // when logged out, which lands right back here — an unbounded loop
@@ -472,6 +476,9 @@ export default function App() {
   }, []);
 
   const handleLogin = () => {
+    // Belt and braces with logout: a cache left by a crashed tab or an older
+    // build must not be served to a different account.
+    void clearApiCache();
     profileAPI
       .getMe()
       .then((user) => {

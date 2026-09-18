@@ -76,7 +76,9 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <h3 className="font-semibold ui-title text-lg">{title}</h3>
+      {/* h2: an empty state stands directly under the page h1 on
+          Transfers/Attachments; an h3 there skips a level. */}
+      <h2 className="font-semibold ui-title text-lg">{title}</h2>
       {description && (
         <p className="text-sm ui-text-muted max-w-md">{description}</p>
       )}

@@ -36,14 +36,19 @@ export function Card({
       }
     : { onKeyDown };
 
+  // `role="button"` is not an allowed role on <article>/<section>
+  // (aria-allowed-role); an interactive card is a button-like surface, so it
+  // always renders as a <div> whatever `as` asks for.
+  const Element: "div" | "article" | "section" = interactive ? "div" : Tag;
+
   return (
-    <Tag
+    <Element
       className={`ui-card p-5 ${interactive ? "ui-lift cursor-pointer" : ""} ${className}`}
       {...interactiveProps}
       {...rest}
     >
       {children}
-    </Tag>
+    </Element>
   );
 }
 

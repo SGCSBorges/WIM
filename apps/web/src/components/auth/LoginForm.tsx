@@ -198,9 +198,9 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         </div>
 
         <div className="relative z-10 max-w-md">
-          <h1 className="text-4xl font-bold leading-tight tracking-tight">
+          <p className="text-4xl font-bold leading-tight tracking-tight">
             {t("auth.hero.tagline")}
-          </h1>
+          </p>
           <ul className="mt-8 space-y-4">
             {features.map(({ icon: Icon, label }) => (
               <li key={label} className="flex items-center gap-3">
@@ -229,7 +229,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
       </aside>
 
       {/* Form panel */}
-      <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
+      {/* The only landmark on the page: the brand aside is decorative copy. */}
+      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-md animate-fade-in">
           <div className="mb-6 text-center lg:hidden">
             <img
@@ -239,9 +240,11 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             />
           </div>
 
-          <h2 className="text-2xl font-bold tracking-tight ui-title">
+          {/* The page's h1: the brand aside is hidden below lg, so the form
+              heading is the one heading every viewport has. */}
+          <h1 className="text-2xl font-bold tracking-tight ui-title">
             {isLogin ? t("auth.login") : t("auth.register")}
-          </h2>
+          </h1>
           <p className="mt-1 mb-6 text-sm ui-text-muted">
             {t("auth.subtitle")}
           </p>
@@ -474,7 +477,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

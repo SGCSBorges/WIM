@@ -133,4 +133,34 @@ describe("<ArticleForm />", () => {
     expect(payload.articleModele).toBe("DW-100");
     expect(payload.locationIds).toEqual([7]);
   });
+
+  // Inside the create/edit sheet, Esc reaches the dialog's close handler; the
+  // form intercepts it so a dirty form gets the same discard confirm as the
+  // Cancel button instead of vanishing.
+  it("asks before discarding a dirty form on Escape", async () => {
+    mockedGetAll.mockResolvedValueOnce([{ locationId: 7, name: "Garage" }]);
+    const onCancel = vi.fn();
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(
+      <I18nProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ArticleForm onSubmit={vi.fn()} onCancel={onCancel} />
+          </ToastProvider>
+        </ThemeProvider>
+      </I18nProvider>
+    );
+    await waitFor(() => expect(screen.getByText("Garage")).toBeInTheDocument());
+    const user = userEvent.setup();
+    const name = screen.getByLabelText(/name|nom/i);
+    await user.type(name, "Drill");
+    await user.keyboard("{Escape}");
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(onCancel).not.toHaveBeenCalled();
+
+    confirm.mockReturnValue(true);
+    await user.keyboard("{Escape}");
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    confirm.mockRestore();
+  });
 });
