@@ -8,10 +8,15 @@
  *   4. translations.en[key]
  *   5. the raw key (so a missing translation is visible in dev)
  *
- * Convention: NEW keys go into `translations.extras.ts` so the 70 KB main
- * dictionary stays low-churn. Extras can also OVERRIDE an existing key
- * (priority 1 wins over 2) — useful for a copy fix without touching the
- * big file.
+ * Convention: NEW keys go into `translations.extras.ts` (English) and into
+ * the `extras` map of every `locales/<lang>.ts`. Extras can also OVERRIDE an
+ * existing key (priority 1 wins over 2) — useful for a copy fix without
+ * touching the big file.
+ *
+ * Only English ships in the main chunk. The other languages are loaded on
+ * demand (`loadLocale`) the first time they are selected; until the chunk
+ * lands `t()` serves English, and `main.tsx` preloads the saved language
+ * before first paint so a returning user never sees that fallback.
  *
  * The `AnyKey` template-literal type accepts any string so `t(...)` can be
  * called with a templated key (e.g. `t(\`claim.status.${status}\`)`); the
@@ -26,6 +31,7 @@ import React, {
 } from "react";
 import { Language, translations } from "./translations";
 import { extras, ExtrasKey } from "./translations.extras";
+import { LOCALE_LOADERS, type LocaleDict } from "./locales";
 import { authAPI, profileAPI } from "../services/api";
 import { safeGetItem, safeSetItem } from "../utils/safeStorage";
 
@@ -67,6 +73,38 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 
 const STORAGE_KEY = "wim.language";
 
+// Loaded dictionaries, shared across provider instances (and tests).
+// English is always present: it is the fallback for every other language.
+const loaded: Partial<Record<Language, LocaleDict>> = {
+  en: { main: translations.en, extras: extras.en },
+};
+const inflight: Partial<Record<Language, Promise<LocaleDict>>> = {};
+
+/** Fetch a language's dictionary chunk once; later calls reuse it. Never
+ *  rejects — a failed chunk load leaves the English fallback in place. */
+export function loadLocale(lang: Language): Promise<LocaleDict> {
+  const have = loaded[lang];
+  if (have) return Promise.resolve(have);
+  const pending = inflight[lang];
+  if (pending) return pending;
+  const p = LOCALE_LOADERS[lang as Exclude<Language, "en">]()
+    .then((dict) => {
+      loaded[lang] = dict;
+      return dict;
+    })
+    .catch(() => loaded.en as LocaleDict)
+    .finally(() => {
+      delete inflight[lang];
+    });
+  inflight[lang] = p;
+  return p;
+}
+
+/** Whether `t()` can already answer in this language (no fallback). */
+export function isLocaleLoaded(lang: Language): boolean {
+  return Boolean(loaded[lang]);
+}
+
 function detectInitialLanguage(): Language {
   const saved = safeGetItem(STORAGE_KEY);
   if (isLanguage(saved)) return saved;
@@ -79,10 +117,30 @@ function detectInitialLanguage(): Language {
   return "en";
 }
 
+/** For main.tsx: resolve the saved/browser language's chunk before the
+ *  first render, so a French user's first paint is French, not English. */
+export function preloadInitialLanguage(): Promise<unknown> {
+  return loadLocale(detectInitialLanguage());
+}
+
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, _setLanguage] = useState<Language>(() =>
     detectInitialLanguage()
   );
+  // Bumped when a dictionary chunk arrives so `t()` re-renders consumers
+  // out of the English fallback.
+  const [localeVersion, setLocaleVersion] = useState(0);
+
+  useEffect(() => {
+    if (loaded[language]) return;
+    let cancelled = false;
+    void loadLocale(language).then(() => {
+      if (!cancelled) setLocaleVersion((v) => v + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
     _setLanguage(lang);
@@ -123,8 +181,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       setLanguage,
       hydrateLanguage,
       t: (key: AnyKey) => {
-        const eDict = extras[language] as Record<string, string>;
-        const mDict = translations[language] as Record<string, string>;
+        const dict = loaded[language];
+        const eDict = (dict?.extras ?? {}) as Record<string, string>;
+        const mDict = (dict?.main ?? {}) as Record<string, string>;
         return (
           eDict[key] ??
           mDict[key] ??
@@ -138,7 +197,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
         return forms[cat] ?? forms.other ?? "";
       },
     };
-  }, [language]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, localeVersion]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

@@ -1336,6 +1336,17 @@ hardcode an English sentence at a call site again — add a key.
 
 ## Known gotchas
 
+- **Adding a UI string = English + four locale files.** Only English ships
+  in the main bundle (`translations.ts` / `translations.extras.ts`); fr, pt,
+  es and nl live in `i18n/locales/<lang>.ts` and load on demand (one Vite
+  chunk each, ~20 KB gzipped) — that took 340 KB of copy out of the main
+  chunk. The locale objects are typed `Record<keyof en, string>`, so a key
+  missing from — or misspelled in — any locale is a `tsc` error, not a
+  runtime English fallback. `t()` serves English until a chunk arrives;
+  `main.tsx` awaits `preloadInitialLanguage()` so a returning non-English
+  user never sees the fallback. Never put another language back into the
+  English files.
+
 - **Clear the SW articles cache when the session changes.** `public/sw.js`
   keeps GET `/api/articles` in the Cache API (stale-while-revalidate) so the
   list opens offline. The Cache API is keyed by URL, not by cookie, so on a
@@ -1555,6 +1566,8 @@ hardcode an English sentence at a call site again — add a key.
   useUnsavedChangesGuard}.ts`
 - API client: `apps/web/src/services/api.ts`
 - i18n: `apps/web/src/i18n/{i18n.tsx,translations.ts,translations.extras.ts}`
+  (English, in the main chunk) + `apps/web/src/i18n/locales/{fr,pt,es,nl}.ts`
+  (lazy chunks, typed `Record<EnglishKey, string>`)
 - Theme + prefs: `apps/web/src/theme/theme.tsx`,
   `apps/web/src/preferences/preferences.tsx`, CSS in
   `apps/web/src/index.css` (incl. `data-density="compact"` rules)

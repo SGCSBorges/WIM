@@ -19,7 +19,7 @@ import RouteChrome from "./components/layout/RouteChrome";
 // covered by the single variable axis; we reference it via --font-sans.
 import "@fontsource-variable/inter";
 import "./index.css";
-import { I18nProvider } from "./i18n/i18n";
+import { I18nProvider, preloadInitialLanguage } from "./i18n/i18n";
 import { ThemeProvider } from "./theme/theme";
 import { PreferencesProvider } from "./preferences/preferences";
 import { ToastProvider } from "./components/common/Toast";
@@ -46,25 +46,30 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <BrowserRouter>
-        <ThemeProvider>
-          <I18nProvider>
-            <PreferencesProvider>
-              <ToastProvider>
-                <FeatureProvider>
-                  <UpgradeProvider>
-                    <RouteChrome />
-                    <App />
-                  </UpgradeProvider>
-                </FeatureProvider>
-              </ToastProvider>
-            </PreferencesProvider>
-          </I18nProvider>
-        </ThemeProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
-  </React.StrictMode>
-);
+// Non-English dictionaries are lazy chunks. Resolve the saved language's
+// chunk first so a returning fr/pt/es/nl user never sees an English flash;
+// English needs nothing, and a failed fetch falls back to English anyway.
+void preloadInitialLanguage().finally(() => {
+  createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <ThemeProvider>
+            <I18nProvider>
+              <PreferencesProvider>
+                <ToastProvider>
+                  <FeatureProvider>
+                    <UpgradeProvider>
+                      <RouteChrome />
+                      <App />
+                    </UpgradeProvider>
+                  </FeatureProvider>
+                </ToastProvider>
+              </PreferencesProvider>
+            </I18nProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
+});
