@@ -1255,6 +1255,18 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 
 ## Known gotchas
 
+- **The admin DB export is not streamed and carries live credentials.**
+  `GET /api/admin/db/export` builds every table in memory and
+  `JSON.stringify`s the whole thing before sending a byte, while
+  `/db/import` accepts up to 100mb — so a large dump OOMs a 512mb dyno,
+  i.e. the backup fails exactly when it is needed. Making it genuinely
+  streaming means emitting the JSON table-by-table. The dump also contains
+  bcrypt password hashes *and* every `TotpSecret`, whose base32 secret is
+  stored in the clear because a restore has to reproduce working 2FA. A TOTP
+  secret is a standing second factor that no password reset rotates, so the
+  file is the most sensitive artifact the system produces and cannot simply
+  be redacted without breaking restore.
+
 - **A missing generated Prisma client fails `tsc`, not just the tests.**
   `npm ci` wipes `node_modules/.prisma`, and the resulting build errors do
   not say "run prisma generate" — they read like real regressions:

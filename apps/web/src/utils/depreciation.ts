@@ -1,8 +1,16 @@
 /**
  * `currentValue(purchasePrice, depreciationRate, since)` — straight-line
  * depreciation in the browser. Returns null when either input is null;
- * floors at zero. Mirrors the server-side helper of the same name; both
- * use the same MS_PER_YEAR so they always agree.
+ * floors at zero.
+ *
+ * Shares the server helper's formula and MS_PER_YEAR, so for an item that
+ * HAS a rate the two produce the same number. They deliberately differ on
+ * the null-rate case: this one returns null so the UI can hide a "current
+ * value" line that would just restate the purchase price, while the server
+ * returns the price unchanged because a non-depreciating item still counts
+ * at full value in a portfolio total. Don't "fix" either to match the other
+ * — summing this helper across items is therefore NOT equivalent to the
+ * server's totals, and it is not meant to be.
  */
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 

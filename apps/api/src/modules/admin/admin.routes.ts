@@ -565,8 +565,24 @@ router.get(
 /**
  * GET /api/admin/db/export
  *
- * Streams the full database as a single JSON document for migration to
+ * Serialises the full database as a single JSON document for migration to
  * another provider. ADMIN only. Audited as DB_EXPORT.
+ *
+ * NOT streamed, despite the name: every table is read into memory and
+ * JSON.stringify'd whole before the first byte is sent. The import side
+ * accepts up to 100mb, so a dump anywhere near that size needs roughly
+ * several times that in peak heap and will OOM a 512mb dyno — i.e. the
+ * backup fails exactly when you most need it. Making this genuinely
+ * streaming means emitting the JSON table-by-table rather than building
+ * one object.
+ *
+ * The dump carries live credentials: bcrypt password hashes for every user
+ * AND every TotpSecret row, whose base32 secret is stored in the clear
+ * because a restore has to reproduce working 2FA. A TOTP secret is a
+ * standing second factor that no password reset rotates, so treat the file
+ * as the most sensitive artifact the system produces — it is not a
+ * redactable export, and it should never be stored anywhere the database
+ * itself would not be stored.
  */
 router.get(
   "/db/export",
