@@ -205,10 +205,18 @@ langue choisie pour la prononciation par les lecteurs d'écran.
   `Card`/`Section`, `Stat`, `Pagination`, `Breadcrumbs`, `Segmented`, `Popover`,
   `Dropzone`, `CommandPalette`. Toutes accessibles (gestion du focus, ARIA,
   `prefers-reduced-motion`), tokenisées, importées via le baril `components/ui`.
-- **Coque applicative** (`components/layout/`) : `Sidebar` persistante,
-  `TopBar` collante (recherche/palette de commandes, `NotificationBell`, install
-  PWA, langue/thème, profil, déconnexion, **bouton d'ajout rapide global**),
-  `MobileDrawer` sur petits écrans, `BackToTop`. Routes/auth dans `App.tsx`.
+- **Coque applicative** (`components/layout/`) : `Sidebar` persistante dont
+  les entrées sont regroupées en sections (Inventaire, Planification,
+  Analyses, Collaborer, Administration — champ `group` de `lib/navItems`,
+  les sections vides pour le rôle disparaissent), `TopBar` collante
+  (**bouton d'ajout rapide global**, recherche/palette de commandes, install
+  PWA, engrenage `SettingsMenu` ouvrant langue + thème à toutes les largeurs,
+  `NotificationBell`, profil, déconnexion), `MobileDrawer` sur petits écrans
+  avec les mêmes groupes, `BackToTop`. Routes/auth dans `App.tsx`.
+- **Surfaces d'édition** : `Modal` (`variant="side"`) rend un panneau latéral
+  plein-hauteur qui défile seul — le formulaire de création/édition d'article
+  s'y ouvre (`/articles?new=1`) sans déplacer la liste. La page Profil est
+  découpée en onglets adressables par URL (`/profile?tab=…`).
 - **Chrome de route** (`RouteChrome`, monté une fois dans `main.tsx`) :
   `<title>` par page, remontée en haut + focus sur `#main` à la navigation avant
   (le retour arrière préserve le défilement restauré), et une région `aria-live`

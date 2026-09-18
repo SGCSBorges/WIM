@@ -205,11 +205,25 @@ the mobile browser chrome and installed-PWA status bar match it, and
   through `utils/number.formatCount` for locale grouping, and CSS
   `color-scheme` per theme keeps native controls in step with dark themes.
 - **App shell** (`apps/web/src/components/layout/`): persistent
-  `Sidebar` (icon-rail collapse persisted in localStorage), sticky
-  `TopBar` (search affordance for the command palette, `NotificationBell`,
-  PWA install, language/theme, profile, logout), `MobileDrawer` on
-  small viewports, and a `BackToTop` button for long lists. Routes/auth
-  stay in `App.tsx`.
+  `Sidebar` (icon-rail collapse persisted in localStorage) whose entries
+  are grouped into labelled sections — Inventory, Planning, Insights,
+  Collaborate, Administration — from the `group` field on each
+  `lib/navItems` entry (`groupedNavItems` drops sections the role has
+  nothing in; the collapsed rail keeps a hairline per boundary); sticky
+  `TopBar` (global create button, search affordance for the command
+  palette, PWA install, a `SettingsMenu` gear popover holding the
+  language + theme selects at every breakpoint, `NotificationBell`,
+  profile, logout); `MobileDrawer` on small viewports with the same
+  groups; and a `BackToTop` button for long lists. Routes/auth stay in
+  `App.tsx`.
+- **Editing surfaces**: `components/common/Modal` is the one dialog
+  shell (focus trap, Esc, scroll lock, focus restore). Its `variant="side"`
+  renders a right-anchored, full-height sheet that scrolls itself — the
+  article create/edit form opens there (`/articles?new=1`) so the list
+  stays in place behind it. The profile page is split into URL-addressable
+  tabs (`/profile?tab=account|notifications|billing|sharing|security`);
+  tabs the user has no content for are not offered and fall back to
+  Account.
 - **Route chrome** (`components/layout/RouteChrome`, mounted once in
   `main.tsx`): per-page `<title>`, scroll-to-top + focus-to-`#main` on
   forward navigation (POP/Back preserves the browser's restored scroll so

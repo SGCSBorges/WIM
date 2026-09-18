@@ -32,6 +32,10 @@ export function reminderKindForDays(days: number): WarrantyReminderKind {
   return `J${days}`;
 }
 
+/** Stored as `Alerte.alerteNom` for auto-scheduled warranty reminders.
+ *  English like every other server-generated string (emails, push, digest);
+ *  it shipped as French "Rappel garantie J-30" while nothing else was, and
+ *  the raw name surfaces in the alerts list, the agenda and the data export. */
 export function reminderKindLabel(kind: WarrantyReminderKind) {
-  return `Rappel garantie J-${kind.slice(1)}`;
+  return `Warranty reminder J-${kind.slice(1)}`;
 }

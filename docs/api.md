@@ -71,11 +71,17 @@ curl -b jar.txt https://wimapi.onrender.com/api/auth/me
 - Endpoints return JSON unless noted (PDFs and the CSV export return their
   native content-type with `Content-Disposition: attachment`).
 - Date / datetime fields are ISO strings.
-- **Paginated list endpoints** return `{ items, total, page, limit }` —
-  e.g. `GET /api/articles`, `GET /api/locations/:id/articles`. Notable
-  exception: `GET /api/admin/users` accepts `page`/`limit` (max 500) but
-  returns a **raw array** without a total count — it's behind ADMIN and
-  the user list is expected to stay small.
+- **Pagination comes in two shapes.** `GET /api/articles` and
+  `GET /api/locations/:id/articles` return `{ items, total, page, limit }`.
+  Every other list that accepts `?page=/limit=` (`/warranties`, `/alerts`,
+  `/attachments`, `/locations`, `/shares/owned`, `/shares/invites/sent`,
+  `/shared/articles`, `/admin/users`) returns a **bare array** with no
+  total — page 1 of 50 by default, `limit` capped at 500. A client that
+  needs the whole collection (the web views filter these lists
+  client-side) must keep requesting pages until one comes back short;
+  `apps/web/src/services/pagination.ts` (`fetchAllPages`) does exactly
+  that. Calling them with no pagination and treating the result as the
+  full list is the bug that hid every row past the 50th.
 - Errors come back as `{ "error": "human message" }` with a numeric status
   code. 5xx responses also include `requestId` so support can quote it.
 - **`401` means the session is invalid** (missing/expired/revoked token) and

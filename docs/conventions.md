@@ -163,10 +163,42 @@ npm --workspace apps/web run test:e2e
   `src/lib/navItems.ts`.
   Self-hosted Inter Variable via `@fontsource-variable/inter`. Charts
   use `recharts`, lazy-loaded inside the Dashboard chunk only.
-- **App shell**: `components/layout/{AppShell,Sidebar,TopBar,MobileDrawer}`.
-  Sidebar collapse state persists in `localStorage["wim.sidebar.collapsed"]`.
-  `AppShell` also renders a `BackToTop` floating button (appears past 600px
-  of scroll; smooth-scrolls up, instant under `prefers-reduced-motion`).
+- **App shell**: `components/layout/{AppShell,Sidebar,TopBar,MobileDrawer,
+  SettingsMenu}`. Sidebar collapse state persists in
+  `localStorage["wim.sidebar.collapsed"]`. Nav entries carry a `group`
+  (`inventory | planning | insights | collaborate | admin`) in
+  `lib/navItems.ts`; `groupedNavItems()` buckets the visible items in
+  `NAV_GROUPS` order and drops empty groups, and both Sidebar and
+  MobileDrawer render one `role="group"` per bucket with a
+  `t("nav.group.<group>")` heading (a hairline instead, on the collapsed
+  rail). A new route goes in a group or it doesn't render. Language +
+  theme live in `SettingsMenu` (gear → `Popover` → `LanguageThemeSelector
+  layout="stack"`), shown at every breakpoint — don't put selects back in
+  the header. `AppShell` also renders a `BackToTop` floating button
+  (appears past 600px of scroll; smooth-scrolls up, instant under
+  `prefers-reduced-motion`).
+- **Lists that filter client-side fetch every page.** `/warranties`,
+  `/alerts`, `/attachments`, `/locations`, `/shares/*` and
+  `/shared/articles` return a bare array (no total) and default to 50
+  rows. Never call their `getAll()` bare and treat the result as the whole
+  list — go through `services/pagination.ts` `fetchAllPages((p, l) =>
+  api.getAll(p, l))`, which walks at the 500-row API ceiling until a short
+  page. The 51st warranty was invisible everywhere in the UI before this.
+- **Side sheet for create/edit**: `components/common/Modal` takes
+  `variant="side"` (right-anchored, full-height, scrolls itself; same
+  focus-trap/Esc/scroll-lock contract as the centered dialog). The article
+  form opens there from `ArticlesList` with `chrome="plain"` + a `titleId`
+  the dialog's `aria-labelledby` points at. Prefer it over an inline form
+  that pushes a list down the page.
+- **Profile tabs**: `ProfileView` renders one panel at a time behind
+  `Tabs`; the active tab is `?tab=` (`account | notifications | billing |
+  sharing | security`) via `useSearchParams`, so deep links work and a
+  tab the user lacks (billing for a USER, sharing without the feature)
+  falls back to Account. Tests that reach a panel click its tab first.
+- **Articles table**: item lifecycle status has its own `Status` column
+  (ACTIVE as muted text, other states as a `Badge`); the `Warranty` column
+  carries only the warranty badge. Description is one line (`line-clamp-1`,
+  full text in `title`) and hidden below `xl`.
 - **Route chrome**: `components/layout/RouteChrome` is mounted once next to
   `<App />` in `main.tsx` (inside the Router) and owns the cross-cutting
   per-navigation behavior: it sets a per-page `<title>` (`WIM · <page>`,
@@ -356,8 +388,8 @@ useEffect(() => {
 ### `useId()` for label/control association
 
 Components that render in **more than one place** (e.g.
-`LanguageThemeSelector` appears in TopBar, MobileDrawer, and LoginForm)
-must use `useId()` from React for their label `htmlFor`/`id` pairs
+`LanguageThemeSelector` appears in the TopBar `SettingsMenu` popover and in
+`LoginForm`) must use `useId()` from React for their label `htmlFor`/`id` pairs
 instead of static strings — otherwise the DOM contains duplicate ids.
 
 ### Skeleton during loading, not null
@@ -1269,6 +1301,20 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 
 ## Known gotchas
 
+- **Never re-fetch from the 401 handler.** `App.tsx` registers a
+  `register401Handler` callback that flips the session to unauthed. It used
+  to call `refreshFeatures()` there to drop granted flags; `/api/features`
+  itself answers 401 when logged out, which re-fired the handler in an
+  unbounded loop (60–70 requests per logged-out page load, until login).
+  The handler and logout call `clear()` on the feature context instead — a
+  state reset with no network. Anything else that runs on 401 must be
+  network-free for the same reason.
+- **`alerts.snooze.*` presets live behind one menu.** Each SCHEDULED alert
+  row renders `AlertRowActions`: a `Popover` "Snooze…" with the three
+  presets + a date input revealed by "Custom…", and an icon cancel. Five
+  side-by-side buttons per row overflowed a 390 px viewport by up to
+  158 px. Tests open the menu before reaching a preset.
+
 - **The admin DB export is not streamed and carries live credentials.**
   `GET /api/admin/db/export` builds every table in memory and
   `JSON.stringify`s the whole thing before sending a byte, while
@@ -1440,8 +1486,11 @@ inherits everything via the role hierarchy (`roleAtLeast`).
   admin UI `apps/web/src/components/admin/AdminFeaturesTab.tsx`
 - Web entry: `apps/web/src/main.tsx`, routes in `apps/web/src/App.tsx`
 - App shell: `apps/web/src/components/layout/{AppShell,Sidebar,TopBar,
-  MobileDrawer,NotificationBell,RouteChrome}.tsx`, nav model in
-  `src/lib/navItems.ts`; `BackToTop` in `components/common/`
+  MobileDrawer,SettingsMenu,NotificationBell,RouteChrome}.tsx`, nav model
+  (+ groups) in `src/lib/navItems.ts`; `BackToTop` in `components/common/`;
+  dialog shell `components/common/Modal.tsx` (`variant="side"` for sheets)
+- Page walker for bare-array list endpoints:
+  `apps/web/src/services/pagination.ts` (`fetchAllPages`)
 - UI primitives: `apps/web/src/components/ui/` (barrel `index.ts`)
 - Hooks: `apps/web/src/hooks/{useHotkeys,useFileDrop,useApiForm,
   useUnsavedChangesGuard}.ts`

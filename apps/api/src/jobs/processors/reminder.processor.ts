@@ -183,7 +183,7 @@ export const ReminderProcessor = {
       // warranty* reminder is re-enqueued as a custom job (snooze re-keys every
       // alert to the generic id), so it arrives here with kind=WARRANTY and a
       // garantie link — rebuild the warranty-specific text instead of pushing
-      // the raw label ("Rappel garantie J-30") + a misleading
+      // the raw label ("Warranty reminder J-30") + a misleading
       // "Maintenance reminder." body.
       let title = alerte.alerteNom;
       let body = alerte.alerteDescription ?? "Maintenance reminder.";

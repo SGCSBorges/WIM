@@ -168,7 +168,7 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/` | ✓ | List own warranties (paginated) |
+| `GET`    | `/` | ✓ | List own warranties (`?page=/limit=`) — bare array, default 50 rows, max 500 |
 | `GET`    | `/providers` | ✓ | Distinct providers used (`{ items: [{ name, phone, url }] }`) for form autofill |
 | `POST`   | `/` | ✓ | Create standalone warranty |
 | `GET`    | `/:id` | ✓ | Get warranty |
@@ -183,8 +183,13 @@ Base path: `/api`. Auth is via the `wim_token` httpOnly cookie set on login — 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/` | ✓ | List attachments (`?articleId=`, `?garantieId=`) |
+| `GET`    | `/` | ✓ | List attachments (`?articleId=`, `?garantieId=`, `?page=/limit=`) — bare array, default 50 rows |
+| `GET`    | `/warranty/:garantieId` | ✓ | Attachments linked to one warranty (claim evidence) |
+| `GET`    | `/:id` | ✓ | One attachment's metadata |
+| `POST`   | `/` | ✓ | Create a metadata-only record (no file) |
 | `POST`   | `/upload` | ✓ | Upload file (multipart/form-data, 10 MB cap, magic-byte validated). Optional `type` (`INVOICE`/`WARRANTY`/`CLAIM`/`OTHER`) + `articleId`/`garantieId` links; `type=CLAIM` + `garantieId` = warranty-claim evidence |
+| `PUT`    | `/:id` | ✓ | Update metadata (`type`, links) |
+| `POST`   | `/bulk-delete` | ✓ | Delete many (`{ ids }`) — returns `{ count }`; ids the caller doesn't own are skipped |
 | `DELETE` | `/:id` | ✓ | Delete (`?removeFile=true` also deletes the file from disk) |
 
 Uploaded files are served behind auth at `GET /uploads/<filename>` — the owner must be the authenticated user.
@@ -195,16 +200,19 @@ Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`  | `/` | ✓ | List alerts (`?status=` `?kind=` `?articleId=` `?page=/limit=`) |
+| `GET`  | `/` | ✓ | List alerts (`?status=` `?kind=` `?articleId=` `?page=/limit=`) — bare array, default 50 rows |
 | `POST` | `/` | ✓ | Create a custom alert (optional `recurrenceMonths`) |
 | `POST` | `/:id/snooze` | ✓ | Snooze by N days |
 | `POST` | `/:id/cancel` | ✓ | Cancel an alert |
+| `GET`  | `/notifications` | ✓ (`notifications`) | Notification-bell feed — overdue / due-soon scheduled alerts + unseen count |
+| `POST` | `/mark-seen` | ✓ (`notifications`) | Clear the unseen badge (stamps the caller's high-water mark) |
 
 ### Locations — `/api/locations`
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/` | ✓ | List own locations (`?page=/limit=`) |
+| `GET`    | `/` | ✓ | List own locations (`?page=/limit=`) — bare array with per-location article count + value |
+| `GET`    | `/:id` | ✓ | One location with its (paginated) articles |
 | `POST`   | `/` | ✓ | Create location |
 | `PUT`    | `/:id` | ✓ | Update location |
 | `DELETE` | `/:id` | ✓ | Delete location |
@@ -237,7 +245,8 @@ Warranty reminders (J-30/J-7/J-1) are scheduled automatically by BullMQ; custom 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET`    | `/agenda` | ✓ | In-app agenda JSON — upcoming/overdue warranty, maintenance, loan, insurance, and alert events |
-| `POST`   | `/token` | ✓ | Enable the iCal feed (mints a capability token) |
+| `GET`    | `/token` | ✓ | Current feed status (open even when `calendar_feed` is off, so an issued feed can always be seen and disabled) |
+| `POST`   | `/token` | ✓ (`calendar_feed`) | Enable the iCal feed (mints a capability token) |
 | `DELETE` | `/token` | ✓ | Disable the feed |
 | `GET`    | `/feed/:token.ics` | ✗ (token) | RFC-5545 feed of warranty/alert/claim/loan/insurance/maintenance dates — token-authenticated so calendar apps can subscribe |
 
@@ -281,6 +290,7 @@ Per-user inventory sharing between **share-capable** users. Sharing is the POWER
 | `GET` | `/analytics` | POWER_USER (`analytics`) | Spending & portfolio-value analytics |
 | `GET` | `/locations` | POWER_USER (`analytics`) | Per-location value + warranty exposure breakdown (treemap dashboard) |
 | `GET` | `/budget` | POWER_USER (`budget`) | Spend vs monthly/annual budget for the current period |
+| `GET` | `/household` | POWER_USER (`household`) | Combined household inventory picture — `{ household: null }` when the caller isn't in one |
 
 ### Transfers — `/api/articles/transfers` (POWER_USER)
 
@@ -288,11 +298,11 @@ Permanent ownership transfer between Power Users. See [`docs/api.md`](./docs/api
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET`    | `/transfers/incoming` | POWER_USER | Pending transfers waiting on the caller to act (PUSH to accept, PULL to accept/reject) |
-| `GET`    | `/transfers/outgoing` | POWER_USER | Transfers the caller initiated (history) |
-| `POST`   | `/transfers/:token/accept` | POWER_USER | Accept a transfer (PUSH: recipient accepts; PULL: owner accepts) |
-| `POST`   | `/transfers/:token/reject` | POWER_USER | Reject a transfer (PULL: owner rejects) |
-| `DELETE` | `/transfers/:id` | POWER_USER | Revoke a transfer the caller initiated (PUSH: owner cancels; PULL: requester cancels) |
+| `GET`    | `/incoming` | POWER_USER | Pending transfers waiting on the caller to act (PUSH to accept, PULL to accept/reject) |
+| `GET`    | `/outgoing` | POWER_USER | Transfers the caller initiated (history) |
+| `POST`   | `/:token/accept` | POWER_USER | Accept a transfer (PUSH: recipient accepts; PULL: owner accepts) |
+| `POST`   | `/:token/reject` | POWER_USER | Reject a transfer (PULL: owner rejects) |
+| `DELETE` | `/:id` | POWER_USER | Revoke a transfer the caller initiated (PUSH: owner cancels; PULL: requester cancels) |
 
 ### Messaging — `/api/messages` (POWER_USER · `messaging`)
 
@@ -422,6 +432,7 @@ Opt-in, read-only public page per article (QR-label target). The owner mints a t
 | `POST`   | `/me/sessions/revoke-others` | ✓ | Revoke every session except the caller's own |
 | `POST`   | `/me/totp/setup` | ✓ | Password-gated TOTP setup — returns `{ otpauthUrl, qrDataUrl, backupCodes }` (plaintext once only) |
 | `POST`   | `/me/totp/verify` | ✓ | Confirm the code, flip `totpEnabled` |
+| `POST`   | `/me/totp/backup-codes` | ✓ | Password-gated — replace the remaining backup codes with a fresh set of 10 (plaintext returned once) |
 | `DELETE` | `/me/totp` | ✓ | Password-gated — disable TOTP and drop the secret |
 | `DELETE` | `/me` | ✓ | Delete account (`{ currentPassword }`) — 204 |
 
@@ -607,7 +618,7 @@ The web service is provisioned from `render.yaml` at the repo root (SPA rewrite 
 - Rate limiting is applied globally (100 req/min by default) via `RATE_LIMIT_*`, with tighter buckets for auth, destructive, and resource-creation routes (see `config/security.ts`).
 - File uploads are size-capped (10 MB) and magic-byte validated before being kept on disk.
 - The Stripe webhook verifies signatures and uses a `ProcessedStripeEvent` table for idempotency.
-- **Dependency pins**: the root `package.json` `overrides` block forces transitive dependencies to patched versions (e.g. `qs` to `6.15.2`) so a vulnerable nested copy can't slip in via `stripe`/`swagger-ui-express`/`supertest`. `npm audit --omit=dev` is expected to report **0 vulnerabilities**; if it doesn't, add or bump an override rather than disabling the CI gate.
+- **Dependency pins**: the root `package.json` `overrides` block forces transitive dependencies to patched versions (e.g. `qs` to `6.16.0`) so a vulnerable nested copy can't slip in via `stripe`/`swagger-ui-express`/`supertest`. `npm audit --omit=dev` is expected to report **0 vulnerabilities**; if it doesn't, add or bump an override rather than disabling the CI gate.
 
 ---
 

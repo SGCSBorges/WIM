@@ -291,13 +291,13 @@ describe("ReminderProcessor", () => {
     // Snooze re-enqueues every alert as a generic custom job, so a snoozed
     // warranty reminder reaches handleCustom with kind=WARRANTY + a garantie
     // link. The push must use the warranty name/end date, not the raw label
-    // ("Rappel garantie J-30") + the generic "Maintenance reminder." body.
+    // ("Warranty reminder J-30") + the generic "Maintenance reminder." body.
     mockPrisma.alerte.findUnique.mockResolvedValue({
       alerteId: 31,
       status: "SCHEDULED",
       kind: "WARRANTY",
       ownerUserId: 1,
-      alerteNom: "Rappel garantie J-30",
+      alerteNom: "Warranty reminder J-30",
       alerteDescription: null,
       alerteArticleId: 7,
       alerteGarantieId: 99,
