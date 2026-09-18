@@ -1276,6 +1276,18 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 - **Vite hashes asset filenames**, so a new deploy invalidates old CSS
   references in the SW cache automatically. `index.html` is fetched
   network-first so users get the fresh hash.
+- **`authRateLimiter` skips successful requests, so it caps brute force and
+  nothing else.** It sets `skipSuccessfulRequests` deliberately (the SPA calls
+  `GET /me` on every page load, and without the skip a user refreshing would
+  429 their own session check). The consequence is that it only bites on
+  FAILED requests: any `/api/auth` route whose *abuse looks like success* is
+  effectively uncapped by it, and needs its own limiter. That applies to
+  `POST /register` (a 201 per created account), `POST /auth/seed-demo` (a 202
+  per ~10k-row reseed) and `POST /auth/webauthn/login/options` (a 200 per
+  anonymous user lookup + JWT mint) — all three now carry an explicit limiter.
+  Password/TOTP/passkey *verification* routes are fine on the shared limiter
+  precisely because a brute-force attempt is a failure and does count. When
+  adding an `/api/auth` route, ask which side of that line it falls on.
 - **Rate limiters cover creation surfaces by cost.** `createRateLimiter`
   (40 / 5 min, keyed per session token) is on every route that inserts rows or
   bytes — including the three that carry the most weight: `POST /api/articles`,

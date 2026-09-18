@@ -32,6 +32,7 @@ import { prisma } from "../../libs/prisma";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
 import { authGuard, AuthRequest } from "./auth.middleware";
+import { security } from "../../config/security";
 import { signTokenWithJti } from "./auth.service";
 import { SessionService } from "./session.service";
 import { cookieOptsFor } from "./cookies";
@@ -186,6 +187,9 @@ router.post(
 // POST /api/auth/webauthn/login/options — begin a passkey sign-in.
 router.post(
   "/webauthn/login/options",
+  // Unauthenticated, and answers 200 — which the router-wide authRateLimiter
+  // skips — so this was an uncapped anonymous user-lookup + JWT mint.
+  security.createRateLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const { email } = z.object({ email: normalizedEmail }).parse(req.body);
     const user = await prisma.user.findUnique({

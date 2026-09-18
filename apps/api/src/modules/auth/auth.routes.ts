@@ -46,6 +46,11 @@ let demoSeeding = false;
 
 router.post(
   "/register",
+  // The router-wide authRateLimiter skips SUCCESSFUL requests (so a user
+  // refreshing /me isn't logged out), which means a successful registration
+  // costs an anonymous caller nothing and account creation was uncapped.
+  // Cap it per IP like every other row-creating route.
+  security.createRateLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const data = RegisterSchema.parse(req.body);
     const result = await AuthService.register(data);
@@ -219,6 +224,16 @@ router.post(
         res.status(401).json({ error: "Invalid bootstrap secret." });
         return;
       }
+    } else {
+      // The secret is opt-in, so an unset BOOTSTRAP_SECRET leaves the only
+      // gate as "no ADMIN exists yet" — which is exactly the state a fresh
+      // Render Postgres is in each month. Whoever registers the seed email
+      // first could then take the role. Leave the behaviour alone (the
+      // operator relies on this for recovery) but make the attempt visible.
+      logger.warn(
+        { ip: req.ip },
+        "[auth] bootstrap-admin called with no BOOTSTRAP_SECRET configured"
+      );
     }
 
     const existingAdmin = await prisma.user.findFirst({
@@ -266,6 +281,15 @@ router.post(
 // DEMO_SEED_ENABLED=false.
 router.post(
   "/seed-demo",
+  // Unauthenticated + destructive + expensive, so it needs its own cap. The
+  // router-wide authRateLimiter does NOT cover it: that limiter sets
+  // skipSuccessfulRequests, and this route answers 202, so every successful
+  // trigger was free. Without this an anonymous caller could re-fire the seed
+  // the moment each run finished and keep the database permanently busy
+  // deleting and re-inserting ~10k rows. 10/hour is far above what the
+  // login-screen button needs. Same limiter as the unauthenticated
+  // found-report route.
+  security.destructiveRateLimiter,
   asyncHandler(async (_req: Request, res: Response) => {
     if (process.env.DEMO_SEED_ENABLED === "false") {
       res.status(403).json({ error: "Demo seeding is disabled." });
