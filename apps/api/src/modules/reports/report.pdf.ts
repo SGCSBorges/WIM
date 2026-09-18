@@ -37,6 +37,19 @@ function fmtDate(d: Date | null | undefined): string {
   return d ? new Date(d).toISOString().slice(0, 10) : "—";
 }
 
+/**
+ * Line value: per-unit purchase price × quantity. Every money figure in this
+ * report is a line total (the project-wide rule), so the itemised lists have
+ * to use it too or they stop reconciling with the cover totals computed from
+ * the same articles.
+ */
+function lineValue(a: { purchasePrice: unknown; quantity: number }): number {
+  return (
+    (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) *
+    Math.max(1, a.quantity ?? 1)
+  );
+}
+
 export interface ReportFilters {
   locationId?: number | null;
   tagId?: number | null;
@@ -274,9 +287,7 @@ export async function streamPortfolioReportPdf(
         : null;
       return fin === null || fin < now;
     })
-    .sort(
-      (a, b) => Number(b.purchasePrice ?? 0) - Number(a.purchasePrice ?? 0)
-    );
+    .sort((a, b) => lineValue(b) - lineValue(a));
 
   if (risks.length > 0) {
     doc.addPage();
@@ -284,9 +295,11 @@ export async function streamPortfolioReportPdf(
     doc.moveDown();
     doc.fontSize(9);
     for (const a of risks) {
-      const purchase = money(a.purchasePrice, currency);
+      const qty = Math.max(1, a.quantity ?? 1);
+      const purchase = money(lineValue(a), currency);
       doc.text(
         `• ${a.articleNom} (${a.articleModele}) — ${purchase}` +
+          (qty > 1 ? ` · ×${qty}` : "") +
           (a.garantie?.garantieFin
             ? ` · warranty expired ${fmtDate(a.garantie.garantieFin)}`
             : " · no warranty on file")
@@ -300,9 +313,7 @@ export async function streamPortfolioReportPdf(
   // still no insurance policy, and vice-versa).
   const uninsured = scoped
     .filter((a) => !providersByArticle.has(a.articleId))
-    .sort(
-      (a, b) => Number(b.purchasePrice ?? 0) - Number(a.purchasePrice ?? 0)
-    );
+    .sort((a, b) => lineValue(b) - lineValue(a));
 
   if (uninsured.length > 0) {
     doc.addPage();
@@ -312,8 +323,10 @@ export async function streamPortfolioReportPdf(
     doc.moveDown();
     doc.fontSize(9);
     for (const a of uninsured) {
+      const qty = Math.max(1, a.quantity ?? 1);
       doc.text(
-        `• ${a.articleNom} (${a.articleModele}) — ${money(a.purchasePrice, currency)}`
+        `• ${a.articleNom} (${a.articleModele}) — ${money(lineValue(a), currency)}` +
+          (qty > 1 ? ` · ×${qty}` : "")
       );
     }
   }
