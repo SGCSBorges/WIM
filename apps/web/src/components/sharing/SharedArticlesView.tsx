@@ -16,6 +16,7 @@ import {
   Eye,
 } from "lucide-react";
 import { sharedAPI, SharedArticleRow } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { useI18n } from "../../i18n/i18n";
 import { useFeature } from "../../features/features";
 import { getErrorMessage } from "../../utils/error";
@@ -66,7 +67,9 @@ export default function SharedArticlesView() {
     setLoading(true);
     setError(null);
     try {
-      const data = await sharedAPI.getSharedArticles();
+      const data = await fetchAllPages((p, l) =>
+        sharedAPI.getSharedArticles(p, l)
+      );
       setRows(data);
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));

@@ -48,6 +48,7 @@ import {
   type ShareItem,
   type ShareInviteItem,
 } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import type { FetchedArticle } from "../../types";
 
 import { useI18n } from "../../i18n/i18n";
@@ -503,14 +504,14 @@ export default function ProfileView() {
   };
 
   // Sharing-panel data fetch. Pulls all three lists in parallel — none
-  // depends on the others, and they're small enough that paginating
-  // would add complexity for no real win.
+  // depends on the others. The two share lists default to 50 rows on the
+  // server, so walk every page rather than show a silently clipped list.
   const loadSharing = useCallback(async () => {
     try {
       const [pub, owned, sent] = await Promise.all([
         articlesAPI.getMySharedPublic(),
-        sharesAPI.getOwned(),
-        sharesAPI.getSentInvites(),
+        fetchAllPages((p, l) => sharesAPI.getOwned(p, l)),
+        fetchAllPages((p, l) => sharesAPI.getSentInvites(p, l)),
       ]);
       setSharedPublic(pub);
       setSharesOwned(owned);

@@ -23,6 +23,7 @@ import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import AttachmentForm from "./AttachmentForm";
 import { attachmentsAPI } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -122,10 +123,14 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     const seq = ++requestSeqRef.current;
     setFetchError(null);
     try {
-      const data = await attachmentsAPI.getAll({
-        articleId: articleId || undefined,
-        garantieId: garantieId || undefined,
-      });
+      const data = await fetchAllPages<Attachment>((page, limit) =>
+        attachmentsAPI.getAll({
+          articleId: articleId || undefined,
+          garantieId: garantieId || undefined,
+          page,
+          limit,
+        })
+      );
       if (seq !== requestSeqRef.current) return;
       setAttachments(data);
     } catch (e: unknown) {

@@ -982,9 +982,9 @@ export const articlesAPI = {
 
 // Locations API
 export const locationsAPI = {
-  /** Paginated list of the caller's locations.
-   *  Returns `{ items, total, page, limit }` when pagination params are
-   *  supplied; a bare list otherwise (legacy callers that don't paginate). */
+  /** One page of the caller's locations, as a bare array — the server
+   *  sends no total (default page size 50, max 500). Callers that need the
+   *  whole list walk it with `fetchAllPages`. */
   async getAll(page?: number, limit?: number) {
     const url = apiUrl("/locations");
     if (page != null) url.searchParams.set("page", String(page));

@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { MapPin, Plus, Pencil, Trash2, RotateCw, Check } from "lucide-react";
 import { locationsAPI } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
@@ -55,7 +56,9 @@ export default function LocationsView() {
     setLoading(true);
     setError(null);
     try {
-      const data = (await locationsAPI.getAll()) as LocationRow[];
+      const data = (await fetchAllPages((p, l) =>
+        locationsAPI.getAll(p, l)
+      )) as LocationRow[];
       setItems(data);
     } catch (e) {
       setError(getErrorMessage(e, t("common.errorOccurred")));

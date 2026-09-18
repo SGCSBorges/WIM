@@ -378,7 +378,11 @@ export default function App() {
   const canAnalytics = useFeature("analytics");
   const canInsurance = useFeature("insurance");
   const canWishlist = useFeature("wishlist");
-  const { loaded: featuresLoaded, refresh: refreshFeatures } = useFeatures();
+  const {
+    loaded: featuresLoaded,
+    refresh: refreshFeatures,
+    clear: clearFeatures,
+  } = useFeatures();
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState<string | null>(null);
 
@@ -403,8 +407,11 @@ export default function App() {
     register401Handler(() => {
       setAuthStatus("unauthed");
       setRole(null);
-      // Clear any granted feature access so a re-login starts from a clean map.
-      void refreshFeatures();
+      // Clear any granted feature access so a re-login starts from a clean
+      // map. This must NOT be a re-fetch: /api/features itself answers 401
+      // when logged out, which lands right back here — an unbounded loop
+      // that fired the request every few milliseconds on the login screen.
+      clearFeatures();
     });
     return () => unregister401Handler();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -486,8 +493,9 @@ export default function App() {
     await authAPI.logout();
     setAuthStatus("unauthed");
     setRole(null);
-    // Drop any granted feature access immediately (the next fetch 401s).
-    void refreshFeatures();
+    // Drop any granted feature access immediately, without a fetch that
+    // would only 401 (and trip the 401 handler above).
+    clearFeatures();
     navigate("/");
   };
 

@@ -18,6 +18,7 @@ import {
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { sharesAPI, ShareItem, ShareInviteItem } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { getErrorMessage } from "../../utils/error";
 import { isValidEmail } from "../../utils/validation";
 import { EmptyState } from "../common/States";
@@ -85,7 +86,7 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const fetchShares = useCallback(async () => {
     setError(null);
     try {
-      const data = await sharesAPI.getOwned();
+      const data = await fetchAllPages((p, l) => sharesAPI.getOwned(p, l));
       setShares(data);
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));
@@ -95,7 +96,9 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const fetchInvites = useCallback(async () => {
     setError(null);
     try {
-      const data = await sharesAPI.getSentInvites();
+      const data = await fetchAllPages((p, l) =>
+        sharesAPI.getSentInvites(p, l)
+      );
       setInvites(data);
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("common.errorOccurred")));

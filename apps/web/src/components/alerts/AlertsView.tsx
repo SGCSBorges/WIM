@@ -13,10 +13,13 @@ import {
   ArrowDown,
   Ban,
   Repeat,
+  AlarmClock,
+  ChevronDown,
 } from "lucide-react";
 import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { alertsAPI, articlesAPI } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -30,6 +33,8 @@ import {
   Textarea,
   Select,
   Badge,
+  Popover,
+  buttonClasses,
   type BadgeTone,
 } from "../ui";
 import type { AlertItem as Alert, AlertStatus } from "@wim/types";
@@ -62,8 +67,6 @@ export default function AlertsView() {
   const [sortBy, setSortBy] = useState<"date" | "status" | "name">("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [busyId, setBusyId] = useState<number | null>(null);
-  const [customSnoozeId, setCustomSnoozeId] = useState<number | null>(null);
-  const customSnoozeInputRef = useRef<HTMLInputElement | null>(null);
 
   // New-alert form
   const [showCreate, setShowCreate] = useState(false);
@@ -82,11 +85,13 @@ export default function AlertsView() {
     setItems([]);
     setError(null);
     try {
-      const data = await alertsAPI.getAll(
-        statusFilter === "ALL" ? undefined : statusFilter,
-        undefined,
-        undefined,
-        kindFilter === "ALL" ? undefined : kindFilter
+      const data = await fetchAllPages<Alert>((page, limit) =>
+        alertsAPI.getAll(
+          statusFilter === "ALL" ? undefined : statusFilter,
+          page,
+          limit,
+          kindFilter === "ALL" ? undefined : kindFilter
+        )
       );
       setItems(data);
     } catch (e: unknown) {
@@ -103,12 +108,6 @@ export default function AlertsView() {
 
   // Focus the custom-snooze date input when it appears so keyboard users
   // can type a date without an extra click.
-  useEffect(() => {
-    if (customSnoozeId !== null) {
-      setTimeout(() => customSnoozeInputRef.current?.focus(), 0);
-    }
-  }, [customSnoozeId]);
-
   // Lazily load the article list for the optional "link to item" picker the
   // first time the create form is opened (best-effort — the picker just stays
   // empty if it fails).
@@ -191,7 +190,6 @@ export default function AlertsView() {
     try {
       await alertsAPI.snooze(alerteId, days);
       toast.show(t("alerts.snooze.success"), { kind: "success" });
-      setCustomSnoozeId(null);
       await fetchAll();
     } catch (e) {
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
@@ -497,67 +495,16 @@ export default function AlertsView() {
                       </Badge>
 
                       {a.status === "SCHEDULED" && (
-                        <div className="flex flex-wrap items-center justify-end gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => snoozeAlert(a.alerteId, 1)}
-                            disabled={busyId === a.alerteId}
-                          >
-                            {t("alerts.snooze.tomorrow")}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => snoozeAlert(a.alerteId, 7)}
-                            disabled={busyId === a.alerteId}
-                          >
-                            {t("alerts.snooze.7d")}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => snoozeAlert(a.alerteId, 30)}
-                            disabled={busyId === a.alerteId}
-                          >
-                            {t("alerts.snooze.30d")}
-                          </Button>
-                          {customSnoozeId === a.alerteId ? (
-                            <Input
-                              ref={customSnoozeInputRef}
-                              type="date"
-                              aria-label={t("alerts.snooze.customLabel")}
-                              min={new Date(Date.now() + 86400_000)
-                                .toISOString()
-                                .slice(0, 10)}
-                              onChange={(e) =>
-                                void snoozeUntil(a.alerteId, e.target.value)
-                              }
-                              onBlur={() => setCustomSnoozeId(null)}
-                              disabled={busyId === a.alerteId}
-                              className="w-auto"
-                            />
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setCustomSnoozeId(a.alerteId)}
-                              disabled={busyId === a.alerteId}
-                            >
-                              {t("alerts.snooze.custom")}
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => cancelAlert(a.alerteId)}
-                            disabled={busyId === a.alerteId}
-                            className="text-danger"
-                            leftIcon={<Ban className="h-4 w-4" />}
-                          >
-                            {t("alerts.cancel")}
-                          </Button>
-                        </div>
+                        <AlertRowActions
+                          busy={busyId === a.alerteId}
+                          onSnooze={(days) =>
+                            void snoozeAlert(a.alerteId, days)
+                          }
+                          onSnoozeUntil={(iso) =>
+                            void snoozeUntil(a.alerteId, iso)
+                          }
+                          onCancel={() => cancelAlert(a.alerteId)}
+                        />
                       )}
                     </div>
                   </div>
@@ -569,6 +516,116 @@ export default function AlertsView() {
       </div>
 
       <p className="mt-4 text-xs ui-text-muted">{t("alerts.note")}</p>
+    </div>
+  );
+}
+
+/**
+ * Snooze / cancel controls for one SCHEDULED alert. The three presets and
+ * the custom date sit behind a single "Snooze…" menu: as five side-by-side
+ * buttons per row they pushed the whole list past the viewport on phones
+ * (the only horizontal overflow left in the app), and on desktop they were
+ * the loudest thing on the page for an action used once in a while.
+ */
+function AlertRowActions({
+  busy,
+  onSnooze,
+  onSnoozeUntil,
+  onCancel,
+}: {
+  busy: boolean;
+  onSnooze: (days: number) => void;
+  onSnoozeUntil: (isoDate: string) => void;
+  onCancel: () => void;
+}) {
+  const { t } = useI18n();
+  const [pickDate, setPickDate] = useState(false);
+  // The panel focuses its first item on open; the date input appears later,
+  // on "Custom…", so it needs its own hand-off (no autoFocus — a11y lint).
+  const dateRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (pickDate) dateRef.current?.focus();
+  }, [pickDate]);
+  const item =
+    "flex w-full items-center rounded-md px-3 py-2 text-left text-sm ui-btn-ghost disabled:opacity-50";
+  const presets: Array<[number, Parameters<typeof t>[0]]> = [
+    [1, "alerts.snooze.tomorrow"],
+    [7, "alerts.snooze.7d"],
+    [30, "alerts.snooze.30d"],
+  ];
+  return (
+    <div className="flex items-center gap-1">
+      <Popover
+        ariaLabel={t("alerts.snooze.menu")}
+        align="end"
+        buttonClassName={buttonClasses({ variant: "outline", size: "sm" })}
+        panelClassName="ui-card w-56 p-1 shadow-xl"
+        onOpen={() => setPickDate(false)}
+        button={() => (
+          <>
+            <AlarmClock className="h-4 w-4" aria-hidden="true" />
+            {t("alerts.snooze.menu")}
+            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+          </>
+        )}
+      >
+        {(close) => (
+          <div className="flex flex-col">
+            {presets.map(([days, key]) => (
+              <button
+                key={days}
+                type="button"
+                className={item}
+                disabled={busy}
+                onClick={() => {
+                  onSnooze(days);
+                  close();
+                }}
+              >
+                {t(key)}
+              </button>
+            ))}
+            {pickDate ? (
+              <div className="px-2 py-1.5">
+                <Input
+                  ref={dateRef}
+                  type="date"
+                  aria-label={t("alerts.snooze.customLabel")}
+                  min={new Date(Date.now() + 86400_000)
+                    .toISOString()
+                    .slice(0, 10)}
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    onSnoozeUntil(e.target.value);
+                    close();
+                  }}
+                  disabled={busy}
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                className={item}
+                disabled={busy}
+                onClick={() => setPickDate(true)}
+              >
+                {t("alerts.snooze.custom")}
+              </button>
+            )}
+          </div>
+        )}
+      </Popover>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onCancel}
+        disabled={busy}
+        className="text-danger"
+        aria-label={t("alerts.cancel")}
+        leftIcon={<Ban className="h-4 w-4" aria-hidden="true" />}
+      >
+        <span className="hidden sm:inline">{t("alerts.cancel")}</span>
+      </Button>
     </div>
   );
 }

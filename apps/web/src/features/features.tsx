@@ -68,6 +68,11 @@ interface FeatureContextValue {
   loaded: boolean;
   canAccess: (key: FeatureKey) => boolean;
   refresh: () => Promise<void>;
+  /** Drop every granted flag WITHOUT a network round-trip. This is what a
+   *  401 handler must call: `refresh()` there re-requests /api/features,
+   *  which 401s again and re-fires the handler, in a loop that hammered
+   *  the API dozens of times per logged-out page load. */
+  clear: () => void;
 }
 
 const FeatureContext = createContext<FeatureContextValue>({
@@ -75,6 +80,7 @@ const FeatureContext = createContext<FeatureContextValue>({
   loaded: false,
   canAccess: () => false,
   refresh: async () => {},
+  clear: () => {},
 });
 
 export function FeatureProvider({ children }: { children: React.ReactNode }) {
@@ -101,6 +107,8 @@ export function FeatureProvider({ children }: { children: React.ReactNode }) {
     load();
   }, [load]);
 
+  const clear = useCallback(() => setFeatures(EMPTY), []);
+
   const canAccess = useCallback(
     (key: FeatureKey) => features[key] === true,
     [features]
@@ -108,7 +116,7 @@ export function FeatureProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <FeatureContext.Provider
-      value={{ features, loaded, canAccess, refresh: load }}
+      value={{ features, loaded, canAccess, refresh: load, clear }}
     >
       {children}
     </FeatureContext.Provider>

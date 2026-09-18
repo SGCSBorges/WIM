@@ -38,3 +38,22 @@ describe.each([
     expect(empty).toEqual([]);
   });
 });
+
+/**
+ * A double-encoded string (UTF-8 bytes read as Latin-1 and re-encoded) puts
+ * C1 control characters (U+0080–U+009F) into the value. That is exactly what
+ * the English dashboard nudge shipped with: an em dash rendered as "â".
+ * No legitimate translation contains a C1 control, so this is a clean tell.
+ */
+describe.each([
+  ["translations", translations as Record<Language, Record<string, string>>],
+  ["translations.extras", extras as Record<Language, Record<string, string>>],
+])("%s has no mojibake", (_name, dict) => {
+  it.each(LANGS)("%s contains no C1 control characters", (lang) => {
+    const bad = Object.entries(dict[lang])
+      // eslint-disable-next-line no-control-regex
+      .filter(([, v]) => /[\u0080-\u009f]/.test(v))
+      .map(([k, v]) => `${k}: ${JSON.stringify(v)}`);
+    expect(bad).toEqual([]);
+  });
+});

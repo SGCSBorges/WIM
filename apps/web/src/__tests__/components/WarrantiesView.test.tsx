@@ -64,4 +64,26 @@ describe("<WarrantiesView />", () => {
     renderView();
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
+
+  // GET /warranties defaults to 50 rows and returns no total. The view
+  // filters and searches client-side, so it must hold the whole list: an
+  // account with 72 warranties showed 50 and no way to reach the rest.
+  it("walks every page instead of stopping at the server default", async () => {
+    const row = (id: number) => ({
+      garantieId: id,
+      garantieNom: `Warranty ${id}`,
+      garantieDateAchat: "2025-01-15T00:00:00.000Z",
+      garantieDuration: 24,
+      garantieArticleId: id,
+      status: "ACTIVE",
+    });
+    mockedGet
+      .mockResolvedValueOnce(Array.from({ length: 500 }, (_, i) => row(i + 1)))
+      .mockResolvedValueOnce([row(501)]);
+    renderView();
+    expect(await screen.findByText("Warranty 501")).toBeInTheDocument();
+    expect(mockedGet).toHaveBeenCalledTimes(2);
+    expect(mockedGet).toHaveBeenNthCalledWith(1, 1, 500);
+    expect(mockedGet).toHaveBeenNthCalledWith(2, 2, 500);
+  });
 });

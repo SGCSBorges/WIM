@@ -16,6 +16,7 @@ import {
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { warrantiesAPI } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -56,7 +57,7 @@ export default function WarrantiesView() {
     setLoading(true);
     setError(null);
     try {
-      const data = await warrantiesAPI.getAll();
+      const data = await fetchAllPages((p, l) => warrantiesAPI.getAll(p, l));
       setItems(data as Warranty[]);
     } catch (e: unknown) {
       setError(getErrorMessage(e, t("warranties.error.fetch")));

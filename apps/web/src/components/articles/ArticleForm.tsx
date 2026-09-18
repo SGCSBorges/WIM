@@ -37,6 +37,7 @@ import {
   tagsAPI,
   API_BASE_URL,
 } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { useI18n } from "../../i18n/i18n";
 import type { Article, Location, Tag } from "../../types";
 import {
@@ -458,7 +459,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     (async () => {
       try {
         setLocationsLoading(true);
-        const data = await locationsAPI.getAll();
+        const data = await fetchAllPages<Location>((p, l) =>
+          locationsAPI.getAll(p, l)
+        );
         const mapped: Location[] = (data || []).map(
           (l: { locationId: number; name: string }) => ({
             locationId: l.locationId,

@@ -1127,6 +1127,8 @@ export default function ArticleDetail() {
                           <img
                             src={a.thumbUrl ?? a.fileUrl}
                             alt={a.fileName}
+                            loading="lazy"
+                            decoding="async"
                             className="h-10 w-10 rounded object-cover"
                           />
                         ) : (

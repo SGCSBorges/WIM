@@ -46,6 +46,7 @@ import {
   savedViewsAPI,
   type SavedView,
 } from "../../services/api";
+import { fetchAllPages } from "../../services/pagination";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import type { Article, FetchedArticle, Location, Tag } from "../../types";
@@ -480,7 +481,9 @@ const ArticlesList: React.FC = () => {
 
   const fetchLocations = async () => {
     try {
-      const data = await locationsAPI.getAll();
+      const data = await fetchAllPages<Location>((p, l) =>
+        locationsAPI.getAll(p, l)
+      );
       const mapped: Location[] = (data || []).map(
         (l: { locationId: number; name: string }) => ({
           locationId: l.locationId,

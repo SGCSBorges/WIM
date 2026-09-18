@@ -26,12 +26,13 @@ beforeEach(() => {
 /** Probe component that surfaces a single flag, the loaded flag + a refresh. */
 function Probe() {
   const canShare = useFeature("sharing");
-  const { loaded, refresh } = useFeatures();
+  const { loaded, refresh, clear } = useFeatures();
   return (
     <div>
       <span data-testid="sharing">{canShare ? "yes" : "no"}</span>
       <span data-testid="loaded">{loaded ? "yes" : "no"}</span>
       <button onClick={() => void refresh()}>refresh</button>
+      <button onClick={() => clear()}>clear</button>
     </div>
   );
 }
@@ -102,5 +103,29 @@ describe("FeatureProvider / useFeature", () => {
     await waitFor(() =>
       expect(screen.getByTestId("sharing").textContent).toBe("no")
     );
+  });
+
+  // App's 401 handler used to call refresh() to drop granted flags. But
+  // /api/features itself 401s when logged out, so that fetch re-fired the
+  // handler: 60–70 requests per logged-out page load, until login. clear()
+  // is the network-free reset the handler needs.
+  it("clear() drops granted flags without a fetch", async () => {
+    getAccessMap.mockResolvedValueOnce({ sharing: true });
+    render(
+      <FeatureProvider>
+        <Probe />
+      </FeatureProvider>
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("sharing").textContent).toBe("yes")
+    );
+    expect(getAccessMap).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByText("clear"));
+    expect(screen.getByTestId("sharing").textContent).toBe("no");
+    // The point of clear(): no second round-trip that could 401 and loop.
+    expect(getAccessMap).toHaveBeenCalledTimes(1);
+    // Still loaded — clearing is not "unknown", it is "nothing granted".
+    expect(screen.getByTestId("loaded").textContent).toBe("yes");
   });
 });

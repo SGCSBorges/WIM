@@ -48,7 +48,7 @@ export const extras = {
     "agenda.kind.loan": "Loan",
     "agenda.kind.insurance": "Insurance",
     "agenda.kind.alert": "Alert",
-    "dashboard.needsVerificationNudge": "item(s) to verify â open the list",
+    "dashboard.needsVerificationNudge": "item(s) to verify — open the list",
     "auth.passkey.signIn": "Sign in with a passkey",
     "auth.passkey.emailFirst": "Enter your email first, then use your passkey",
     "passkeys.title": "Passkeys",
@@ -756,6 +756,7 @@ export const extras = {
     "articles.form.tagCreated": "Tag “{name}” created and selected.",
     "articles.form.locationCreated": "Location “{name}” created and selected.",
     "alerts.snooze.tomorrow": "Tomorrow",
+    "alerts.snooze.menu": "Snooze…",
     "alerts.filters.status": "Status",
     "alerts.filters.kind": "Kind",
     "alerts.filters.allKinds": "All kinds",
@@ -1949,6 +1950,7 @@ export const extras = {
     "articles.form.locationCreated":
       "Emplacement « {name} » créé et sélectionné.",
     "alerts.snooze.tomorrow": "Demain",
+    "alerts.snooze.menu": "Reporter…",
     "alerts.filters.status": "Statut",
     "alerts.filters.kind": "Type",
     "alerts.filters.allKinds": "Tous les types",
@@ -3150,6 +3152,7 @@ export const extras = {
     "articles.form.tagCreated": "Etiqueta “{name}” criada e selecionada.",
     "articles.form.locationCreated": "Local “{name}” criado e selecionado.",
     "alerts.snooze.tomorrow": "Amanhã",
+    "alerts.snooze.menu": "Adiar…",
     "alerts.filters.status": "Estado",
     "alerts.filters.kind": "Tipo",
     "alerts.filters.allKinds": "Todos os tipos",
@@ -4357,6 +4360,7 @@ export const extras = {
     "articles.form.locationCreated":
       "Ubicación «{name}» creada y seleccionada.",
     "alerts.snooze.tomorrow": "Mañana",
+    "alerts.snooze.menu": "Posponer…",
     "alerts.filters.status": "Estado",
     "alerts.filters.kind": "Tipo",
     "alerts.filters.allKinds": "Todos los tipos",
@@ -5555,6 +5559,7 @@ export const extras = {
     "articles.form.locationCreated":
       "Locatie “{name}” aangemaakt en geselecteerd.",
     "alerts.snooze.tomorrow": "Morgen",
+    "alerts.snooze.menu": "Uitstellen…",
     "alerts.filters.status": "Status",
     "alerts.filters.kind": "Soort",
     "alerts.filters.allKinds": "Alle soorten",
