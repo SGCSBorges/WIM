@@ -6,12 +6,16 @@
  * actually accepts. To document a new endpoint, add an entry under
  * `paths` below and reference its Zod input/output schemas inline.
  *
- * Auth, articles, article-templates, locations, warranties, alerts,
+ * Covers auth, articles, article-templates, locations, warranties, alerts,
  * attachments, notes, shares, transfers, messaging, tags, saved-views,
  * calendar, push, billing, profile, admin (incl. the audit log), statistics,
  * reports, features, loans, insurance, maintenance, wishlist, household,
  * the public item page (incl. the lost-and-found report), and the meta
- * endpoints are all listed below.
+ * endpoints — but NOT exhaustively. Around three dozen mounted routes have
+ * no entry here, among them the whole TOTP setup flow, session management,
+ * warranty renew/extend/history and the agenda. The exact list is the
+ * UNDOCUMENTED set in `__tests__/openapi.coverage.test.ts`, which fails if a
+ * NEW route is added without an entry, so the gap can shrink but not grow.
  */
 
 import { z } from "zod";
