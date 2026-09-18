@@ -11,6 +11,7 @@ import { CheckCircle2, Circle, Sparkles, X } from "lucide-react";
 import { statisticsAPI } from "../../services/api";
 import { useI18n } from "../../i18n/i18n";
 import { Card, Button } from "../ui";
+import { safeGetItem, safeSetItem } from "../../utils/safeStorage";
 
 const DISMISS_KEY = "wim.onboarding.dismissed";
 
@@ -30,7 +31,7 @@ export default function OnboardingChecklist() {
     alerts: number;
   } | null>(null);
   const [dismissed, setDismissed] = useState<boolean>(
-    () => localStorage.getItem(DISMISS_KEY) === "1"
+    () => safeGetItem(DISMISS_KEY) === "1"
   );
 
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function OnboardingChecklist() {
   if (remaining.length === 0) return null;
 
   const dismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "1");
+    safeSetItem(DISMISS_KEY, "1");
     setDismissed(true);
   };
 

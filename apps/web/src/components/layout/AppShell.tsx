@@ -29,6 +29,7 @@ import {
   wishlistAPI,
 } from "../../services/api";
 import { visibleNavItems, type NavItem, type NavKey } from "../../lib/navItems";
+import { safeGetItem, safeSetItem } from "../../utils/safeStorage";
 import OfflineBanner from "../common/OfflineBanner";
 import BackToTop from "../common/BackToTop";
 import ShortcutsHelp from "../common/ShortcutsHelp";
@@ -56,7 +57,7 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
   const { features, loaded: featuresLoaded } = useFeatures();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(
-    () => localStorage.getItem(COLLAPSE_KEY) === "1"
+    () => safeGetItem(COLLAPSE_KEY) === "1"
   );
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -65,11 +66,13 @@ export default function AppShell({ role, onLogout, children }: AppShellProps) {
   // Close the mobile drawer on navigation.
   useEffect(() => setMobileNavOpen(false), [location.pathname]);
 
-  const toggleCollapsed = () =>
-    setCollapsed((c) => {
-      localStorage.setItem(COLLAPSE_KEY, c ? "0" : "1");
-      return !c;
-    });
+  // The persist writes outside the updater: React may invoke a state updater
+  // more than once (StrictMode does so deliberately), so it has to stay pure.
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    safeSetItem(COLLAPSE_KEY, next ? "1" : "0");
+    setCollapsed(next);
+  };
 
   // Until the feature map loads, fall back to role-based visibility (passing
   // undefined) so a POWER_USER/ADMIN doesn't see share/reports nav items

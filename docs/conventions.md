@@ -978,6 +978,13 @@ On acceptance the transfer is fully atomic (Prisma transaction):
     **reminder alerts** those rows scheduled are deleted too — the blanket
     `Alerte` re-own moved them to the new owner, where they'd otherwise fire
     against a record the new owner can't see.
+  - The **warranty** reminders are re-owned rather than deleted, but their
+    already-queued BullMQ jobs still carry the giver's `ownerUserId`. The
+    reminder processor therefore addresses the *row's* current owner
+    (`alerte.ownerUserId`), never the job payload's — reading the payload
+    would push/email the item's name to its former owner and mark the row
+    SENT, so the new owner would never get the reminder. `handleCustom`
+    always read the row; `handleWarranty` now does too.
   - All other PENDING transfer requests for the same article are REVOKED
 
 Status lifecycle: `PENDING → ACCEPTED | REJECTED | REVOKED | EXPIRED` (7-day
@@ -1240,6 +1247,14 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 - **Vite hashes asset filenames**, so a new deploy invalidates old CSS
   references in the SW cache automatically. `index.html` is fetched
   network-first so users get the fresh hash.
+- **Rate limiters cover creation surfaces by cost.** `createRateLimiter`
+  (40 / 5 min, keyed per session token) is on every route that inserts rows or
+  bytes — including the three that carry the most weight: `POST /api/articles`,
+  `POST /api/articles/import` (up to 1000 rows a call), `POST
+  /api/articles/:id/duplicate`, and both attachment creates (`POST
+  /api/attachments` and `/upload`, the latter accepting 10 MB a call). The
+  destructive bucket (10/hour) stays for bulk deletes, exports and account
+  deletion. Adding a new create route means adding the limiter with it.
 - **Dependency `overrides`** (root `package.json`): pin transitive deps to
   patched versions so the `npm audit --omit=dev --audit-level=moderate` CI
   gate stays green (e.g. `qs: 6.15.2`, forced into `stripe` /

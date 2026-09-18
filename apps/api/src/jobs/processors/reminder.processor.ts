@@ -84,7 +84,7 @@ export const ReminderProcessor = {
       // the `attempts: 3` policy this ordering was designed around.
       const alerte = await prisma.alerte.findUnique({
         where: { alerteId: data.alerteId },
-        select: { status: true },
+        select: { status: true, ownerUserId: true },
       });
       if (
         !alerte ||
@@ -108,11 +108,19 @@ export const ReminderProcessor = {
 
       const path = data.articleId ? `/articles/${data.articleId}` : "/alerts";
 
+      // Address the row's CURRENT owner, not the payload's. An article
+      // transfer re-owns the Alerte to the new owner but leaves the queued
+      // job's `ownerUserId` pointing at the giver — delivering on the payload
+      // would name the item to its former owner and mark the row SENT, so the
+      // new owner never gets the reminder at all. handleCustom already reads
+      // the row for exactly this reason.
+      const recipientUserId = alerte.ownerUserId;
+
       // Deliver BEFORE markSent so a failed push (e.g., transient VAPID error)
       // causes BullMQ to retry instead of marking the alert sent and dropping
       // the notification on the floor. Push is the canonical channel; if it
       // throws, the catch below records markFailed + rethrows for retry.
-      await PushService.sendToUser(data.ownerUserId, {
+      await PushService.sendToUser(recipientUserId, {
         title: `Warranty reminder: ${g.garantieNom}`,
         body: `Warranty expires ${shortDate(g.garantieFin)}.`,
         url: path,
@@ -121,7 +129,7 @@ export const ReminderProcessor = {
       // Email is best-effort and never throws (see emailReminder above), so
       // we don't gate markSent on it — a failed SMTP doesn't justify a
       // duplicate push on retry.
-      await emailReminder(data.ownerUserId, {
+      await emailReminder(recipientUserId, {
         subject: `Warranty reminder: ${g.garantieNom}`,
         body: `Warranty "${g.garantieNom}" expires ${shortDate(g.garantieFin)}.`,
         path,

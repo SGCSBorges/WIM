@@ -107,24 +107,33 @@ export default function MessagesView() {
     void loadThreads();
   }, [loadThreads]);
 
+  // Switching threads re-runs this without unmounting, so a slow response for
+  // the previously selected thread must not render its messages under the new
+  // thread's header. Same request-sequence guard as ArticleDetail.
+  const detailSeqRef = useRef(0);
+
   const loadDetail = useCallback(
     async (id: number) => {
+      const seq = ++detailSeqRef.current;
       setDetailLoading(true);
       setDetailError(null);
       try {
         const data = await messagesAPI.getThread(id);
+        if (seq !== detailSeqRef.current) return;
         setDetail(data);
         // Opening the thread cleared the unread flag server-side — reflect that
-        // locally in the list + the nav badge without a full reload.
+        // locally in the list + the nav badge without a full reload. This part
+        // is keyed on `id`, so it stays correct even for a superseded request.
         setThreads((prev) =>
           prev.map((th) => (th.id === id ? { ...th, unread: false } : th))
         );
         void refreshUnread();
       } catch (e) {
+        if (seq !== detailSeqRef.current) return;
         setDetailError(getErrorMessage(e, t("common.errorOccurred")));
         setDetail(null);
       } finally {
-        setDetailLoading(false);
+        if (seq === detailSeqRef.current) setDetailLoading(false);
       }
     },
     [t, refreshUnread]

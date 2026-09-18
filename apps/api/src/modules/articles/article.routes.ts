@@ -260,6 +260,7 @@ router.get(
 
 router.post(
   "/",
+  security.createRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = ArticleCreateSchema.omit({ ownerUserId: true }).parse(
@@ -388,6 +389,7 @@ router.post(
  *  warranty (1:1 unique) or attachments. */
 router.post(
   "/:id/duplicate",
+  security.createRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const id = idParam.parse(req.params.id);
@@ -559,6 +561,7 @@ router.post(
  */
 router.post(
   "/import",
+  security.createRateLimiter,
   authGuard,
   requireFeature("csv_import"),
   asyncHandler(async (req: AuthRequest, res) => {

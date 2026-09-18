@@ -5,7 +5,7 @@
  * force-logout, delete user, and inventory inspection. ADMIN-only via the
  * route layer (`requireRole("ADMIN")`).
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ShieldCheck,
   LayoutDashboard,
@@ -168,7 +168,14 @@ export default function AdminUsers() {
     }
   }, [t]);
 
+  // The 300ms debounce below only paces when requests START; it does nothing
+  // about the order they FINISH. On a cold-starting API a request for "ab" can
+  // land after the one for "abc" and repaint the older result set under the
+  // newer query, so sequence the responses too.
+  const usersSeqRef = useRef(0);
+
   const fetchUsers = useCallback(async () => {
+    const seq = ++usersSeqRef.current;
     setLoadingUsers(true);
     setError(null);
     try {
@@ -177,11 +184,13 @@ export default function AdminUsers() {
         sort: userSort,
         dir: userDir,
       });
+      if (seq !== usersSeqRef.current) return;
       setUsers(data);
     } catch (e: unknown) {
+      if (seq !== usersSeqRef.current) return;
       setError(getErrorMessage(e, t("admin.error.fetchUsers")));
     } finally {
-      setLoadingUsers(false);
+      if (seq === usersSeqRef.current) setLoadingUsers(false);
     }
   }, [t, userSearch, userSort, userDir]);
 

@@ -140,6 +140,7 @@ router.get(
 /** POST /api/attachments — create metadata record (no file) */
 router.post(
   "/",
+  security.createRateLimiter,
   authGuard,
   asyncHandler(async (req: AuthRequest, res) => {
     const bodyData = AttachmentCreateSchema.omit({ ownerUserId: true }).parse(
@@ -160,6 +161,7 @@ router.post(
 /** POST /api/attachments/upload — multipart file upload */
 router.post(
   "/upload",
+  security.createRateLimiter,
   authGuard,
   upload.single("file"),
   asyncHandler(async (req: AuthRequest, res) => {

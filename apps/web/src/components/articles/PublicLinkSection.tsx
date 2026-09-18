@@ -5,7 +5,7 @@
  * client-side from the browser's own origin, so it always points at the right
  * front-end host without the API needing to know it.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { QrCode, Copy, Check, Trash2, Download, Plus } from "lucide-react";
 import { articlesAPI } from "../../services/api";
@@ -33,15 +33,25 @@ export default function PublicLinkSection({
 
   const publicUrl = token ? `${window.location.origin}/i/${token}` : null;
 
+  // Sibling links ("bundled with") navigate article → article without
+  // unmounting this section, so a slow response for the previous article must
+  // not overwrite the newer one — the stale value here is the PUBLIC SHARE
+  // TOKEN, so a lost race would render article A's public URL and QR under
+  // article B. Same request-sequence guard as ArticleDetail.
+  const requestSeqRef = useRef(0);
+
   const load = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
     setLoading(true);
     try {
       const { token } = await articlesAPI.getPublicLink(articleId);
+      if (seq !== requestSeqRef.current) return;
       setToken(token);
     } catch {
+      if (seq !== requestSeqRef.current) return;
       setToken(null);
     } finally {
-      setLoading(false);
+      if (seq === requestSeqRef.current) setLoading(false);
     }
   }, [articleId]);
 
@@ -68,6 +78,8 @@ export default function PublicLinkSection({
     setBusy(true);
     try {
       const { token } = await articlesAPI.createPublicLink(articleId);
+      // Retire any in-flight load so it can't clobber the freshly minted token.
+      requestSeqRef.current++;
       setToken(token);
       toast.show(t("publicLink.enabled"), { kind: "success" });
     } catch (e) {
@@ -83,6 +95,7 @@ export default function PublicLinkSection({
     setBusy(true);
     try {
       await articlesAPI.deletePublicLink(articleId);
+      requestSeqRef.current++;
       setToken(null);
       toast.show(t("publicLink.disabled"), { kind: "success" });
     } catch (e) {
