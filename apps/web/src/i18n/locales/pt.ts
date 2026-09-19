@@ -1251,6 +1251,11 @@ const extras: LocaleDict["extras"] = {
   "a11y.pagination": "Paginação",
   "a11y.primaryNav": "Navegação principal",
   "a11y.mobileNav": "Navegação móvel",
+  "error.route.title": "Esta página encontrou um erro",
+  "error.route.body":
+    "O resto da aplicação continua a funcionar — tente novamente ou volte ao início.",
+  "error.route.retry": "Tentar novamente",
+  "error.route.home": "Voltar ao início",
   "alerts.filters.status": "Estado",
   "alerts.filters.kind": "Tipo",
   "alerts.filters.allKinds": "Todos os tipos",

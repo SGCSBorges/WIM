@@ -22,6 +22,7 @@ import React, {
   useState,
 } from "react";
 import { getErrorMessage } from "./utils/error";
+import { isChunkLoadError } from "./utils/chunkError";
 import {
   Routes,
   Route,
@@ -53,6 +54,7 @@ import { usePreferences } from "./preferences/preferences";
 import InstallPwaButton from "./components/common/InstallPwaButton";
 import { RouteFallbackSkeleton } from "./components/common/Skeleton";
 import AppShell from "./components/layout/AppShell";
+import RouteErrorBoundary from "./components/layout/RouteErrorBoundary";
 import { useFeature, useFeatures } from "./features/features";
 import { MessagesUnreadProvider } from "./messages/unread";
 
@@ -149,11 +151,7 @@ export class ErrorBoundary extends Component<
     // A ChunkLoadError means a lazy route's JS chunk 404'd — almost always
     // because a new deploy invalidated the old hashed filename. Auto-reload
     // once so the user gets the fresh bundle without a manual refresh.
-    if (
-      error.name === "ChunkLoadError" ||
-      error.message.includes("Failed to fetch dynamically imported module") ||
-      error.message.includes("Loading chunk")
-    ) {
+    if (isChunkLoadError(error)) {
       window.location.reload();
     }
   }
@@ -613,71 +611,90 @@ export default function App() {
           </div>
         )}
 
-        <Suspense fallback={<RouteFallbackSkeleton />}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Home
-                  role={role}
-                  upgradeError={upgradeError}
-                  onUpgrade={startUpgrade}
-                />
-              }
-            />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/articles" element={<ArticlesList />} />
-            <Route path="/articles/trash" element={<ArticlesTrash />} />
-            <Route path="/articles/:id" element={<ArticleDetail />} />
-            <Route path="/warranties" element={<WarrantiesView />} />
-            <Route path="/attachments" element={<AttachmentsList />} />
-            <Route path="/locations" element={<LocationsView />} />
-            <Route path="/alerts" element={<AlertsView />} />
-            <Route path="/agenda" element={<AgendaView />} />
-            <Route
-              path="/insurance"
-              element={gatedRoute(canInsurance, <InsuranceView />, "insurance")}
-            />
-            <Route
-              path="/wishlist"
-              element={gatedRoute(canWishlist, <WishlistView />, "wishlist")}
-            />
-            <Route
-              path="/reports"
-              element={gatedRoute(canReports, <ReportsView />, "reports")}
-            />
-            <Route
-              path="/analytics"
-              element={gatedRoute(canAnalytics, <AnalyticsView />, "analytics")}
-            />
-            <Route
-              path="/locations/value"
-              element={gatedRoute(
-                canAnalytics,
-                <LocationValueView />,
-                "analytics"
-              )}
-            />
-            <Route path="/profile" element={<ProfileView />} />
-            <Route path="/sharing" element={sharingRoute} />
-            <Route path="/sharing/accept" element={sharingRoute} />
-            <Route
-              path="/transfers"
-              element={gatedRoute(canTransfer, <TransfersView />, "transfers")}
-            />
-            <Route
-              path="/messages"
-              element={gatedRoute(canMessage, <MessagesView />, "messages")}
-            />
-            <Route
-              path="/admin"
-              element={
-                role === "ADMIN" ? <AdminUsers /> : <Navigate to="/" replace />
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+        {/* Inside the shell: a throwing route leaves the nav usable. */}
+        <RouteErrorBoundary>
+          <Suspense fallback={<RouteFallbackSkeleton />}>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Home
+                    role={role}
+                    upgradeError={upgradeError}
+                    onUpgrade={startUpgrade}
+                  />
+                }
+              />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/articles" element={<ArticlesList />} />
+              <Route path="/articles/trash" element={<ArticlesTrash />} />
+              <Route path="/articles/:id" element={<ArticleDetail />} />
+              <Route path="/warranties" element={<WarrantiesView />} />
+              <Route path="/attachments" element={<AttachmentsList />} />
+              <Route path="/locations" element={<LocationsView />} />
+              <Route path="/alerts" element={<AlertsView />} />
+              <Route path="/agenda" element={<AgendaView />} />
+              <Route
+                path="/insurance"
+                element={gatedRoute(
+                  canInsurance,
+                  <InsuranceView />,
+                  "insurance"
+                )}
+              />
+              <Route
+                path="/wishlist"
+                element={gatedRoute(canWishlist, <WishlistView />, "wishlist")}
+              />
+              <Route
+                path="/reports"
+                element={gatedRoute(canReports, <ReportsView />, "reports")}
+              />
+              <Route
+                path="/analytics"
+                element={gatedRoute(
+                  canAnalytics,
+                  <AnalyticsView />,
+                  "analytics"
+                )}
+              />
+              <Route
+                path="/locations/value"
+                element={gatedRoute(
+                  canAnalytics,
+                  <LocationValueView />,
+                  "analytics"
+                )}
+              />
+              <Route path="/profile" element={<ProfileView />} />
+              <Route path="/sharing" element={sharingRoute} />
+              <Route path="/sharing/accept" element={sharingRoute} />
+              <Route
+                path="/transfers"
+                element={gatedRoute(
+                  canTransfer,
+                  <TransfersView />,
+                  "transfers"
+                )}
+              />
+              <Route
+                path="/messages"
+                element={gatedRoute(canMessage, <MessagesView />, "messages")}
+              />
+              <Route
+                path="/admin"
+                element={
+                  role === "ADMIN" ? (
+                    <AdminUsers />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </RouteErrorBoundary>
       </AppShell>
     </MessagesUnreadProvider>
   );

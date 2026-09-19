@@ -1252,6 +1252,11 @@ const extras: LocaleDict["extras"] = {
   "a11y.pagination": "Paginering",
   "a11y.primaryNav": "Hoofdnavigatie",
   "a11y.mobileNav": "Mobiele navigatie",
+  "error.route.title": "Deze pagina liep vast",
+  "error.route.body":
+    "De rest van de app werkt nog — probeer het opnieuw of ga terug naar start.",
+  "error.route.retry": "Opnieuw proberen",
+  "error.route.home": "Terug naar start",
   "alerts.filters.status": "Status",
   "alerts.filters.kind": "Soort",
   "alerts.filters.allKinds": "Alle soorten",

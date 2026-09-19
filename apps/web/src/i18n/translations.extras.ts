@@ -765,6 +765,11 @@ export const extras = {
     "a11y.pagination": "Pagination",
     "a11y.primaryNav": "Primary navigation",
     "a11y.mobileNav": "Mobile navigation",
+    "error.route.title": "This page hit an error",
+    "error.route.body":
+      "The rest of the app is still working — try again, or go back to the home screen.",
+    "error.route.retry": "Try again",
+    "error.route.home": "Back to home",
     "alerts.filters.status": "Status",
     "alerts.filters.kind": "Kind",
     "alerts.filters.allKinds": "All kinds",

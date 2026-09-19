@@ -1336,6 +1336,17 @@ hardcode an English sentence at a call site again — add a key.
 
 ## Known gotchas
 
+- **Two error boundaries, and they divide the work.** The root one
+  (`main.tsx`) wraps the whole tree and exists for errors that leave nothing
+  usable — notably a `ChunkLoadError`, where it reloads to pick up a new
+  deploy's hashed filenames. `RouteErrorBoundary` sits INSIDE `AppShell`
+  around the route `Suspense`, so an ordinary render throw takes out only the
+  content pane and the sidebar/top bar stay operable; it clears itself when
+  the pathname changes and offers a retry. It deliberately **re-throws**
+  chunk errors (`utils/chunkError.isChunkLoadError`) so the root boundary
+  still does the reload — catching them there would swallow that recovery.
+  `Suspense` catches promises, not throws; it is not a substitute for either.
+
 - **Screen-reader labels are translated too.** `aria-label` strings on the
   primitives (`Modal` close, `Pagination`, `Breadcrumbs`, `RouteFallbackSkeleton`,
   toast dismiss) and the nav landmarks come from `a11y.*` keys. Primitives
