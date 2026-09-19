@@ -19,6 +19,7 @@ import { getErrorMessage } from "../../utils/error";
 import { formatMoney } from "../../utils/money";
 import { Skeleton } from "../common/Skeleton";
 import { EmptyState } from "../common/States";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import {
   Badge,
   Button,
@@ -79,18 +80,23 @@ export default function InsuranceView() {
   const [saving, setSaving] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
+  const request = useLatestRequest();
   const load = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     try {
-      setPolicies(await insuranceAPI.list());
+      const rows = await insuranceAPI.list();
+      if (!fresh()) return;
+      setPolicies(rows);
     } catch (e) {
+      if (!fresh()) return;
       toast.show(getErrorMessage(e, t("common.errorOccurred")), {
         kind: "error",
       });
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [toast, t]);
+  }, [toast, t, request]);
 
   useEffect(() => {
     void load();

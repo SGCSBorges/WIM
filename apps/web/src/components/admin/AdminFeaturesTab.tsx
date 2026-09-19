@@ -25,6 +25,7 @@ import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
 import { Section, Button, Select, Badge } from "../ui";
 import { Skeleton } from "../common/Skeleton";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 const ROLE_OPTION_VALUES = [
   { value: "USER", labelKey: "admin.features.roleEveryone" },
@@ -64,20 +65,24 @@ export default function AdminFeaturesTab() {
   const grantNoteId = useId();
   const grantFormRef = useRef<HTMLDivElement>(null);
 
+  const request = useLatestRequest();
   const load = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     try {
       const data = await adminFeaturesAPI.getAll();
+      if (!fresh()) return;
       setFlags(data.flags);
       setGrants(data.grants);
     } catch (e) {
+      if (!fresh()) return;
       toast.show(getErrorMessage(e, t("admin.features.loadError")), {
         kind: "error",
       });
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t, toast]);
+  }, [t, toast, request]);
 
   useEffect(() => {
     load();

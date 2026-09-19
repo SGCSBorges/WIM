@@ -28,6 +28,7 @@ import TransferDialog from "../articles/TransferDialog";
 import MessageComposeDialog from "../messages/MessageComposeDialog";
 import SharedArticleHeroDialog from "./SharedArticleHeroDialog";
 import { useToast } from "../common/Toast";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 type EditDraft = {
   articleNom: string;
@@ -63,20 +64,24 @@ export default function SharedArticlesView() {
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [savingArticleId, setSavingArticleId] = useState<number | null>(null);
 
+  const request = useLatestRequest();
   const fetchRows = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     setError(null);
     try {
       const data = await fetchAllPages((p, l) =>
         sharedAPI.getSharedArticles(p, l)
       );
+      if (!fresh()) return;
       setRows(data);
     } catch (e: unknown) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, request]);
 
   useEffect(() => {
     fetchRows();

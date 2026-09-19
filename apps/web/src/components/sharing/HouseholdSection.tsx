@@ -32,6 +32,7 @@ import { useToast } from "../common/Toast";
 import { Skeleton } from "../common/Skeleton";
 import LockedFeatureNotice from "../common/LockedFeatureNotice";
 import { Section, Button, Field, Input, Badge, ConfirmDialog } from "../ui";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 export default function HouseholdSection() {
   const { t } = useI18n();
@@ -52,17 +53,22 @@ export default function HouseholdSection() {
 
   const inviteToken = searchParams.get("householdToken");
 
+  const request = useLatestRequest();
   const load = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     setError(null);
     try {
-      setHousehold(await householdAPI.get());
+      const data = await householdAPI.get();
+      if (!fresh()) return;
+      setHousehold(data);
     } catch (e) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, request]);
 
   useEffect(() => {
     void load();

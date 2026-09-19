@@ -23,6 +23,7 @@ import { getErrorMessage } from "../../utils/error";
 import { isValidEmail } from "../../utils/validation";
 import { EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import {
   PageHeader,
   Section,
@@ -83,27 +84,35 @@ const SharesList: React.FC<SharesListProps> = ({ onEdit, onRevoke }) => {
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
 
+  const sharesRequest = useLatestRequest();
   const fetchShares = useCallback(async () => {
+    const fresh = sharesRequest.begin();
     setError(null);
     try {
       const data = await fetchAllPages((p, l) => sharesAPI.getOwned(p, l));
+      if (!fresh()) return;
       setShares(data);
     } catch (e: unknown) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     }
-  }, [t]);
+  }, [t, sharesRequest]);
 
+  const invitesRequest = useLatestRequest();
   const fetchInvites = useCallback(async () => {
+    const fresh = invitesRequest.begin();
     setError(null);
     try {
       const data = await fetchAllPages((p, l) =>
         sharesAPI.getSentInvites(p, l)
       );
+      if (!fresh()) return;
       setInvites(data);
     } catch (e: unknown) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     }
-  }, [t]);
+  }, [t, invitesRequest]);
 
   useEffect(() => {
     setLoading(true);

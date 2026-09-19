@@ -70,6 +70,7 @@ import LockedFeatureNotice from "../common/LockedFeatureNotice";
 import { useToast } from "../common/Toast";
 import { Skeleton } from "../common/Skeleton";
 import DataExportPanel from "./DataExportPanel";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 import {
   PageHeader,
   Section,
@@ -225,11 +226,14 @@ export default function ProfileView() {
     []
   );
 
+  const meRequest = useLatestRequest();
   const loadMe = useCallback(async () => {
+    const fresh = meRequest.begin();
     setLoading(true);
     setError(null);
     try {
       const data = await profileAPI.getMe();
+      if (!fresh()) return;
       setMe(data);
       setEmail(data.email);
       setMonthlyBudget(
@@ -255,11 +259,12 @@ export default function ProfileView() {
           if (mountedRef.current) setSubscription(null);
         });
     } catch (e: unknown) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, meRequest]);
 
   useEffect(() => {
     loadMe();
@@ -520,22 +525,26 @@ export default function ProfileView() {
   // Sharing-panel data fetch. Pulls all three lists in parallel — none
   // depends on the others. The two share lists default to 50 rows on the
   // server, so walk every page rather than show a silently clipped list.
+  const sharingRequest = useLatestRequest();
   const loadSharing = useCallback(async () => {
+    const fresh = sharingRequest.begin();
     try {
       const [pub, owned, sent] = await Promise.all([
         articlesAPI.getMySharedPublic(),
         fetchAllPages((p, l) => sharesAPI.getOwned(p, l)),
         fetchAllPages((p, l) => sharesAPI.getSentInvites(p, l)),
       ]);
+      if (!fresh()) return;
       setSharedPublic(pub);
       setSharesOwned(owned);
       setInvitesSent(sent);
       setSharingLoaded(true);
     } catch {
+      if (!fresh()) return;
       // Failure here is non-fatal — the rest of the profile keeps working.
       setSharingLoaded(true);
     }
-  }, []);
+  }, [sharingRequest]);
 
   useEffect(() => {
     if (canShare) loadSharing();

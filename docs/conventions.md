@@ -1336,6 +1336,22 @@ hardcode an English sentence at a call site again — add a key.
 
 ## Known gotchas
 
+- **A loader that can be re-run needs `useLatestRequest`.** Every list view
+  loads on mount and reloads after each mutation; where the mutation's busy
+  flag is per-row (so a second row stays clickable) two reloads overlap, and
+  if the earlier one lands last it repaints the pre-mutation list — the row
+  you just deleted comes back, and it only heals on the next load.
+  `hooks/useLatestRequest` is the guard: `const fresh = request.begin()`
+  before the await, `if (!fresh()) return;` before every state write,
+  `if (fresh()) setLoading(false)` in the `finally`. One hook instance per
+  independent request (JobsTab and SharesList each hold two); unmount
+  invalidates outstanding tokens. ArticlesList, ArticleDetail, AdminUsers
+  and MessagesView predate the hook and use an equivalent inline
+  `…SeqRef` — leave those alone or port them, but do not invent a third
+  idiom. Note a view that renders a skeleton over the whole list while
+  loading (LocationsView) can't reach the race through the UI; the guard is
+  still correct there and costs nothing.
+
 - **Two error boundaries, and they divide the work.** The root one
   (`main.tsx`) wraps the whole tree and exists for errors that leave nothing
   usable — notably a `ChunkLoadError`, where it reloads to pick up a new
@@ -1583,7 +1599,7 @@ hardcode an English sentence at a call site again — add a key.
   `apps/web/src/services/pagination.ts` (`fetchAllPages`)
 - UI primitives: `apps/web/src/components/ui/` (barrel `index.ts`)
 - Hooks: `apps/web/src/hooks/{useHotkeys,useFileDrop,useApiForm,
-  useUnsavedChangesGuard}.ts`
+  useUnsavedChangesGuard,useLatestRequest}.ts`
 - API client: `apps/web/src/services/api.ts`
 - i18n: `apps/web/src/i18n/{i18n.tsx,translations.ts,translations.extras.ts}`
   (English, in the main chunk) + `apps/web/src/i18n/locales/{fr,pt,es,nl}.ts`

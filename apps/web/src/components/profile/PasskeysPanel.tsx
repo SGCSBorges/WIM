@@ -14,6 +14,7 @@ import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { useToast } from "../common/Toast";
 import { Button, Badge, ConfirmDialog, Input, Field } from "../ui";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 type PasskeyRow = {
   id: number;
@@ -36,14 +37,17 @@ export default function PasskeysPanel() {
   const supported =
     typeof window !== "undefined" && !!window.PublicKeyCredential;
 
+  const request = useLatestRequest();
   const load = useCallback(async () => {
+    const fresh = request.begin();
     try {
       const { items: rows } = await authAPI.listPasskeys();
+      if (!fresh()) return;
       setItems(rows);
     } catch {
       // Silent — the panel just shows an empty list on a fetch hiccup.
     }
-  }, []);
+  }, [request]);
 
   useEffect(() => {
     if (supported) void load();

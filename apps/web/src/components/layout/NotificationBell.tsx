@@ -14,6 +14,7 @@ import { alertsAPI } from "../../services/api";
 import { useToast } from "../common/Toast";
 import { Badge, Popover, Button } from "../ui";
 import type { AlertItem, AlertNotifications } from "../../types";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 const SNOOZE_OPTIONS = [
   { key: "1d" as const, days: 1 },
@@ -36,15 +37,19 @@ export default function NotificationBell() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
 
+  const request = useLatestRequest();
   const refresh = useCallback(async () => {
+    const fresh = request.begin();
     try {
       const next = await alertsAPI.notifications();
+      if (!fresh()) return;
       setData(next);
       setFailed(false);
     } catch {
+      if (!fresh()) return;
       setFailed(true);
     }
-  }, []);
+  }, [request]);
 
   // Refresh on mount + every route change. No tight interval — the user
   // either visits a route or comes back via PWA resume, both of which

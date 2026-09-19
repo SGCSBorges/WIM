@@ -12,6 +12,7 @@ import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { getErrorMessage } from "../../utils/error";
 import { Button, Section, Badge } from "../ui";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 type Counts = Record<string, number> | null;
 
@@ -52,25 +53,33 @@ export default function JobsTab() {
   const [failedError, setFailedError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const failedRequest = useLatestRequest();
   const loadFailed = useCallback(async () => {
+    const fresh = failedRequest.begin();
     try {
       const { items } = await adminAPI.getFailedJobs();
+      if (!fresh()) return;
       setFailed(items);
       setFailedError(null);
     } catch (e) {
+      if (!fresh()) return;
       setFailedError(getErrorMessage(e, t("admin.jobs.fetchError")));
     }
-  }, [t]);
+  }, [t, failedRequest]);
 
+  const snapRequest = useLatestRequest();
   const refresh = useCallback(async () => {
+    const fresh = snapRequest.begin();
     try {
       const data = await adminAPI.getJobs();
+      if (!fresh()) return;
       setSnap(data);
       setError(null);
     } catch (e) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("admin.jobs.fetchError")));
     }
-  }, [t]);
+  }, [t, snapRequest]);
 
   useEffect(() => {
     void refresh();

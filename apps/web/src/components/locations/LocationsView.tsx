@@ -17,6 +17,7 @@ import { useToast } from "../common/Toast";
 import { useUndoableDelete } from "../../hooks/useUndoableDelete";
 import { formatMoney } from "../../utils/money";
 import { PageHeader, Section, Button, Input, Select, Badge } from "../ui";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 type LocationRow = {
   locationId: number;
@@ -52,20 +53,24 @@ export default function LocationsView() {
   const [busy, setBusy] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
+  const request = useLatestRequest();
   const fetchAll = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     setError(null);
     try {
       const data = (await fetchAllPages((p, l) =>
         locationsAPI.getAll(p, l)
       )) as LocationRow[];
+      if (!fresh()) return;
       setItems(data);
     } catch (e) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, request]);
 
   useEffect(() => {
     fetchAll();

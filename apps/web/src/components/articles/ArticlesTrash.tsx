@@ -17,6 +17,7 @@ import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
 import { PageHeader, Button } from "../ui";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 export default function ArticlesTrash() {
   const { t } = useI18n();
@@ -81,18 +82,22 @@ export default function ArticlesTrash() {
     }
   };
 
+  const request = useLatestRequest();
   const load = useCallback(async () => {
+    const fresh = request.begin();
     try {
       setLoading(true);
       const { items } = await articlesAPI.listTrash();
+      if (!fresh()) return;
       setItems(items);
       setError(null);
     } catch (e) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("trash.error.load")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, request]);
 
   useEffect(() => {
     void load();

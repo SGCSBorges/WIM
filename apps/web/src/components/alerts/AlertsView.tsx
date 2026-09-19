@@ -38,6 +38,7 @@ import {
   type BadgeTone,
 } from "../ui";
 import type { AlertItem as Alert, AlertStatus } from "@wim/types";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 function statusTone(status: AlertStatus): BadgeTone {
   switch (status) {
@@ -80,7 +81,9 @@ export default function AlertsView() {
   >([]);
   const [creating, setCreating] = useState(false);
 
+  const request = useLatestRequest();
   const fetchAll = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     setItems([]);
     setError(null);
@@ -93,14 +96,16 @@ export default function AlertsView() {
           kindFilter === "ALL" ? undefined : kindFilter
         )
       );
+      if (!fresh()) return;
       setItems(data);
     } catch (e: unknown) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, kindFilter]);
+  }, [statusFilter, kindFilter, request]);
 
   useEffect(() => {
     fetchAll();

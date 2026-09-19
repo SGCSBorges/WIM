@@ -17,6 +17,7 @@ import {
 } from "../ui";
 import { Link } from "react-router";
 import type { ExtrasKey } from "../../i18n/translations.extras";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 type TransferAction = { id: number; kind: "accept" | "reject" | "revoke" };
 
@@ -47,7 +48,9 @@ export default function TransfersView() {
     null
   );
 
+  const request = useLatestRequest();
   const load = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     setError(null);
     try {
@@ -55,14 +58,16 @@ export default function TransfersView() {
         transfersAPI.getIncoming(),
         transfersAPI.getOutgoing(),
       ]);
+      if (!fresh()) return;
       setIncoming(inc.items);
       setOutgoing(out.items);
     } catch (e) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, request]);
 
   useEffect(() => {
     void load();

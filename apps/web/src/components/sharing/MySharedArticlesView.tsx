@@ -14,6 +14,7 @@ import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
 import ArticleThumb from "../articles/ArticleThumb";
 import { Section, Button, Badge } from "../ui";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 export default function MySharedArticlesView() {
   const { t } = useI18n();
@@ -23,18 +24,22 @@ export default function MySharedArticlesView() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
 
+  const request = useLatestRequest();
   const fetchAll = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     setError(null);
     try {
       const rows = await articlesAPI.getMySharedPublic();
+      if (!fresh()) return;
       setItems(rows);
     } catch (e) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("common.errorOccurred")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, request]);
 
   useEffect(() => {
     fetchAll();

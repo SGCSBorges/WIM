@@ -26,6 +26,7 @@ import {
   type WarrantyStatus,
 } from "../../utils/warrantyStatus";
 import RenewWarrantyDialog from "./RenewWarrantyDialog";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 type Warranty = {
   garantieId: number;
@@ -53,18 +54,22 @@ export default function WarrantiesView() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [renewing, setRenewing] = useState<Warranty | null>(null);
 
+  const request = useLatestRequest();
   const fetchAll = useCallback(async () => {
+    const fresh = request.begin();
     setLoading(true);
     setError(null);
     try {
       const data = await fetchAllPages((p, l) => warrantiesAPI.getAll(p, l));
+      if (!fresh()) return;
       setItems(data as Warranty[]);
     } catch (e: unknown) {
+      if (!fresh()) return;
       setError(getErrorMessage(e, t("warranties.error.fetch")));
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t]);
+  }, [t, request]);
 
   useEffect(() => {
     fetchAll();

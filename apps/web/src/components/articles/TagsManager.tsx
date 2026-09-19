@@ -14,6 +14,7 @@ import { useToast } from "../common/Toast";
 import { Skeleton } from "../common/Skeleton";
 import { Button, Input, Select, Badge } from "../ui";
 import { TAG_COLOR_PRESETS } from "./TagChip";
+import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 type TagRow = {
   tagId: number;
@@ -45,18 +46,23 @@ export default function TagsManager({
   const [mergeFor, setMergeFor] = useState<number | null>(null);
   const [deleteFor, setDeleteFor] = useState<TagRow | null>(null);
 
+  const request = useLatestRequest();
   const load = useCallback(async () => {
+    const fresh = request.begin();
     try {
       setLoading(true);
-      setTags(await tagsAPI.getAll());
+      const rows = await tagsAPI.getAll();
+      if (!fresh()) return;
+      setTags(rows);
     } catch (e) {
+      if (!fresh()) return;
       toast.show(getErrorMessage(e, t("tags.manage.loadError")), {
         kind: "error",
       });
     } finally {
-      setLoading(false);
+      if (fresh()) setLoading(false);
     }
-  }, [t, toast]);
+  }, [t, toast, request]);
 
   useEffect(() => {
     if (!open) return;
