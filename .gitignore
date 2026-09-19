@@ -47,3 +47,7 @@ commit.ps1
 # Runtime upload directory of a locally-run API (UPLOAD_DIR = cwd/uploads);
 # production uses S3/R2. Never commit user files.
 apps/api/uploads/
+
+# Redis snapshot written into the repo root when a local redis-server is
+# started here for development or testing. Runtime state, never source.
+dump.rdb
