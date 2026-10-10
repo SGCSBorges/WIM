@@ -64,6 +64,8 @@ import { prisma } from "./libs/prisma";
 import { runHealthChecks } from "./health";
 import { authGuard, AuthRequest } from "./modules/auth/auth.middleware";
 import { storageEnabled, getObjectStream } from "./libs/object-storage";
+import { asyncHandler } from "./modules/common/http";
+import { contentDisposition } from "./utils/content-disposition";
 
 export function createApp() {
   const app = express();
@@ -125,7 +127,9 @@ export function createApp() {
   app.get(
     "/uploads/:storedName",
     authGuard,
-    async (req: AuthRequest, res: Response) => {
+    // Errors go to the error handler: an unhandled rejection here would take
+    // the whole process down.
+    asyncHandler(async (req: AuthRequest, res: Response) => {
       const { storedName } = req.params;
       // The Multer pipeline produces 24 hex chars + a sanitized extension.
       // Reject anything that doesn't look like our own filenames so we never
@@ -224,16 +228,12 @@ export function createApp() {
       );
       res.setHeader("X-Content-Type-Options", "nosniff");
       // Inline display for images and PDFs (the only allowed types); browsers
-      // can render these safely with the explicit MIME type above.
-      // Strip control characters (including \r\n) to prevent header injection;
-      // then strip double-quotes so the filename value stays syntactically valid.
-      const safeFileName = attachment.fileName
-        // eslint-disable-next-line no-control-regex
-        .replace(/[\x00-\x1F\x7F]/g, "")
-        .replace(/"/g, "");
+      // can render these safely with the explicit MIME type above. The name
+      // is the user's: control characters and quotes are stripped, and
+      // non-ASCII goes in the RFC 5987 form.
       res.setHeader(
         "Content-Disposition",
-        `inline; filename="${safeFileName}"`
+        contentDisposition("inline", attachment.fileName)
       );
 
       // Bucket-backed: stream from object storage (the ACL above already
@@ -250,7 +250,7 @@ export function createApp() {
         return res.status(404).json({ error: "File missing on disk" });
       }
       return res.sendFile(fullPath);
-    }
+    })
   );
 
   // Routes

@@ -64,7 +64,8 @@ const MIME_EXTENSIONS = new Map([
 
 const ALLOWED_MIME_TYPES = new Set(MIME_EXTENSIONS.keys());
 
-const upload = multer({
+// multer 2 reads defParamCharset; @types/multer doesn't declare it yet.
+const upload = multer(<multer.Options & { defParamCharset: string }>{
   storage: multer.diskStorage({
     destination: (
       _req: AuthRequest,
@@ -83,6 +84,9 @@ const upload = multer({
     },
   }),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  // Browsers send UTF-8 file names; multer's latin1 default turned
+  // "électricité" into "Ã©lectricitÃ©".
+  defParamCharset: "utf8",
   fileFilter: (_req, file, cb) => {
     if (ALLOWED_MIME_TYPES.has(file.mimetype)) {
       cb(null, true);

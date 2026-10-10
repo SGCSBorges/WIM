@@ -99,7 +99,11 @@ This is the most-asked-about gotcha:
 - `/uploads/<filename>` → the raw file. **Cookie required**, and the
   attachment row's access rules apply to the bytes: the owner, a viewer
   the article's owner shares with, or a POWER_USER/ADMIN on a publicly
-  shared article; anyone else gets a 404 (`app.ts`).
+  shared article; anyone else gets a 404 (`app.ts`). It is sent `inline`
+  under the attachment's own name: ASCII as `filename="…"`, anything else
+  with an ASCII fallback plus RFC 5987 `filename*=UTF-8''…`
+  (`utils/content-disposition.ts`). Upload names are read as UTF-8, so
+  "Facture électricité.pdf" is stored as typed.
 
 `fileUrl` is minted on `APP_URL` — the **web** origin — so the static site
 forwards `/uploads/*` to the API (`render.yaml`, `public/_redirects`, and

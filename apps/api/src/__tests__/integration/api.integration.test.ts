@@ -536,6 +536,35 @@ suite("API integration (real Postgres)", () => {
     expect((await agent.get("/api/articles/trash")).body.items.length).toBe(0);
   });
 
+  it("keeps and serves file names in any script without taking the API down", async () => {
+    const agent = await register("unicode-files@example.com");
+    const pdf = Buffer.from("%PDF-1.4\n%%EOF\n");
+    // Browsers send UTF-8 file names; they must not be stored as mojibake.
+    const up = await agent
+      .post("/api/attachments/upload")
+      .set("Origin", ORIGIN)
+      .field("type", "INVOICE")
+      .attach("file", pdf, "Facture électricité.pdf");
+    expect(up.status).toBe(201);
+    expect(up.body.fileName).toBe("Facture électricité.pdf");
+
+    // A name outside Latin-1 (an en dash, CJK) used to throw while setting
+    // Content-Disposition, an unhandled rejection that killed the process.
+    const renamed = await agent
+      .put(`/api/attachments/${up.body.attachmentId}`)
+      .set("Origin", ORIGIN)
+      .send({ fileName: "Reçu – 発票.pdf" });
+    expect(renamed.status).toBe(200);
+    const path = new URL(up.body.fileUrl).pathname;
+    const res = await agent.get(path);
+    expect(res.status).toBe(200);
+    expect(res.headers["content-disposition"]).toBe(
+      `inline; filename="Recu _ __.pdf"; filename*=UTF-8''${encodeURIComponent("Reçu – 発票.pdf")}`
+    );
+    // …and the API is still up.
+    expect((await agent.get("/health")).status).toBe(200);
+  }, 30_000);
+
   it("bulk-deletes attachments owned by the caller and silently skips foreign ids", async () => {
     const agent = await register("attmaster@example.com");
     const me = await agent.get("/api/auth/me");
