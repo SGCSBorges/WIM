@@ -10,12 +10,25 @@ describe("warranty reminder labels", () => {
     expect(reminderKindForDays(1)).toBe("J1");
   });
 
-  // Every other server-generated string (reminder emails, push text, the
-  // weekly digest) is English; this one shipped in French and is what the
-  // alerts list, agenda and personal-data export show as the alert name.
-  it("names the stored alert in English, like the rest of the server copy", () => {
+  // `Alerte.alerteNom` is persisted, not translated at render time, so it has
+  // to be written in the owner's language — otherwise a French user's alerts
+  // list, agenda and data export show an English row among French copy.
+  it("writes the stored alert name in the owner's language", () => {
+    expect(reminderKindLabel("J30", "fr")).toBe("Rappel garantie J-30");
+    expect(reminderKindLabel("J7", "pt")).toBe("Lembrete de garantia J-7");
+    expect(reminderKindLabel("J1", "es")).toBe("Recordatorio de garantía J-1");
+    expect(reminderKindLabel("J30", "nl")).toBe("Garantieherinnering J-30");
+  });
+
+  it("falls back to English for an absent or unsupported language", () => {
     expect(reminderKindLabel("J30")).toBe("Warranty reminder J-30");
-    expect(reminderKindLabel("J7")).toBe("Warranty reminder J-7");
-    expect(reminderKindLabel("J1")).not.toMatch(/Rappel/);
+    expect(reminderKindLabel("J30", null)).toBe("Warranty reminder J-30");
+    expect(reminderKindLabel("J30", "de")).toBe("Warranty reminder J-30");
+  });
+
+  it("honours a custom offset, not just the J-30/J-7/J-1 defaults", () => {
+    expect(reminderKindLabel(reminderKindForDays(90), "fr")).toBe(
+      "Rappel garantie J-90"
+    );
   });
 });

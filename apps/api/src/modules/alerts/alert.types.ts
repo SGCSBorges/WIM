@@ -1,3 +1,5 @@
+import { emailT, normalizeEmailLang } from "../email/email.i18n";
+
 export type AlertJobType = "warranty_reminder" | "custom_alert";
 
 // "J30" / "J7" / "J1" by default, but users can configure their own offsets
@@ -33,9 +35,16 @@ export function reminderKindForDays(days: number): WarrantyReminderKind {
 }
 
 /** Stored as `Alerte.alerteNom` for auto-scheduled warranty reminders.
- *  English like every other server-generated string (emails, push, digest);
- *  it shipped as French "Rappel garantie J-30" while nothing else was, and
- *  the raw name surfaces in the alerts list, the agenda and the data export. */
-export function reminderKindLabel(kind: WarrantyReminderKind) {
-  return `Warranty reminder J-${kind.slice(1)}`;
+ *  This string is persisted, not translated at render time, so it is written
+ *  in the owner's language (`User.language`) the same way the reminder email
+ *  and push are — the raw name surfaces in the alerts list, the agenda, the
+ *  notification bell and the personal-data export. An unknown or absent
+ *  language falls back to English. */
+export function reminderKindLabel(
+  kind: WarrantyReminderKind,
+  lang?: string | null
+) {
+  return emailT(normalizeEmailLang(lang), "warranty.reminder.alertName", {
+    days: kind.slice(1),
+  });
 }

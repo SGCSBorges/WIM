@@ -15,6 +15,7 @@ français.
 | **API reference** | [`api.md`](./api.md) | — (voir Swagger) | Modèle d'auth, sections de triage, référence des routes |
 | **Data dictionary · Dictionnaire de données** | [`data-dictionary.md`](./data-dictionary.md) | [`data-dictionary.fr.md`](./data-dictionary.fr.md) | Référence champ par champ des 36 tables + 16 énumérations |
 | **Internal context · Contexte interne** | [`conventions.md`](./conventions.md) | — | Conventions, particularités de déploiement, source canonique |
+| **Demo runbook · Guide de démonstration** | [`demo-runbook.md`](./demo-runbook.md) | — | Checklist avant une démonstration en direct : état de l'hébergement, comptes de démo, déclenchement d'un rappel pendant la démo, limites de l'offre gratuite |
 | **Contributing · Contribuer** | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | — | Flux de travail, tests, style |
 
 > The **live Swagger UI** at `GET /api/docs` (raw spec at `GET /api/openapi.json`)

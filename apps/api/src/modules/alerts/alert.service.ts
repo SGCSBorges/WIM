@@ -114,7 +114,7 @@ export const AlertService = {
     const owner = await prisma.user
       .findUnique({
         where: { userId: input.ownerUserId },
-        select: { warrantyReminderDays: true },
+        select: { warrantyReminderDays: true, language: true },
       })
       .catch(() => null);
     const schedule = computeWarrantyReminderSchedule({
@@ -135,7 +135,7 @@ export const AlertService = {
         data: [
           {
             ownerUserId: input.ownerUserId,
-            alerteNom: reminderKindLabel(reminderKind),
+            alerteNom: reminderKindLabel(reminderKind, owner?.language),
             alerteDate: executeAt,
             alerteGarantieId: input.garantieId,
             alerteArticleId: input.articleId ?? null,

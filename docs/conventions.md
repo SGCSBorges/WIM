@@ -1323,6 +1323,14 @@ await EmailService.sendReminderEmail({
 });
 ```
 
+The same applies to one string that is *persisted* rather than rendered:
+`Alerte.alerteNom` for auto-scheduled warranty reminders, written by
+`reminderKindLabel(kind, lang)` from the owner's language at creation time
+(it is never re-translated afterwards, and it surfaces in the alerts list,
+the agenda, the notification bell and the data export). The demo seeder
+writes its own English fixture strings directly and deliberately bypasses
+this.
+
 Senders that already hold the User row select `language` alongside
 `email`. Senders that only have an address (transfer offers, household
 invites, message notifications — the recipient may not be a user yet)
