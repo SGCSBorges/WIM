@@ -32,6 +32,8 @@ RUN npm ci --workspace=apps/api --include-workspace-root --omit=dev
 
 COPY --from=builder /workspace/apps/api/dist ./apps/api/dist
 COPY --from=builder /workspace/apps/api/prisma ./apps/api/prisma
+# Product photos the demo seed stores like uploads (modules/demo/demo.photos.ts).
+COPY --from=builder /workspace/apps/api/assets ./apps/api/assets
 # Prisma client is generated into node_modules; copy that engine + client
 # from the builder so we don't have to rerun `prisma generate` here.
 COPY --from=builder /workspace/node_modules/.prisma ./node_modules/.prisma

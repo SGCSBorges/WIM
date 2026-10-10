@@ -1630,8 +1630,13 @@ hardcode an English sentence at a call site again — add a key.
   inside French opening hours by `duringOpeningHours`, warranty
   certificate), stamped `DÉMONSTRATION`, written through the same upload
   store as real files (disk, or S3 when `S3_*` is set) and unlinked by
-  `resetDemoData`. No product photos are seeded: an image must be
-  self-hosted and verified to show the exact model, never hot-linked. The
+  `resetDemoData`. Product photos (`demo.photos.ts`) are Wikimedia Commons
+  images checked by eye to show the exact model, committed under
+  `apps/api/assets/demo-photos/` with `CREDITS.md`, and stored like an
+  upload (JPEG + the upload route's WebP thumbnail) — never hot-linked; a
+  product without a verified photo gets none, and an article showing one
+  records the photo's colour, which must be one of the model's real
+  `colours`. The
   integration suite seeds a small batch and asserts the invariants against
   real Postgres ("demo seed — reads as user-authored"); a new seeded feature
   adds its own invariant there.

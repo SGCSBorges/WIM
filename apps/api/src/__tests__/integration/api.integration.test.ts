@@ -1699,6 +1699,10 @@ suite("API integration (real Postgres)", () => {
               OR p.local::time NOT BETWEEN '09:30' AND '19:30')`,
       ],
       [
+        "article photo that isn't one of its own image attachments",
+        `SELECT count(*) FROM "Article" a WHERE a."productImageUrl" IS NOT NULL AND NOT EXISTS (SELECT 1 FROM "Attachment" t WHERE t."articleId"=a."articleId" AND t."fileUrl"=a."productImageUrl" AND t."mimeType" LIKE 'image/%' AND t."thumbUrl" IS NOT NULL)`,
+      ],
+      [
         "document filed by someone other than the article's owner",
         `SELECT count(*) FROM "Attachment" t JOIN "Article" a USING ("articleId") WHERE t."ownerUserId" <> a."ownerUserId"`,
       ],
@@ -1800,31 +1804,89 @@ suite("API integration (real Postgres)", () => {
         })
       ).toBe(0);
 
-      // Nothing is hot-linked: no product photo points off-site, and every
-      // document is a real PDF in the app's own upload store.
-      expect(
-        await prisma.article.count({
-          where: { productImageUrl: { not: null } },
-        })
-      ).toBe(0);
+      // Nothing is hot-linked: every product photo and every document is a
+      // real file in the app's own upload store — PDFs for paperwork, JPEG
+      // photos with the thumbnail the upload route makes.
       const docs = await prisma.attachment.findMany({
-        select: { fileUrl: true, mimeType: true, type: true },
+        select: { fileUrl: true, thumbUrl: true, mimeType: true, type: true },
       });
       expect(new Set(docs.map((d) => d.type))).toEqual(
-        new Set(["INVOICE", "WARRANTY"])
+        new Set(["INVOICE", "WARRANTY", "OTHER"])
       );
       for (const d of docs) {
-        expect(d.mimeType).toBe("application/pdf");
         const bytes = await readUploadBytes(d.fileUrl);
-        expect(bytes?.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+        if (d.type === "OTHER") {
+          expect(d.mimeType).toBe("image/jpeg");
+          expect(bytes?.subarray(0, 3).toString("hex")).toBe("ffd8ff");
+          const thumb = await readUploadBytes(d.thumbUrl);
+          expect(thumb?.subarray(8, 12).toString("latin1")).toBe("WEBP");
+        } else {
+          expect(d.mimeType).toBe("application/pdf");
+          expect(bytes?.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+        }
       }
+      expect(
+        await prisma.article.count({
+          where: {
+            productImageUrl: { not: null },
+            NOT: { productImageUrl: { contains: "/uploads/" } },
+          },
+        })
+      ).toBe(0);
+
+      // A recorded colour is one the model was sold in — and, beside a
+      // product photo, the colour that photo shows.
+      const { CATALOG } = await import("../../modules/demo/demo.catalog");
+      const { DEMO_PHOTOS } = await import("../../modules/demo/demo.photos");
+      const photoColourByModel = new Map(
+        CATALOG.filter((i) => DEMO_PHOTOS[i.key]?.[0]?.colour).map((i) => [
+          i.model,
+          DEMO_PHOTOS[i.key][0].colour!,
+        ])
+      );
+      const photographed = await prisma.article.findMany({
+        where: { productImageUrl: { not: null } },
+        select: { articleModele: true, customFields: true },
+      });
+      expect(photographed.length).toBeGreaterThan(0);
+      const offColour = photographed.flatMap((a) => {
+        const shown = photoColourByModel.get(a.articleModele ?? "");
+        const recorded = (
+          (a.customFields ?? []) as { key: string; value: string }[]
+        ).find((f) => f.key === "Couleur" || f.key === "Colour");
+        return shown && recorded && recorded.value !== shown.fr
+          ? [`${a.articleModele}: ${recorded.value} vs photo ${shown.fr}`]
+          : [];
+      });
+      expect(offColour).toEqual([]);
+      const coloursByModel = new Map(
+        CATALOG.filter((i) => i.colours).map((i) => [
+          i.model,
+          [...i.colours!.fr, ...i.colours!.en],
+        ])
+      );
+      const withFields = await prisma.article.findMany({
+        select: { articleModele: true, customFields: true },
+      });
+      const wrongColour = withFields.flatMap((a) =>
+        ((a.customFields ?? []) as { key: string; value: string }[])
+          .filter((f) => f.key === "Couleur" || f.key === "Colour")
+          .filter(
+            (f) => !coloursByModel.get(a.articleModele ?? "")?.includes(f.value)
+          )
+          .map((f) => `${a.articleModele}: ${f.value}`)
+      );
+      expect(wrongColour).toEqual([]);
 
       // The reset removes every demo row it created, households included,
       // and the files behind the documents.
       await resetDemoData(prisma);
       expect(await prisma.user.count()).toBe(0);
       expect(await prisma.household.count()).toBe(0);
-      for (const d of docs) expect(await readUploadBytes(d.fileUrl)).toBeNull();
+      for (const d of docs) {
+        expect(await readUploadBytes(d.fileUrl)).toBeNull();
+        expect(await readUploadBytes(d.thumbUrl)).toBeNull();
+      }
     }, 120_000);
 
     it("wipes a throwaway database without leaving document files behind", async () => {

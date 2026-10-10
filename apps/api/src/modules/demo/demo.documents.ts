@@ -16,6 +16,10 @@ import fs from "fs";
 import path from "path";
 import PDFDocument from "pdfkit";
 import { UPLOAD_DIR } from "../attachments/attachment.fs";
+import {
+  makeImageThumbnail,
+  thumbnailName,
+} from "../attachments/attachment.thumbnail";
 import { putObjectFromFile, storageEnabled } from "../../libs/object-storage";
 
 const DEMO_FOOTER =
@@ -324,13 +328,15 @@ export function warrantyCertificatePdf(f: WarrantyFacts): Promise<Buffer> {
 export interface StoredFile {
   fileUrl: string;
   fileSize: number;
+  /** The WebP preview the upload route makes for images; null otherwise. */
+  thumbUrl: string | null;
 }
 
 /**
  * Store bytes the way the upload route does: a 24-hex-character name in the
- * uploads directory (pushed to the bucket when object storage is on), and a
- * URL of the same `<base>/uploads/<name>` shape the authenticated file route
- * serves.
+ * uploads directory (pushed to the bucket when object storage is on), a
+ * thumbnail beside images, and URLs of the same `<base>/uploads/<name>`
+ * shape the authenticated file route serves.
  */
 export async function storeDemoFile(
   bytes: Buffer,
@@ -338,19 +344,38 @@ export async function storeDemoFile(
   mime: string,
   baseUrl: string
 ): Promise<StoredFile> {
+  const base = baseUrl.replace(/\/$/, "");
   const storedName = `${crypto.randomBytes(12).toString("hex")}.${ext}`;
   await fs.promises.mkdir(UPLOAD_DIR, { recursive: true });
   const local = path.join(UPLOAD_DIR, storedName);
   await fs.promises.writeFile(local, bytes);
+  const thumbUrl = await makeImageThumbnail({
+    sourcePath: local,
+    uploadDir: UPLOAD_DIR,
+    storedName,
+    mimeType: mime,
+    baseUrl: base,
+  });
   if (storageEnabled()) {
+    const localThumb = thumbUrl
+      ? path.join(UPLOAD_DIR, thumbnailName(storedName))
+      : null;
     try {
       await putObjectFromFile(storedName, local, mime);
+      if (localThumb)
+        await putObjectFromFile(
+          thumbnailName(storedName),
+          localThumb,
+          "image/webp"
+        );
     } finally {
-      await fs.promises.unlink(local).catch(() => {});
+      for (const f of [local, localThumb])
+        if (f) await fs.promises.unlink(f).catch(() => {});
     }
   }
   return {
-    fileUrl: `${baseUrl.replace(/\/$/, "")}/uploads/${encodeURIComponent(storedName)}`,
+    fileUrl: `${base}/uploads/${encodeURIComponent(storedName)}`,
     fileSize: bytes.length,
+    thumbUrl,
   };
 }

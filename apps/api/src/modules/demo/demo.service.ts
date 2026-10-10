@@ -46,6 +46,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import { emailT } from "../email/email.i18n";
 import { reminderKindLabel } from "../alerts/alert.types";
 import {
@@ -59,6 +61,7 @@ import {
   storeDemoFile,
   tillReceiptPdf,
   warrantyCertificatePdf,
+  type StoredFile,
 } from "./demo.documents";
 import {
   CATALOG,
@@ -70,6 +73,7 @@ import {
   type RoomKey,
 } from "./demo.catalog";
 import * as C from "./demo.content";
+import { DEMO_PHOTOS, PHOTO_DIR, type DemoPhoto } from "./demo.photos";
 import type { Lang, Market, TagKey } from "./demo.content";
 import {
   DAY,
@@ -259,6 +263,8 @@ interface Plan {
   tags: TagKey[];
   insured: boolean;
   salePrice: number | null;
+  /** A photo of the model, added when the article was entered. */
+  photo: DemoPhoto | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -1315,11 +1321,18 @@ function descriptionFor(
 
 function fieldsFor(
   p: Persona,
-  item: CatalogItem
+  item: CatalogItem,
+  photo: DemoPhoto | null
 ): { key: string; value: string }[] | null {
   if (!item.fields || !chance(0.08 + 0.35 * p.diligence)) return null;
   return pickN(item.fields, randInt(1, Math.min(2, item.fields.length))).map(
     (f: FieldKey) => {
+      // A colour is one the model came in — the one in its photo if any.
+      if (f === "colour" && (photo?.colour || item.colours))
+        return {
+          key: C.FIELD_LABELS[f][p.lang],
+          value: photo?.colour?.[p.lang] ?? pick(item.colours![p.lang]),
+        };
       let values = C.FIELD_VALUES[f][p.lang];
       if (
         f === "storage" &&
@@ -1343,6 +1356,11 @@ function planArticle(
   if (!a) return null;
   const d = categoryOf(item);
   const d01 = p.diligence;
+  const photos = DEMO_PHOTOS[item.key] ?? [];
+  const photo =
+    photos.length && chance(p.showcase ? 0.75 : 0.08 + 0.4 * d01)
+      ? pick(photos)
+      : null;
   const unitPrice = priceFor(p, item, a.how, a.acquiredMs);
   const retailer = retailerFor(p, item, a.how);
   // A till receipt can only be dated when the shop was open.
@@ -1388,7 +1406,7 @@ function planArticle(
     depreciation: item.dep > 0 && chance(0.1 + 0.5 * d01) ? item.dep : null,
     favorite: false,
     bundle: null,
-    fields: fieldsFor(p, item),
+    fields: fieldsFor(p, item, photo),
     verifiedMs: null,
     deletedMs: null,
     listed: false,
@@ -1397,6 +1415,7 @@ function planArticle(
     tags: [],
     insured: false,
     salePrice: null,
+    photo,
   };
   if (
     plan.status === "IN_REPAIR" &&
@@ -2116,8 +2135,12 @@ async function writeAccount(
       x.warranty?.claim?.atMs ?? 0
     );
 
+  // Photos are stored before the rows that point at them, as the app's own
+  // "photo first" create flow does.
+  const photoFiles = await storePhotos(plans, secrets.fileBaseUrl);
+
   const articleRows = await prisma.article.createManyAndReturn({
-    data: plans.map((x) => ({
+    data: plans.map((x, k) => ({
       ownerUserId: userId,
       articleNom: x.name,
       articleModele: x.item.model.slice(0, 100),
@@ -2140,6 +2163,7 @@ async function writeAccount(
       publicToken: x.publicToken ? token() : null,
       lastVerifiedAt: x.verifiedMs ? new Date(x.verifiedMs) : null,
       customFields: x.fields ?? undefined,
+      productImageUrl: photoFiles.get(k)?.fileUrl ?? null,
       deletedAt: x.deletedMs ? new Date(x.deletedMs) : null,
       createdAt: new Date(x.createdMs),
       updatedAt: new Date(clampToNow(lastTouch(x))),
@@ -2376,7 +2400,32 @@ async function writeAccount(
     articleIds,
     secrets.fileBaseUrl
   );
-  if (documents.length) await prisma.attachment.createMany({ data: documents });
+  const photoRows: Prisma.AttachmentCreateManyInput[] = [];
+  for (const [k, f] of photoFiles) {
+    const x = plans[k];
+    const atMs = clampToNow(x.createdMs + between(5 * 1000, 3 * MINUTE));
+    photoRows.push({
+      ownerUserId: userId,
+      articleId: articleIds[k],
+      type: "OTHER",
+      // Credit travels with the picture (Commons licences require it).
+      fileName:
+        `${shopDesignation(x.item)} – photo ${x.photo!.author} (${x.photo!.licence}).jpg`.slice(
+          0,
+          255
+        ),
+      mimeType: "image/jpeg",
+      fileSize: f.fileSize,
+      fileUrl: f.fileUrl,
+      thumbUrl: f.thumbUrl,
+      createdAt: new Date(atMs),
+      updatedAt: new Date(atMs),
+    });
+  }
+  if (documents.length || photoRows.length)
+    await prisma.attachment.createMany({
+      data: [...photoRows, ...documents],
+    });
 
   // Self-made reminders.
   const owned = (x: Plan) => !NOT_OWNED.includes(x.status) && !x.deletedMs;
@@ -2512,6 +2561,26 @@ function fillName(template: string, v: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_, k: string) => v[k] ?? "");
 }
 
+const photoBytes = new Map<string, Buffer>();
+
+/** Store each planned photo like an upload; keyed by plan index. */
+async function storePhotos(
+  plans: Plan[],
+  baseUrl: string
+): Promise<Map<number, StoredFile>> {
+  const stored = new Map<number, StoredFile>();
+  for (const [k, x] of plans.entries()) {
+    if (!x.photo) continue;
+    let bytes = photoBytes.get(x.photo.file);
+    if (!bytes) {
+      bytes = await fs.promises.readFile(path.join(PHOTO_DIR, x.photo.file));
+      photoBytes.set(x.photo.file, bytes);
+    }
+    stored.set(k, await storeDemoFile(bytes, "jpg", "image/jpeg", baseUrl));
+  }
+  return stored;
+}
+
 async function seedDocuments(
   p: Persona,
   userId: number,
@@ -2554,7 +2623,7 @@ async function seedDocuments(
       mimeType: "application/pdf",
       fileSize: file.fileSize,
       fileUrl: file.fileUrl,
-      thumbUrl: null,
+      thumbUrl: file.thumbUrl,
       createdAt: new Date(atMs),
       updatedAt: new Date(atMs),
     });

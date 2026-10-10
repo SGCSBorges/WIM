@@ -95,6 +95,9 @@ export interface CatalogItem {
   portable?: boolean;
   bundle?: BundleKey;
   fields?: FieldKey[];
+  /** The colours it was actually sold in (French, English). Required with a
+   *  "colour" field; one entry when the model number pins the colour. */
+  colours?: { fr: string[]; en: string[] };
 }
 
 interface CategoryDefaults {
@@ -211,7 +214,7 @@ export const CATALOG: CatalogItem[] = [
     brand: "Apple",
     name: 'MacBook Pro 14"',
     noun: n("MacBook", "MacBook"),
-    model: "MKGP3FN/A",
+    model: "A2442",
     price: 2249,
     dep: 20,
     released: "2021-10",
@@ -220,6 +223,7 @@ export const CATALOG: CatalogItem[] = [
     portable: true,
     bundle: "office",
     fields: ["storage", "colour"],
+    colours: { fr: ["Gris sidéral", "Argent"], en: ["Space Grey", "Silver"] },
   },
   {
     key: "mba13-m2",
@@ -227,7 +231,7 @@ export const CATALOG: CatalogItem[] = [
     brand: "Apple",
     name: 'MacBook Air 13" M2',
     noun: n("MacBook", "MacBook"),
-    model: "MLY33FN/A",
+    model: "A2681",
     price: 1499,
     dep: 20,
     released: "2022-07",
@@ -236,6 +240,10 @@ export const CATALOG: CatalogItem[] = [
     portable: true,
     bundle: "office",
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Minuit", "Lumière stellaire", "Gris sidéral", "Argent"],
+      en: ["Midnight", "Starlight", "Space Grey", "Silver"],
+    },
   },
   {
     key: "mba13-m3",
@@ -252,6 +260,10 @@ export const CATALOG: CatalogItem[] = [
     portable: true,
     bundle: "office",
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Minuit", "Lumière stellaire", "Gris sidéral", "Argent"],
+      en: ["Midnight", "Starlight", "Space Grey", "Silver"],
+    },
   },
   {
     key: "xps13",
@@ -297,6 +309,15 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Titane naturel", "Titane bleu", "Titane blanc", "Titane noir"],
+      en: [
+        "Natural Titanium",
+        "Blue Titanium",
+        "White Titanium",
+        "Black Titanium",
+      ],
+    },
   },
   {
     key: "iphone13",
@@ -311,6 +332,17 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: [
+        "Minuit",
+        "Lumière stellaire",
+        "Bleu",
+        "Rose",
+        "Vert",
+        "(PRODUCT)RED",
+      ],
+      en: ["Midnight", "Starlight", "Blue", "Pink", "Green", "(PRODUCT)RED"],
+    },
   },
   {
     key: "iphone16",
@@ -325,6 +357,10 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Noir", "Blanc", "Rose", "Sarcelle", "Outremer"],
+      en: ["Black", "White", "Pink", "Teal", "Ultramarine"],
+    },
   },
   {
     key: "s24u",
@@ -339,6 +375,15 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Noir Titane", "Gris Titane", "Violet Titane", "Jaune Titane"],
+      en: [
+        "Titanium Black",
+        "Titanium Grey",
+        "Titanium Violet",
+        "Titanium Yellow",
+      ],
+    },
   },
   {
     key: "a54",
@@ -353,6 +398,10 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Graphite", "Blanc", "Violet", "Lime"],
+      en: ["Graphite", "White", "Violet", "Lime"],
+    },
   },
   {
     key: "pixel8",
@@ -367,6 +416,10 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Obsidian", "Hazel", "Rose"],
+      en: ["Obsidian", "Hazel", "Rose"],
+    },
   },
   {
     key: "ipadair-m2",
@@ -374,13 +427,17 @@ export const CATALOG: CatalogItem[] = [
     brand: "Apple",
     name: 'iPad Air 11" (M2)',
     noun: n("Tablette", "Tablet"),
-    model: "MUWC3NF/A",
+    model: "A2902",
     price: 719,
     dep: 22,
     released: "2024-05",
     rooms: ["living", "bedroom"],
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Gris sidéral", "Lumière stellaire", "Mauve", "Bleu"],
+      en: ["Space Grey", "Starlight", "Purple", "Blue"],
+    },
   },
   {
     key: "ipad10",
@@ -389,13 +446,17 @@ export const CATALOG: CatalogItem[] = [
     name: "iPad (10e génération)",
     nameEn: "iPad (10th generation)",
     noun: n("Tablette", "Tablet"),
-    model: "MPQ03NF/A",
+    model: "A2696",
     price: 589,
     dep: 22,
     released: "2022-10",
     rooms: ["living", "kids"],
     portable: true,
     fields: ["storage", "colour"],
+    colours: {
+      fr: ["Argent", "Bleu", "Rose", "Jaune"],
+      en: ["Silver", "Blue", "Pink", "Yellow"],
+    },
   },
   {
     key: "kindle",
@@ -417,7 +478,7 @@ export const CATALOG: CatalogItem[] = [
     brand: "Apple",
     name: "Apple Watch Series 9",
     noun: n("Montre connectée", "Smartwatch"),
-    model: "MR9N3NF/A",
+    model: "A2978",
     price: 449,
     dep: 30,
     released: "2023-09",
@@ -425,6 +486,10 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["colour", "size"],
+    colours: {
+      fr: ["Minuit", "Lumière stellaire", "Argent", "Rose", "(PRODUCT)RED"],
+      en: ["Midnight", "Starlight", "Silver", "Pink", "(PRODUCT)RED"],
+    },
   },
   {
     key: "airpodspro2",
@@ -468,6 +533,10 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["office", "bedroom"],
     portable: true,
     fields: ["colour"],
+    colours: {
+      fr: ["Noir", "Argent", "Bleu nuit"],
+      en: ["Black", "Silver", "Midnight Blue"],
+    },
   },
   {
     key: "qcu",
@@ -482,6 +551,7 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["office", "bedroom"],
     portable: true,
     fields: ["colour"],
+    colours: { fr: ["Noir"], en: ["Black"] },
   },
   {
     key: "jbl-flip6",
@@ -895,6 +965,7 @@ export const CATALOG: CatalogItem[] = [
     released: "2017-01",
     bundle: "kitchen",
     fields: ["colour"],
+    colours: { fr: ["Rouge empire"], en: ["Empire Red"] },
   },
   {
     key: "thermomix",
@@ -979,6 +1050,7 @@ export const CATALOG: CatalogItem[] = [
     dep: 12,
     released: "2015-01",
     fields: ["colour"],
+    colours: { fr: ["Crème"], en: ["Cream"] },
   },
   {
     key: "daikin-ac",
@@ -1074,6 +1146,10 @@ export const CATALOG: CatalogItem[] = [
     dep: 8,
     rooms: ["living", "office", "kids"],
     fields: ["colour"],
+    colours: {
+      fr: ["Blanc", "Effet chêne blanchi", "Noir-brun"],
+      en: ["White", "White stained oak effect", "Black-brown"],
+    },
   },
   {
     key: "emma-mattress",
@@ -1101,6 +1177,10 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["living"],
     secondHand: 0.1,
     fields: ["colour", "dimensions"],
+    colours: {
+      fr: ["Gris chiné", "Beige", "Bleu pétrole"],
+      en: ["Grey marl", "Beige", "Petrol blue"],
+    },
   },
   {
     key: "eames",
@@ -1141,6 +1221,7 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["dining", "kitchen"],
     units: [4, 6],
     fields: ["colour"],
+    colours: { fr: ["Chêne", "Noir", "Blanc"], en: ["Oak", "Black", "White"] },
   },
   {
     key: "bunk-bed",
@@ -1325,6 +1406,7 @@ export const CATALOG: CatalogItem[] = [
     released: "2020-03",
     perPerson: true,
     fields: ["frame", "colour"],
+    colours: { fr: ["Gris", "Noir"], en: ["Grey", "Black"] },
   },
   {
     key: "trek-marlin",
@@ -1338,6 +1420,7 @@ export const CATALOG: CatalogItem[] = [
     released: "2021-06",
     perPerson: true,
     fields: ["frame", "colour"],
+    colours: { fr: ["Noir", "Bleu", "Vert"], en: ["Black", "Blue", "Green"] },
   },
   {
     key: "vado",
@@ -1362,6 +1445,7 @@ export const CATALOG: CatalogItem[] = [
     dep: 15,
     released: "2022-01",
     fields: ["frame", "colour"],
+    colours: { fr: ["Gris", "Noir"], en: ["Grey", "Black"] },
   },
   {
     key: "brompton",
@@ -1375,6 +1459,10 @@ export const CATALOG: CatalogItem[] = [
     released: "2021-09",
     rooms: ["entry", "cellar", "office"],
     fields: ["colour"],
+    colours: {
+      fr: ["Noir", "Vert anglais", "Rouge", "Bleu"],
+      en: ["Black", "Racing Green", "Red", "Blue"],
+    },
   },
   {
     key: "domane",
@@ -1414,6 +1502,7 @@ export const CATALOG: CatalogItem[] = [
     released: "2021-03",
     kids: true,
     fields: ["colour"],
+    colours: { fr: ["Noir"], en: ["Black"] },
   },
   {
     key: "e-scooter",
@@ -1441,6 +1530,10 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["garage"],
     secondHand: 0.35,
     fields: ["colour"],
+    colours: {
+      fr: ["Blanc", "Noir", "Rouge", "Bleu", "Gris", "Verde Amabile"],
+      en: ["White", "Black", "Red", "Blue", "Grey", "Verde Amabile"],
+    },
   },
   {
     key: "zoe",
@@ -1457,6 +1550,22 @@ export const CATALOG: CatalogItem[] = [
     secondHand: 0.5,
     house: true,
     fields: ["colour"],
+    colours: {
+      fr: [
+        "Blanc Glacier",
+        "Gris Titanium",
+        "Bleu Céladon",
+        "Rouge Flamme",
+        "Noir Étoilé",
+      ],
+      en: [
+        "Glacier White",
+        "Titanium Grey",
+        "Celadon Blue",
+        "Flame Red",
+        "Star Black",
+      ],
+    },
   },
   {
     key: "bike-trailer",
@@ -1484,6 +1593,10 @@ export const CATALOG: CatalogItem[] = [
     price: 1395,
     dep: 20,
     fields: ["size", "colour"],
+    colours: {
+      fr: ["Noir", "Bleu marine", "Vert militaire"],
+      en: ["Black", "Navy", "Military Green"],
+    },
   },
   {
     key: "nano-puff",
@@ -1496,6 +1609,10 @@ export const CATALOG: CatalogItem[] = [
     dep: 20,
     perPerson: true,
     fields: ["size", "colour"],
+    colours: {
+      fr: ["Noir", "Bleu marine", "Vert", "Orange"],
+      en: ["Black", "Navy", "Green", "Orange"],
+    },
   },
   {
     key: "moncler",
@@ -1508,6 +1625,7 @@ export const CATALOG: CatalogItem[] = [
     price: 1450,
     dep: 15,
     fields: ["size", "colour"],
+    colours: { fr: ["Noir", "Bleu marine"], en: ["Black", "Navy"] },
   },
   {
     key: "docs",
@@ -1519,6 +1637,7 @@ export const CATALOG: CatalogItem[] = [
     price: 199,
     dep: 20,
     fields: ["size", "colour"],
+    colours: { fr: ["Noir"], en: ["Black"] },
   },
   {
     key: "barbour",
@@ -1530,6 +1649,10 @@ export const CATALOG: CatalogItem[] = [
     price: 399,
     dep: 10,
     fields: ["size", "colour"],
+    colours: {
+      fr: ["Sauge", "Bleu marine", "Olive"],
+      en: ["Sage", "Navy", "Olive"],
+    },
   },
   {
     key: "suit",
@@ -1542,6 +1665,10 @@ export const CATALOG: CatalogItem[] = [
     price: 599,
     dep: 15,
     fields: ["size", "colour"],
+    colours: {
+      fr: ["Bleu marine", "Gris anthracite", "Noir"],
+      en: ["Navy", "Charcoal", "Black"],
+    },
   },
   {
     key: "ski-jacket",
@@ -1556,6 +1683,10 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     bundle: "ski",
     fields: ["size", "colour"],
+    colours: {
+      fr: ["Noir", "Bleu marine", "Rouge"],
+      en: ["Black", "Navy", "Red"],
+    },
   },
   {
     key: "longchamp",
@@ -1568,6 +1699,10 @@ export const CATALOG: CatalogItem[] = [
     dep: 10,
     portable: true,
     fields: ["colour"],
+    colours: {
+      fr: ["Noir", "Bleu marine", "Rouge"],
+      en: ["Black", "Navy", "Red"],
+    },
   },
   {
     key: "neverfull",
@@ -1581,6 +1716,7 @@ export const CATALOG: CatalogItem[] = [
     portable: true,
     secondHand: 0.2,
     fields: ["colour"],
+    colours: { fr: ["Monogram"], en: ["Monogram"] },
   },
   {
     key: "wedding-dress",
@@ -1609,6 +1745,10 @@ export const CATALOG: CatalogItem[] = [
     lendable: true,
     warranty: [120],
     fields: ["colour"],
+    colours: {
+      fr: ["Noir", "Bleu nuit", "Argent"],
+      en: ["Black", "Midnight Blue", "Silver"],
+    },
   },
 
   // --- Jewellery & watches ------------------------------------------------
@@ -1952,6 +2092,7 @@ export const CATALOG: CatalogItem[] = [
     serviceable: true,
     lendable: true,
     fields: ["colour", "strings"],
+    colours: { fr: ["Sunburst trois tons"], en: ["3-Colour Sunburst"] },
   },
   {
     key: "taylor",

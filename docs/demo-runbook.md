@@ -49,12 +49,12 @@ worse on stage.
    restart. Open the web URL _and_ `GET /health` so the API container is warm
    too — the web app is static and will otherwise wake the API only on your
    first login, in front of the jury.
-2. **Without `S3_*`, reseed now (§4).** The seeded invoices, receipts and
-   warranty certificates are files on the API's disk, which is ephemeral:
-   a redeploy or restart starts it clean, and treat waking from sleep
-   (after ~15 idle minutes) the same way. The rows survive in Postgres, the
-   files may not, and opening a lost one shows `File missing on disk`. Then
-   keep the API busy until you present.
+2. **Without `S3_*`, reseed now (§4).** The seeded invoices, receipts,
+   warranty certificates and product photos are files on the API's disk,
+   which is ephemeral: a redeploy or restart starts it clean, and treat
+   waking from sleep (after ~15 idle minutes) the same way. The rows survive
+   in Postgres, the files may not, and opening a lost one shows
+   `File missing on disk`. Then keep the API busy until you present.
 3. Log in as the showcase account and leave the tab open. It opens in French
    (the account's stored language) whatever the browser's language. Open one
    document (an article's _Pièces jointes_) to prove the files are there.
@@ -120,6 +120,7 @@ none depends on luck:
 | A wishlist item later bought                                                 | Wishlist (struck through)                                 |
 | Budgets (500 € / month, 6 000 € / year)                                      | Dashboard → budget                                        |
 | Proofs of purchase: invoices, till receipts, warranty certificates (PDF)     | an article → _Pièces jointes_; or the Pièces jointes page |
+| Product photos on some articles (credited Commons images)                    | the article header and its _Photos_ section               |
 
 The rest of the inventory is ordinary household life: an onboarding evening
 a year ago where most things were entered a few minutes apart, then a
@@ -131,9 +132,16 @@ number, date, quantity and price on the PDF are the article's, VAT is split
 out at 20 %, an online order gets an A4 invoice (`FA2024-…`) and an in-store
 purchase an 80 mm till receipt timed inside French opening hours (never a
 Sunday or public holiday). Each carries a `DÉMONSTRATION` watermark and a
-"fictitious document" footer. There are deliberately no product photos: no
-image source could be verified from the build environment, and a hot-linked
-picture of the wrong model is worse than none.
+"fictitious document" footer.
+
+Some articles also have a product photo, added the way a user adds one (it
+shows in the article header and under _Photos_, marked _Principale_). The
+photos are Wikimedia Commons images, each checked by eye to show the
+catalogue's exact model and colour, resized and committed under
+`apps/api/assets/demo-photos/`; nothing is hot-linked. The file name carries
+the author and licence, and `CREDITS.md` beside the photos lists every
+source. A product without a verified photo has none, and an article that
+shows one records the colour it shows.
 
 ---
 
@@ -223,12 +231,12 @@ Verified on branch `dev`, 2026-10-10:
 
 | Metric                 | Value                                                                                |
 | ---------------------- | ------------------------------------------------------------------------------------ |
-| API tests              | 626 passed, 44 skipped (83 files)                                                    |
-| API integration        | 44/44 against real PostgreSQL (the 44 skipped above), incl. the demo-seed invariants |
+| API tests              | 636 passed, 45 skipped (85 files)                                                    |
+| API integration        | 45/45 against real PostgreSQL (the 45 skipped above), incl. the demo-seed invariants |
 | Web tests              | 337 passed (80 files)                                                                |
 | End-to-end             | 15/15 Playwright scenarios                                                           |
-| API coverage           | 54.95 % statements · 78.68 % branches · 65.72 % functions (gates: 44 / 74 / 63)      |
-| Web coverage           | 60.46 % statements · 70.52 % branches · 37.41 % functions (gates: 48 / 62 / 28)      |
+| API coverage           | 55.01 % statements · 78.73 % branches · 65.80 % functions (gates: 44 / 74 / 63)      |
+| Web coverage           | 60.46 % statements · 70.46 % branches · 37.41 % functions (gates: 48 / 62 / 28)      |
 | `npm audit --omit=dev` | 0 vulnerabilities                                                                    |
 | Accessibility          | 0 axe-core violations across 19 routes × 2 viewport widths (one-off run, not in CI)  |
 
