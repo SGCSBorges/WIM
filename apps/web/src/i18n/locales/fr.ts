@@ -1523,6 +1523,8 @@ const extras: LocaleDict["extras"] = {
   "security.sessions.title": "Sessions actives",
   "security.sessions.empty": "Aucune autre session active.",
   "security.sessions.unknownDevice": "Appareil inconnu",
+  "security.sessions.deviceOn": "{browser} sur {os}",
+  "attachments.type.claim": "Justificatif de réclamation",
   "security.sessions.thisDevice": "Cet appareil",
   "security.sessions.lastActive": "Dernière activité",
   "security.sessions.revoke": "Déconnecter",

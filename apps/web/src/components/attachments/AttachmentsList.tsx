@@ -29,6 +29,7 @@ import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { Button, Input, Select, Badge, type BadgeTone } from "../ui";
 import type { AttachmentItem as Attachment } from "@wim/types";
+import { attachmentTypeLabel } from "../../utils/attachmentType";
 
 interface AttachmentsListProps {
   articleId?: number;
@@ -223,7 +224,9 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
     .filter((attachment) => {
       const matchesSearch =
         attachment.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        attachment.type.toLowerCase().includes(searchTerm.toLowerCase());
+        attachmentTypeLabel(attachment.type, t)
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
       const matchesFilter =
         filterType === "ALL" || attachment.type === filterType;
       return matchesSearch && matchesFilter;
@@ -482,7 +485,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                       {attachment.fileName}
                     </RowHeading>
                     <Badge tone={typeTone(attachment.type)}>
-                      {attachment.type}
+                      {attachmentTypeLabel(attachment.type, t)}
                     </Badge>
                   </div>
                   <p className="text-xs ui-text-muted">

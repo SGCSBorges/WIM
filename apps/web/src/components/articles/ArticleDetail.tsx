@@ -68,6 +68,7 @@ import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
 import { useToast } from "../common/Toast";
 import ArticleThumb from "./ArticleThumb";
+import { attachmentTypeLabel } from "../../utils/attachmentType";
 import {
   PageHeader,
   Section,
@@ -1425,7 +1426,7 @@ export default function ArticleDetail() {
                 >
                   {att.fileName}
                 </a>
-                <Badge tone="neutral">{att.type}</Badge>
+                <Badge tone="neutral">{attachmentTypeLabel(att.type, t)}</Badge>
               </li>
             ))}
           </ul>

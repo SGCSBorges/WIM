@@ -67,6 +67,17 @@ describe("<AttachmentsList />", () => {
     expect(screen.getByText("b.pdf")).toBeInTheDocument();
   });
 
+  it("names each attachment's type in the reader's language, not as the enum", async () => {
+    getAll.mockResolvedValueOnce([
+      { ...fixture(1, "a.pdf"), type: "INVOICE" },
+      { ...fixture(2, "b.pdf"), type: "WARRANTY" },
+    ]);
+    renderList();
+    expect(await screen.findByText("Invoice")).toBeInTheDocument();
+    expect(screen.getByText("Warranty Document")).toBeInTheDocument();
+    expect(screen.queryByText("INVOICE")).not.toBeInTheDocument();
+  });
+
   it("shows the bulk action bar once a row is selected and calls bulkDelete on confirm", async () => {
     getAll.mockResolvedValueOnce([fixture(1, "a.pdf"), fixture(2, "b.pdf")]);
     bulkDelete.mockResolvedValueOnce({ count: 1 });

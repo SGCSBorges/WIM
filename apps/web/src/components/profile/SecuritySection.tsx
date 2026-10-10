@@ -24,6 +24,7 @@ import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { useToast } from "../common/Toast";
 import { getErrorMessage } from "../../utils/error";
+import { deviceLabelText } from "../../utils/deviceLabel";
 import { Section, Badge, Button } from "../ui";
 import { Skeleton } from "../common/Skeleton";
 import TwoFactorPanel from "./TwoFactorPanel";
@@ -190,7 +191,7 @@ export default function SecuritySection() {
                       className="flex flex-wrap items-center gap-2 py-2"
                     >
                       <span className="font-medium ui-title">
-                        {s.deviceLabel ?? t("security.sessions.unknownDevice")}
+                        {deviceLabelText(s.deviceLabel, t)}
                       </span>
                       {isCurrent && (
                         <Badge tone="success">

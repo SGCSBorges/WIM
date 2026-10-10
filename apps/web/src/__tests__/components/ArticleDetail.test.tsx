@@ -70,6 +70,25 @@ describe("<ArticleDetail />", () => {
     expect(screen.getByText("DW-100")).toBeInTheDocument();
   });
 
+  it("names an attachment's type in the reader's language, not as the enum", async () => {
+    mocked.attGetAll.mockResolvedValue([
+      {
+        attachmentId: 9,
+        fileName: "Facture.pdf",
+        mimeType: "application/pdf",
+        fileSize: 2048,
+        fileUrl: "/uploads/aaaaaaaaaaaaaaaaaaaaaaaa.pdf",
+        thumbUrl: null,
+        type: "INVOICE",
+        articleId: 5,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    renderAt();
+    expect(await screen.findByText("Invoice")).toBeInTheDocument();
+    expect(screen.queryByText("INVOICE")).not.toBeInTheDocument();
+  });
+
   it("adds a maintenance note", async () => {
     mocked.notesCreate.mockResolvedValueOnce({
       noteId: 1,

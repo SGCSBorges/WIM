@@ -1020,6 +1020,8 @@ export const extras = {
     "security.sessions.title": "Active sessions",
     "security.sessions.empty": "No other active sessions.",
     "security.sessions.unknownDevice": "Unknown device",
+    "security.sessions.deviceOn": "{browser} on {os}",
+    "attachments.type.claim": "Claim evidence",
     "security.sessions.thisDevice": "This device",
     "security.sessions.lastActive": "Last active",
     "security.sessions.revoke": "Sign out",
