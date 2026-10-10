@@ -261,7 +261,9 @@ the mobile browser chrome and installed-PWA status bar match it, and
 - **Cookie** — in production the browser talks to a single origin: the
   `render.yaml` `/api/*` proxy on the static site forwards API calls
   server-side, which is what keeps login working on Safari/iOS (ITP drops
-  cross-site `Set-Cookie`). The API still sets `sameSite=none; secure` so
+  cross-site `Set-Cookie`). `/uploads/*` is forwarded the same way, because
+  attachment URLs are minted on the web origin (`APP_URL`) and the file
+  route needs the same cookie. The API still sets `sameSite=none; secure` so
   direct API access works too; `lax` in dev.
 - **Force-logout / revocation** — `tokenVersion` (per-user, invalidates all
   tokens) and the Redis `jti` denylist (per-token, on logout). Detail in

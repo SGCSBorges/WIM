@@ -31,6 +31,12 @@ services:
     # before the SPA fallback below, or /api/* would be swallowed by the
     # /index.html rewrite.
     #
+    # /uploads/* proxy — attachment URLs are minted on APP_URL (this
+    # origin), so the bytes must be forwarded to the API's authenticated,
+    # share-aware /uploads handler. The same first-party cookie reasoning
+    # as /api/* applies: an <img> or link straight to wimapi would not carry
+    # the session on Safari. Must also come before the SPA fallback.
+    #
     # SPA fallback — every unknown path serves /index.html with a 200,
     # so React Router can take over. This is the Render-native equivalent
     # of the public/_redirects file (which we keep as a fallback for
@@ -39,6 +45,9 @@ services:
       - type: rewrite
         source: /api/*
         destination: https://wimapi.onrender.com/api/*
+      - type: rewrite
+        source: /uploads/*
+        destination: https://wimapi.onrender.com/uploads/*
       - type: rewrite
         source: /*
         destination: /index.html

@@ -3,6 +3,11 @@
 # Render uses render.yaml for this; the rule below covers Netlify deployments.
 /api/*  https://wimapi.onrender.com/api/:splat  200
 
+# Attachment proxy: file URLs point at this origin (APP_URL/uploads/...), so
+# forward them to the API's authenticated /uploads handler. Before the
+# fallback, or the SPA would answer them.
+/uploads/*  https://wimapi.onrender.com/uploads/:splat  200
+
 # SPA fallback: every unknown path serves the React entry so client-side
 # routing (React Router) can take over. The 200 status keeps it a regular
 # response — not a redirect — so URLs stay intact and the browser doesn't

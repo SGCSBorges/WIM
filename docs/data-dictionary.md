@@ -202,7 +202,7 @@ A file (invoice, warranty proof, photo) linked to an article and/or a warranty.
 | `fileName` | String VarChar(255) | — | |
 | `mimeType` | String VarChar(100) | — | |
 | `fileSize` | Int | — | Bytes. |
-| `fileUrl` | String VarChar(500) | — | Points at `/uploads/<file>` (public static) or an external URL. |
+| `fileUrl` | String VarChar(500) | — | Points at `/uploads/<file>` (authenticated, served under the row's access rules) or an external URL. |
 | `thumbUrl` | String? VarChar(500) | null | Resized preview for images; null for PDFs. |
 
 > Also the target of `Garantie.garantieImageAttachmentId` via the

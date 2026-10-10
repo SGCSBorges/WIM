@@ -96,12 +96,17 @@ curl -b jar.txt https://wimapi.onrender.com/api/auth/me
 This is the most-asked-about gotcha:
 
 - `/api/attachments/*` → JSON metadata. **Cookie required.**
-- `/uploads/<filename>` → the raw file, served as static content.
-  **Public** — anyone with the URL can download it.
+- `/uploads/<filename>` → the raw file. **Cookie required**, and the
+  attachment row's access rules apply to the bytes: the owner, a viewer
+  the article's owner shares with, or a POWER_USER/ADMIN on a publicly
+  shared article; anyone else gets a 404 (`app.ts`).
 
-The UI uses `attachment.fileUrl` (which points at `/uploads/…`) to render
-images or trigger downloads — never `/api/attachments/:id`, because
-navigating that in a tab doesn't send the cookie and you'll see a 401.
+`fileUrl` is minted on `APP_URL` — the **web** origin — so the static site
+forwards `/uploads/*` to the API (`render.yaml`, `public/_redirects`, and
+the Vite dev/preview proxy) the same way it forwards `/api/*`, keeping the
+cookie first-party. The UI uses `attachment.fileUrl` to render images or
+trigger downloads — never `/api/attachments/:id`, which returns JSON
+metadata, not the file.
 
 **Client-side image compression.** Before an upload leaves the browser,
 `utils/imageCompress.ts` downscales large raster photos (jpeg/png/webp over
@@ -591,15 +596,20 @@ and replay it — see the smoke example above.
 ### "Token manquant" / 401 opening an attachment URL
 
 You navigated to `/api/attachments/<id>` in a browser tab. Use the
-`fileUrl` field (`/uploads/<filename>`) — that one is public static
-content. The UI does this automatically.
+`fileUrl` field (`/uploads/<filename>`), which streams the file to a
+signed-in viewer allowed to see it. The UI does this automatically.
+
+### Opening an attachment shows the app instead of the file
+
+The web host is answering `/uploads/*` with its SPA fallback. The
+`/uploads/*` rewrite must come before `/*` in `render.yaml` (and in
+`public/_redirects` on other hosts).
 
 ### Mixed-content errors on attachment download
 
 A legacy row has an HTTP `fileUrl` (e.g. `http://wimapi.onrender.com/uploads/…`).
-The web client already normalises `/uploads/…` paths to the API's HTTPS
-host at render time — but if the stored value is a different host, fix the
-DB row.
+The web client upgrades `/uploads/…` links to HTTPS when downloading — but
+if the stored value is a different host, fix the DB row.
 
 ### Delete-account returned 500 but the user is gone
 
