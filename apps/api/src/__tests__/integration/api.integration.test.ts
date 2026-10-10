@@ -1657,6 +1657,23 @@ suite("API integration (real Postgres)", () => {
         `SELECT count(*) FROM "Message" m JOIN "MessageThread" t ON t.id=m."threadId" JOIN "Article" a ON a."articleId"=t."articleId" WHERE m."createdAt" < a."createdAt"`,
       ],
       [
+        // Receipts carry the purchase instant; shops are shut on Sundays and
+        // public holidays, and open 9:30–19:30 Paris time. (Prisma stores
+        // naive UTC, hence the double AT TIME ZONE.)
+        "till receipt dated when the shop was shut",
+        `SELECT count(*) FROM "Attachment" t
+           JOIN "Garantie" g ON g."garantieArticleId"=t."articleId" AND g."renewedAt" IS NULL
+           CROSS JOIN LATERAL (SELECT (g."garantieDateAchat" AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Paris' AS local) p
+          WHERE t.type='INVOICE' AND t."fileName" NOT ILIKE '%facture%'
+            AND (extract(isodow FROM p.local) = 7
+              OR to_char(p.local, 'MM-DD') IN ('01-01','05-01','05-08','07-14','08-15','11-01','11-11','12-25')
+              OR p.local::time NOT BETWEEN '09:30' AND '19:30')`,
+      ],
+      [
+        "document filed by someone other than the article's owner",
+        `SELECT count(*) FROM "Attachment" t JOIN "Article" a USING ("articleId") WHERE t."ownerUserId" <> a."ownerUserId"`,
+      ],
+      [
         "shop price a receipt would never show",
         `SELECT count(*) FROM "Article" WHERE "purchasePrice" IS NOT NULL AND ("purchasePrice"*100)::bigint % 100 NOT IN (0, 90, 95, 99)`,
       ],
@@ -1665,6 +1682,9 @@ suite("API integration (real Postgres)", () => {
     it("violates none of the invariants a real account obeys, and stages every demo story", async () => {
       const { seedDemoData, resetDemoData, DEMO_SHOWCASE_EMAIL } =
         await import("../../modules/demo/demo.service");
+      const { readUploadBytes } = await import(
+        "../../modules/attachments/attachment.fs"
+      );
       await seedDemoData(prisma, {
         users: 14,
         articlesPerUser: 15,
@@ -1742,10 +1762,59 @@ suite("API integration (real Postgres)", () => {
       expect(boughtWish).toBeGreaterThanOrEqual(1);
       expect(lostWithQr).toBeGreaterThanOrEqual(1);
 
-      // The reset removes every demo row it created, households included.
+      // Everyone is a French-speaking resident of France, paying in euros.
+      expect(
+        await prisma.user.count({
+          where: {
+            OR: [{ language: { not: "fr" } }, { currency: { not: "EUR" } }],
+          },
+        })
+      ).toBe(0);
+
+      // Nothing is hot-linked: no product photo points off-site, and every
+      // document is a real PDF in the app's own upload store.
+      expect(
+        await prisma.article.count({
+          where: { productImageUrl: { not: null } },
+        })
+      ).toBe(0);
+      const docs = await prisma.attachment.findMany({
+        select: { fileUrl: true, mimeType: true, type: true },
+      });
+      expect(new Set(docs.map((d) => d.type))).toEqual(
+        new Set(["INVOICE", "WARRANTY"])
+      );
+      for (const d of docs) {
+        expect(d.mimeType).toBe("application/pdf");
+        const bytes = await readUploadBytes(d.fileUrl);
+        expect(bytes?.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+      }
+
+      // The reset removes every demo row it created, households included,
+      // and the files behind the documents.
       await resetDemoData(prisma);
       expect(await prisma.user.count()).toBe(0);
       expect(await prisma.household.count()).toBe(0);
+      for (const d of docs) expect(await readUploadBytes(d.fileUrl)).toBeNull();
+    }, 120_000);
+
+    it("wipes a throwaway database without leaving document files behind", async () => {
+      const { seedDemoData, wipeAllData } = await import(
+        "../../modules/demo/demo.service"
+      );
+      const { readUploadBytes } = await import(
+        "../../modules/attachments/attachment.fs"
+      );
+      await seedDemoData(prisma, { users: 3, articlesPerUser: 5, seed: 7 });
+      const docs = await prisma.attachment.findMany({
+        select: { fileUrl: true },
+      });
+      expect(docs.length).toBeGreaterThan(0);
+
+      expect(await wipeAllData(prisma)).toBe(3);
+      expect(await prisma.user.count()).toBe(0);
+      expect(await prisma.household.count()).toBe(0);
+      for (const d of docs) expect(await readUploadBytes(d.fileUrl)).toBeNull();
     }, 120_000);
   });
 });

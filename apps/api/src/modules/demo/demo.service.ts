@@ -53,6 +53,13 @@ import {
   parseReminderDays,
 } from "../alerts/alert.scheduler";
 import { labelFromUserAgent } from "../auth/user-agent";
+import { unlinkAttachmentFiles } from "../attachments/attachment.fs";
+import {
+  invoicePdf,
+  storeDemoFile,
+  tillReceiptPdf,
+  warrantyCertificatePdf,
+} from "./demo.documents";
 import {
   CATALOG,
   CATEGORY_DEFAULTS,
@@ -73,6 +80,7 @@ import {
   cents,
   chance,
   clamp,
+  duringOpeningHours,
   gaussian,
   logNormal,
   monthStart,
@@ -124,6 +132,10 @@ export interface SeedDemoOptions {
   /** Make demo user #0 an ADMIN (admin@demo.wim.app). The endpoint passes
    *  false when a real admin already exists, to avoid minting extra admins. */
   makeAdmin?: boolean;
+  /** Origin that stored demo documents are served from — the same base the
+   *  upload route uses (APP_URL, else the request's origin). Defaults to
+   *  APP_URL, else http://localhost:<PORT>. */
+  fileBaseUrl?: string;
   onProgress?: (msg: string) => void;
 }
 
@@ -225,6 +237,9 @@ interface Plan {
   createdMs: number;
   unitPrice: number | null;
   retailer: string | null;
+  /** The recorded shop sells online (its paperwork is an invoice, not a till
+   *  receipt). */
+  retailerOnline: boolean;
   orderRef: string | null;
   room: RoomKey | null;
   status: Status;
@@ -474,23 +489,27 @@ function ipFor(market: Market): string {
   return `${pick(IP_PREFIXES[market])}.${randInt(0, 255)}.${randInt(0, 255)}.${randInt(1, 254)}`;
 }
 
+// Who the demo population is. The defence is presented in French, so every
+// seeded account is a French speaker living in France and paying in euros.
+// The English, Swiss and UK pools in demo.content stay in place: give them
+// weight here to bring them back for a demo in another setting.
+const LANGUAGE_MIX: readonly (readonly [Lang, number])[] = [["fr", 1]];
+type DemoCurrency = "EUR" | "CHF" | "GBP";
+const CURRENCY_MIX: Record<Lang, readonly (readonly [DemoCurrency, number])[]> =
+  {
+    fr: [["EUR", 1]],
+    en: [
+      ["EUR", 55],
+      ["GBP", 45],
+    ],
+  };
+
 function currencyFor(lang: Lang): {
   currency: string;
   fx: number;
   market: Market;
 } {
-  // French speakers mostly in France, some in Romandy; English speakers
-  // split between expats in France and UK residents.
-  const c =
-    lang === "fr"
-      ? weighted([
-          ["EUR", 92],
-          ["CHF", 8],
-        ] as const)
-      : weighted([
-          ["EUR", 55],
-          ["GBP", 45],
-        ] as const);
+  const c = weighted(CURRENCY_MIX[lang]);
   return {
     currency: c,
     fx: { EUR: 1, CHF: 0.95, GBP: 0.86 }[c],
@@ -509,13 +528,7 @@ function makePersonas(
   for (let i = 0; i < users; i++) {
     const isAdmin = makeAdmin && i === 0;
     const isShowcase = showcase && i === 1;
-    const lang: Lang =
-      isAdmin || isShowcase
-        ? "fr"
-        : weighted([
-            ["fr", 78],
-            ["en", 22],
-          ] as const);
+    const lang: Lang = isAdmin || isShowcase ? "fr" : weighted(LANGUAGE_MIX);
     const first = isShowcase ? "Claire" : pick(C.FIRST_NAMES[lang]);
     const last = isShowcase ? "Martin" : pick(C.LAST_NAMES[lang]);
     const { currency, fx, market } =
@@ -1011,7 +1024,10 @@ function retailerFor(
     C.SHOP_OVERRIDES[item.key]?.[p.market] ??
     C.RETAILERS[item.category][p.market]
   ).filter(
-    (r) => item.brand === "Apple" || !r.name.toLowerCase().includes("apple")
+    (r) =>
+      (item.brand === "Apple" || !r.name.toLowerCase().includes("apple")) &&
+      // A brand's own store only for a real brand.
+      !(r.name.includes("{brand}") && PSEUDO_BRANDS.has(item.brand))
   );
   if (item.brand === "Apple" && chance(0.5)) {
     const apple = pool.filter((r) => r.name.toLowerCase().includes("apple"));
@@ -1022,7 +1038,12 @@ function retailerFor(
     r.online && r.ref && chance(0.5 + 0.45 * p.diligence)
       ? shapeRef(r.ref)
       : null;
-  return { name: r.name, ref, online: r.online, person: false };
+  return {
+    name: r.name.replace("{brand}", item.brand),
+    ref,
+    online: r.online,
+    person: false,
+  };
 }
 
 function conditionFor(how: Acquisition, yearsOwned: number): Condition {
@@ -1324,6 +1345,15 @@ function planArticle(
   const d01 = p.diligence;
   const unitPrice = priceFor(p, item, a.how, a.acquiredMs);
   const retailer = retailerFor(p, item, a.how);
+  // A till receipt can only be dated when the shop was open.
+  if (retailer && !retailer.online && !retailer.person) {
+    const released = item.released ? monthStart(item.released) : 0;
+    a.acquiredMs = duringOpeningHours(
+      a.acquiredMs,
+      Math.max(released, 0),
+      a.createdMs - 10 * MINUTE
+    );
+  }
   const keepRetailer = retailer !== null && chance(0.3 + 0.65 * d01);
   const { status, statusMs } = statusFor(
     item,
@@ -1342,6 +1372,7 @@ function planArticle(
     createdMs: a.createdMs,
     unitPrice,
     retailer: keepRetailer ? retailer!.name : null,
+    retailerOnline: keepRetailer ? retailer!.online : false,
     orderRef: keepRetailer ? retailer!.ref : null,
     room: null,
     status,
@@ -1601,8 +1632,12 @@ function ensureShowcaseStories(p: Persona, plans: Plan[]) {
         (y.item.warranty ?? categoryOf(y.item).warranty).includes(24)
     );
     if (!x) continue;
-    const endMs = wakingHours(now() + days * DAY);
+    let endMs = wakingHours(now() + days * DAY);
     x.acquiredMs = addMonths(endMs, -24);
+    if (x.retailer && !x.retailerOnline) {
+      x.acquiredMs = duringOpeningHours(x.acquiredMs, 0, now() - DAY);
+      endMs = addMonths(x.acquiredMs, 24);
+    }
     x.how = "new";
     if (x.acquiredMs > p.joinedMs)
       x.createdMs = clampToNow(wakingHours(x.acquiredMs + DAY));
@@ -1746,6 +1781,21 @@ export async function resetDemoData(prisma: PrismaClient): Promise<number> {
   // while the link still exists, before the cascade fires.
   await prisma.auditLog.deleteMany({ where: { userId: { in: ids } } });
 
+  // Seeded documents are real stored files; remove them with their rows so
+  // reseeding doesn't fill the disk or the bucket. Best-effort, like every
+  // other attachment delete.
+  const files = await prisma.attachment.findMany({
+    where: { ownerUserId: { in: ids } },
+    select: { fileUrl: true, thumbUrl: true },
+  });
+  for (let i = 0; i < files.length; i += 25) {
+    await Promise.all(
+      files
+        .slice(i, i + 25)
+        .map((f) => unlinkAttachmentFiles(f).catch(() => {}))
+    );
+  }
+
   const { count } = await prisma.user.deleteMany({
     where: { userId: { in: ids } },
   });
@@ -1757,6 +1807,33 @@ export async function resetDemoData(prisma: PrismaClient): Promise<number> {
   // rule, so sweep those; one a real user joined keeps its remaining member.
   await prisma.household.deleteMany({ where: { members: { none: {} } } });
   return count;
+}
+
+/** Delete every account and its data — the seed CLI's
+ *  `SEED_DEMO_RESET=true`, for throwaway databases only. Users cascade to
+ *  everything they own; audit rows, feature grants/flags, Stripe event ids
+ *  and households don't, so they go explicitly. Stored files go first,
+ *  while their rows still say where they are. Returns the users deleted. */
+export async function wipeAllData(prisma: PrismaClient): Promise<number> {
+  const files = await prisma.attachment.findMany({
+    select: { fileUrl: true, thumbUrl: true },
+  });
+  for (let i = 0; i < files.length; i += 25) {
+    await Promise.all(
+      files
+        .slice(i, i + 25)
+        .map((f) => unlinkAttachmentFiles(f).catch(() => {}))
+    );
+  }
+  const [, , , , users] = await prisma.$transaction([
+    prisma.auditLog.deleteMany(),
+    prisma.featureTempGrant.deleteMany(),
+    prisma.featureFlag.deleteMany(),
+    prisma.processedStripeEvent.deleteMany(),
+    prisma.user.deleteMany(),
+    prisma.household.deleteMany(),
+  ]);
+  return users.count;
 }
 
 // ---------------------------------------------------------------------------
@@ -1771,6 +1848,10 @@ export async function seedDemoData(
   const powerUserCount = opts.powerUserCount ?? 20;
   const password = opts.password ?? DEMO_PASSWORD;
   const makeAdmin = opts.makeAdmin ?? true;
+  const fileBaseUrl =
+    opts.fileBaseUrl ??
+    process.env.APP_URL?.replace(/\/$/, "") ??
+    `http://localhost:${process.env.PORT ?? 3000}`;
   const log = opts.onProgress ?? (() => {});
 
   reseed(opts.seed ?? Date.now() & 0xffffffff);
@@ -1840,6 +1921,7 @@ export async function seedDemoData(
 
     const result = await writeAccount(prisma, p, plans, vocab, rooms, {
       passwordHash: p.showcase && showcaseHash ? showcaseHash : passwordHash,
+      fileBaseUrl,
     });
     seeded.push({
       userId: result.userId,
@@ -1883,7 +1965,7 @@ async function writeAccount(
   plans: Plan[],
   vocab: Set<TagKey>,
   rooms: Set<RoomKey>,
-  secrets: { passwordHash: string }
+  secrets: { passwordHash: string; fileBaseUrl: string }
 ): Promise<{
   userId: number;
   articleIds: number[];
@@ -2040,8 +2122,6 @@ async function writeAccount(
       articleNom: x.name,
       articleModele: x.item.model.slice(0, 100),
       articleDescription: x.description?.slice(0, 255) ?? null,
-      productImageUrl:
-        x.item.image && chance(0.35 + 0.6 * d01) ? imageUrl(x.item) : null,
       brand: PSEUDO_BRANDS.has(x.item.brand)
         ? null
         : x.item.brand.slice(0, 120),
@@ -2285,46 +2365,18 @@ async function writeAccount(
   notes.forEach((n) => (n.updatedAt = n.createdAt));
   if (notes.length) await prisma.articleNote.createMany({ data: notes });
 
-  // Photos of receipts, warranty cards and the thing itself — only for items
-  // whose real product photo we can point at.
-  const attachments: Prisma.AttachmentCreateManyInput[] = [];
-  plans.forEach((x, k) => {
-    const url = x.item.image ? imageUrl(x.item) : null;
-    if (!url || !chance(0.2 + 0.55 * d01)) return;
-    const kinds: ("INVOICE" | "WARRANTY" | "OTHER")[] = [];
-    if (x.unitPrice && x.retailer) kinds.push("INVOICE");
-    if (x.warranty && chance(0.5)) kinds.push("WARRANTY");
-    if (kinds.length === 0 || chance(0.3)) kinds.push("OTHER");
-    for (const type of kinds) {
-      const atMs = clampToNow(
-        chance(0.75)
-          ? x.createdMs + between(20 * 1000, 15 * MINUTE)
-          : between(x.createdMs, now() - HOUR)
-      );
-      const stamp = new Date(atMs)
-        .toISOString()
-        .replace(/[-:T]/g, "")
-        .slice(0, 15);
-      const fileName = pick(C.ATTACHMENT_FILE_NAMES[p.lang][type])
-        .replace("{n}", String(randInt(1000, 9999)))
-        .replace("{date}", `${stamp.slice(0, 8)}_${stamp.slice(8)}`)
-        .replace("{retailer}", (x.retailer ?? "").replace(/\W+/g, ""));
-      attachments.push({
-        ownerUserId: userId,
-        articleId: articleIds[k],
-        type,
-        fileName,
-        mimeType: "image/jpeg",
-        fileSize: randInt(180_000, 2_400_000),
-        fileUrl: url,
-        thumbUrl: url,
-        createdAt: new Date(atMs),
-        updatedAt: new Date(atMs),
-      });
-    }
-  });
-  if (attachments.length)
-    await prisma.attachment.createMany({ data: attachments });
+  // Paperwork: the till receipt or invoice for things bought new with the
+  // shop recorded, and the certificate where a warranty comes on paper,
+  // rendered from the article's own facts and stored like an upload. Careful
+  // people keep more of it; the showcase keeps the most.
+  const documents = await seedDocuments(
+    p,
+    userId,
+    plans,
+    articleIds,
+    secrets.fileBaseUrl
+  );
+  if (documents.length) await prisma.attachment.createMany({ data: documents });
 
   // Self-made reminders.
   const owned = (x: Plan) => !NOT_OWNED.includes(x.status) && !x.deletedMs;
@@ -2440,6 +2492,159 @@ async function writeAccount(
   };
 }
 
+/** Kinds of thing whose warranty comes as a paper certificate. */
+const PAPER_WARRANTY = new Set<Category>([
+  "APPLIANCE",
+  "TOOL",
+  "VEHICLE",
+  "JEWELRY",
+  "FURNITURE",
+]);
+
+/** The designation a shop prints: maker first unless the name already has it. */
+function shopDesignation(item: CatalogItem): string {
+  const name = productName(item, "fr");
+  if (PSEUDO_BRANDS.has(item.brand) || name.includes(item.brand)) return name;
+  return `${item.brand} ${name}`;
+}
+
+function fillName(template: string, v: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, k: string) => v[k] ?? "");
+}
+
+async function seedDocuments(
+  p: Persona,
+  userId: number,
+  plans: Plan[],
+  articleIds: number[],
+  baseUrl: string
+): Promise<Prisma.AttachmentCreateManyInput[]> {
+  const d01 = p.diligence;
+  const budget = p.showcase ? 60 : Math.round(3 + 20 * d01);
+  const names = C.DOCUMENT_FILE_NAMES[p.lang];
+  const buyer = `${p.first} ${p.last}`;
+  const rows: Prisma.AttachmentCreateManyInput[] = [];
+  const dd = (ms: number) =>
+    new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris" })
+      .format(new Date(ms))
+      .replace(/\//g, "-");
+  const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  const hhmm = (ms: number) =>
+    new Intl.DateTimeFormat("fr-FR", {
+      timeZone: "Europe/Paris",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+      .format(new Date(ms))
+      .replace(":", ".");
+
+  const store = async (
+    k: number,
+    type: "INVOICE" | "WARRANTY",
+    bytes: Buffer,
+    fileName: string,
+    atMs: number
+  ) => {
+    const file = await storeDemoFile(bytes, "pdf", "application/pdf", baseUrl);
+    rows.push({
+      ownerUserId: userId,
+      articleId: articleIds[k],
+      type,
+      fileName: fileName.slice(0, 255),
+      mimeType: "application/pdf",
+      fileSize: file.fileSize,
+      fileUrl: file.fileUrl,
+      thumbUrl: null,
+      createdAt: new Date(atMs),
+      updatedAt: new Date(atMs),
+    });
+  };
+
+  for (const k of shuffle(plans.map((_, i) => i))) {
+    if (rows.length >= budget) break;
+    const x = plans[k];
+    const product = shopDesignation(x.item);
+
+    // Proof of purchase: only for things bought from a shop the owner noted.
+    const bought = x.how === "new" || x.how === "refurbished";
+    if (
+      bought &&
+      x.unitPrice !== null &&
+      x.retailer &&
+      chance(p.showcase ? 0.8 : 0.1 + 0.5 * d01)
+    ) {
+      const facts = {
+        shop: x.retailer,
+        online: x.retailerOnline,
+        orderRef: x.orderRef,
+        buyer,
+        product,
+        model: x.item.model,
+        units: x.units,
+        unitPrice: x.unitPrice,
+        boughtMs: x.acquiredMs,
+      };
+      const atMs = clampToNow(x.createdMs + between(20 * 1000, 15 * MINUTE));
+      const v = {
+        shop: x.retailer,
+        shopSlug: x.retailer.replace(/[^A-Za-z0-9]+/g, ""),
+        date: dd(x.acquiredMs),
+        isoDate: iso(x.acquiredMs),
+        time: hhmm(x.acquiredMs),
+        number: "",
+      };
+      if (x.retailerOnline) {
+        const number = `FA${new Date(x.acquiredMs).getUTCFullYear()}-${digits(7)}`;
+        await store(
+          k,
+          "INVOICE",
+          await invoicePdf(facts, number),
+          fillName(pick(names.invoice), { ...v, number }),
+          atMs
+        );
+      } else {
+        await store(
+          k,
+          "INVOICE",
+          await tillReceiptPdf(facts, digits(10)),
+          fillName(pick(names.receipt), v),
+          atMs
+        );
+      }
+    }
+
+    // Warranty on paper: certificates for appliances, tools, bikes, watches
+    // and long furniture guarantees; contracts for extensions and AppleCare+.
+    const w = x.warranty;
+    if (!w || rows.length >= budget) continue;
+    const contract = /^(Extension|AppleCare)/.test(w.name);
+    if (!(contract || PAPER_WARRANTY.has(x.item.category))) continue;
+    if (!chance(p.showcase ? 0.6 : 0.05 + 0.35 * d01)) continue;
+    const brand = w.providerName ?? x.item.brand;
+    const bytes = await warrantyCertificatePdf({
+      title: contract ? w.name : "Certificat de garantie",
+      brand,
+      product,
+      model: x.item.model,
+      serial: x.serial,
+      boughtMs: w.renewal ? w.renewal.priorStartMs : w.startMs,
+      months: w.renewal ? w.renewal.priorMonths : w.months,
+      shop: x.retailer,
+    });
+    const atMs = clampToNow(
+      Math.max(w.createdMs, x.createdMs) + between(30 * 1000, 20 * MINUTE)
+    );
+    await store(
+      k,
+      "WARRANTY",
+      bytes,
+      fillName(pick(names.warranty), { brand, date: dd(w.startMs) }),
+      atMs
+    );
+  }
+  return rows;
+}
+
 function mostCommon<T>(xs: T[]): T | null {
   const counts = new Map<T, number>();
   for (const x of xs) counts.set(x, (counts.get(x) ?? 0) + 1);
@@ -2447,15 +2652,6 @@ function mostCommon<T>(xs: T[]): T | null {
   let n = 0;
   for (const [k, v] of counts) if (v > n) [best, n] = [k, v];
   return best;
-}
-
-// Real product photos per catalogue model, served from Wikimedia Commons via
-// `Special:FilePath/<file>` — a stable redirect to the upload that honours
-// `?width=`. If a file is ever renamed the URL 404s and `ArticleThumb` falls
-// back to its placeholder, so a stale entry degrades gracefully.
-function imageUrl(item: CatalogItem): string | null {
-  if (!item.image) return null;
-  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(item.image)}?width=400`;
 }
 
 // ---------------------------------------------------------------------------

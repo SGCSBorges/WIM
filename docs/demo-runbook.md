@@ -7,8 +7,8 @@ in-memory. None of that is an architecture defect, but all of it can sink a
 live demo if it is discovered at the wrong moment.
 
 Hosts: web <https://wim-web.onrender.com> · API <https://wimapi.onrender.com>
-(the static site rewrites `/api/*` to the API so the auth cookie stays
-same-origin — see `render.yaml` and `docs/architecture.md`).
+(the static site rewrites `/api/*` and `/uploads/*` to the API so the auth
+cookie stays same-origin — see `render.yaml` and `docs/architecture.md`).
 
 ---
 
@@ -36,7 +36,7 @@ worse on stage.
 | `RESEND_API_KEY` + `MAIL_FROM`                                            | reminder e-mails, weekly digest, password reset  |
 | `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY`                                  | push notifications                               |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_POWER_USER_PRICE_*` | the upgrade → webhook → role-change flow         |
-| `S3_*`                                                                    | attachments surviving a redeploy (see §8)        |
+| `S3_*`                                                                    | documents surviving a sleep or redeploy (§2, §8) |
 | `APP_URL`, `CORS_ORIGIN`                                                  | correct links in e-mails; cross-origin requests  |
 
 **Reseed and smoke-test** (§4), then log in once end-to-end.
@@ -49,19 +49,26 @@ worse on stage.
    restart. Open the web URL _and_ `GET /health` so the API container is warm
    too — the web app is static and will otherwise wake the API only on your
    first login, in front of the jury.
-2. Log in as the showcase account and leave the tab open. It opens in French
-   (the account's stored language) whatever the browser's language.
-3. Re-check `/health` shows `db`, `redis` and `queue` all `ok`.
+2. **Without `S3_*`, reseed now (§4).** The seeded invoices, receipts and
+   warranty certificates are files on the API's disk, which is ephemeral:
+   a redeploy or restart starts it clean, and treat waking from sleep
+   (after ~15 idle minutes) the same way. The rows survive in Postgres, the
+   files may not, and opening a lost one shows `File missing on disk`. Then
+   keep the API busy until you present.
+3. Log in as the showcase account and leave the tab open. It opens in French
+   (the account's stored language) whatever the browser's language. Open one
+   document (an article's _Pièces jointes_) to prove the files are there.
+4. Re-check `/health` shows `db`, `redis` and `queue` all `ok`.
 
 ---
 
 ## 3. Credentials
 
-| Account                      | Password    | Notes                                                                           |
-| ---------------------------- | ----------- | ------------------------------------------------------------------------------- |
-| `admin@wim.com`              | `Admin123+` | ADMIN, 110+ articles, French, EUR, light theme; "Famille Martin" household      |
-| `thomas.martin@demo.wim.app` | `Demo1234!` | POWER_USER, the showcase's partner in the same household                        |
-| `<name>@demo.wim.app`        | `Demo1234!` | generated users; roles vary (USER / POWER_USER); about 1 in 4 writes in English |
+| Account                      | Password    | Notes                                                                          |
+| ---------------------------- | ----------- | ------------------------------------------------------------------------------ |
+| `admin@wim.com`              | `Admin123+` | ADMIN, 110+ articles, French, EUR, light theme; "Famille Martin" household     |
+| `thomas.martin@demo.wim.app` | `Demo1234!` | POWER_USER, the showcase's partner in the same household                       |
+| `<name>@demo.wim.app`        | `Demo1234!` | generated users; roles vary (USER / POWER_USER); all French, in France, in EUR |
 
 Constants live in `apps/api/src/modules/demo/demo.service.ts`
 (`DEMO_SHOWCASE_EMAIL`, `DEMO_SHOWCASE_PASSWORD`, `DEMO_PASSWORD`).
@@ -86,9 +93,11 @@ curl -s -X POST https://wimapi.onrender.com/api/auth/seed-demo -i | head -1
 
 It wipes and recreates every `@demo.wim.app` account **and** the
 `admin@wim.com` showcase account, then removes any household left with no
-members. It never touches other accounts. Run it the
-day before, not during the defence — it is unauthenticated and rate-limited,
-and a half-finished seed mid-demo is unrecoverable.
+members, and deletes the document files the previous seed wrote. It never
+touches other accounts. Run it the day before, not during the defence — it
+is unauthenticated and rate-limited, and a half-finished seed mid-demo is
+unrecoverable. The one exception is §2: without `S3_*`, run it again once
+the API is awake, so the documents exist on the disk you will present from.
 
 ---
 
@@ -110,11 +119,21 @@ none depends on luck:
 | A recently deleted item                                                      | Trash                                                     |
 | A wishlist item later bought                                                 | Wishlist (struck through)                                 |
 | Budgets (500 € / month, 6 000 € / year)                                      | Dashboard → budget                                        |
+| Proofs of purchase: invoices, till receipts, warranty certificates (PDF)     | an article → _Pièces jointes_; or the Pièces jointes page |
 
 The rest of the inventory is ordinary household life: an onboarding evening
 a year ago where most things were entered a few minutes apart, then a
 trickle of purchases, phones that were upgraded and sold, and bundles
 wherever several pieces of a set are owned.
+
+The documents are generated per article and agree with it: the shop, order
+number, date, quantity and price on the PDF are the article's, VAT is split
+out at 20 %, an online order gets an A4 invoice (`FA2024-…`) and an in-store
+purchase an 80 mm till receipt timed inside French opening hours (never a
+Sunday or public holiday). Each carries a `DÉMONSTRATION` watermark and a
+"fictitious document" footer. There are deliberately no product photos: no
+image source could be verified from the build environment, and a hot-linked
+picture of the wrong model is worse than none.
 
 ---
 
@@ -152,20 +171,20 @@ they are the parts that do not depend on the OS accepting the notification.
 - The showcase account is French. Everything the server writes for it —
   reminder names, e-mails, push, the weekly digest — is French, including the
   seeded history (`Rappel garantie J-30`, `Retour de prêt : …`).
-- To show the language switch, use the gear menu, or log in as one of the
-  English-speaking demo users (their rooms, tags and notes are in English, as
-  they typed them).
+- Every demo account is a French speaker living in France and paying in
+  euros, so the whole demo reads in French. To show the language switch,
+  use the gear menu.
 
 ---
 
 ## 8. What not to demo on free hosting
 
-| Don't                                             | Why                                                                               | Instead               |
-| ------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------- |
-| Open an attachment uploaded in an earlier session | files sit on an ephemeral disk unless `S3_*` is configured; a redeploy wipes them | upload a receipt live |
-| Rely on a reminder scheduled days ago             | free key-value store is in-memory                                                 | §6                    |
-| Promise e-mail delivery without checking          | silent no-op when Resend is unconfigured                                          | verify in §1          |
-| Leave the first page load to the jury             | ~1 min cold start                                                                 | §2                    |
+| Don't                                             | Why                                                                                        | Instead                                            |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| Open an attachment uploaded in an earlier session | files sit on an ephemeral disk unless `S3_*` is configured; a sleep or redeploy wipes them | upload a receipt live, or reseed after waking (§2) |
+| Rely on a reminder scheduled days ago             | free key-value store is in-memory                                                          | §6                                                 |
+| Promise e-mail delivery without checking          | silent no-op when Resend is unconfigured                                                   | verify in §1                                       |
+| Leave the first page load to the jury             | ~1 min cold start                                                                          | §2                                                 |
 
 State these limits yourself before anyone asks — they are documented in the
 thesis (ch. 6) as deliberate constraints of an academic deployment, not as
@@ -189,7 +208,9 @@ cd apps/api && npm run build && node dist/index.js
 cd apps/web && VITE_API_BASE_URL=http://localhost:3000/api npm run build && npm run preview
 ```
 
-Then seed: `curl -X POST http://localhost:3000/api/auth/seed-demo`.
+Then seed: `curl -X POST http://localhost:3000/api/auth/seed-demo`. With
+`APP_URL=http://localhost:4173` in `apps/api/.env`, document links point at
+the preview, which forwards `/uploads/*` to the API like production does.
 
 Have this rehearsed and the terminal already open — switching to it should
 cost seconds, not minutes.
@@ -202,12 +223,12 @@ Verified on branch `dev`, 2026-10-10:
 
 | Metric                 | Value                                                                                |
 | ---------------------- | ------------------------------------------------------------------------------------ |
-| API tests              | 621 passed, 43 skipped (82 files)                                                    |
-| API integration        | 43/43 against real PostgreSQL (the 43 skipped above), incl. the demo-seed invariants |
-| Web tests              | 332 passed (79 files)                                                                |
+| API tests              | 626 passed, 44 skipped (83 files)                                                    |
+| API integration        | 44/44 against real PostgreSQL (the 44 skipped above), incl. the demo-seed invariants |
+| Web tests              | 337 passed (80 files)                                                                |
 | End-to-end             | 15/15 Playwright scenarios                                                           |
-| API coverage           | 54.96 % statements · 78.68 % branches · 65.72 % functions (gates: 44 / 74 / 63)      |
-| Web coverage           | 60.35 % statements · 70.21 % branches · 37.30 % functions (gates: 48 / 62 / 28)      |
+| API coverage           | 54.95 % statements · 78.68 % branches · 65.72 % functions (gates: 44 / 74 / 63)      |
+| Web coverage           | 60.46 % statements · 70.52 % branches · 37.41 % functions (gates: 48 / 62 / 28)      |
 | `npm audit --omit=dev` | 0 vulnerabilities                                                                    |
 | Accessibility          | 0 axe-core violations across 19 routes × 2 viewport widths (one-off run, not in CI)  |
 
@@ -226,9 +247,11 @@ The figures printed in the thesis are an explicitly dated snapshot (8 July
   changed. Fixed with a sequence-token hook (`useLatestRequest`) applied across
   the refetching views, plus a regression test that deliberately lands
   responses out of order.
-- **"Why does the frontend proxy `/api`?"** Safari/iOS ITP blocks the
-  cross-site auth cookie; the rewrite makes it same-origin. `render.yaml`,
-  and `csrfGuard` covers the request side that CORS does not.
+- **"Why does the frontend proxy `/api` and `/uploads`?"** Safari/iOS ITP
+  blocks the cross-site auth cookie; the rewrite makes it same-origin, and
+  files need the cookie as much as JSON does — `/uploads/<file>` applies the
+  attachment's own access rules. `render.yaml`, and `csrfGuard` covers the
+  request side that CORS does not.
 - **"Is the free tier production-ready?"** No, and the thesis says so: the
   in-memory queue cannot guarantee deferred reminders and the ephemeral disk
   cannot hold proofs of purchase. Both have named remedies (persistent
@@ -237,6 +260,8 @@ The figures printed in the thesis are an explicitly dated snapshot (8 July
   seeder is held to the facts a real account cannot break (nothing bought
   before the model existed, added before the account, lent before it was
   added, claimed after its warranty ended; receipt-shaped prices; audit rows
-  inside the 90-day retention, shaped as the app writes them). A CI
-  integration test seeds a batch and checks every one of those against real
-  Postgres. The previous generator failed 18 of them.
+  inside the 90-day retention, shaped as the app writes them; no till
+  receipt dated when the shop was shut). A CI integration test seeds a batch
+  and checks every one of those against real Postgres, plus that every
+  document is a real PDF in the app's own store and that the reset deletes
+  it. The previous generator failed 18 of them.

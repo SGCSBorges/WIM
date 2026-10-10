@@ -17,7 +17,7 @@
  * `SEED_DEMO_RESET=true` (which deletes ALL existing data first).
  */
 import { PrismaClient } from "@prisma/client";
-import { seedDemoData } from "../modules/demo/demo.service";
+import { seedDemoData, wipeAllData } from "../modules/demo/demo.service";
 
 const prisma = new PrismaClient();
 
@@ -44,16 +44,9 @@ async function main() {
     );
     // Deleting users cascades articles, warranties, alerts, locations, tags,
     // notes, loans, insurance, services, shares, transfers, threads, sessions,
-    // templates, saved views, push subs, totp, and reset tokens.
-    await prisma.$transaction([
-      prisma.auditLog.deleteMany(),
-      prisma.featureTempGrant.deleteMany(),
-      prisma.featureFlag.deleteMany(),
-      prisma.processedStripeEvent.deleteMany(),
-      prisma.user.deleteMany(),
-      // No FK from Household to its creator, so these don't cascade.
-      prisma.household.deleteMany(),
-    ]);
+    // templates, saved views, push subs, totp, and reset tokens; the files
+    // behind attachments are unlinked first.
+    await wipeAllData(prisma);
   }
 
   console.log(`Seeding demo data (seed=${seed})…`);

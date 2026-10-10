@@ -187,6 +187,73 @@ export function wakingHours(ms: number): number {
   return d.getTime();
 }
 
+// French shops are shut on Sundays and these public holidays (the movable
+// ones — Easter Monday, Ascension, Whit Monday — are left out).
+const SHOP_HOLIDAYS = new Set([
+  "01-01",
+  "05-01",
+  "05-08",
+  "07-14",
+  "08-15",
+  "11-01",
+  "11-11",
+  "12-25",
+]);
+
+function parisParts(ms: number) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Paris",
+    weekday: "short",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(ms));
+  const get = (t: string) => parts.find((x) => x.type === t)?.value ?? "";
+  return {
+    weekday: get("weekday"),
+    monthDay: `${get("month")}-${get("day")}`,
+    hour: Number(get("hour")),
+  };
+}
+
+/** Move an in-store purchase onto a day and hour the shop was open:
+ *  Monday–Saturday, not a public holiday, 9:30–19:30 Paris time. Moves
+ *  earlier first (it must stay after the model's release), then later (it
+ *  must stay before the article was recorded); left alone if neither fits. */
+export function duringOpeningHours(
+  ms: number,
+  notBefore: number,
+  notAfter: number
+): number {
+  const open = (t: number) => {
+    const d = parisParts(t);
+    return d.weekday !== "Sun" && !SHOP_HOLIDAYS.has(d.monthDay);
+  };
+  // Set a Paris-local shop time on t's Paris calendar day. Anchor on Paris
+  // noon first so the UTC date and the Paris date agree, then apply the
+  // offset (1 or 2 hours) modulo the day.
+  const atShopHour = (t: number) => {
+    const noon = t - (parisParts(t).hour - 12) * HOUR;
+    const offsetH =
+      (parisParts(noon).hour - new Date(noon).getUTCHours() + 24) % 24;
+    const d = new Date(noon);
+    d.setUTCHours(randInt(9, 18) - offsetH, randInt(0, 59), randInt(0, 59), 0);
+    if (parisParts(d.getTime()).hour === 9 && d.getUTCMinutes() < 30)
+      d.setUTCMinutes(30 + randInt(0, 29));
+    return d.getTime();
+  };
+  for (const step of [-DAY, DAY]) {
+    let t = ms;
+    for (let i = 0; i < 4; i++, t += step) {
+      if (!open(t)) continue;
+      const shifted = atShopHour(t);
+      if (shifted >= notBefore && shifted <= notAfter) return shifted;
+    }
+  }
+  return ms;
+}
+
 export function addMonths(ms: number, n: number): number {
   const d = new Date(ms);
   d.setUTCMonth(d.getUTCMonth() + n);

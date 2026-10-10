@@ -17,7 +17,8 @@ import {
   getObjectBuffer,
 } from "../../libs/object-storage";
 
-const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+/** Where uploaded bytes live on disk (and are staged before an S3 push). */
+export const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
 
 /**
  * Extract the stored object name from an attachment URL, or null for remote

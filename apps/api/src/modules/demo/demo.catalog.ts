@@ -95,8 +95,6 @@ export interface CatalogItem {
   portable?: boolean;
   bundle?: BundleKey;
   fields?: FieldKey[];
-  /** Wikimedia Commons file name (see demo.service imageUrl). */
-  image?: string;
 }
 
 interface CategoryDefaults {
@@ -222,7 +220,6 @@ export const CATALOG: CatalogItem[] = [
     portable: true,
     bundle: "office",
     fields: ["storage", "colour"],
-    image: "MacBook_Pro_14-inch.jpg",
   },
   {
     key: "mba13-m2",
@@ -271,7 +268,6 @@ export const CATALOG: CatalogItem[] = [
     portable: true,
     bundle: "office",
     fields: ["storage"],
-    image: "Dell_XPS_13.jpg",
   },
   {
     key: "thinkpad-x1",
@@ -301,7 +297,6 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
-    image: "IPhone_15_Pro.jpg",
   },
   {
     key: "iphone13",
@@ -344,7 +339,6 @@ export const CATALOG: CatalogItem[] = [
     perPerson: true,
     portable: true,
     fields: ["storage", "colour"],
-    image: "Samsung_Galaxy_S24_Ultra.jpg",
   },
   {
     key: "a54",
@@ -387,7 +381,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["living", "bedroom"],
     portable: true,
     fields: ["storage", "colour"],
-    image: "IPad_Air.jpg",
   },
   {
     key: "ipad10",
@@ -475,7 +468,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["office", "bedroom"],
     portable: true,
     fields: ["colour"],
-    image: "Sony_WH-1000XM5.jpg",
   },
   {
     key: "qcu",
@@ -530,7 +522,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2023-03",
     rooms: ["living"],
     bundle: "hifi",
-    image: "Smart_speaker.jpg",
   },
   {
     key: "sonos-arc",
@@ -558,7 +549,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["living"],
     bundle: "hifi",
     fields: ["dimensions", "energy"],
-    image: "LG_OLED_TV.jpg",
   },
   {
     key: "samsung-qled65",
@@ -626,7 +616,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["living", "kids"],
     portable: true,
     lendable: true,
-    image: "Nintendo-Switch-Console-Docked-wJoyConRedBlue.jpg",
   },
   {
     key: "eos-r6m2",
@@ -642,7 +631,6 @@ export const CATALOG: CatalogItem[] = [
     lendable: true,
     portable: true,
     bundle: "camera",
-    image: "Canon_EOS_R6.jpg",
   },
   {
     key: "rf24105",
@@ -807,7 +795,6 @@ export const CATALOG: CatalogItem[] = [
     dep: 10,
     released: "2021-03",
     fields: ["energy"],
-    image: "Dishwasher.jpg",
   },
   {
     key: "samsung-fridge",
@@ -821,7 +808,6 @@ export const CATALOG: CatalogItem[] = [
     dep: 10,
     released: "2021-05",
     fields: ["dimensions", "energy"],
-    image: "Refrigerator.jpg",
   },
   {
     key: "lg-washer",
@@ -848,7 +834,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2020-09",
     rooms: ["laundry", "bathroom", "cellar"],
     fields: ["energy"],
-    image: "Washing_machine.jpg",
   },
   {
     key: "bosch-dryer",
@@ -875,7 +860,6 @@ export const CATALOG: CatalogItem[] = [
     dep: 18,
     released: "2021-04",
     rooms: ["entry", "laundry", "cellar"],
-    image: "Dyson_DC07.jpg",
   },
   {
     key: "nespresso-vertuo",
@@ -887,7 +871,6 @@ export const CATALOG: CatalogItem[] = [
     price: 199,
     dep: 15,
     released: "2019-09",
-    image: "Nespresso_machine.jpg",
   },
   {
     key: "delonghi",
@@ -912,7 +895,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2017-01",
     bundle: "kitchen",
     fields: ["colour"],
-    image: "KitchenAid_Mixer.jpg",
   },
   {
     key: "thermomix",
@@ -948,7 +930,6 @@ export const CATALOG: CatalogItem[] = [
     price: 299.99,
     dep: 15,
     released: "2020-09",
-    image: "Air_fryer.jpg",
   },
   {
     key: "induction",
@@ -1040,7 +1021,6 @@ export const CATALOG: CatalogItem[] = [
     warranty: [144],
     secondHand: 0.35,
     bundle: "office",
-    image: "Aeron_chair.jpg",
   },
   {
     key: "standing-desk",
@@ -1069,7 +1049,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["bedroom", "guest"],
     warranty: [24],
     fields: ["dimensions"],
-    image: "Bed.jpg",
   },
   {
     key: "pax",
@@ -1122,7 +1101,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["living"],
     secondHand: 0.1,
     fields: ["colour", "dimensions"],
-    image: "Couch.jpg",
   },
   {
     key: "eames",
@@ -1136,7 +1114,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["living", "office"],
     warranty: [24],
     secondHand: 0.3,
-    image: "Eames_lounge_chair.jpg",
   },
   {
     key: "dining-table",
@@ -1151,7 +1128,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["dining", "kitchen", "living"],
     secondHand: 0.2,
     fields: ["dimensions"],
-    image: "Dining_table.jpg",
   },
   {
     key: "dining-chairs",
@@ -1204,7 +1180,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2017-01",
     warranty: [36],
     bundle: "workshop",
-    image: "Cordless_drill.jpg",
   },
   {
     key: "makita-impact",
@@ -1218,7 +1193,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2016-01",
     warranty: [36],
     bundle: "workshop",
-    image: "Impact_driver.jpg",
   },
   {
     key: "dewalt-saw",
@@ -1232,7 +1206,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2017-01",
     warranty: [36],
     bundle: "workshop",
-    image: "Circular_saw.jpg",
   },
   {
     key: "festool-ts55",
@@ -1247,7 +1220,6 @@ export const CATALOG: CatalogItem[] = [
     warranty: [36],
     bundle: "workshop",
     house: true,
-    image: "Plunge_saw.jpg",
   },
   {
     key: "karcher-k5",
@@ -1260,7 +1232,6 @@ export const CATALOG: CatalogItem[] = [
     dep: 12,
     released: "2020-01",
     house: true,
-    image: "Pressure_washer.jpg",
   },
   {
     key: "mower",
@@ -1367,7 +1338,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2021-06",
     perPerson: true,
     fields: ["frame", "colour"],
-    image: "Mountain_bike.jpg",
   },
   {
     key: "vado",
@@ -1380,7 +1350,6 @@ export const CATALOG: CatalogItem[] = [
     dep: 15,
     released: "2022-03",
     fields: ["frame"],
-    image: "Electric_bicycle.jpg",
   },
   {
     key: "moustache",
@@ -1406,7 +1375,6 @@ export const CATALOG: CatalogItem[] = [
     released: "2021-09",
     rooms: ["entry", "cellar", "office"],
     fields: ["colour"],
-    image: "Brompton_bicycle.jpg",
   },
   {
     key: "domane",
@@ -1473,7 +1441,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["garage"],
     secondHand: 0.35,
     fields: ["colour"],
-    image: "Vespa_Primavera.jpg",
   },
   {
     key: "zoe",
@@ -1517,7 +1484,6 @@ export const CATALOG: CatalogItem[] = [
     price: 1395,
     dep: 20,
     fields: ["size", "colour"],
-    image: "Parka.jpg",
   },
   {
     key: "nano-puff",
@@ -1530,7 +1496,6 @@ export const CATALOG: CatalogItem[] = [
     dep: 20,
     perPerson: true,
     fields: ["size", "colour"],
-    image: "Jacket.jpg",
   },
   {
     key: "moncler",
@@ -1554,7 +1519,6 @@ export const CATALOG: CatalogItem[] = [
     price: 199,
     dep: 20,
     fields: ["size", "colour"],
-    image: "Dr._Martens_boots.jpg",
   },
   {
     key: "barbour",
@@ -1664,7 +1628,6 @@ export const CATALOG: CatalogItem[] = [
     serviceable: true,
     portable: true,
     secondHand: 0.3,
-    image: "Rolex_Submariner.jpg",
   },
   {
     key: "speedmaster",
@@ -1682,7 +1645,6 @@ export const CATALOG: CatalogItem[] = [
     serviceable: true,
     portable: true,
     secondHand: 0.2,
-    image: "Omega_Speedmaster.jpg",
   },
   {
     key: "carrera",
@@ -1699,7 +1661,6 @@ export const CATALOG: CatalogItem[] = [
     serial: true,
     serviceable: true,
     portable: true,
-    image: "TAG_Heuer_Carrera.jpg",
   },
   {
     key: "cartier-tank",
@@ -1745,7 +1706,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["bedroom", "safe"],
     portable: true,
     fields: ["material"],
-    image: "Pendant.jpg",
   },
   {
     key: "engagement-ring",
@@ -1807,7 +1767,6 @@ export const CATALOG: CatalogItem[] = [
     serial: true,
     serviceable: true,
     secondHand: 0.3,
-    image: "Peloton_bike.jpg",
   },
   {
     key: "concept2",
@@ -1822,7 +1781,6 @@ export const CATALOG: CatalogItem[] = [
     serial: true,
     serviceable: true,
     secondHand: 0.3,
-    image: "Concept2_indoor_rower.jpg",
   },
   {
     key: "fenix7",
@@ -1838,7 +1796,6 @@ export const CATALOG: CatalogItem[] = [
     serial: true,
     portable: true,
     perPerson: true,
-    image: "Garmin_Fenix.jpg",
   },
   {
     key: "racket",
@@ -1853,7 +1810,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["entry", "garage", "cellar"],
     perPerson: true,
     fields: ["size"],
-    image: "Tennis_racket.jpg",
   },
   {
     key: "skis",
@@ -1980,7 +1936,6 @@ export const CATALOG: CatalogItem[] = [
     dep: 0,
     released: "2017-10",
     rooms: ["office", "living", "kids"],
-    image: "Lego_Millennium_Falcon.jpg",
   },
   {
     key: "strat",
@@ -1997,7 +1952,6 @@ export const CATALOG: CatalogItem[] = [
     serviceable: true,
     lendable: true,
     fields: ["colour", "strings"],
-    image: "Fender_Stratocaster.jpg",
   },
   {
     key: "taylor",
@@ -2054,7 +2008,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["office"],
     serial: true,
     portable: true,
-    image: "Fountain_pen.jpg",
   },
   {
     key: "leica-m6",
@@ -2128,7 +2081,6 @@ export const CATALOG: CatalogItem[] = [
     serial: false,
     portable: true,
     lendable: true,
-    image: "Power_bank.jpg",
   },
   {
     key: "weber",
@@ -2143,7 +2095,6 @@ export const CATALOG: CatalogItem[] = [
     rooms: ["garden", "balcony"],
     warranty: [24, 120],
     serial: true,
-    image: "Barbecue_grill.jpg",
   },
   {
     key: "babyzen",

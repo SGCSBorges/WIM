@@ -435,18 +435,14 @@ export const RETAILERS: Record<Category, M<Retailer[]>> = {
     fr: [
       shop("Decathlon"),
       shop("Culture Vélo"),
-      shop("Vélociste du quartier"),
+      shop("Cycles Arnaud"),
       web("Alltricks", "#########"),
     ],
-    ch: [
-      shop("Vélociste du quartier"),
-      shop("Decathlon"),
-      web("Galaxus", "#########"),
-    ],
+    ch: [shop("Cycles Arnaud"), shop("Decathlon"), web("Galaxus", "#########")],
     uk: [
       shop("Halfords"),
       shop("Evans Cycles"),
-      shop("Local bike shop"),
+      shop("Greenway Cycles"),
       web("Wiggle", "##########"),
     ],
   },
@@ -455,34 +451,38 @@ export const RETAILERS: Record<Category, M<Retailer[]>> = {
       shop("Galeries Lafayette"),
       shop("Printemps"),
       web("Zalando", "##########"),
-      shop("Boutique de la marque"),
+      shop("Boutique {brand}"),
       shop("Decathlon"),
     ],
     ch: [
       shop("Manor"),
       shop("Globus"),
       web("Zalando", "##########"),
-      shop("Boutique de la marque"),
+      shop("Boutique {brand}"),
     ],
     uk: [
       shop("Selfridges"),
       shop("John Lewis"),
       web("ASOS", "#########"),
-      shop("Brand store"),
+      shop("{brand} store"),
     ],
   },
   JEWELRY: {
     fr: [
-      shop("Bijouterie du centre-ville"),
-      shop("Boutique de la marque"),
-      shop("Horloger agréé"),
+      shop("Bijouterie Lavergne"),
+      shop("Boutique {brand}"),
+      shop("Horlogerie Fontaine"),
     ],
     ch: [
       shop("Bucherer"),
-      shop("Boutique de la marque"),
-      shop("Horloger agréé"),
+      shop("Boutique {brand}"),
+      shop("Horlogerie Fontaine"),
     ],
-    uk: [shop("Goldsmiths"), shop("Brand boutique"), shop("Authorised dealer")],
+    uk: [
+      shop("Goldsmiths"),
+      shop("{brand} boutique"),
+      shop("Hartley & Sons Jewellers"),
+    ],
   },
   SPORTS: {
     fr: [
@@ -504,15 +504,15 @@ export const RETAILERS: Record<Category, M<Retailer[]>> = {
     fr: [
       shop("Fnac"),
       web("Woodbrass", "########"),
-      shop("Magasin de musique"),
-      shop("Galerie"),
+      shop("Le Comptoir Musical"),
+      shop("Galerie Montclair"),
     ],
-    ch: [shop("Fnac"), shop("Magasin de musique"), shop("Galerie")],
+    ch: [shop("Fnac"), shop("Le Comptoir Musical"), shop("Galerie Montclair")],
     uk: [
       shop("Waterstones"),
       web("Andertons", "########"),
-      shop("Music shop"),
-      shop("Gallery"),
+      shop("Soundhouse Music"),
+      shop("Northgate Gallery"),
     ],
   },
   OTHER: {
@@ -550,11 +550,11 @@ const DESIGN: M<Retailer[]> = {
 const BIKE: M<Retailer[]> = {
   fr: [
     shop("Culture Vélo"),
-    shop("Vélociste du quartier"),
+    shop("Cycles Arnaud"),
     web("Alltricks", "#########"),
   ],
-  ch: [shop("Vélociste du quartier")],
-  uk: [shop("Evans Cycles"), shop("Local bike shop")],
+  ch: [shop("Cycles Arnaud")],
+  uk: [shop("Evans Cycles"), shop("Greenway Cycles")],
 };
 const one = (
   fr: Retailer[],
@@ -597,9 +597,9 @@ export const SHOP_OVERRIDES: Record<string, M<Retailer[]>> = {
     [web("flexispot.co.uk", "########"), AMAZON_UK]
   ),
   thermomix: one(
-    [shop("Vorwerk (démonstration à domicile)")],
-    [shop("Vorwerk (démonstration à domicile)")],
-    [shop("Vorwerk (home demo)")]
+    [web("Vorwerk", "VK########")],
+    [web("Vorwerk", "VK########")],
+    [web("Vorwerk", "VK########")]
   ),
   peloton: one(
     [web("onepeloton.fr", "##########")],
@@ -612,14 +612,14 @@ export const SHOP_OVERRIDES: Record<string, M<Retailer[]>> = {
     [web("concept2.co.uk", "#######")]
   ),
   zoe: one(
-    [shop("Concessionnaire Renault")],
-    [shop("Garage Renault")],
-    [shop("Renault dealer")]
+    [shop("Garage Moreau (agent Renault)")],
+    [shop("Garage du Lac (agent Renault)")],
+    [shop("Hilltop Motors (Renault)")]
   ),
   vespa: one(
-    [shop("Concessionnaire Vespa")],
-    [shop("Concessionnaire Vespa")],
-    [shop("Vespa dealer")]
+    [shop("Scooters Lebrun")],
+    [shop("Scooters Lebrun")],
+    [shop("Vespa Centre Kingston")]
   ),
   vado: BIKE,
   moustache: BIKE,
@@ -638,34 +638,34 @@ export const SHOP_OVERRIDES: Record<string, M<Retailer[]>> = {
     [shop("Moncler"), shop("Selfridges")]
   ),
   "wedding-dress": one(
-    [shop("Boutique de mariage")],
-    [shop("Boutique de mariage")],
-    [shop("Bridal shop")]
+    [shop("Les Mariées de Clara")],
+    [shop("Les Mariées de Clara")],
+    [shop("White Lace Bridal")]
   ),
   "upright-piano": one(
-    [shop("Magasin de pianos")],
-    [shop("Magasin de pianos")],
-    [shop("Piano showroom")]
+    [shop("Maison du Piano Girard")],
+    [shop("Maison du Piano Girard")],
+    [shop("Bellamy Pianos")]
   ),
   painting: one(
-    [shop("Galerie"), shop("Atelier de l'artiste")],
-    [shop("Galerie")],
-    [shop("Gallery"), shop("Open studios")]
+    [shop("Galerie Montclair"), shop("Atelier Lucie Garnier")],
+    [shop("Galerie Montclair")],
+    [shop("Northgate Gallery"), shop("Riverside Open Studios")]
   ),
   "bd-collection": one(
-    [shop("Fnac"), shop("Librairie BD du quartier")],
+    [shop("Fnac"), shop("Librairie Bulles & Cases")],
     [shop("Fnac"), shop("Payot")],
     [shop("Waterstones")]
   ),
   "engagement-ring": one(
     [shop("Mauboussin")],
     [shop("Bucherer")],
-    [shop("Jeweller")]
+    [shop("Hartley & Sons Jewellers")]
   ),
   "wedding-bands": one(
-    [shop("Bijouterie du centre-ville")],
-    [shop("Bijouterie")],
-    [shop("Jeweller")]
+    [shop("Bijouterie Lavergne")],
+    [shop("Bijouterie Favre")],
+    [shop("Hartley & Sons Jewellers")]
   ),
 };
 
@@ -1269,23 +1269,24 @@ export const WARRANTY_NAMES: L<{
   },
 };
 
-/** Official support pages only; phone numbers are deliberately not seeded. */
+/** The maker's own site, at its root: a deep support path can move, a
+ *  domain doesn't. Phone numbers are deliberately not seeded. */
 export const SUPPORT_URLS: Record<string, string> = {
-  Apple: "https://support.apple.com/fr-fr",
-  Samsung: "https://www.samsung.com/fr/support/",
-  Bosch: "https://www.bosch-home.fr/service",
-  "Bosch Professional": "https://www.bosch-professional.com/fr/fr/service/",
-  Dyson: "https://www.dyson.fr/support",
-  LG: "https://www.lg.com/fr/support",
-  Sony: "https://www.sony.fr/electronics/support",
-  Miele: "https://www.miele.fr/f/service",
-  Rolex: "https://www.rolex.com/fr/watch-care-and-service",
-  Omega: "https://www.omegawatches.com/fr-fr/customer-service",
-  Makita: "https://www.makita.fr/service.html",
-  Canon: "https://www.canon.fr/support/",
-  Google: "https://support.google.com/pixelphone",
-  Nintendo: "https://www.nintendo.com/fr-fr/Assistance/",
-  Kärcher: "https://www.kaercher.com/fr/services.html",
+  Apple: "https://www.apple.com/fr/",
+  Samsung: "https://www.samsung.com/fr/",
+  Bosch: "https://www.bosch-home.fr/",
+  "Bosch Professional": "https://www.bosch-professional.com/fr/fr/",
+  Dyson: "https://www.dyson.fr/",
+  LG: "https://www.lg.com/fr/",
+  Sony: "https://www.sony.fr/",
+  Miele: "https://www.miele.fr/",
+  Rolex: "https://www.rolex.com/",
+  Omega: "https://www.omegawatches.com/",
+  Makita: "https://www.makita.fr/",
+  Canon: "https://www.canon.fr/",
+  Google: "https://store.google.com/",
+  Nintendo: "https://www.nintendo.com/",
+  Kärcher: "https://www.kaercher.com/",
 };
 
 export const CLAIM_NOTES: L<{ open: string[]; resolved: string[] }> = {
@@ -1914,29 +1915,32 @@ export const WITH_OWNER: L<(base: string, name: string) => string> = {
   en: (b, n) => `${n}'s ${b}`,
 };
 
-export const ATTACHMENT_FILE_NAMES: L<{
-  INVOICE: string[];
-  WARRANTY: string[];
-  OTHER: string[];
+/** How people name the paperwork they attach; `{…}` filled per document. */
+export const DOCUMENT_FILE_NAMES: L<{
+  invoice: string[];
+  receipt: string[];
+  warranty: string[];
 }> = {
   fr: {
-    INVOICE: [
-      "facture.jpg",
-      "ticket de caisse.jpg",
-      "Facture_{retailer}.jpg",
-      "IMG_{n}.jpg",
+    invoice: [
+      "Facture_{shopSlug}_{number}.pdf",
+      "facture {shop}.pdf",
+      "Facture.pdf",
     ],
-    WARRANTY: ["garantie.jpg", "bon de garantie.jpg", "IMG_{n}.jpg"],
-    OTHER: [
-      "IMG_{n}.jpg",
-      "photo.jpg",
-      "numero de serie.jpg",
-      "PXL_{date}.jpg",
+    receipt: [
+      "Scan ticket {date}.pdf",
+      "ticket de caisse {shop}.pdf",
+      "Scan {isoDate} {time}.pdf",
+    ],
+    warranty: [
+      "Garantie {brand}.pdf",
+      "Certificat de garantie.pdf",
+      "Scan garantie {date}.pdf",
     ],
   },
   en: {
-    INVOICE: ["receipt.jpg", "invoice.jpg", "IMG_{n}.jpg"],
-    WARRANTY: ["warranty card.jpg", "IMG_{n}.jpg"],
-    OTHER: ["IMG_{n}.jpg", "photo.jpg", "serial number.jpg", "PXL_{date}.jpg"],
+    invoice: ["Invoice_{shopSlug}_{number}.pdf", "invoice {shop}.pdf"],
+    receipt: ["Receipt scan {date}.pdf", "receipt {shop}.pdf"],
+    warranty: ["Warranty {brand}.pdf", "Warranty certificate.pdf"],
   },
 };

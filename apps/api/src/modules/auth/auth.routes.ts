@@ -291,7 +291,7 @@ router.post(
   // login-screen button needs. Same limiter as the unauthenticated
   // found-report route.
   security.destructiveRateLimiter,
-  asyncHandler(async (_req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     if (process.env.DEMO_SEED_ENABLED === "false") {
       res.status(403).json({ error: "Demo seeding is disabled." });
       return;
@@ -314,6 +314,10 @@ router.post(
     });
     const makeAdmin = !realAdmin;
 
+    const fileBaseUrl =
+      process.env.APP_URL?.replace(/\/$/, "") ??
+      `${req.protocol}://${req.get("host")}`;
+
     demoSeeding = true;
     void (async () => {
       const removed = await resetDemoData(prisma);
@@ -322,6 +326,9 @@ router.post(
       return seedDemoData(prisma, {
         reservedUserIdMargin: 1000,
         makeAdmin,
+        // Seeded documents are stored like uploads, so their URLs use the
+        // same base the upload route builds.
+        fileBaseUrl,
         onProgress: (m) => logger.info(`[demo-seed] ${m}`),
       });
     })()

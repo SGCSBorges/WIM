@@ -1620,12 +1620,21 @@ hardcode an English sentence at a call site again — add a key.
   `labelFromUserAgent` — so seeded reminders, names and device labels are the
   ones the app would have produced. People differ (long-tailed inventory
   sizes, a per-user level of care and naming habit, one wording per room) and
-  live somewhere: the market (France / Switzerland / UK, from the currency)
-  decides shops, resale sites, insurers and repairers; the language (French
-  or English — PT/ES/NL copy awaits native review) decides every word they
-  typed. The integration suite seeds a small batch and asserts the invariants
-  against real Postgres ("demo seed — reads as user-authored"); a new seeded
-  feature adds its own invariant there.
+  live somewhere: the market decides shops, resale sites, insurers and
+  repairers, and the language decides every word they typed. The demo is
+  presented in French, so `LANGUAGE_MIX` seeds only French speakers in
+  France paying in euros; the Swiss/UK markets and the English copy stay in
+  `demo.content.ts`, dormant, for a later mix (PT/ES/NL copy awaits native
+  review). Proofs of purchase are PDFs generated from the article's own
+  facts (`demo.documents.ts`: online invoice, 80 mm till receipt timed
+  inside French opening hours by `duringOpeningHours`, warranty
+  certificate), stamped `DÉMONSTRATION`, written through the same upload
+  store as real files (disk, or S3 when `S3_*` is set) and unlinked by
+  `resetDemoData`. No product photos are seeded: an image must be
+  self-hosted and verified to show the exact model, never hot-linked. The
+  integration suite seeds a small batch and asserts the invariants against
+  real Postgres ("demo seed — reads as user-authored"); a new seeded feature
+  adds its own invariant there.
 - **Two sharing models** (public flag vs InventoryShare) still both
   exist intentionally. The owner-side UX has separate flows for each;
   consolidating into a single "Share article…" dialog with options
