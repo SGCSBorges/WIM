@@ -13,7 +13,7 @@ import { requireFeature } from "../features/feature.service";
 import { auditAction } from "../common/audit";
 import { security } from "../../config/security";
 import { prisma } from "../../libs/prisma";
-import { ARTICLE_STATUSES } from "@wim/types";
+import { ARTICLE_STATUSES, DEFAULT_CURRENCY } from "@wim/types";
 import { streamPortfolioReportPdf } from "./report.pdf";
 
 const PortfolioFiltersSchema = z.object({
@@ -47,7 +47,7 @@ router.get(
     await streamPortfolioReportPdf(
       res,
       req.user!.sub,
-      user?.currency ?? "USD",
+      user?.currency ?? DEFAULT_CURRENCY,
       filters
     );
   })

@@ -51,6 +51,7 @@ describe("WarrantyDigestService.sendWeeklyDigests", () => {
       {
         userId: 1,
         email: "alice@x.com",
+        language: "en",
         warrantiesOwned: [
           {
             garantieNom: "AppleCare",

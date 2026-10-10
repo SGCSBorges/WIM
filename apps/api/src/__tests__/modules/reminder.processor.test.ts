@@ -309,6 +309,7 @@ describe("ReminderProcessor", () => {
       garantieNom: "Sony TV",
       garantieFin: new Date("2026-08-01T00:00:00.000Z"),
     });
+    mockPrisma.user.findUnique.mockResolvedValue({ language: "en" });
     await ReminderProcessor.handle(
       job({
         type: "custom_alert",
@@ -417,7 +418,7 @@ describe("ReminderProcessor", () => {
     });
   });
 
-  it("falls back to English copy when the recipient row can't be read", async () => {
+  it("falls back to French copy when the recipient row can't be read", async () => {
     mockPrisma.garantie.findUnique.mockResolvedValue({
       garantieId: 5,
       garantieNom: "W",
@@ -438,10 +439,11 @@ describe("ReminderProcessor", () => {
         alerteId: 9,
       })
     );
-    // The push still goes out, in English, and the alert is marked sent.
+    // The push still goes out, in the default language, and the alert is
+    // marked sent.
     expect(push.sendToUser).toHaveBeenCalledWith(
       1,
-      expect.objectContaining({ title: "Warranty reminder: W" })
+      expect.objectContaining({ title: "Rappel de garantie : W" })
     );
     expect(svc.markSent).toHaveBeenCalledWith(9);
   });

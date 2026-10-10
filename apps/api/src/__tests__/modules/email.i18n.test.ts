@@ -36,12 +36,17 @@ describe("email i18n", () => {
   });
 
   it("maps User.language (and loose variants) onto a supported dictionary", () => {
+    expect(normalizeEmailLang("en")).toBe("en");
     expect(normalizeEmailLang("fr")).toBe("fr");
     expect(normalizeEmailLang("pt-BR")).toBe("pt");
     expect(normalizeEmailLang(" NL ")).toBe("nl");
-    expect(normalizeEmailLang("de")).toBe("en");
-    expect(normalizeEmailLang(null)).toBe("en");
-    expect(normalizeEmailLang(undefined)).toBe("en");
+  });
+
+  it("writes in French when the language is unset or unsupported", () => {
+    expect(normalizeEmailLang("de")).toBe("fr");
+    expect(normalizeEmailLang(null)).toBe("fr");
+    expect(normalizeEmailLang(undefined)).toBe("fr");
+    expect(normalizeEmailLang("")).toBe("fr");
   });
 
   it("interpolates once and leaves unknown placeholders visible", () => {
@@ -57,8 +62,8 @@ describe("email i18n", () => {
     );
   });
 
-  it("binds a translator per recipient, defaulting to English", () => {
+  it("binds a translator per recipient, defaulting to French", () => {
     expect(emailTranslator("es")("openInApp")).toBe("Abrir en WIM");
-    expect(emailTranslator(null)("openInApp")).toBe("Open in WIM");
+    expect(emailTranslator(null)("openInApp")).toBe("Ouvrir dans WIM");
   });
 });

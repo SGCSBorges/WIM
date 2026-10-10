@@ -15,7 +15,7 @@ import type {
   BudgetStatus,
   LocationBreakdown,
 } from "@wim/types";
-import { NOT_OWNED_STATUSES } from "@wim/types";
+import { DEFAULT_CURRENCY, NOT_OWNED_STATUSES } from "@wim/types";
 
 export type { DashboardStatistics };
 
@@ -414,7 +414,7 @@ export async function getDashboardStatistics(
       Array.from(m.entries()).map(([month, count]) => ({ month, count }));
 
     return {
-      currency: userRow?.currency ?? "USD",
+      currency: userRow?.currency ?? DEFAULT_CURRENCY,
       articles: {
         total: articlesTotal,
         withWarranty: articlesWithWarranty,
@@ -760,7 +760,7 @@ export async function getBudgetStatus(userId: number): Promise<BudgetStatus> {
   }
 
   return {
-    currency: user?.currency ?? "USD",
+    currency: user?.currency ?? DEFAULT_CURRENCY,
     monthlyBudget:
       user?.monthlyBudget == null ? null : Number(user.monthlyBudget),
     monthlySpend,

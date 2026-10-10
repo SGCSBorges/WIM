@@ -1,7 +1,8 @@
 {
-  "name": "WIM — Warranty & Inventory Manager",
+  "name": "WIM — Gestionnaire de garanties & inventaire",
   "short_name": "WIM",
-  "description": "Track your physical assets, warranties, attachments, and alerts.",
+  "description": "Suivez vos biens, vos garanties, vos justificatifs et vos alertes.",
+  "lang": "fr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

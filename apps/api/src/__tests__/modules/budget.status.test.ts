@@ -73,6 +73,16 @@ describe("getBudgetStatus", () => {
     });
   });
 
+  it("falls back to euros when the account row has no currency", async () => {
+    // A deleted or never-written row must still format money in the
+    // product's default currency, not in dollars.
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.article.findMany.mockResolvedValue([]);
+
+    const res = await getBudgetStatus(7);
+    expect(res.currency).toBe("EUR");
+  });
+
   it("prefers the warranty purchase date over createdAt", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       currency: "USD",

@@ -4,11 +4,13 @@
  * for the sites that only have an address (transfer offers, household
  * invites, message notifications), where the recipient may not even be a
  * user yet. Never throws and never blocks a send: any failure — no such
- * user, DB down, a test double without the method — means English.
+ * user, DB down, a test double without the method — means the product
+ * default language.
  *
  * Prisma is imported lazily so the email module stays free of a database
  * dependency for callers (and tests) that never resolve a language.
  */
+import { DEFAULT_LANGUAGE } from "@wim/types";
 import { normalizeEmailLang, type EmailLang } from "./email.i18n";
 
 export async function recipientLanguage(email: string): Promise<EmailLang> {
@@ -20,6 +22,6 @@ export async function recipientLanguage(email: string): Promise<EmailLang> {
     });
     return normalizeEmailLang(user?.language);
   } catch {
-    return "en";
+    return DEFAULT_LANGUAGE;
   }
 }

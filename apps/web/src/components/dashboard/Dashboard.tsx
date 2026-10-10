@@ -46,7 +46,7 @@ import NeedsAttention from "./NeedsAttention";
 import BudgetCard from "./BudgetCard";
 import HouseholdCard from "./HouseholdCard";
 import AttentionExtraCard from "./AttentionExtraCard";
-import type { DashboardStatistics } from "@wim/types";
+import { DEFAULT_CURRENCY, type DashboardStatistics } from "@wim/types";
 
 // Recharts reads colors as plain strings; CSS vars resolve per active theme.
 const AXIS = { stroke: "var(--muted)", fontSize: 12 };
@@ -135,7 +135,7 @@ const Dashboard: React.FC = () => {
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(
     null
   );
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -20,10 +20,14 @@ describe("warranty reminder labels", () => {
     expect(reminderKindLabel("J30", "nl")).toBe("Garantieherinnering J-30");
   });
 
-  it("falls back to English for an absent or unsupported language", () => {
-    expect(reminderKindLabel("J30")).toBe("Warranty reminder J-30");
-    expect(reminderKindLabel("J30", null)).toBe("Warranty reminder J-30");
-    expect(reminderKindLabel("J30", "de")).toBe("Warranty reminder J-30");
+  it("falls back to French for an absent or unsupported language", () => {
+    expect(reminderKindLabel("J30")).toBe("Rappel garantie J-30");
+    expect(reminderKindLabel("J30", null)).toBe("Rappel garantie J-30");
+    expect(reminderKindLabel("J30", "de")).toBe("Rappel garantie J-30");
+  });
+
+  it("still writes English for an English-speaking owner", () => {
+    expect(reminderKindLabel("J30", "en")).toBe("Warranty reminder J-30");
   });
 
   it("honours a custom offset, not just the J-30/J-7/J-1 defaults", () => {

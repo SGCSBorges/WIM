@@ -128,6 +128,15 @@ describe("getDashboardStatistics", () => {
     expect(result.articles.withoutWarranty).toBe(6);
   });
 
+  it("labels the dashboard in euros when the user row carries no currency", async () => {
+    setupDashboardMocks({ articlesTotal: 1, articlesWithWarranty: 0 });
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+
+    const result = await getDashboardStatistics({ userId: 1, role: "USER" });
+
+    expect(result.currency).toBe("EUR");
+  });
+
   it("returns correct warranty counts", async () => {
     setupDashboardMocks({
       warrantiesTotal: 5,

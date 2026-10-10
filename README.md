@@ -92,7 +92,7 @@ named feature is broken until the variable is set.
 | `CREATE_RATE_LIMIT_MAX` | Max resource-creation requests per window (default `40`) |
 | `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (+ optional `S3_REGION`, default `auto`) | Object storage for uploads (Cloudflare R2 / S3 / MinIO). **Strongly recommended in production** — without it files live on the ephemeral disk and are lost on every deploy. The API keeps serving bytes itself through the ACL'd `/uploads/*` route (never presigned URLs). |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | Web Push keys (+ `mailto:` contact, default `mailto:admin@wim.app`). Without the keys every push is a logged no-op. |
-| `RESEND_API_KEY` / `MAIL_FROM` | Transactional email via Resend (reminders, weekly digest, password reset, email verification, transfer/share/message notifications). Without both, every send is a logged no-op. Copy is written in the recipient's `User.language` (en/fr/pt/es/nl), English by default. |
+| `RESEND_API_KEY` / `MAIL_FROM` | Transactional email via Resend (reminders, weekly digest, password reset, email verification, transfer/share/message notifications). Without both, every send is a logged no-op. Copy is written in the recipient's `User.language` (en/fr/pt/es/nl), French by default. |
 | `JOBS_ENABLED` | `false` skips the BullMQ workers and the Redis dependency (handy for tests / a stateless API replica). `DISABLE_WORKERS=1` is the older equivalent. |
 | `WARRANTY_DIGEST_ENABLED` | `false` turns off the weekly expiring-warranties email (default on) |
 | `AUDIT_RETENTION_DAYS` | Prune `AuditLog` rows older than N days (default `90`; `0` keeps everything) |
@@ -449,7 +449,7 @@ Opt-in, read-only public page per article (QR-label target). The owner mints a t
 | `GET`    | `/me` | ✓ | Current user's profile |
 | `PUT`    | `/me/email` | ✓ | Update email (`{ email, currentPassword }`) |
 | `PUT`    | `/me/password` | ✓ | Update password (`{ currentPassword, newPassword }`) |
-| `PUT`    | `/me/currency` | ✓ | Set display currency (ISO 4217) for inventory-value formatting |
+| `PUT`    | `/me/currency` | ✓ | Set display currency (ISO 4217) for inventory-value formatting (new accounts default to `EUR`) |
 | `PUT`    | `/me/preferences` | ✓ | Update display preferences (`{ theme?, language?, dateFormat? }`) — any combination, `null` clears to device default |
 | `PUT`    | `/me/email-reminders` | ✓ | Toggle emailed warranty reminders |
 | `PUT`    | `/me/weekly-digest` | ✓ | Toggle the opt-in weekly expirations digest |

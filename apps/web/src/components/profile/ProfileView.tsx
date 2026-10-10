@@ -51,6 +51,7 @@ import {
 } from "../../services/api";
 import { fetchAllPages } from "../../services/pagination";
 import type { FetchedArticle } from "../../types";
+import { DEFAULT_CURRENCY } from "@wim/types";
 
 import { useI18n } from "../../i18n/i18n";
 import { isStripeUrl } from "../../utils/stripeUrl";
@@ -110,7 +111,7 @@ type Me = {
 const DEFAULT_REMINDER_DAYS = "30, 7, 1";
 
 // A small curated list keeps the selector usable; the API accepts any ISO code.
-const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "CHF", "JPY", "BRL"];
+const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "CAD", "AUD", "JPY", "BRL"];
 
 function daysFromNow(unixSeconds: number | null): number | null {
   if (!unixSeconds) return null;
@@ -766,7 +767,7 @@ export default function ProfileView() {
               >
                 <Select
                   id="profile-currency"
-                  value={me?.currency ?? "USD"}
+                  value={me?.currency ?? DEFAULT_CURRENCY}
                   onChange={(e) => changeCurrency(e.target.value)}
                   className="max-w-[12rem]"
                 >
@@ -807,7 +808,7 @@ export default function ProfileView() {
                       step="0.01"
                       value={monthlyBudget}
                       onChange={(e) => setMonthlyBudget(e.target.value)}
-                      placeholder={me?.currency ?? "USD"}
+                      placeholder={me?.currency ?? DEFAULT_CURRENCY}
                     />
                   </Field>
                   <Field
@@ -822,7 +823,7 @@ export default function ProfileView() {
                       step="0.01"
                       value={annualBudget}
                       onChange={(e) => setAnnualBudget(e.target.value)}
-                      placeholder={me?.currency ?? "USD"}
+                      placeholder={me?.currency ?? DEFAULT_CURRENCY}
                     />
                   </Field>
                 </div>

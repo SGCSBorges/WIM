@@ -14,6 +14,7 @@ import React, {
   useState,
 } from "react";
 import type { DateFormatPref } from "../types";
+import { DEFAULT_CURRENCY } from "@wim/types";
 import { authAPI, profileAPI } from "../services/api";
 import {
   formatDate as fmtDate,
@@ -29,7 +30,7 @@ const CURRENCY_KEY = "wim.currency";
 
 function detectCurrency(): string {
   const saved = safeGetItem(CURRENCY_KEY);
-  return saved && saved.trim() ? saved : "USD";
+  return saved && saved.trim() ? saved : DEFAULT_CURRENCY;
 }
 
 const DATE_FORMATS: DateFormatPref[] = [
@@ -148,7 +149,7 @@ const FALLBACK: PreferencesContextValue = {
   dateFormat: "system",
   setDateFormat: () => {},
   hydrateDateFormat: () => {},
-  currency: "USD",
+  currency: DEFAULT_CURRENCY,
   setCurrency: () => {},
   hydrateCurrency: () => {},
   density: "comfortable",

@@ -112,6 +112,16 @@ npm --workspace apps/web run test:e2e
 
 ## Conventions
 
+- **Defaults: French and euros.** `DEFAULT_LANGUAGE` (`fr`) and
+  `DEFAULT_CURRENCY` (`EUR`) live in `@wim/types` and are the only place
+  either default is spelled out — the Prisma column default, every server
+  fallback and every client fallback import them. Never write a literal
+  `"USD"`/`"en"` fallback again; it is how five copies drifted apart. The
+  client's language order is: saved choice → the browser's language when the
+  app speaks it (English included) → French. `adoptServerLanguage` records
+  that detected language on the account the first time a session finds none,
+  because the server writes copy of its own (reminder names, e-mail, push)
+  and otherwise has nothing to go on.
 - **i18n**: `apps/web/src/i18n/translations.ts` is the main dict (five
   languages: `en` / `fr` / `pt` / `es` / `nl`). New keys go into
   `apps/web/src/i18n/translations.extras.ts` to avoid churning the big

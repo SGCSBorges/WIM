@@ -572,6 +572,14 @@ export interface UserPreferences {
   dateFormat?: DateFormatPref | null;
 }
 
+/** What an account shows when nothing more specific is known. The product
+ *  targets European — primarily French-speaking — households, so money is in
+ *  euros and copy in French until the user or their browser says otherwise.
+ *  One constant per runtime fact so the API column default, the server-side
+ *  fallbacks and the client formatter cannot drift apart again. */
+export const DEFAULT_CURRENCY = "EUR";
+export const DEFAULT_LANGUAGE: LanguagePref = "fr";
+
 export const ATTACHMENT_TYPES = [
   "INVOICE",
   "WARRANTY",
@@ -629,7 +637,7 @@ export interface AgendaEvent {
 }
 
 export interface DashboardStatistics {
-  /** The owner's display currency (e.g. "USD"), carried on the payload so the
+  /** The owner's display currency (e.g. "EUR"), carried on the payload so the
    *  client can format money without a second /profile/me round-trip. */
   currency: string;
   articles: {

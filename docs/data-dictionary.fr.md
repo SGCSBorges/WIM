@@ -62,7 +62,7 @@ multi-appareils et les identifiants de facturation Stripe.
 | `tokenVersion` | Int | `0` | Incrémenté à la déconnexion forcée / au changement de mot de passe ou d'e-mail → invalide tous les JWT antérieurs. |
 | `stripeCustomerId` | String? VarChar(80) | null | **Unique**. |
 | `stripeSubscriptionId` | String? VarChar(80) | null | **Unique**. Posé à l'abonnement, effacé au désabonnement. |
-| `currency` | String VarChar(3) | `"USD"` | Devise d'affichage ISO 4217. |
+| `currency` | String VarChar(3) | `"EUR"` | Devise d'affichage ISO 4217. Défaut passé de `USD` à `EUR` (migration `20261010000000`), sans rétro-remplissage des lignes existantes. |
 | `monthlyBudget` | Decimal(12,2)? | null | Budget de dépenses optionnel ; null = non défini. |
 | `annualBudget` | Decimal(12,2)? | null | Budget de dépenses optionnel ; null = non défini. |
 | `calendarToken` | String? VarChar(64) | null | **Unique**. Jeton de capacité du flux iCal ; null = flux désactivé. |
@@ -71,7 +71,7 @@ multi-appareils et les identifiants de facturation Stripe.
 | `warrantyReminderDays` | String? VarChar(40) | null | CSV des décalages de rappel (ex. `"90,30,7"`) ; null = défaut J-30/J-7/J-1. |
 | `emailVerifiedAt` | DateTime? | null | Posé à la consommation du lien de vérification ; remis à null au changement d'e-mail. Souple — rien n'en dépend durement. |
 | `theme` | String? VarChar(16) | null | `light\|dark\|ocean\|cyber\|sunset` ; null = défaut appareil. |
-| `language` | String? VarChar(8) | null | `en\|fr\|pt\|es\|nl` ; null = défaut appareil. |
+| `language` | String? VarChar(8) | null | `en\|fr\|pt\|es\|nl` ; null = pas encore connue (le client enregistre la langue détectée à la première connexion ; les textes serveur retombent sur `fr`). |
 | `dateFormat` | String? VarChar(16) | null | `system\|dd/MM/yyyy\|MM/dd/yyyy\|yyyy-MM-dd`. |
 | `alertsSeenAt` | DateTime? | null | Repère haut pour le compteur « non vus » de la cloche. |
 | `totpEnabled` | Boolean | `false` | Miroir rapide de `TotpSecret.verified` ; conditionne le flux de connexion. |

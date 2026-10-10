@@ -39,6 +39,7 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
 import { idParam } from "../common/schemas";
 import { security } from "../../config/security";
+import { DEFAULT_CURRENCY } from "@wim/types";
 
 const router = Router();
 
@@ -592,7 +593,7 @@ async function userCurrency(userId: number): Promise<string> {
     where: { userId },
     select: { currency: true },
   });
-  return u?.currency ?? "USD";
+  return u?.currency ?? DEFAULT_CURRENCY;
 }
 
 /** GET CSV export of all matching articles (same filter vocabulary as list).

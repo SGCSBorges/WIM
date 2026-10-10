@@ -1,8 +1,9 @@
 /**
  * Server-side copy for outbound email + push, in the five languages the web
  * client speaks. `User.language` (validated to en/fr/pt/es/nl on write) picks
- * the dictionary; anything else — unset, legacy, a full BCP-47 tag — falls
- * back to English by its first two letters. Every key must exist in every
+ * the dictionary by its first two letters (so a full BCP-47 tag still
+ * resolves); anything unset or unsupported falls back to French, the product
+ * default (`DEFAULT_LANGUAGE`). Every key must exist in every
  * language (a test enforces parity), and `{name}`-style placeholders are
  * substituted once, so a value containing braces can't re-expand.
  *
@@ -11,6 +12,8 @@
  * with different tone and lifetime, and sharing keys would couple every
  * template to a UI string that may be reworded for a button.
  */
+import { DEFAULT_LANGUAGE } from "@wim/types";
+
 export const EMAIL_LANGS = ["en", "fr", "pt", "es", "nl"] as const;
 export type EmailLang = (typeof EMAIL_LANGS)[number];
 
@@ -18,7 +21,7 @@ export function normalizeEmailLang(raw: string | null | undefined): EmailLang {
   const two = (raw ?? "").trim().toLowerCase().slice(0, 2);
   return (EMAIL_LANGS as readonly string[]).includes(two)
     ? (two as EmailLang)
-    : "en";
+    : DEFAULT_LANGUAGE;
 }
 
 const en = {

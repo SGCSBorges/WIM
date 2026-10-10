@@ -21,3 +21,19 @@ test.describe("auth screen", () => {
     await expect(email).toHaveValue("tester@example.com");
   });
 });
+
+// French is the product default: a browser in a language the app doesn't
+// speak gets French on first paint, not English.
+test.describe("default language", () => {
+  test.use({ locale: "de-DE" });
+
+  test("serves French to a browser in an unsupported language", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(
+      page.getByText("Gestionnaire de garanties & inventaire").first()
+    ).toBeVisible();
+  });
+});

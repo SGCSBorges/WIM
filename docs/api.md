@@ -118,7 +118,7 @@ devices:
 
 | Field        | Type / values                                              | Endpoint                                                          |
 | ------------ | ---------------------------------------------------------- | ----------------------------------------------------------------- |
-| `currency`   | ISO 4217 alpha-3 (default `USD`)                           | `PUT /api/profile/me/currency` — `{ "currency": "EUR" }`          |
+| `currency`   | ISO 4217 alpha-3 (default `EUR`)                           | `PUT /api/profile/me/currency` — `{ "currency": "EUR" }`          |
 | `theme`      | `light \| dark \| ocean \| cyber \| sunset` (nullable)     | `PUT /api/profile/me/preferences` — `{ "theme": "ocean" }`        |
 | `language`   | `en \| fr \| pt \| es \| nl` (nullable)                    | `PUT /api/profile/me/preferences` — `{ "language": "fr" }`        |
 | `dateFormat` | `system \| dd/MM/yyyy \| MM/dd/yyyy \| yyyy-MM-dd` (nullable) | `PUT /api/profile/me/preferences` — `{ "dateFormat": "yyyy-MM-dd" }` |
@@ -128,6 +128,12 @@ the three fields, plus `null` to clear one back to "follow the device
 default". Empty bodies are rejected. Both `/api/auth/me` and
 `/api/profile/me` return these fields on read, so the SPA can hydrate the
 right theme/language/date format before the first render.
+
+When an account has no stored `language`, the SPA records the one it is
+already showing (saved choice, else the browser's, else French) on the first
+authenticated load, so server-written copy — reminder names, e-mails, push —
+matches what the user sees. Server-side, an unset or unsupported language
+falls back to French (`DEFAULT_LANGUAGE` in `@wim/types`).
 
 UI density (`comfortable \| compact`) is intentionally **not** persisted
 server-side — it's a cosmetic per-device choice and lives in

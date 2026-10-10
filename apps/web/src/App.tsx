@@ -359,7 +359,7 @@ function Home({
 }
 
 export default function App() {
-  const { t, language, hydrateLanguage } = useI18n();
+  const { t, language, adoptServerLanguage } = useI18n();
   const { hydrateTheme } = useTheme();
   const { hydrateDateFormat, hydrateCurrency } = usePreferences();
   const navigate = useNavigate();
@@ -394,7 +394,7 @@ export default function App() {
     currency?: string | null;
   }) => {
     if (user.theme) hydrateTheme(user.theme);
-    if (user.language) hydrateLanguage(user.language);
+    adoptServerLanguage(user.language);
     if (user.dateFormat) hydrateDateFormat(user.dateFormat);
     if (user.currency) hydrateCurrency(user.currency);
   };

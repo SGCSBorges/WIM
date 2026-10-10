@@ -9,6 +9,7 @@ import { z } from "zod";
 import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { logger } from "../../config/logger";
+import { DEFAULT_CURRENCY } from "@wim/types";
 
 // Bumped whenever the on-disk JSON shape changes in a backwards-incompatible
 // way. Imports against a higher version are refused so a newer dump never
@@ -40,7 +41,7 @@ const UserSchema = z
     tokenVersion: z.number().int().nonnegative().default(0),
     stripeCustomerId: z.string().nullable().optional(),
     stripeSubscriptionId: z.string().nullable().optional(),
-    currency: z.string().default("USD"),
+    currency: z.string().default(DEFAULT_CURRENCY),
     calendarToken: z.string().nullable().optional(),
     emailReminders: z.boolean().default(true),
     weeklyDigest: z.boolean().default(false),

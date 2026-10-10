@@ -84,7 +84,7 @@ describe("AlertService.scheduleForWarranty — stored alert name", () => {
     ]);
   });
 
-  it("falls back to English when the owner has no language set", async () => {
+  it("falls back to French when the owner has no language set", async () => {
     mockPrisma.user.findUnique.mockResolvedValue({
       warrantyReminderDays: null,
       language: null,
@@ -96,10 +96,10 @@ describe("AlertService.scheduleForWarranty — stored alert name", () => {
       garantieFin: inOneYear(),
     });
 
-    expect(namesWritten()[0]).toBe("Warranty reminder J-30");
+    expect(namesWritten()[0]).toBe("Rappel garantie J-30");
   });
 
-  it("still falls back to English when the owner row can't be read", async () => {
+  it("still falls back to French when the owner row can't be read", async () => {
     mockPrisma.user.findUnique.mockRejectedValue(new Error("db down"));
 
     await AlertService.scheduleForWarranty({
@@ -110,7 +110,7 @@ describe("AlertService.scheduleForWarranty — stored alert name", () => {
 
     // Reminders are still scheduled — a failed profile read must not cost
     // the user their warranty alerts.
-    expect(namesWritten()[0]).toBe("Warranty reminder J-30");
+    expect(namesWritten()[0]).toBe("Rappel garantie J-30");
   });
 
   it("selects the language alongside the custom offsets", async () => {

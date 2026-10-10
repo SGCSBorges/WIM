@@ -34,6 +34,7 @@ import { extras, ExtrasKey } from "./translations.extras";
 import { LOCALE_LOADERS, type LocaleDict } from "./locales";
 import { authAPI, profileAPI } from "../services/api";
 import { safeGetItem, safeSetItem } from "../utils/safeStorage";
+import { DEFAULT_LANGUAGE } from "@wim/types";
 
 // Derived from the English dict so it stays a single source of truth.
 // Re-exported for components that build keys via template strings — they
@@ -58,9 +59,14 @@ type I18nContextValue = {
   /** User-initiated change: persists locally and (when signed in) to the
    *  account so the choice follows across devices. */
   setLanguage: (lang: Language) => void;
-  /** Apply a server-provided preference on login without echoing it back.
-   *  Accepts a raw string and ignores anything not in the language set. */
-  hydrateLanguage: (lang: string) => void;
+  /** Reconcile with the account on sign-in. A stored language wins and is
+   *  applied without being echoed back. When the account has none, the
+   *  language this device is already showing (saved choice, else browser,
+   *  else the default) is recorded on the account — otherwise the server
+   *  keeps guessing, and e-mails and alert names land in a language the
+   *  user never sees in the app. Only call with a user fetched under a
+   *  live session. */
+  adoptServerLanguage: (lang: string | null | undefined) => void;
   t: (key: AnyKey) => string;
   plural: (count: number, forms: PluralForms) => string;
 };
@@ -105,16 +111,20 @@ export function isLocaleLoaded(lang: Language): boolean {
   return Boolean(loaded[lang]);
 }
 
+// Saved choice, then the browser's language when we speak it, then French —
+// the product default. English is reached only through one of the first two,
+// never as a fallback.
 function detectInitialLanguage(): Language {
   const saved = safeGetItem(STORAGE_KEY);
   if (isLanguage(saved)) return saved;
 
-  const nav = (navigator.language || "en").toLowerCase();
+  const nav = (navigator.language || "").toLowerCase();
+  if (nav.startsWith("en")) return "en";
   if (nav.startsWith("fr")) return "fr";
   if (nav.startsWith("pt")) return "pt";
   if (nav.startsWith("es")) return "es";
   if (nav.startsWith("nl")) return "nl";
-  return "en";
+  return DEFAULT_LANGUAGE;
 }
 
 /** For main.tsx: resolve the saved/browser language's chunk before the
@@ -150,14 +160,17 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const hydrateLanguage = (lang: string) => {
-    if (!isLanguage(lang)) return;
-    _setLanguage(lang);
-    safeSetItem(STORAGE_KEY, lang);
+  const adoptServerLanguage = (lang: string | null | undefined) => {
+    if (isLanguage(lang)) {
+      _setLanguage(lang);
+      safeSetItem(STORAGE_KEY, lang);
+      return;
+    }
+    void profileAPI.updatePreferences({ language }).catch(() => {});
   };
 
   // Keep <html lang> in sync with the active language. The document ships
-  // lang="en" for first paint; reflecting the real choice lets screen
+  // lang="fr" (the default) for first paint; reflecting the real choice lets screen
   // readers switch pronunciation and helps browser translation heuristics.
   useEffect(() => {
     document.documentElement.lang = language;
@@ -179,7 +192,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     return {
       language,
       setLanguage,
-      hydrateLanguage,
+      adoptServerLanguage,
       t: (key: AnyKey) => {
         const dict = loaded[language];
         const eDict = (dict?.extras ?? {}) as Record<string, string>;

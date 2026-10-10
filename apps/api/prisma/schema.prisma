@@ -178,7 +178,10 @@ model User {
   stripeSubscriptionId String? @unique @db.VarChar(80)
 
   // Display currency (ISO 4217) for inventory value formatting on the client.
-  currency String @default("USD") @db.VarChar(3)
+  // EUR by default: the product targets European households. Existing rows
+  // keep whatever they hold — a stored "USD" can't be told apart from an
+  // explicit choice, so the default change is not backfilled.
+  currency String @default("EUR") @db.VarChar(3)
 
   // Optional spend budgets (in the display currency). Null = no budget set.
   // Spend is measured against items acquired in the current calendar

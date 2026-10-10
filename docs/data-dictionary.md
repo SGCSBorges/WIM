@@ -61,7 +61,7 @@ preferences and Stripe billing identifiers.
 | `tokenVersion` | Int | `0` | Bumped on force-logout / password / email change → invalidates all older JWTs. |
 | `stripeCustomerId` | String? VarChar(80) | null | **Unique**. |
 | `stripeSubscriptionId` | String? VarChar(80) | null | **Unique**. Set on upgrade, cleared on downgrade. |
-| `currency` | String VarChar(3) | `"USD"` | ISO 4217 display currency. |
+| `currency` | String VarChar(3) | `"EUR"` | ISO 4217 display currency. Default changed from `USD` in migration `20261010000000`; existing rows were not backfilled. |
 | `monthlyBudget` | Decimal(12,2)? | null | Optional spend budget; null = unset. |
 | `annualBudget` | Decimal(12,2)? | null | Optional spend budget; null = unset. |
 | `calendarToken` | String? VarChar(64) | null | **Unique**. iCal feed capability token; null = feed off. |
@@ -70,7 +70,7 @@ preferences and Stripe billing identifiers.
 | `warrantyReminderDays` | String? VarChar(40) | null | CSV of reminder offsets (e.g. `"90,30,7"`); null = J-30/J-7/J-1 default. |
 | `emailVerifiedAt` | DateTime? | null | Set when the mailed verification link is consumed; reset on email change. Soft — nothing hard-gates on it. |
 | `theme` | String? VarChar(16) | null | `light\|dark\|ocean\|cyber\|sunset`; null = device default. |
-| `language` | String? VarChar(8) | null | `en\|fr\|pt\|es\|nl`; null = device default. |
+| `language` | String? VarChar(8) | null | `en\|fr\|pt\|es\|nl`; null = not yet known (the client records its detected language on first sign-in; server copy falls back to `fr`). |
 | `dateFormat` | String? VarChar(16) | null | `system\|dd/MM/yyyy\|MM/dd/yyyy\|yyyy-MM-dd`. |
 | `alertsSeenAt` | DateTime? | null | High-water mark for the notification bell's unseen count. |
 | `totpEnabled` | Boolean | `false` | Fast-path mirror of `TotpSecret.verified`; gates the login flow. |

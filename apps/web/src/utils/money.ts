@@ -1,10 +1,12 @@
+import { DEFAULT_CURRENCY } from "@wim/types";
+
 // Format a monetary amount for display. Values may arrive as a Prisma Decimal
 // string, a number, or null/undefined (no price set). `currency` is the user's
 // ISO-4217 preference; `locale` is the active i18n language (Intl accepts the
 // short form, e.g. "en"/"fr"/"pt").
 export function formatMoney(
   value: number | string | null | undefined,
-  currency = "USD",
+  currency = DEFAULT_CURRENCY,
   locale?: string
 ): string {
   if (value === null || value === undefined || value === "") return "—";
@@ -16,10 +18,10 @@ export function formatMoney(
       currency,
     }).format(n);
   } catch {
-    // Bad currency code — fall back to USD so we never throw in render.
+    // Bad currency code — fall back to the default so we never throw in render.
     return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: "USD",
+      currency: DEFAULT_CURRENCY,
     }).format(n);
   }
 }
