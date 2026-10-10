@@ -217,7 +217,7 @@ export function buildOpenApiDocument() {
         post: {
           tags: ["auth"],
           summary:
-            "Temporary demo-data loader (login-screen button). REFRESHES the demo dataset: deletes prior demo accounts (any @demo.wim.app user, cascading their data) then reseeds 100 users × 100 articles + the full feature set in the background and returns 202 immediately. Real (non-demo) accounts are untouched, so it's safe to re-run and a second click picks up new fields. Demo accounts start after a reserved id margin. Disable with DEMO_SEED_ENABLED=false.",
+            "Temporary demo-data loader (login-screen button). REFRESHES the demo dataset: deletes prior demo accounts (any @demo.wim.app user plus the admin@wim.com showcase, cascading their data, then any household left without members) and reseeds 100 users — about 40 articles each on average, long-tailed, the showcase 110+ — with the full feature set, in the background, returning 202 immediately. Real (non-demo) accounts are untouched, so it's safe to re-run and a second click picks up new fields. Demo accounts start after a reserved id margin. Disable with DEMO_SEED_ENABLED=false.",
           responses: {
             "202": { description: "Seeding started (returns shared password)" },
             "403": { description: "Demo seeding disabled" },

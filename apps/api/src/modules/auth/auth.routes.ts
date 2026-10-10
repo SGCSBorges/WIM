@@ -34,6 +34,7 @@ import {
   DEMO_PASSWORD,
   DEMO_ADMIN_EMAIL,
   DEMO_EMAIL_DOMAIN,
+  DEMO_AVERAGE_ARTICLES,
 } from "../demo/demo.service";
 
 const router = Router();
@@ -275,7 +276,7 @@ router.post(
 // after a reserved id margin so they don't collide with the handful of real
 // users.
 //
-// The job inserts thousands of rows (~1–2 min), so it runs in the BACKGROUND
+// The job inserts thousands of rows (~10–30 s), so it runs in the BACKGROUND
 // and the request returns 202 immediately — the client can't sit on a long
 // request. A single run at a time (demoSeeding guard). Disable entirely with
 // DEMO_SEED_ENABLED=false.
@@ -339,7 +340,8 @@ router.post(
       started: true,
       refreshed: true,
       users: 100,
-      articlesPerUser: 100,
+      // Mean per account; the spread is long-tailed (see demo.service).
+      articlesPerUser: DEMO_AVERAGE_ARTICLES,
       password: DEMO_PASSWORD,
       adminEmail: makeAdmin ? DEMO_ADMIN_EMAIL : null,
     });

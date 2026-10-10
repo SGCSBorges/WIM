@@ -1539,4 +1539,213 @@ suite("API integration (real Postgres)", () => {
     expect(warranty).toBeTruthy();
     expect(warranty.title).toContain("Manufacturer");
   });
+
+  // The demo dataset is what a jury sees; it has to read as if people had
+  // made it. These are the facts no real account could violate.
+  describe("demo seed — reads as user-authored", () => {
+    const INVARIANTS: [string, string][] = [
+      [
+        "article created before its owner registered",
+        `SELECT count(*) FROM "Article" a JOIN "User" u ON u."userId"=a."ownerUserId" WHERE a."createdAt" < u."createdAt"`,
+      ],
+      [
+        "loan returned before it was lent",
+        `SELECT count(*) FROM "Loan" WHERE "returnedAt" < "loanedAt"`,
+      ],
+      [
+        "loan lent before the article was added",
+        `SELECT count(*) FROM "Loan" l JOIN "Article" a USING ("articleId") WHERE l."loanedAt" < a."createdAt"`,
+      ],
+      [
+        "open loan on an item not marked LOANED",
+        `SELECT count(*) FROM "Loan" l JOIN "Article" a USING ("articleId") WHERE l."returnedAt" IS NULL AND a.status <> 'LOANED'`,
+      ],
+      [
+        "service logged before the article was added",
+        `SELECT count(*) FROM "ServiceRecord" s JOIN "Article" a USING ("articleId") WHERE s."createdAt" < a."createdAt"`,
+      ],
+      [
+        "service performed before purchase",
+        `SELECT count(*) FROM "ServiceRecord" s JOIN "Garantie" g ON g."garantieArticleId"=s."articleId" WHERE g."renewedAt" IS NULL AND s."performedAt" < g."garantieDateAchat"`,
+      ],
+      [
+        "note written before the article was added",
+        `SELECT count(*) FROM "ArticleNote" n JOIN "Article" a USING ("articleId") WHERE n."createdAt" < a."createdAt"`,
+      ],
+      [
+        "attachment uploaded before the article was added",
+        `SELECT count(*) FROM "Attachment" t JOIN "Article" a USING ("articleId") WHERE t."createdAt" < a."createdAt"`,
+      ],
+      [
+        "verified before the article was added",
+        `SELECT count(*) FROM "Article" WHERE "lastVerifiedAt" < "createdAt"`,
+      ],
+      [
+        "warranty recorded before its article",
+        `SELECT count(*) FROM "Garantie" g JOIN "Article" a ON a."articleId"=g."garantieArticleId" WHERE g."createdAt" < a."createdAt"`,
+      ],
+      [
+        "reminder created before its warranty",
+        `SELECT count(*) FROM "Alerte" al JOIN "Garantie" g ON g."garantieId"=al."alerteGarantieId" WHERE al."createdAt" < g."createdAt" - interval '1 second'`,
+      ],
+      [
+        "scheduled warranty reminder already past",
+        `SELECT count(*) FROM "Alerte" WHERE kind='WARRANTY' AND status='SCHEDULED' AND "alerteDate" < now()`,
+      ],
+      [
+        "sent reminder dated in the future",
+        `SELECT count(*) FROM "Alerte" WHERE status='SENT' AND "alerteDate" > now()`,
+      ],
+      [
+        "session before the account existed",
+        `SELECT count(*) FROM "UserSession" s JOIN "User" u ON u."userId"=s."userId" WHERE s."createdAt" < u."createdAt"`,
+      ],
+      [
+        "audit row before the account existed",
+        `SELECT count(*) FROM "AuditLog" l JOIN "User" u ON u."userId"=l."userId" WHERE l."createdAt" < u."createdAt"`,
+      ],
+      [
+        "audit row outside the 90-day retention",
+        `SELECT count(*) FROM "AuditLog" WHERE "createdAt" < now() - interval '90 days' OR "createdAt" > now()`,
+      ],
+      [
+        "audit row shaped unlike the app's",
+        `SELECT count(*) FROM "AuditLog" WHERE method IS NOT NULL OR path IS NOT NULL OR status IS NOT NULL`,
+      ],
+      [
+        "trash outside the 30-day retention",
+        `SELECT count(*) FROM "Article" WHERE "deletedAt" < now() - interval '30 days'`,
+      ],
+      [
+        "open claim on something no longer owned",
+        `SELECT count(*) FROM "Article" a JOIN "Garantie" g ON g."garantieArticleId"=a."articleId" WHERE a.status IN ('SOLD','DISPOSED','LOST') AND g."claimStatus"='OPEN'`,
+      ],
+      [
+        "claim made after the warranty ended",
+        `SELECT count(*) FROM "Garantie" WHERE "claimStatus" <> 'NONE' AND "claimUpdatedAt" > "garantieFin"`,
+      ],
+      [
+        "serial number on clothing or furniture",
+        `SELECT count(*) FROM "Article" WHERE "serialNumber" IS NOT NULL AND category IN ('CLOTHING','FURNITURE')`,
+      ],
+      [
+        "several units of a phone, laptop or bike",
+        `SELECT count(*) FROM "Article" WHERE quantity > 1 AND category IN ('ELECTRONICS','VEHICLE')`,
+      ],
+      [
+        "order reference without a shop",
+        `SELECT count(*) FROM "Article" WHERE "orderRef" IS NOT NULL AND "purchasedFrom" IS NULL`,
+      ],
+      [
+        "'insured' tag on an uninsured item",
+        `SELECT count(*) FROM "ArticleTag" at JOIN "Tag" t USING ("tagId") WHERE lower(t.name) IN ('insured','assuré') AND NOT EXISTS (SELECT 1 FROM "ArticleInsurance" ai WHERE ai."articleId"=at."articleId")`,
+      ],
+      [
+        "English reminder name on a French account",
+        `SELECT count(*) FROM "Alerte" al JOIN "User" u ON u."userId"=al."ownerUserId" WHERE u.language='fr' AND (al."alerteNom" LIKE 'Warranty%' OR al."alerteNom" LIKE 'Loan due%' OR al."alerteNom" LIKE 'Service due%' OR al."alerteNom" LIKE 'Insurance renewal%')`,
+      ],
+      [
+        "same name twice in one inventory",
+        `SELECT count(*) FROM (SELECT 1 FROM "Article" GROUP BY "ownerUserId", "articleNom" HAVING count(*) > 1) x`,
+      ],
+      [
+        "pending invite already expired",
+        `SELECT count(*) FROM "ShareInvite" WHERE status='PENDING' AND "expiresAt" < now()`,
+      ],
+      [
+        "message before its article existed",
+        `SELECT count(*) FROM "Message" m JOIN "MessageThread" t ON t.id=m."threadId" JOIN "Article" a ON a."articleId"=t."articleId" WHERE m."createdAt" < a."createdAt"`,
+      ],
+      [
+        "shop price a receipt would never show",
+        `SELECT count(*) FROM "Article" WHERE "purchasePrice" IS NOT NULL AND ("purchasePrice"*100)::bigint % 100 NOT IN (0, 90, 95, 99)`,
+      ],
+    ];
+
+    it("violates none of the invariants a real account obeys, and stages every demo story", async () => {
+      const { seedDemoData, resetDemoData, DEMO_SHOWCASE_EMAIL } =
+        await import("../../modules/demo/demo.service");
+      await seedDemoData(prisma, {
+        users: 14,
+        articlesPerUser: 15,
+        powerUserCount: 6,
+        seed: 20261010,
+      });
+
+      const broken: string[] = [];
+      for (const [what, sql] of INVARIANTS) {
+        const [row] = await prisma.$queryRawUnsafe<{ count: bigint }[]>(sql);
+        if (Number(row.count) > 0) broken.push(`${what}: ${row.count}`);
+      }
+      expect(broken).toEqual([]);
+
+      // The account people present from: French, in euros, with every story.
+      const show = await prisma.user.findUniqueOrThrow({
+        where: { email: DEMO_SHOWCASE_EMAIL },
+        select: { userId: true, language: true, currency: true },
+      });
+      expect(show).toMatchObject({ language: "fr", currency: "EUR" });
+      const soon = new Date(Date.now() + 30 * 86_400_000);
+      const [
+        articles,
+        endingSoon,
+        openClaim,
+        overdueLoan,
+        serviceDue,
+        household,
+      ] = await Promise.all([
+        prisma.article.count({ where: { ownerUserId: show.userId } }),
+        prisma.garantie.count({
+          where: {
+            ownerUserId: show.userId,
+            garantieFin: { gte: new Date(), lte: soon },
+          },
+        }),
+        prisma.garantie.count({
+          where: { ownerUserId: show.userId, claimStatus: "OPEN" },
+        }),
+        prisma.loan.count({
+          where: {
+            ownerUserId: show.userId,
+            returnedAt: null,
+            dueAt: { lt: new Date() },
+          },
+        }),
+        prisma.serviceRecord.count({
+          where: {
+            ownerUserId: show.userId,
+            nextDueAt: { gte: new Date(), lte: soon },
+          },
+        }),
+        prisma.householdMember.count({ where: { userId: show.userId } }),
+      ]);
+      expect(articles).toBeGreaterThanOrEqual(100);
+      expect(endingSoon).toBeGreaterThanOrEqual(1);
+      expect(openClaim).toBeGreaterThanOrEqual(1);
+      expect(overdueLoan).toBeGreaterThanOrEqual(1);
+      expect(serviceDue).toBeGreaterThanOrEqual(1);
+      expect(household).toBe(1);
+      const [threads, boughtWish, lostWithQr] = await Promise.all([
+        prisma.messageThread.count({ where: { ownerUserId: show.userId } }),
+        prisma.wishlistItem.count({
+          where: { ownerUserId: show.userId, purchasedAt: { not: null } },
+        }),
+        prisma.article.count({
+          where: {
+            ownerUserId: show.userId,
+            status: "LOST",
+            publicToken: { not: null },
+          },
+        }),
+      ]);
+      expect(threads).toBeGreaterThanOrEqual(1);
+      expect(boughtWish).toBeGreaterThanOrEqual(1);
+      expect(lostWithQr).toBeGreaterThanOrEqual(1);
+
+      // The reset removes every demo row it created, households included.
+      await resetDemoData(prisma);
+      expect(await prisma.user.count()).toBe(0);
+      expect(await prisma.household.count()).toBe(0);
+    }, 120_000);
+  });
 });

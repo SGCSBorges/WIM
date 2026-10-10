@@ -36,7 +36,7 @@ worse on stage.
 | `RESEND_API_KEY` + `MAIL_FROM`                                            | reminder e-mails, weekly digest, password reset  |
 | `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY`                                  | push notifications                               |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_POWER_USER_PRICE_*` | the upgrade → webhook → role-change flow         |
-| `S3_*`                                                                    | attachments surviving a redeploy (see §7)        |
+| `S3_*`                                                                    | attachments surviving a redeploy (see §8)        |
 | `APP_URL`, `CORS_ORIGIN`                                                  | correct links in e-mails; cross-origin requests  |
 
 **Reseed and smoke-test** (§4), then log in once end-to-end.
@@ -49,25 +49,26 @@ worse on stage.
    restart. Open the web URL _and_ `GET /health` so the API container is warm
    too — the web app is static and will otherwise wake the API only on your
    first login, in front of the jury.
-2. Log in as the showcase account and leave the tab open.
-3. **Set the interface language** (gear → Langue). The showcase account ships
-   with `language: "en"`; see §6.
-4. Re-check `/health` shows `db`, `redis` and `queue` all `ok`.
+2. Log in as the showcase account and leave the tab open. It opens in French
+   (the account's stored language) whatever the browser's language.
+3. Re-check `/health` shows `db`, `redis` and `queue` all `ok`.
 
 ---
 
 ## 3. Credentials
 
-| Account               | Password    | Notes                                                 |
-| --------------------- | ----------- | ----------------------------------------------------- |
-| `admin@wim.com`       | `Admin123+` | ADMIN, ≥100 articles, EUR, light theme, language `en` |
-| `<name>@demo.wim.app` | `Demo1234!` | generated demo users; roles vary (USER / POWER_USER)  |
+| Account                      | Password    | Notes                                                                           |
+| ---------------------------- | ----------- | ------------------------------------------------------------------------------- |
+| `admin@wim.com`              | `Admin123+` | ADMIN, 110+ articles, French, EUR, light theme; "Famille Martin" household      |
+| `thomas.martin@demo.wim.app` | `Demo1234!` | POWER_USER, the showcase's partner in the same household                        |
+| `<name>@demo.wim.app`        | `Demo1234!` | generated users; roles vary (USER / POWER_USER); about 1 in 4 writes in English |
 
 Constants live in `apps/api/src/modules/demo/demo.service.ts`
 (`DEMO_SHOWCASE_EMAIL`, `DEMO_SHOWCASE_PASSWORD`, `DEMO_PASSWORD`).
 
-Keep a second account handy to demonstrate sharing: the seeder builds
-households, so two demo users already share inventories with each other.
+Keep `thomas.martin@demo.wim.app` open in a private window to demonstrate
+sharing: the two accounts are one household, so each sees the other's
+inventory with write access.
 
 ---
 
@@ -84,13 +85,40 @@ curl -s -X POST https://wimapi.onrender.com/api/auth/seed-demo -i | head -1
 | `403`    | `DEMO_SEED_ENABLED=false` on this environment                          |
 
 It wipes and recreates every `@demo.wim.app` account **and** the
-`admin@wim.com` showcase account. It never touches other accounts. Run it the
+`admin@wim.com` showcase account, then removes any household left with no
+members. It never touches other accounts. Run it the
 day before, not during the defence — it is unauthenticated and rate-limited,
 and a half-finished seed mid-demo is unrecoverable.
 
 ---
 
-## 5. Making a notification fire _during_ the demo
+## 5. What the showcase already has on screen
+
+Every reseed stages these on `admin@wim.com` (`ensureShowcaseStories`), so
+none depends on luck:
+
+| Story                                                                        | Where to look                                             |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------- |
+| A warranty ending in about three weeks                                       | Dashboard → expiring soon; Warranties                     |
+| A warranty ending within the week                                            | Alerts → `Rappel garantie J-1` scheduled this week        |
+| An item in repair under an open claim                                        | Articles filtered by status; its warranty shows the claim |
+| An overdue loan, and one due soon                                            | Loans; Alerts → `Retour de prêt : …`                      |
+| A routine service due within a month                                         | Maintenance; Alerts → `Entretien à prévoir : …`           |
+| A home-insurance renewal within ~5 weeks                                     | Insurance; Alerts → `Renouvellement d'assurance : …`      |
+| Sold, disposed and lost items                                                | Articles → status filter; the lost one has a QR page      |
+| Items listed to other members, each with a buyer's question (offers on some) | Shared / Messages                                         |
+| A recently deleted item                                                      | Trash                                                     |
+| A wishlist item later bought                                                 | Wishlist (struck through)                                 |
+| Budgets (500 € / month, 6 000 € / year)                                      | Dashboard → budget                                        |
+
+The rest of the inventory is ordinary household life: an onboarding evening
+a year ago where most things were entered a few minutes apart, then a
+trickle of purchases, phones that were upgraded and sold, and bundles
+wherever several pieces of a set are owned.
+
+---
+
+## 6. Making a notification fire _during_ the demo
 
 Do **not** plan to show a reminder that was scheduled days ago. The free
 key-value tier is in-memory: a restart drops BullMQ's delayed jobs, so an old
@@ -115,27 +143,27 @@ they are the parts that do not depend on the OS accepting the notification.
 
 ---
 
-## 6. Language, for a French defence
+## 7. Language and currency
 
-- The showcase account's stored `language` is `en`. Switch it in the gear menu
-  (Langue → Français); the choice persists to the account, so do it the day
-  before and it will still be French on the day.
-- Server-generated copy follows `User.language`: reminder e-mails, push text,
-  the weekly digest, and the stored name of auto-scheduled warranty alerts
-  (`Rappel garantie J-30` once the account is French).
-- **Pre-seeded alerts are English fixtures.** The seeder writes its own strings
-  (`Warranty expiring in N day(s)`) directly and does not go through the
-  localised label. To show a French alert name, switch the language first and
-  then create a warranty live (Recipe B does both at once).
+- The app defaults to **French and euros**: a visitor whose browser speaks
+  none of the five languages gets French, and a new account is in EUR. A
+  browser set to English, Portuguese, Spanish or Dutch still gets that
+  language, and an account's stored language always wins.
+- The showcase account is French. Everything the server writes for it —
+  reminder names, e-mails, push, the weekly digest — is French, including the
+  seeded history (`Rappel garantie J-30`, `Retour de prêt : …`).
+- To show the language switch, use the gear menu, or log in as one of the
+  English-speaking demo users (their rooms, tags and notes are in English, as
+  they typed them).
 
 ---
 
-## 7. What not to demo on free hosting
+## 8. What not to demo on free hosting
 
 | Don't                                             | Why                                                                               | Instead               |
 | ------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------- |
 | Open an attachment uploaded in an earlier session | files sit on an ephemeral disk unless `S3_*` is configured; a redeploy wipes them | upload a receipt live |
-| Rely on a reminder scheduled days ago             | free key-value store is in-memory                                                 | §5                    |
+| Rely on a reminder scheduled days ago             | free key-value store is in-memory                                                 | §6                    |
 | Promise e-mail delivery without checking          | silent no-op when Resend is unconfigured                                          | verify in §1          |
 | Leave the first page load to the jury             | ~1 min cold start                                                                 | §2                    |
 
@@ -145,7 +173,7 @@ defects of the application architecture.
 
 ---
 
-## 8. Fallback: run it locally
+## 9. Fallback: run it locally
 
 If Render is unavailable, the whole stack runs on one machine:
 
@@ -168,26 +196,27 @@ cost seconds, not minutes.
 
 ---
 
-## 9. Numbers worth quoting
+## 10. Numbers worth quoting
 
 Verified on branch `dev`, 2026-10-10:
 
-| Metric                 | Value                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| API tests              | 611 passed, 42 skipped (81 files)                                               |
-| Web tests              | 318 passed (76 files)                                                           |
-| End-to-end             | 14/14 Playwright scenarios                                                      |
-| API coverage           | 54.84 % statements · 78.26 % branches · 65.63 % functions (gates: 44 / 74 / 63) |
-| Web coverage           | 60.32 % statements · 69.55 % branches · 37.20 % functions (gates: 48 / 62 / 28) |
-| `npm audit --omit=dev` | 0 vulnerabilities                                                               |
-| Accessibility          | 0 axe-core violations across 19 routes × 2 viewport widths                      |
+| Metric                 | Value                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| API tests              | 621 passed, 43 skipped (82 files)                                                    |
+| API integration        | 43/43 against real PostgreSQL (the 43 skipped above), incl. the demo-seed invariants |
+| Web tests              | 332 passed (79 files)                                                                |
+| End-to-end             | 15/15 Playwright scenarios                                                           |
+| API coverage           | 54.96 % statements · 78.68 % branches · 65.72 % functions (gates: 44 / 74 / 63)      |
+| Web coverage           | 60.35 % statements · 70.21 % branches · 37.30 % functions (gates: 48 / 62 / 28)      |
+| `npm audit --omit=dev` | 0 vulnerabilities                                                                    |
+| Accessibility          | 0 axe-core violations across 19 routes × 2 viewport widths (one-off run, not in CI)  |
 
 The figures printed in the thesis are an explicitly dated snapshot (8 July
 2026); these are higher. Quote these if asked, and say why they differ.
 
 ---
 
-## 10. Questions with evidence behind them
+## 11. Questions with evidence behind them
 
 - **"No WCAG audit?"** Correct — no formal audit was commissioned. An
   automated axe-core pass over 19 routes at two widths reports zero
@@ -204,3 +233,10 @@ The figures printed in the thesis are an explicitly dated snapshot (8 July
   in-memory queue cannot guarantee deferred reminders and the ephemeral disk
   cannot hold proofs of purchase. Both have named remedies (persistent
   key-value tier, S3-compatible storage) already supported by the code.
+- **"Is this real data?"** No — and it is built not to look generated. The
+  seeder is held to the facts a real account cannot break (nothing bought
+  before the model existed, added before the account, lent before it was
+  added, claimed after its warranty ended; receipt-shaped prices; audit rows
+  inside the 90-day retention, shaped as the app writes them). A CI
+  integration test seeds a batch and checks every one of those against real
+  Postgres. The previous generator failed 18 of them.

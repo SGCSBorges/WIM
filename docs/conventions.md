@@ -95,11 +95,13 @@ npm --workspace apps/web run build        # vite build (runs prebuild → sharp 
 npm --workspace apps/web run dev          # local dev server
 DATABASE_URL=... npm --workspace apps/api run promote:admin -- email@x   # promote
 
-# Demo data: 100 realistic users × 100 articles + every feature populated
-# (warranties/warranty-history/alerts/attachments/locations/tags/loans/
-# insurance/maintenance/budgets/public links/shares/threads/transfers/
-# sessions/audit log). Deterministic per SEED; all users
-# share the password printed at the end. SEED_DEMO_RESET=true wipes first.
+# Demo data: 100 users, ~40 articles each on average (long-tailed; the
+# admin@wim.com showcase gets 110+) + every feature populated (warranties/
+# warranty-history/alerts/attachments/locations/tags/loans/insurance/
+# maintenance/budgets/public links/shares/threads/transfers/sessions/audit
+# log), generated to read as user-authored (see "Demo data must read as
+# user-authored" below). Deterministic per SEED; all users share the password
+# printed at the end. SEED_DEMO_RESET=true wipes first.
 DATABASE_URL=... SEED_DEMO_RESET=true npm --workspace apps/api run seed:demo
 
 # Tests beyond the default `npm test` (vitest unit suites):
@@ -1578,10 +1580,12 @@ hardcode an English sentence at a call site again — add a key.
   screen are temporary too. The button POSTs to the endpoint, which runs the
   shared generator (`modules/demo/demo.service.ts` — the same one behind the
   `seed:demo` CLI) in the **background** and returns 202 immediately (the job
-  inserts ~10k+ rows over 1–2 min). Each click **refreshes** the demo dataset:
+  inserts ~10k rows in 10–30 s). Each click **refreshes** the demo dataset:
   `resetDemoData` first deletes every prior demo account — any `@demo.wim.app`
   user (`DEMO_EMAIL_DOMAIN`), which cascades their articles/warranties/etc. —
-  then `seedDemoData` reseeds from scratch. **Real (non-demo) accounts are
+  then any household left with no members (Household has no FK to its
+  creator by design, so earlier resets stranded three per click), then
+  `seedDemoData` reseeds from scratch. **Real (non-demo) accounts are
   never touched** (matched purely by email domain), so it's safe on a live DB
   and a second click picks up new fields/code (e.g. the product image URLs)
   instead of being refused — and re-running can't balloon the DB because the
@@ -1593,11 +1597,35 @@ hardcode an English sentence at a call site again — add a key.
   `Demo1234!`. The demo module is excluded from coverage in `vitest.config.ts`.
   A dedicated **showcase account** for live demos rides slot #1 of every seed:
   `admin@wim.com` / `Admin123+` (`DEMO_SHOWCASE_EMAIL/_PASSWORD`), ADMIN role,
-  ≥100 articles guaranteed (floor even when `articlesPerUser` is smaller),
-  stable stage-friendly prefs (en/EUR/light, verified email, budgets set). It
-  deliberately lives OFF the demo domain so the address looks real on stage;
-  `resetDemoData` compensates by also deleting it **by exact email**, so each
-  reseed recreates it fresh — never hand these credentials to a real user.
+  110+ articles guaranteed (floor even when `articlesPerUser` is smaller),
+  stable stage-friendly prefs (fr/EUR/light, verified email, budgets set), in
+  the household "Famille Martin", with every demo story staged by
+  `ensureShowcaseStories` (see `docs/demo-runbook.md`). It deliberately lives
+  OFF the demo domain so the address looks real on stage; `resetDemoData`
+  compensates by also deleting it **by exact email**, so each reseed
+  recreates it fresh — never hand these credentials to a real user.
+- **Demo data must read as user-authored.** A jury reads the demo the way
+  they would read a real account, so the generator (`modules/demo/`:
+  `demo.catalog.ts` facts, `demo.content.ts` words, `demo.random.ts` numbers,
+  `demo.service.ts` orchestration) holds itself to what a real account
+  cannot violate: nothing bought before its model was released, added before
+  the account existed, lent/noted/photographed/verified before it was added,
+  serviced before it was bought, returned before it was lent, claimed after
+  its warranty ended; no serial numbers on clothes, no six iPhones on one row,
+  no order reference without a shop, no "insured" tag without a policy, no
+  receipt price ending in ,37; audit rows only inside the 90-day retention and
+  shaped exactly like `AuditService.log` writes them (no method/path/status),
+  trash only inside its 30 days. It reuses the app's own writers where they
+  exist — `computeWarrantyReminderSchedule`, `reminderKindLabel`, `emailT`,
+  `labelFromUserAgent` — so seeded reminders, names and device labels are the
+  ones the app would have produced. People differ (long-tailed inventory
+  sizes, a per-user level of care and naming habit, one wording per room) and
+  live somewhere: the market (France / Switzerland / UK, from the currency)
+  decides shops, resale sites, insurers and repairers; the language (French
+  or English — PT/ES/NL copy awaits native review) decides every word they
+  typed. The integration suite seeds a small batch and asserts the invariants
+  against real Postgres ("demo seed — reads as user-authored"); a new seeded
+  feature adds its own invariant there.
 - **Two sharing models** (public flag vs InventoryShare) still both
   exist intentionally. The owner-side UX has separate flows for each;
   consolidating into a single "Share article…" dialog with options

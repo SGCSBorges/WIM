@@ -1,10 +1,11 @@
 /**
  * CLI wrapper around the demo-data generator (`modules/demo/demo.service.ts`).
  *
- * Seeds 100 users × 100 articles plus the full feature set. For fresh or
- * throwaway databases — the login-screen "Load demo data" button uses the same
- * generator to refresh the demo dataset on a live DB instead (resetDemoData +
- * seedDemoData, scoped to @demo.wim.app accounts).
+ * Seeds 100 users (about 40 articles each on average, long-tailed) plus the
+ * full feature set. For fresh or throwaway databases — the login-screen
+ * "Load demo data" button uses the same generator to refresh the demo dataset
+ * on a live DB instead (resetDemoData + seedDemoData, scoped to
+ * @demo.wim.app accounts).
  *
  * Usage (from repo root):
  *   DATABASE_URL=... npm --workspace apps/api run seed:demo
@@ -50,6 +51,8 @@ async function main() {
       prisma.featureFlag.deleteMany(),
       prisma.processedStripeEvent.deleteMany(),
       prisma.user.deleteMany(),
+      // No FK from Household to its creator, so these don't cascade.
+      prisma.household.deleteMany(),
     ]);
   }
 
