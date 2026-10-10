@@ -648,7 +648,7 @@ The web service is provisioned from `render.yaml` at the repo root (SPA rewrite 
 - Rate limiting is applied globally (100 req/min by default) via `RATE_LIMIT_*`, with tighter buckets for auth, destructive, and resource-creation routes (see `config/security.ts`).
 - File uploads are size-capped (10 MB) and magic-byte validated before being kept on disk.
 - The Stripe webhook verifies signatures and uses a `ProcessedStripeEvent` table for idempotency.
-- **Dependency pins**: the root `package.json` `overrides` block forces transitive dependencies to patched versions (e.g. `qs` to `6.16.0`) so a vulnerable nested copy can't slip in via `stripe`/`swagger-ui-express`/`supertest`. `npm audit --omit=dev` is expected to report **0 vulnerabilities**; if it doesn't, add or bump an override rather than disabling the CI gate.
+- **Dependency pins**: the root `package.json` `overrides` block forces transitive dependencies to patched versions (e.g. `qs` to `6.16.0`, `ip-address` to `^10.7.3`, `proxy-addr` to `2.0.8` — the last because Express 4.22.3 is the final 4.x release and still ships the vulnerable 2.0.7). `npm audit --omit=dev` is expected to report **0 vulnerabilities**; if it doesn't, add or bump an override rather than disabling the CI gate — or, where the patch only exists in a new major of the intermediate package, bump that package instead (see `docs/conventions.md`).
 
 ---
 

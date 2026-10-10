@@ -1509,8 +1509,13 @@ hardcode an English sentence at a call site again — add a key.
   deletion. Adding a new create route means adding the limiter with it.
 - **Dependency `overrides`** (root `package.json`): pin transitive deps to
   patched versions so the `npm audit --omit=dev --audit-level=moderate` CI
-  gate stays green (e.g. `qs: 6.15.2`, forced into `stripe` /
-  `swagger-ui-express` / `supertest`). The gate is **production-only** —
+  gate stays green (e.g. `qs: 6.16.0`, forced into `stripe` /
+  `swagger-ui-express` / `supertest`; `proxy-addr: 2.0.8`, forced into
+  `express`, because 4.22.3 is the last 4.x release and it still ships the
+  vulnerable 2.0.7). An override is only legitimate when the pinned version
+  still satisfies the parent's declared range — express asks for `~2.0.7`,
+  which admits `2.0.8`, so nothing is being forced past a stated
+  incompatibility. The gate is **production-only** —
   remaining dev-tooling advisories (esbuild/vite/vitest) are accepted
   because that stack never ships and the fix is a breaking Vite major.
   An audit finding is resolved by adding or bumping an override rather than
@@ -1519,6 +1524,15 @@ hardcode an English sentence at a call site again — add a key.
   the install into a workspace `node_modules` and break root resolution —
   if `npm ci` then can't find the module at runtime, ensure the root
   `node_modules/<pkg>` lockfile entry still exists.
+  Second caveat: when the patched version only exists in a **new major** of
+  the intermediate package, an override is the wrong tool — pinning
+  `fast-copy@4` under `pino-pretty@11` (which declares `^3.0.0`) would force
+  a version the parent never claimed to support. Bump the parent instead:
+  `pino-pretty` 11.3.0 → 13.2.0 pulls `fast-copy@4` in legitimately and
+  removes the advisory from the production tree. Verify the parent by
+  running it, not by typechecking — `pino-pretty` is a pino *transport*
+  resolved by name in a worker thread (`config/logger.ts`, dev only), so a
+  broken bump surfaces at boot, never at compile time.
 - **A widened semver range alone won't move the lockfile.** Bumping
   `"react-router-dom": "^7.16.0"` → `"^7.18.1"` and re-running `npm install`
   is a no-op: npm reuses the already-satisfying tree, and `npm install
@@ -1528,8 +1542,12 @@ hardcode an English sentence at a call site again — add a key.
   registry. For a **transitive-only** package, deleting its entry alone makes
   npm prune it rather than re-resolve, leaving the parent with a dependency
   in neither the lockfile nor `node_modules`; the parent's entry has to go
-  too. That is how `ip-address` was bumped, which also carried
-  `express-rate-limit` 8.5.2 → 8.6.2. The check is `node -p
+  too. That is how `ip-address` was bumped the first time (carrying
+  `express-rate-limit` 8.5.2 → 8.6.2) and again to 10.7.3 (carrying
+  8.6.2 → 8.7.1); the same round dropped the `node_modules/express` entry so
+  `proxy-addr` could re-resolve to the overridden 2.0.8. Widening the
+  override alone left both at their old versions and `npm ls` reporting
+  `invalid: ... overridden` — which is the tell. The check is `node -p
   "require('pkg/package.json').version"`, not the range in `package.json`.
 
 ## Open items / temporary stuff
