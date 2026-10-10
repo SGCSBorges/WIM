@@ -10,6 +10,8 @@ import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { logger } from "../../config/logger";
 import { AlertService } from "../alerts/alert.service";
+import { emailT } from "../email/email.i18n";
+import { ownerLanguage } from "../email/recipient-language";
 import type { LoanCreateInput } from "./loan.schemas";
 
 const loanArticleSelect = {
@@ -55,7 +57,11 @@ export const LoanService = {
       try {
         const alert = await AlertService.createCustom({
           ownerUserId,
-          alerteNom: `Loan due: ${article.articleNom} (${data.borrowerName})`,
+          alerteNom: emailT(
+            await ownerLanguage(ownerUserId),
+            "loan.reminder.alertName",
+            { name: article.articleNom, borrower: data.borrowerName }
+          ),
           alerteDate: new Date(data.dueAt),
           alerteArticleId: data.articleId,
         });

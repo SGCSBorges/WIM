@@ -68,6 +68,28 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+describe("found report — owner's language", () => {
+  it("names the alert and the push in the owner's language", async () => {
+    mockPrisma.article.findFirst.mockResolvedValue({
+      ...lostArticle,
+      owner: { ...lostArticle.owner, language: "fr" },
+    });
+    mockPrisma.alerte.findFirst.mockResolvedValue(null);
+    mockPrisma.alerte.create.mockResolvedValue({});
+    const res = await request(makeApp())
+      .post(`/api/public/items/${TOKEN}/found-report`)
+      .send({ message: "Trouvé au parc" });
+    expect(res.status).toBe(204);
+    expect(mockPrisma.alerte.create.mock.calls[0][0].data.alerteNom).toBe(
+      "Objet retrouvé : Camera"
+    );
+    expect(PushService.sendToUser).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({ title: "Objet retrouvé : Camera" })
+    );
+  });
+});
+
 describe("POST /api/public/items/:token/found-report", () => {
   it("404s when the item is not marked LOST (query is status-scoped)", async () => {
     mockPrisma.article.findFirst.mockResolvedValue(null);

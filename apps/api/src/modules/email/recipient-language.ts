@@ -25,3 +25,21 @@ export async function recipientLanguage(email: string): Promise<EmailLang> {
     return DEFAULT_LANGUAGE;
   }
 }
+
+/**
+ * The language to write an owner's own server-generated rows in (reminder
+ * names stored on Alerte). Same contract as recipientLanguage: never throws,
+ * and any failure means the product default.
+ */
+export async function ownerLanguage(userId: number): Promise<EmailLang> {
+  try {
+    const { prisma } = await import("../../libs/prisma");
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: { language: true },
+    });
+    return normalizeEmailLang(user?.language);
+  } catch {
+    return DEFAULT_LANGUAGE;
+  }
+}

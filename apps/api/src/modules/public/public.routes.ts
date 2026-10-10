@@ -92,7 +92,12 @@ router.post(
     });
     if (!article) return res.status(404).json({ error: "Not found" });
 
-    const alerteNom = `Found report: ${article.articleNom}`.slice(0, 100);
+    // Alert name, push title and e-mail all speak the owner's language.
+    const t = emailTranslator(article.owner.language);
+    const alerteNom = t("found.alertName", { name: article.articleNom }).slice(
+      0,
+      100
+    );
     const description = `${contact ? `${contact} — ` : ""}${message}`.slice(
       0,
       255
@@ -144,7 +149,6 @@ router.post(
       logger.warn({ err }, "[found-report] push failed");
     }
     if (article.owner.emailReminders) {
-      const t = emailTranslator(article.owner.language);
       void EmailService.sendReminderEmail({
         to: article.owner.email,
         lang: article.owner.language,

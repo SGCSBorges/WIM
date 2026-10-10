@@ -122,6 +122,12 @@ npm --workspace apps/web run test:e2e
   that detected language on the account the first time a session finds none,
   because the server writes copy of its own (reminder names, e-mail, push)
   and otherwise has nothing to go on.
+- **Server-written strings are localised too.** Any text the API stores for
+  a user to read later — alert names for warranty, loan, service, insurance
+  and found-item reminders — goes through `emailT(lang, key)` with the
+  owner's language (`ownerLanguage(userId)` when only the id is at hand), not
+  a template literal. A hard-coded English `alerteNom` was found in four
+  places and is the bug class to watch for.
 - **i18n**: `apps/web/src/i18n/translations.ts` is the main dict (five
   languages: `en` / `fr` / `pt` / `es` / `nl`). New keys go into
   `apps/web/src/i18n/translations.extras.ts` to avoid churning the big

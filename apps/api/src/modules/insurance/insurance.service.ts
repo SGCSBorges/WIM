@@ -9,6 +9,8 @@ import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { logger } from "../../config/logger";
 import { AlertService } from "../alerts/alert.service";
+import { emailT } from "../email/email.i18n";
+import { ownerLanguage } from "../email/recipient-language";
 import type { PolicyCreateInput, PolicyUpdateInput } from "./insurance.schemas";
 
 const articleSelect = {
@@ -58,7 +60,11 @@ async function scheduleReminder(
   try {
     const alert = await AlertService.createCustom({
       ownerUserId,
-      alerteNom: `Insurance renewal: ${provider}`,
+      alerteNom: emailT(
+        await ownerLanguage(ownerUserId),
+        "insurance.renewal.alertName",
+        { provider }
+      ),
       alerteDate: renewalAt,
     });
     return alert.alerteId;

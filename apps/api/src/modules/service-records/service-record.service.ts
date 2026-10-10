@@ -9,6 +9,8 @@ import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { logger } from "../../config/logger";
 import { AlertService } from "../alerts/alert.service";
+import { emailT } from "../email/email.i18n";
+import { ownerLanguage } from "../email/recipient-language";
 import { addMonths } from "../common/date";
 import type { ServiceCreateInput } from "./service-record.schemas";
 
@@ -93,7 +95,11 @@ export const ServiceRecordService = {
       try {
         const alert = await AlertService.createCustom({
           ownerUserId,
-          alerteNom: `Service due: ${article.articleNom}`,
+          alerteNom: emailT(
+            await ownerLanguage(ownerUserId),
+            "service.reminder.alertName",
+            { name: article.articleNom }
+          ),
           alerteDate: nextDueAt,
           alerteArticleId: data.articleId,
         });
