@@ -1812,6 +1812,26 @@ suite("API integration (real Postgres)", () => {
           WHERE a."createdAt" > g."updatedAt"`,
       ],
       [
+        "warranty bought in the future",
+        `SELECT count(*) FROM "Garantie" WHERE "garantieDateAchat" > now()`,
+      ],
+      [
+        // As the app records them: an extension keeps the purchase date and
+        // adds months; a renewal is a new contract bought the day it is
+        // recorded. Seeded renewals started when the old one ended.
+        "renewal or extension the app could not have recorded",
+        `SELECT count(*) FROM "Garantie" g JOIN "WarrantyHistory" h ON h."garantieId"=g."garantieId"
+          WHERE (h.event='EXTENDED' AND (g."garantieDateAchat" <> h."priorDateAchat" OR g."garantieDuration" <= h."priorDuration"))
+             OR (h.event='RENEWED' AND g."garantieDateAchat"::date <> h."createdAt"::date)`,
+      ],
+      [
+        // Someone who tracks a recurring service does the next one; an 18-
+        // month-overdue bike service led the showcase's agenda.
+        "recurring service overdue by more than 45 days",
+        `SELECT count(*) FROM "ServiceRecord" s WHERE s."nextDueAt" < now() - interval '45 days'
+            AND NOT EXISTS (SELECT 1 FROM "ServiceRecord" t WHERE t."articleId"=s."articleId" AND t."performedAt" > s."performedAt")`,
+      ],
+      [
         // admin@wim.com and admin@admin.com are two different families.
         "one showcase account sharing with, writing to or transferring to the other",
         `WITH s AS (SELECT "userId" FROM "User" WHERE email IN ('admin@wim.com','admin@admin.com'))

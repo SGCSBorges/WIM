@@ -219,7 +219,7 @@ export function buildOpenApiDocument() {
           summary:
             "Temporary demo-data loader (login-screen button). REFRESHES the demo dataset: deletes prior demo accounts (any @demo.wim.app user plus the admin@wim.com showcase, cascading their data, then any household left without members) and reseeds 100 users — about 40 articles each on average, long-tailed, the showcase households 100+ — with the full feature set, in the background, returning 202 immediately. Demo accounts start after a reserved id margin. Disable with DEMO_SEED_ENABLED=false.",
           description:
-            "The operator's own account (admin@admin.com), when it exists, is refilled as a second showcase household: its content is replaced, while the account itself (password, role, preferences, two-factor setup, sessions, audit trail) is kept. Every other real account is untouched. No admin account is ever created.",
+            "The operator's own account (admin@admin.com), when it exists, is refilled as a second showcase household: its content is replaced, while the account itself (password, role, preferences, two-factor setup, sessions, audit trail) is kept. Every other real account is untouched. No admin account is ever created. Seeded records follow the app's own rules: an extended warranty keeps its purchase date, a renewed one starts the day it was renewed, and a tracked recurring service is never more than a month overdue.",
           responses: {
             "202": { description: "Seeding started (returns shared password)" },
             "403": { description: "Demo seeding disabled" },

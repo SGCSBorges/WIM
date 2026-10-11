@@ -1379,9 +1379,12 @@ function warrantyFor(
     }
   }
 
-  // Extended before it ran out: the live row is the new contract. The legal
-  // guarantee and Apple's own year can't be extended (AppleCare+ is bought
-  // up front, not renewed).
+  // Extended or renewed before it ran out, as the app records each: an
+  // extension keeps the purchase date and adds months; a renewal is a new
+  // contract bought that day (the dialog's default start). Starting the
+  // renewal when the old one ended put a purchase date in the future. The
+  // legal guarantee and Apple's own year can't be extended (AppleCare+ is
+  // bought up front, not renewed).
   if (
     !force &&
     !legal &&
@@ -1394,16 +1397,21 @@ function warrantyFor(
     const atMs = between(w.endMs - 45 * DAY, w.endMs - DAY);
     if (atMs > w.createdMs && atMs < now() - DAY) {
       const extra = pick([12, 24, 36]);
+      const event = chance(0.6) ? "EXTENDED" : "RENEWED";
       w.renewal = {
-        event: chance(0.6) ? "EXTENDED" : "RENEWED",
+        event,
         priorStartMs: w.startMs,
         priorMonths: w.months,
         priorEndMs: w.endMs,
         atMs,
       };
-      w.startMs = w.endMs;
-      w.months = extra;
-      w.endMs = addMonths(w.startMs, extra);
+      if (event === "EXTENDED") {
+        w.months += extra;
+      } else {
+        w.startMs = atMs;
+        w.months = extra;
+      }
+      w.endMs = addMonths(w.startMs, w.months);
     }
   }
   return w;
@@ -3503,10 +3511,23 @@ async function seedPaidAddOns(
       const spec = wantDueSoon
         ? pick(specs.filter((x) => x.months))
         : pick(specs);
-      const recurring =
+      let recurring =
         last && spec.months && (wantDueSoon || chance(0.4 + 0.5 * d01))
           ? spec.months
           : null;
+      // Someone who tracks a recurring service does the next one: the last
+      // job is recent enough that it is at most a month overdue. Dated from
+      // a job years back, a bike's "next service" had been due for 18
+      // months and led the agenda's overdue list.
+      if (recurring && addMonths(dates[j], recurring) < now() - 30 * DAY) {
+        const from = Math.max(
+          lo,
+          j > 0 ? dates[j - 1] + 30 * DAY : 0,
+          addMonths(now() - 30 * DAY, -recurring)
+        );
+        if (from < hi) dates[j] = wakingHours(between(from, hi));
+        else recurring = null;
+      }
       let nextDue = recurring ? addMonths(dates[j], recurring) : null;
       if (wantDueSoon) {
         nextDue = wakingHours(now() + between(6 * DAY, 20 * DAY));
