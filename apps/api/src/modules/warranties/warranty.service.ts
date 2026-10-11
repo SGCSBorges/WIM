@@ -20,12 +20,15 @@ import { AlertService } from "../alerts/alert.service";
 import { createHttpError } from "../../utils/http-error";
 
 export const WarrantyService = {
+  // Each row carries its article's name: a list of "Garantie légale 2 ans"
+  // rows is unreadable unless it says which item each one covers.
   list: (ownerUserId: number, page = 1, limit = 50) =>
     prisma.garantie.findMany({
       where: { ownerUserId },
       take: limit,
       skip: (page - 1) * limit,
       orderBy: { garantieId: "desc" },
+      include: { article: { select: { articleNom: true } } },
     }),
   get: (id: number, ownerUserId: number) =>
     prisma.garantie.findFirst({ where: { garantieId: id, ownerUserId } }),

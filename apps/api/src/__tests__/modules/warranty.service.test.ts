@@ -45,6 +45,20 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+describe("WarrantyService.list", () => {
+  it("names the article each warranty covers", async () => {
+    mockPrisma.garantie.findMany.mockResolvedValue([]);
+    await WarrantyService.list(1, 2, 25);
+    expect(mockPrisma.garantie.findMany).toHaveBeenCalledWith({
+      where: { ownerUserId: 1 },
+      take: 25,
+      skip: 25,
+      orderBy: { garantieId: "desc" },
+      include: { article: { select: { articleNom: true } } },
+    });
+  });
+});
+
 describe("WarrantyService.create", () => {
   const baseInput = {
     garantieArticleId: 5,

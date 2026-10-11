@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 
 vi.mock("../../services/api", () => ({
@@ -42,6 +42,37 @@ describe("<WarrantiesView />", () => {
     ]);
     renderView();
     expect(await screen.findByText("Laptop warranty")).toBeInTheDocument();
+  });
+
+  // Two "Garantie légale 2 ans" rows are indistinguishable unless each says
+  // which article it covers.
+  it("titles each warranty with the article it covers", async () => {
+    mockedGet.mockResolvedValueOnce([
+      {
+        garantieId: 4,
+        garantieNom: "Garantie légale 2 ans",
+        garantieDateAchat: "2025-03-02T00:00:00.000Z",
+        garantieDuration: 24,
+        garantieArticleId: 11,
+        article: { articleNom: "Lave-linge LG" },
+      },
+      {
+        garantieId: 5,
+        garantieNom: "Garantie légale 2 ans",
+        garantieDateAchat: "2025-02-01T00:00:00.000Z",
+        garantieDuration: 24,
+        garantieArticleId: 12,
+        article: { articleNom: "Aspirateur Dyson V15" },
+      },
+    ]);
+    renderView();
+    const rows = await screen.findAllByRole("listitem");
+    expect(
+      rows.map((li) => li.querySelector(".ui-title")?.textContent)
+    ).toEqual(["Lave-linge LG", "Aspirateur Dyson V15"]);
+    expect(
+      within(rows[0]).getByText("Garantie légale 2 ans")
+    ).toBeInTheDocument();
   });
 
   it("does not crash on a malformed purchase date", async () => {

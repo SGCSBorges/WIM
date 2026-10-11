@@ -501,6 +501,8 @@ export function buildOpenApiDocument() {
         get: {
           tags: ["warranties"],
           summary: "List the caller's warranties.",
+          description:
+            "Each warranty carries the name of the article it covers (`article.articleNom`, null when it is not linked to one).",
           security: [cookieAuth],
           responses: { "200": { description: "Paginated list" } },
         },
