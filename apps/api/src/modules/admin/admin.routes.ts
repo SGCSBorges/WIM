@@ -24,6 +24,7 @@ import {
   maintenanceQueue,
   listFailedJobs,
 } from "../../jobs/queues";
+import { queueOp } from "../../jobs/queue-guard";
 import { passwordSchema } from "../auth/auth.schemas";
 import { ShareService } from "../shares/share.service";
 import { AdminDbService, ImportPayloadSchema } from "./admin.db.service";
@@ -718,15 +719,18 @@ router.get(
   authGuard,
   requireRole("ADMIN"),
   asyncHandler(async (_req, res) => {
+    // queueOp: a down Redis would otherwise leave these pending forever.
     const [alertCounts, maintenanceCounts, repeatables] = await Promise.all([
-      alertQueue.getJobCounts().catch(() => null),
-      maintenanceQueue.getJobCounts().catch(() => null),
-      maintenanceQueue.getRepeatableJobs().catch(() => []),
+      queueOp("alert counts", () => alertQueue.getJobCounts()),
+      queueOp("maintenance counts", () => maintenanceQueue.getJobCounts()),
+      queueOp("repeatables", () => maintenanceQueue.getRepeatableJobs()),
     ]);
-    const auditPrune = repeatables.find((r) => r.id === "audit-prune-daily");
+    const auditPrune = (repeatables ?? []).find(
+      (r) => r.id === "audit-prune-daily"
+    );
     res.json({
-      alerts: alertCounts,
-      maintenance: maintenanceCounts,
+      alerts: alertCounts ?? null,
+      maintenance: maintenanceCounts ?? null,
       auditPruneNextRun: auditPrune?.next ?? null,
     });
   })

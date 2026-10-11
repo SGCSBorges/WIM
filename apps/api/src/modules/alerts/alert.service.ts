@@ -5,8 +5,10 @@
  *
  * Warranty reminders fire at J-30 / J-7 / J-1 before `garantieFin`. Custom
  * alerts can recur monthly (`recurrenceMonths`). Job IDs are deterministic
- * (`warranty:<garantieId>:<kind>` / `custom:<alerteId>`) so re-scheduling
- * the same reminder no-ops at the queue layer instead of duplicating.
+ * (`warranty-<garantieId>-<kind>-<yyyymmdd>` / `alert-<alerteId>`) so
+ * re-scheduling the same reminder no-ops at the queue layer instead of
+ * duplicating. They must not contain ":" — BullMQ rejects such custom ids
+ * ("Custom Id cannot contain :"), which failed every enqueue.
  *
  * The `markFailed` path records the error message + stack so the Admin
  * Jobs tab's "Recent failures" view can surface what went wrong.
@@ -18,6 +20,7 @@
 import { AlerteStatus, AlerteKind, Alerte } from "@prisma/client";
 import { prisma } from "../../libs/prisma";
 import { alertQueue } from "../../jobs/queues";
+import { queueOp } from "../../jobs/queue-guard";
 import { logger } from "../../config/logger";
 import { addMonths } from "../common/date";
 import { createHttpError } from "../../utils/http-error";
@@ -36,7 +39,7 @@ import {
 } from "./alert.types";
 
 // Generic per-alert job id used by CUSTOM alerts and any snoozed alert.
-const customJobId = (alerteId: number) => `alert:${alerteId}`;
+const customJobId = (alerteId: number) => `alert-${alerteId}`;
 
 function formatYYYYMMDD(d: Date) {
   const yyyy = d.getUTCFullYear();
@@ -50,7 +53,7 @@ function buildJobId(
   reminderKind: WarrantyReminderKind,
   executeAt: Date
 ) {
-  return `warranty:${garantieId}:${reminderKind}:${formatYYYYMMDD(executeAt)}`;
+  return `warranty-${garantieId}-${reminderKind}-${formatYYYYMMDD(executeAt)}`;
 }
 
 // Candidate reminder kinds for a stored alert row when removing its queue
@@ -61,6 +64,31 @@ function candidateKinds(reminderDays: number | null): WarrantyReminderKind[] {
   if (reminderDays != null) return [reminderKindForDays(reminderDays)];
   return DEFAULT_REMINDER_DAYS.map(reminderKindForDays);
 }
+
+// Queue calls go through queueOp so an unreachable Redis can't hang the
+// request; the Alerte row is the source of truth either way.
+type ReminderPayload = WarrantyReminderJobPayload | CustomAlertJobPayload;
+const addJob = (
+  payload: ReminderPayload,
+  opts: { jobId: string; delay: number }
+) =>
+  queueOp(`add ${opts.jobId}`, () =>
+    alertQueue.add("reminder", payload, {
+      ...opts,
+      attempts: 3,
+      // Long backoff because retries here cover server-side rate limits
+      // (push provider / email) rather than tight network blips.
+      backoff: { type: "exponential", delay: 30_000 },
+    })
+  );
+/** Remove a job if it exists; true when one was removed. */
+const removeJob = async (jobId: string) =>
+  (await queueOp(`remove ${jobId}`, async () => {
+    const job = await alertQueue.getJob(jobId);
+    if (!job) return false;
+    await job.remove();
+    return true;
+  })) === true;
 
 export const AlertService = {
   list: (
@@ -202,14 +230,7 @@ export const AlertService = {
         "[alerts] schedule"
       );
 
-      await alertQueue.add("reminder", payload, {
-        jobId,
-        delay,
-        attempts: 3,
-        // Long backoff because retries here cover server-side rate limits
-        // (push provider / email) rather than tight network blips.
-        backoff: { type: "exponential", delay: 30_000 },
-      });
+      await addJob(payload, { jobId, delay });
     }
   },
 
@@ -231,16 +252,12 @@ export const AlertService = {
       // legacy rows fall back to trying the three historical default kinds.
       for (const reminderKind of candidateKinds(a.reminderDays)) {
         const jobId = buildJobId(input.garantieId, reminderKind, a.alerteDate);
-        const job = await alertQueue.getJob(jobId);
-        if (job) {
-          await job.remove();
+        if (await removeJob(jobId))
           logger.info({ jobId }, "[alerts] cancelled job");
-        }
       }
       // Also drop the generic per-alert job in case this reminder was snoozed
-      // (snoozing re-keys it from the warranty id to `alert:<id>`).
-      const generic = await alertQueue.getJob(customJobId(a.alerteId));
-      if (generic) await generic.remove();
+      // (snoozing re-keys it from the warranty id to `alert-<id>`).
+      await removeJob(customJobId(a.alerteId));
     }
 
     // Only cancel SCHEDULED alerts — leave SENT/FAILED records intact for audit purposes.
@@ -273,21 +290,17 @@ export const AlertService = {
             reminderKind,
             a.alerteDate
           );
-          const job = await alertQueue.getJob(jobId);
-          if (job) {
-            await job.remove();
+          if (await removeJob(jobId))
             logger.info(
               { jobId },
               "[alerts] cancelled job for account deletion"
             );
-          }
         }
       }
       // Custom alerts — and snoozed warranty alerts, which get re-keyed to
-      // the generic id — live under `alert:<id>`; without this they sit in
+      // the generic id — live under `alert-<id>`; without this they sit in
       // Redis as stale delayed jobs until their fire time.
-      const generic = await alertQueue.getJob(customJobId(a.alerteId));
-      if (generic) await generic.remove();
+      await removeJob(customJobId(a.alerteId));
     }
     // Flip all remaining SCHEDULED rows to CANCELLED so a job that fires
     // after Redis removal (or after a Redis flush + replay) finds no live row.
@@ -328,12 +341,10 @@ export const AlertService = {
           reminderKind,
           alert.alerteDate
         );
-        const job = await alertQueue.getJob(jobId);
-        if (job) await job.remove();
+        await removeJob(jobId);
       }
     }
-    const generic = await alertQueue.getJob(customJobId(alert.alerteId));
-    if (generic) await generic.remove();
+    await removeJob(customJobId(alert.alerteId));
   },
 
   // Trash flow: CUSTOM alerts hang off the article directly (not the
@@ -349,10 +360,7 @@ export const AlertService = {
       },
       select: { alerteId: true },
     });
-    for (const a of alerts) {
-      const job = await alertQueue.getJob(customJobId(a.alerteId));
-      if (job) await job.remove();
-    }
+    for (const a of alerts) await removeJob(customJobId(a.alerteId));
     await prisma.alerte.updateMany({
       where: {
         ownerUserId,
@@ -397,11 +405,9 @@ export const AlertService = {
       alerteId,
       executeAt: when.toISOString(),
     };
-    await alertQueue.add("reminder", payload, {
+    await addJob(payload, {
       jobId: customJobId(alerteId),
       delay: Math.max(0, when.getTime() - Date.now()),
-      attempts: 3,
-      backoff: { type: "exponential", delay: 30_000 },
     });
   },
 

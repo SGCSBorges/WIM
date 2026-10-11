@@ -499,6 +499,8 @@ export function buildOpenApiDocument() {
         post: {
           tags: ["warranties"],
           summary: "Create a warranty (linked to an article).",
+          description:
+            "Schedules the J-30/J-7/J-1 reminders. As for alerts, queueing has a 2 s deadline, so an unreachable Redis never blocks the response.",
           security: [cookieAuth],
           responses: { "201": { description: "Created" } },
         },
@@ -572,6 +574,8 @@ export function buildOpenApiDocument() {
         post: {
           tags: ["alerts"],
           summary: "Create a one-shot or recurring custom alert.",
+          description:
+            "The reminder job is queued with a 2 s deadline: if Redis is unreachable the alert is still created (201) and its job is queued once Redis is back.",
           security: [cookieAuth],
           responses: { "201": { description: "Created" } },
         },

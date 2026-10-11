@@ -80,7 +80,12 @@ This is the spine of the product (see UML `02` activity and `04` sequence):
    (`User.warrantyReminderDays`, editable in Profile → Notifications),
    enqueued as BullMQ jobs on the `wim-alerts` queue (past dates are
    skipped). Each alert row pins its own offset (`Alerte.reminderDays`) so
-   cancellation can rebuild the exact job id.
+   cancellation can rebuild the exact job id
+   (`warranty-<garantieId>-<J30|J7|J1>-<yyyymmdd>`, or `alert-<alerteId>`
+   for custom and snoozed alerts; BullMQ rejects ids containing `:`). Queue
+   calls in a request have a 2 s deadline (`jobs/queue-guard.ts`): if Redis
+   is unreachable the request still completes with the alert row saved, and
+   the call is delivered once Redis is back.
 4. **The reminder processor delivers** when a job fires
    ([`jobs/processors/reminder.processor.ts`](../apps/api/src/jobs/processors/reminder.processor.ts)):
    load context → **push (awaited; throws on hard failure so BullMQ retries)**

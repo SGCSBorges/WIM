@@ -108,7 +108,7 @@ async function main() {
     const yyyy = t.date.getFullYear();
     const mm = String(t.date.getMonth() + 1).padStart(2, "0");
     const dd = String(t.date.getDate()).padStart(2, "0");
-    const jobId = `warranty:${existing.garantieId}:${t.kind}:${yyyy}${mm}${dd}`;
+    const jobId = `warranty-${existing.garantieId}-${t.kind}-${yyyy}${mm}${dd}`;
 
     const job = await alertQueue.getJob(jobId);
     console.log("Job", t.kind, jobId, job ? "FOUND" : "MISSING");

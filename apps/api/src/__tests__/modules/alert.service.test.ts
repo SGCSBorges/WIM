@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AlerteStatus } from "@prisma/client";
 
+// A short queue deadline so the "Redis is down" cases run quickly.
+vi.hoisted(() => {
+  process.env.QUEUE_OP_TIMEOUT_MS = "50";
+});
+
 vi.mock("../../libs/prisma", () => ({
   prisma: {
     alerte: {
@@ -12,6 +17,7 @@ vi.mock("../../libs/prisma", () => ({
       updateMany: vi.fn(),
       update: vi.fn(),
     },
+    user: { findUnique: vi.fn().mockResolvedValue(null) },
   },
 }));
 
@@ -38,6 +44,7 @@ vi.mock("../../config/logger", () => ({
 
 import { prisma } from "../../libs/prisma";
 import { AlertService } from "../../modules/alerts/alert.service";
+import { resetQueueGuard } from "../../jobs/queue-guard";
 
 const mockPrisma = prisma as unknown as {
   alerte: Record<string, ReturnType<typeof vi.fn>>;
@@ -46,6 +53,7 @@ const mockPrisma = prisma as unknown as {
 beforeEach(() => {
   vi.clearAllMocks();
   queueRef.add.mockResolvedValue(undefined);
+  resetQueueGuard();
 });
 
 // ---------------------------------------------------------------------------
@@ -130,9 +138,105 @@ describe("AlertService.createCustom", () => {
     expect(queueRef.add).toHaveBeenCalledWith(
       "reminder",
       expect.objectContaining({ type: "custom_alert", alerteId: 42 }),
-      expect.objectContaining({ jobId: "alert:42" })
+      expect.objectContaining({ jobId: "alert-42" })
     );
   });
+});
+
+describe("AlertService job ids", () => {
+  // BullMQ's own check (Job.validateOptions): a custom id may not be an
+  // integer, and may contain ":" only as exactly three parts. Ids that break
+  // it make every add() throw "Custom Id cannot contain :".
+  const bullmqAccepts = (id: string) =>
+    `${parseInt(id, 10)}` !== id &&
+    (!id.includes(":") || id.split(":").length === 3);
+
+  it("are ids BullMQ accepts, for warranty and custom reminders", async () => {
+    mockPrisma.alerte.createMany.mockResolvedValue({ count: 1 });
+    mockPrisma.alerte.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.alerte.findFirst.mockResolvedValue({ alerteId: 5 });
+    await AlertService.scheduleForWarranty({
+      ownerUserId: 1,
+      garantieId: 76,
+      garantieFin: new Date(Date.now() + 400 * 86_400_000),
+    });
+    mockPrisma.alerte.create.mockResolvedValue({
+      alerteId: 7,
+      ownerUserId: 1,
+      alerteDate: new Date(Date.now() + 86_400_000),
+    });
+    await AlertService.createCustom({
+      ownerUserId: 1,
+      alerteNom: "Vidange",
+      alerteDate: new Date(Date.now() + 86_400_000),
+    });
+
+    const ids = queueRef.add.mock.calls.map(
+      (c) => (c[2] as { jobId: string }).jobId
+    );
+    expect(ids).toHaveLength(4);
+    for (const id of ids) expect(bullmqAccepts(id), id).toBe(true);
+  });
+});
+
+describe("AlertService with Redis unreachable", () => {
+  // While Redis is down a BullMQ call never settles; requests that schedule
+  // or cancel reminders must still answer, with the row saved.
+  const never = () => new Promise<never>(() => {});
+
+  it("creates a custom alert without waiting on the queue", async () => {
+    const when = new Date(Date.now() + 86_400_000);
+    mockPrisma.alerte.create.mockResolvedValue({
+      alerteId: 7,
+      ownerUserId: 1,
+      alerteDate: when,
+    });
+    queueRef.add.mockImplementation(never);
+
+    const started = Date.now();
+    const created = await AlertService.createCustom({
+      ownerUserId: 1,
+      alerteNom: "Détartrage",
+      alerteDate: when,
+    });
+    expect(created.alerteId).toBe(7);
+    expect(Date.now() - started).toBeLessThan(1_000);
+    expect(queueRef.add).toHaveBeenCalledTimes(1);
+  }, 5_000);
+
+  it("schedules a warranty's reminders without waiting on each one", async () => {
+    mockPrisma.alerte.createMany.mockResolvedValue({ count: 1 });
+    mockPrisma.alerte.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.alerte.findFirst.mockImplementation(async () => ({
+      alerteId: Math.floor(Math.random() * 1000),
+    }));
+    queueRef.add.mockImplementation(never);
+
+    const started = Date.now();
+    await AlertService.scheduleForWarranty({
+      ownerUserId: 1,
+      garantieId: 3,
+      garantieFin: new Date(Date.now() + 400 * 86_400_000),
+    });
+    // Three reminders: the first waits out the deadline, the rest don't.
+    expect(queueRef.add).toHaveBeenCalledTimes(3);
+    expect(Date.now() - started).toBeLessThan(1_000);
+  }, 5_000);
+
+  it("cancels an alert without waiting on the queue", async () => {
+    const row = {
+      alerteId: 9,
+      alerteGarantieId: null,
+      alerteDate: new Date(),
+      kind: "CUSTOM",
+      status: AlerteStatus.CANCELLED,
+    };
+    mockPrisma.alerte.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.alerte.findUniqueOrThrow.mockResolvedValue(row);
+    queueRef.getJob.mockImplementation(never);
+
+    await expect(AlertService.cancel(9, 1)).resolves.toEqual(row);
+  }, 5_000);
 });
 
 describe("AlertService.snooze", () => {
@@ -188,7 +292,7 @@ describe("AlertService.snooze", () => {
     expect(queueRef.add).toHaveBeenCalledWith(
       "reminder",
       expect.objectContaining({ type: "custom_alert", alerteId: 9 }),
-      expect.objectContaining({ jobId: "alert:9" })
+      expect.objectContaining({ jobId: "alert-9" })
     );
   });
 });

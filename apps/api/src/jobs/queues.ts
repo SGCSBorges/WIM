@@ -14,10 +14,11 @@
  * truncated to keep the JSON bounded; Redis-unreachable returns an empty
  * list so the admin UI degrades to "Unavailable" instead of erroring.
  */
-import { Queue } from "bullmq";
+import { Queue, type Job } from "bullmq";
 
 import { createRedisConnection } from "./redis";
 import { AlertJobPayload } from "../modules/alerts/alert.types";
+import { queueOp } from "./queue-guard";
 
 // BullMQ queue names cannot contain ':'; we keep the logical name "wim:alerts"
 // as a namespace in logs/metrics, but use a BullMQ-valid queue name.
@@ -96,7 +97,11 @@ export async function listFailedJobs(limit = 50): Promise<FailedJobSummary[]> {
     queueName: string
   ): Promise<FailedJobSummary[]> => {
     try {
-      const jobs = await queue.getFailed(0, cap - 1);
+      const jobs: Job[] =
+        (await queueOp(
+          `getFailed ${queueName}`,
+          (): Promise<Job[]> => queue.getFailed(0, cap - 1)
+        )) ?? [];
       return jobs.map((j) => ({
         queue: queueName,
         id: j.id,
