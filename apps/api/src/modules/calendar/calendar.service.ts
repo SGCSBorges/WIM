@@ -7,11 +7,16 @@
  * excluded (every query joins on `article.deletedAt: null`). The
  * per-user token (`User.calendarToken`) is a 64-char random — long enough
  * to be unguessable, short enough to paste into a calendar app.
+ *
+ * Titles are written in the account's language (`email.i18n`, the server's
+ * dictionary), and a warranty is named after its article when it has one —
+ * "Lave-linge LG — fin de garantie" says more than the warranty's own name.
  */
 import crypto from "crypto";
 import { AlerteStatus } from "@prisma/client";
 import type { AgendaEvent } from "@wim/types";
 import { prisma } from "../../libs/prisma";
+import { emailTranslator } from "../email/email.i18n";
 
 // Escape per RFC 5545: backslash, semicolon, comma, and newlines. A lone
 // \r counts as a line break for permissive parsers, so it must be caught
@@ -139,9 +144,10 @@ export const CalendarService = {
   async feedForToken(token: string): Promise<string | null> {
     const user = await prisma.user.findUnique({
       where: { calendarToken: token },
-      select: { userId: true },
+      select: { userId: true, language: true },
     });
     if (!user) return null;
+    const t = emailTranslator(user.language);
 
     // Trashed-article warranties/alerts/claims must NOT appear on the feed —
     // exclude them via the joined article.deletedAt filter where the row
@@ -165,7 +171,12 @@ export const CalendarService = {
             garantieFin: inWindow,
             ...liveArticleScope,
           },
-          select: { garantieId: true, garantieNom: true, garantieFin: true },
+          select: {
+            garantieId: true,
+            garantieNom: true,
+            garantieFin: true,
+            article: { select: { articleNom: true } },
+          },
         }),
         // SCHEDULED captures both kinds (warranty J-30/J-7/J-1 reminders and
         // custom alerts the user created themselves).
@@ -242,7 +253,9 @@ export const CalendarService = {
       ...warranties.map((w) => ({
         uid: `warranty-${w.garantieId}@wim`,
         date: w.garantieFin,
-        summary: `${w.garantieNom} — warranty expires`,
+        summary: t("calendar.warrantyExpires", {
+          name: w.article?.articleNom ?? w.garantieNom,
+        }),
       })),
       ...alerts.map((a) => ({
         uid: `alert-${a.alerteId}@wim`,
@@ -255,7 +268,12 @@ export const CalendarService = {
               {
                 uid: `claim-${c.garantieId}-${c.claimStatus}@wim`,
                 date: c.claimUpdatedAt,
-                summary: `Warranty claim ${c.claimStatus}: ${c.garantieNom}`,
+                summary: t("calendar.claim", {
+                  status: t(
+                    `calendar.claim.${c.claimStatus as "OPEN" | "APPROVED" | "REJECTED" | "RESOLVED"}`
+                  ),
+                  name: c.garantieNom,
+                }),
               },
             ]
           : []
@@ -263,12 +281,15 @@ export const CalendarService = {
       ...loans.map((l) => ({
         uid: `loan-${l.loanId}@wim`,
         date: l.dueAt as Date,
-        summary: `${l.article.articleNom} — loan due back (${l.borrowerName})`,
+        summary: t("calendar.loanDue", {
+          name: l.article.articleNom,
+          borrower: l.borrowerName,
+        }),
       })),
       ...policies.map((p) => ({
         uid: `insurance-${p.policyId}@wim`,
         date: p.renewalAt as Date,
-        summary: `${p.provider} — policy renewal`,
+        summary: t("calendar.policyRenewal", { provider: p.provider }),
       })),
       // The latest-per-article reduction has to happen before the window
       // filter, not inside the query — see the note on the findMany above.
@@ -282,7 +303,7 @@ export const CalendarService = {
         .map((r) => ({
           uid: `service-${r.serviceId}@wim`,
           date: r.nextDueAt as Date,
-          summary: `${r.article.articleNom} — service due`,
+          summary: t("calendar.serviceDue", { name: r.article.articleNom }),
         })),
     ];
 
@@ -319,8 +340,12 @@ export const CalendarService = {
       OR: [{ article: null }, { article: { deletedAt: null } }],
     };
 
-    const [warranties, alerts, loans, policies, serviceRecords] =
+    const [owner, warranties, alerts, loans, policies, serviceRecords] =
       await Promise.all([
+        prisma.user.findUnique({
+          where: { userId },
+          select: { language: true },
+        }),
         prisma.garantie.findMany({
           where: {
             ownerUserId: userId,
@@ -331,6 +356,7 @@ export const CalendarService = {
             garantieNom: true,
             garantieFin: true,
             garantieArticleId: true,
+            article: { select: { articleNom: true } },
           },
         }),
         prisma.alerte.findMany({
@@ -384,11 +410,14 @@ export const CalendarService = {
     for (const r of serviceRecords)
       if (!latestService.has(r.articleId)) latestService.set(r.articleId, r);
 
+    const t = emailTranslator(owner?.language);
     const events: AgendaEvent[] = [
       ...warranties.map((w) => ({
         kind: "warranty" as const,
         date: w.garantieFin.toISOString(),
-        title: `${w.garantieNom} — warranty expires`,
+        title: t("calendar.warrantyExpires", {
+          name: w.article?.articleNom ?? w.garantieNom,
+        }),
         articleId: w.garantieArticleId,
       })),
       ...alerts.map((a) => ({
@@ -400,13 +429,16 @@ export const CalendarService = {
       ...loans.map((l) => ({
         kind: "loan" as const,
         date: (l.dueAt as Date).toISOString(),
-        title: `${l.article.articleNom} — loan due back (${l.borrowerName})`,
+        title: t("calendar.loanDue", {
+          name: l.article.articleNom,
+          borrower: l.borrowerName,
+        }),
         articleId: l.articleId,
       })),
       ...policies.map((p) => ({
         kind: "insurance" as const,
         date: (p.renewalAt as Date).toISOString(),
-        title: `${p.provider} — policy renewal`,
+        title: t("calendar.policyRenewal", { provider: p.provider }),
         articleId: null,
       })),
       ...[...latestService.values()]
@@ -414,7 +446,7 @@ export const CalendarService = {
         .map((r) => ({
           kind: "maintenance" as const,
           date: (r.nextDueAt as Date).toISOString(),
-          title: `${r.article.articleNom} — service due`,
+          title: t("calendar.serviceDue", { name: r.article.articleNom }),
           articleId: r.articleId,
         })),
     ];

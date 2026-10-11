@@ -75,6 +75,16 @@ const en = {
   "offerAccepted.subject": 'WIM: Offer accepted on "{name}"',
   "offerAccepted.body":
     'Your offer on "{name}" was accepted. Complete the transfer to your inventory.\n\nUse token: {token}\n\nThis transfer expires in 7 days.',
+  // Agenda and calendar-feed titles (calendar.service).
+  "calendar.warrantyExpires": "{name} — warranty expires",
+  "calendar.loanDue": "{name} — loan due back ({borrower})",
+  "calendar.policyRenewal": "{provider} — policy renewal",
+  "calendar.serviceDue": "{name} — service due",
+  "calendar.claim": "Warranty claim {status}: {name}",
+  "calendar.claim.OPEN": "opened",
+  "calendar.claim.APPROVED": "approved",
+  "calendar.claim.REJECTED": "rejected",
+  "calendar.claim.RESOLVED": "resolved",
 };
 
 export type EmailKey = keyof typeof en;
@@ -131,6 +141,16 @@ const fr: Dict = {
   "offerAccepted.subject": "WIM : offre acceptée pour « {name} »",
   "offerAccepted.body":
     "Votre offre pour « {name} » a été acceptée. Finalisez le transfert vers votre inventaire.\n\nJeton à utiliser : {token}\n\nCe transfert expire dans 7 jours.",
+  // Agenda and calendar-feed titles (calendar.service).
+  "calendar.warrantyExpires": "{name} — fin de garantie",
+  "calendar.loanDue": "{name} — retour de prêt ({borrower})",
+  "calendar.policyRenewal": "{provider} — renouvellement du contrat",
+  "calendar.serviceDue": "{name} — entretien à prévoir",
+  "calendar.claim": "Réclamation {status} : {name}",
+  "calendar.claim.OPEN": "ouverte",
+  "calendar.claim.APPROVED": "approuvée",
+  "calendar.claim.REJECTED": "refusée",
+  "calendar.claim.RESOLVED": "résolue",
 };
 
 const pt: Dict = {
@@ -183,6 +203,16 @@ const pt: Dict = {
   "offerAccepted.subject": 'WIM: oferta aceite por "{name}"',
   "offerAccepted.body":
     'A sua oferta por "{name}" foi aceite. Conclua a transferência para o seu inventário.\n\nUse o token: {token}\n\nEsta transferência expira em 7 dias.',
+  // Agenda and calendar-feed titles (calendar.service).
+  "calendar.warrantyExpires": "{name} — fim da garantia",
+  "calendar.loanDue": "{name} — devolução do empréstimo ({borrower})",
+  "calendar.policyRenewal": "{provider} — renovação da apólice",
+  "calendar.serviceDue": "{name} — manutenção prevista",
+  "calendar.claim": "Reclamação {status}: {name}",
+  "calendar.claim.OPEN": "aberta",
+  "calendar.claim.APPROVED": "aprovada",
+  "calendar.claim.REJECTED": "rejeitada",
+  "calendar.claim.RESOLVED": "resolvida",
 };
 
 const es: Dict = {
@@ -236,6 +266,16 @@ const es: Dict = {
   "offerAccepted.subject": 'WIM: oferta aceptada por "{name}"',
   "offerAccepted.body":
     'Su oferta por "{name}" fue aceptada. Complete la transferencia a su inventario.\n\nUse el token: {token}\n\nEsta transferencia vence en 7 días.',
+  // Agenda and calendar-feed titles (calendar.service).
+  "calendar.warrantyExpires": "{name} — fin de la garantía",
+  "calendar.loanDue": "{name} — devolución del préstamo ({borrower})",
+  "calendar.policyRenewal": "{provider} — renovación de la póliza",
+  "calendar.serviceDue": "{name} — mantenimiento previsto",
+  "calendar.claim": "Reclamación {status}: {name}",
+  "calendar.claim.OPEN": "abierta",
+  "calendar.claim.APPROVED": "aprobada",
+  "calendar.claim.REJECTED": "rechazada",
+  "calendar.claim.RESOLVED": "resuelta",
 };
 
 const nl: Dict = {
@@ -289,6 +329,16 @@ const nl: Dict = {
   "offerAccepted.subject": 'WIM: bod op "{name}" geaccepteerd',
   "offerAccepted.body":
     'Uw bod op "{name}" is geaccepteerd. Rond de overdracht naar uw inventaris af.\n\nGebruik token: {token}\n\nDeze overdracht verloopt over 7 dagen.',
+  // Agenda and calendar-feed titles (calendar.service).
+  "calendar.warrantyExpires": "{name} — garantie verloopt",
+  "calendar.loanDue": "{name} — uitlening terug ({borrower})",
+  "calendar.policyRenewal": "{provider} — polisverlenging",
+  "calendar.serviceDue": "{name} — onderhoud gepland",
+  "calendar.claim": "Garantieclaim {status}: {name}",
+  "calendar.claim.OPEN": "geopend",
+  "calendar.claim.APPROVED": "goedgekeurd",
+  "calendar.claim.REJECTED": "afgewezen",
+  "calendar.claim.RESOLVED": "afgehandeld",
 };
 
 export const EMAIL_STRINGS: Record<EmailLang, Dict> = { en, fr, pt, es, nl };

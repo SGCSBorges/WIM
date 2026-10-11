@@ -88,7 +88,7 @@ describe("CalendarService", () => {
   });
 
   it("feedForToken bounds every query to the +/-365d window", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7, language: "en" });
     for (const m of [
       mockPrisma.garantie.findMany,
       mockPrisma.alerte.findMany,
@@ -134,7 +134,7 @@ describe("CalendarService", () => {
   });
 
   it("feedForToken drops an out-of-window maintenance due date", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7, language: "en" });
     mockPrisma.garantie.findMany.mockResolvedValue([]);
     mockPrisma.alerte.findMany.mockResolvedValue([]);
     mockPrisma.loan.findMany.mockResolvedValue([]);
@@ -159,7 +159,7 @@ describe("CalendarService", () => {
   });
 
   it("feedForToken caps the feed, keeping the dates nearest today", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7, language: "en" });
     // 1200 alerts spread one day apart, starting 300 days in the past: the
     // 1000-event cap has to drop the far end, not the near one.
     mockPrisma.alerte.findMany.mockResolvedValue(
@@ -188,7 +188,7 @@ describe("CalendarService", () => {
   });
 
   it("feedForToken builds events from warranties + scheduled alerts", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7, language: "en" });
     mockPrisma.garantie.findMany.mockResolvedValue([
       {
         garantieId: 1,
@@ -216,7 +216,7 @@ describe("CalendarService", () => {
   });
 
   it("feedForToken emits a VEVENT per in-flight warranty claim", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7, language: "en" });
     mockPrisma.garantie.findMany
       // First call: warranties (expiry events).
       .mockResolvedValueOnce([])
@@ -235,12 +235,12 @@ describe("CalendarService", () => {
     mockPrisma.serviceRecord.findMany.mockResolvedValue([]);
     const ics = (await CalendarService.feedForToken("t")) as string;
     expect(ics).toContain("UID:claim-9-OPEN@wim");
-    expect(ics).toContain("SUMMARY:Warranty claim OPEN: Camera");
+    expect(ics).toContain("SUMMARY:Warranty claim opened: Camera");
     expect(ics).toContain("DTSTART;VALUE=DATE:20260512");
   });
 
   it("feedForToken also emits loan, insurance, and maintenance events", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7 });
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7, language: "en" });
     mockPrisma.garantie.findMany.mockResolvedValue([]);
     mockPrisma.alerte.findMany.mockResolvedValue([]);
     mockPrisma.loan.findMany.mockResolvedValue([
@@ -349,5 +349,76 @@ describe("CalendarService.agenda", () => {
 
     const events = await CalendarService.agenda(1);
     expect(events).toEqual([]);
+  });
+});
+
+// The agenda and the feed are read in the account's language. They used to
+// be English whatever the account ("Garantie légale 2 ans — warranty
+// expires" in a French agenda), and named a warranty by its own name, which
+// is the same "Garantie légale 2 ans" for half of them.
+describe("CalendarService titles", () => {
+  it("writes the agenda in French, naming warranties after their article", async () => {
+    const later = new Date(Date.now() + 20 * 86_400_000);
+    mockPrisma.user.findUnique.mockResolvedValue({ language: "fr" });
+    mockPrisma.garantie.findMany.mockResolvedValue([
+      {
+        garantieNom: "Garantie légale 2 ans",
+        garantieFin: later,
+        garantieArticleId: 1,
+        article: { articleNom: "Lave-linge LG" },
+      },
+    ]);
+    mockPrisma.alerte.findMany.mockResolvedValue([]);
+    mockPrisma.loan.findMany.mockResolvedValue([
+      {
+        borrowerName: "Ma belle-sœur",
+        dueAt: later,
+        articleId: 3,
+        article: { articleNom: "Rameur Concept2" },
+      },
+    ]);
+    mockPrisma.insurancePolicy.findMany.mockResolvedValue([
+      { provider: "MAIF", renewalAt: later },
+    ]);
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([
+      { articleId: 4, nextDueAt: later, article: { articleNom: "Scooter Vespa" } },
+    ]);
+
+    const titles = (await CalendarService.agenda(1)).map((e) => e.title).sort();
+    expect(titles).toEqual([
+      "Lave-linge LG — fin de garantie",
+      "MAIF — renouvellement du contrat",
+      "Rameur Concept2 — retour de prêt (Ma belle-sœur)",
+      "Scooter Vespa — entretien à prévoir",
+    ]);
+  });
+
+  it("writes the feed in French, claims included", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue({ userId: 7, language: "fr" });
+    mockPrisma.garantie.findMany
+      .mockResolvedValueOnce([
+        {
+          garantieId: 1,
+          garantieNom: "Garantie légale 2 ans",
+          garantieFin: new Date("2027-03-01T00:00:00Z"),
+          article: { articleNom: "Lave-linge LG" },
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          garantieId: 9,
+          garantieNom: "Garantie Canon",
+          claimStatus: "OPEN",
+          claimUpdatedAt: new Date("2026-05-12T00:00:00Z"),
+        },
+      ]);
+    mockPrisma.alerte.findMany.mockResolvedValue([]);
+    mockPrisma.loan.findMany.mockResolvedValue([]);
+    mockPrisma.insurancePolicy.findMany.mockResolvedValue([]);
+    mockPrisma.serviceRecord.findMany.mockResolvedValue([]);
+
+    const ics = (await CalendarService.feedForToken("t")) as string;
+    expect(ics).toContain("SUMMARY:Lave-linge LG — fin de garantie");
+    expect(ics).toContain("SUMMARY:Réclamation ouverte : Garantie Canon");
   });
 });

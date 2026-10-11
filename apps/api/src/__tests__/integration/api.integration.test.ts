@@ -1567,7 +1567,8 @@ suite("API integration (real Postgres)", () => {
         e.kind === "warranty" && e.articleId === article.articleId
     );
     expect(warranty).toBeTruthy();
-    expect(warranty.title).toContain("Manufacturer");
+    // Named after the article, in the account's language (French by default).
+    expect(warranty.title).toBe("Fridge — fin de garantie");
   });
 
   // The demo dataset is what a jury sees; it has to read as if people had
