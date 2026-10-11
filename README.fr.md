@@ -93,7 +93,9 @@ Définissez `VITE_API_BASE_URL=http://localhost:3000/api` dans
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Facturation Stripe (requis en production, avertissement seul en dev) |
 | `STRIPE_POWER_USER_PRICE_MONTHLY` / `_YEARLY` | ID de prix `price_…` de l'abonnement POWER_USER |
 | `STRIPE_WEBHOOK_MAX_AGE_SEC` | Rejette les événements webhook plus vieux que N secondes (défaut `300`) |
-| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Fenêtre et plafond global de limitation de débit (défauts `60000` / `100`) |
+| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | Fenêtre et plafond global par IP pour le trafic anonyme (défauts `60000` / `100`) ; les téléchargements de fichiers (`GET /uploads/*`) n'y comptent pas |
+| `USER_RATE_LIMIT_MAX` | Plafond global par compte connecté, d'où qu'il se connecte (défaut `600`) |
+| `UPLOADS_RATE_LIMIT_MAX` | Plafond des téléchargements de fichiers (`GET /uploads/*`) par minute et par compte (par IP hors connexion ; défaut `600`) |
 | `AUTH_RATE_LIMIT_MAX` / `CREATE_RATE_LIMIT_MAX` | Plafonds des routes d'authentification et de création (défauts `20` / `40`) |
 | `REDIS_HOST` / `REDIS_PORT` / `REDIS_TLS` | Repli quand `REDIS_URL` est absent (défaut `127.0.0.1:6379`) ; `REDIS_TLS=true` force TLS |
 | `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (+ `S3_REGION`) | Stockage objet des pièces jointes (R2 / S3 / MinIO) — fortement recommandé en production, sinon disque éphémère |
@@ -283,8 +285,9 @@ l'ITP bloque les `Set-Cookie` cross-site).
 - **CSRF** : le cookie étant `sameSite=none`, CORS seul ne suffit pas ;
   `csrfGuard` exige que l'`Origin`/`Referer` de toute requête mutante
   authentifiée par cookie figure dans la liste blanche.
-- Limitation de débit globale (100 req/min par défaut) + buckets plus stricts
-  pour l'auth, les opérations destructrices et la création de ressources.
+- Limitation de débit globale (par défaut 100 req/min par IP hors connexion,
+  600 req/min par compte connecté) + buckets plus stricts pour l'auth, les
+  opérations destructrices et la création de ressources.
 - Uploads plafonnés (10 Mo) et validés par magic-byte avant conservation.
 - Le webhook Stripe vérifie les signatures et utilise `ProcessedStripeEvent`
   pour l'idempotence.

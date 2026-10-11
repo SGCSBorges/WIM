@@ -126,6 +126,7 @@ export function createApp() {
   const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
   app.get(
     "/uploads/:storedName",
+    security.uploadsRateLimiter,
     authGuard,
     // Errors go to the error handler: an unhandled rejection here would take
     // the whole process down.

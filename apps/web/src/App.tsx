@@ -62,6 +62,7 @@ import OnboardingChecklist from "./components/onboarding/OnboardingChecklist";
 import RecentlyViewed from "./components/common/RecentlyViewed";
 import { Button, Card } from "./components/ui";
 import { isStripeUrl } from "./utils/stripeUrl";
+import { resolveSession } from "./utils/session";
 import { NAV_ITEMS, type NavKey } from "./lib/navItems";
 import { clearApiCache } from "./services/offlineCache";
 import UpgradeTeaser from "./components/common/UpgradeTeaser";
@@ -423,9 +424,12 @@ export default function App() {
     const url = new URL(window.location.href);
     const stripeResult = url.searchParams.get("stripe");
 
-    authAPI
-      .getMe()
+    resolveSession(() => authAPI.getMe())
       .then((user) => {
+        if (!user) {
+          setAuthStatus("unauthed");
+          return;
+        }
         setRole(user.role);
         setAuthStatus("authed");
         applyServerPrefs(user);

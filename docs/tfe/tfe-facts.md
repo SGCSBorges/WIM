@@ -234,14 +234,19 @@ Run **#609**, workflow `ci`, commit `de3ca09`, completed
   `grep -c "^model "` → **36**; `grep -c "^enum "` → **16**.
 - Rate limits (`apps/api/src/config/security.ts`; numeric envs validated
   at boot, invalid values fall back to defaults):
-  - Global: **100 req / 60 000 ms per IP** (defaults of `RATE_LIMIT_MAX`
-    / `RATE_LIMIT_WINDOW_MS`), lines 89–95.
+  - Global: **100 req / 60 000 ms per IP** for anonymous traffic
+    (defaults of `RATE_LIMIT_MAX` / `RATE_LIMIT_WINDOW_MS`); a signed-in
+    account gets its own bucket of **600 / 60 000 ms** (`USER_RATE_LIMIT_MAX`),
+    keyed on a token whose signature verifies; file downloads
+    (`GET /uploads/*`) are skipped, lines 137–148.
+  - File downloads: **600 / min** (`UPLOADS_RATE_LIMIT_MAX`), keyed like
+    the destructive bucket (`userOrIpKey`), lines 152–159.
   - Auth: **20 FAILED attempts / 15 min** (`AUTH_RATE_LIMIT_MAX`,
-    `skipSuccessfulRequests: true`), lines 102–111.
-  - Destructive ops: **10 / hour**, keyed on hashed auth token with IP
-    fallback (`userOrIpKey`), lines 117–126.
+    `skipSuccessfulRequests: true`), lines 166–175.
+  - Destructive ops: **10 / hour**, keyed on the verified account with IP
+    fallback (`userOrIpKey`), lines 181–190.
   - Resource creation: **40 / 5 min** (`CREATE_RATE_LIMIT_MAX`),
-    lines 130–135.
+    lines 194–203.
 - Upload size limit: **10 MB** —
   `apps/api/src/modules/attachments/attachment.routes.ts:74`
   (`limits: { fileSize: 10 * 1024 * 1024 }`), plus magic-byte signature
@@ -297,7 +302,7 @@ Run **#609**, workflow `ci`, commit `de3ca09`, completed
 | Claim | Verdict | Evidence |
 |---|---|---|
 | "36 models, 16 enums" | **CONFIRMED** | `grep -c "^model "` = 36, `grep -c "^enum "` = 16 on `apps/api/prisma/schema.prisma` |
-| "100 req/min global rate limit" | **CONFIRMED, with nuance** | It is the *default* (`RATE_LIMIT_MAX` env-overridable), per IP, window 60 000 ms — `apps/api/src/config/security.ts:89-95`. Three tighter buckets coexist (auth 20 failed/15 min; destructive 10/h; create 40/5 min) — say "100 req/min per IP by default" |
+| "100 req/min global rate limit" | **CONFIRMED, with nuance** | It is the *default* (`RATE_LIMIT_MAX` env-overridable), per IP, window 60 000 ms — `apps/api/src/config/security.ts:137-148`. It applies to anonymous traffic; a signed-in account has its own 600/min bucket. Three tighter buckets coexist (auth 20 failed/15 min; destructive 10/h; create 40/5 min), and file downloads have their own (600/min) — say "100 req/min per IP for anonymous traffic by default" |
 | "10 MB upload cap" | **CONFIRMED** | `apps/api/src/modules/attachments/attachment.routes.ts:74` |
 | "5 UI languages" | **CONFIRMED** | en/fr/pt/es/nl in `apps/web/src/i18n/translations.ts` |
 | "TOTP backup codes stored hashed" | **CONFIRMED** | bcrypt cost 10, single-use — `apps/api/src/modules/auth/totp.service.ts:62` (`codes.map((c) => bcrypt.hash(c, 10))`) |

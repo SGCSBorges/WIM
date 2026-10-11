@@ -1,15 +1,17 @@
 /**
  * Centralised security middleware. Helmet defaults; CORS reading
  * `CORS_ORIGIN` (comma-separated whitelist, trailing slashes stripped);
- * four rate limiters: the global per-IP limiter (applied at app level), a
+ * five rate limiters: the global limiter (applied at app level; per IP for
+ * anonymous traffic, per account once signed in), a
  * tighter authRateLimiter mounted under /api/auth, a destructiveRateLimiter
- * for bulk operations + DB import/export, and a createRateLimiter for
- * resource creation (tags/locations) to prevent DB-bloat spam.
+ * for bulk operations + DB import/export, a createRateLimiter for
+ * resource creation (tags/locations) to prevent DB-bloat spam, and an
+ * uploadsRateLimiter for file downloads, which the global one skips.
  */
 import helmet from "helmet";
 import cors from "cors";
-import { createHash } from "crypto";
 import type { Request } from "express";
+import jwt from "jsonwebtoken";
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 
 // Read a numeric env var, falling back to `fallback` when it's unset OR set to
@@ -44,25 +46,67 @@ const allowedOrigins =
 // accept anything.
 export const csrfAllowedOrigins = allowedOrigins;
 
-// Per-user (well, per-session-token) rate-limit key with an IP fallback.
-// Keying on the hashed auth credential means one abusive account can't hide
-// behind rotating IPs, and several legit users behind one CGNAT IP don't
-// share a bucket. Reads the raw Cookie/Authorization headers directly so it
-// works regardless of middleware order; anonymous requests fall back to the
-// IPv6-safe ipKeyGenerator. Applied to the destructive + create limiters —
-// the global limiter stays per-IP (it runs pre-cookie and covers anonymous
-// traffic), and the auth limiter is pre-auth by definition.
-function userOrIpKey(req: Request): string {
+// The raw session credential: the `wim_token` cookie or a Bearer header.
+// Read from the headers directly so it works regardless of middleware order.
+function authToken(req: Request): string | null {
   const cookie = req.headers.cookie ?? "";
   const m = /(?:^|;\s*)wim_token=([^;]+)/.exec(cookie);
   const bearer = req.headers.authorization?.startsWith("Bearer ")
     ? req.headers.authorization.slice(7)
     : null;
-  const token = m?.[1] ?? bearer;
-  if (token) {
-    return `tk:${createHash("sha256").update(token).digest("hex").slice(0, 32)}`;
+  return m?.[1] ?? bearer;
+}
+
+// The account behind a request, read from a session token whose signature
+// checks out (as authGuard checks it: HS256, and no `kind`, which marks the
+// 2FA/passkey challenge tokens). Revocation stays authGuard's job; what
+// matters here is that a forged or random cookie can't buy a fresh bucket,
+// so it counts as anonymous. Memoised: the limiter asks for the key and the
+// cap separately.
+const sessionUsers = new WeakMap<Request, string | null>();
+function sessionUserId(req: Request): string | null {
+  const known = sessionUsers.get(req);
+  if (known !== undefined) return known;
+  let id: string | null = null;
+  const token = authToken(req);
+  const secret = process.env.JWT_SECRET;
+  if (token && secret) {
+    try {
+      const p = jwt.verify(token, secret, { algorithms: ["HS256"] }) as {
+        sub?: unknown;
+        kind?: unknown;
+      };
+      if (!p.kind && (typeof p.sub === "number" || typeof p.sub === "string"))
+        id = String(p.sub);
+    } catch {
+      // Not a valid session: anonymous.
+    }
   }
-  return ipKeyGenerator(req.ip ?? "");
+  sessionUsers.set(req, id);
+  return id;
+}
+
+// Per-user rate-limit key with an IP fallback. Keying on the signed-in
+// account means one abusive account can't hide behind rotating IPs, and
+// several legit users behind one CGNAT IP don't share a bucket. Anything
+// else falls back to the IPv6-safe ipKeyGenerator — including a token that
+// doesn't verify: keyed by the raw credential, a caller sending a random
+// cookie each time got a fresh bucket on every request, and walked past
+// the per-IP caps on the anonymous routes these limiters guard (register,
+// forgot-password, the demo seed, the found-item report). Used by the
+// global, destructive, create and uploads limiters; the auth limiter is
+// pre-auth by definition.
+function userOrIpKey(req: Request): string {
+  const user = sessionUserId(req);
+  return user === null ? ipKeyGenerator(req.ip ?? "") : `user:${user}`;
+}
+
+// A page of thumbnails (the attachments grid, the articles list) is dozens of
+// file requests at once. Counted against the global 100/min, two such pages
+// used up the bucket and the next `GET /api/auth/me` got a 429, which the
+// SPA read as "logged out". File downloads get their own bucket instead.
+function isFileDownload(req: Request): boolean {
+  return req.method === "GET" && req.path.startsWith("/uploads/");
 }
 
 export const security = {
@@ -86,12 +130,32 @@ export const security = {
     origin: allowedOrigins,
     credentials: true,
   }),
+  // Anonymous traffic is capped per IP. A signed-in user gets a bucket of
+  // their own, sized for real use: reloading a page costs up to a dozen API
+  // calls, so a quick tour of the app passed 100 in a minute, and everyone
+  // on the same Wi-Fi (a jury, a classroom) shared that one IP bucket.
   rateLimiter: rateLimit({
     windowMs: numEnv("RATE_LIMIT_WINDOW_MS", 60000),
-    max: numEnv("RATE_LIMIT_MAX", 100),
+    max: (req: Request) =>
+      sessionUserId(req) === null
+        ? numEnv("RATE_LIMIT_MAX", 100)
+        : numEnv("USER_RATE_LIMIT_MAX", 600),
+    keyGenerator: userOrIpKey,
+    skip: isFileDownload,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: "Too many requests, please try again later." },
+  }),
+  // File downloads (GET /uploads/*), keyed per session like the create and
+  // destructive buckets: generous enough for image-heavy pages, still a cap
+  // on a script pulling files in a loop.
+  uploadsRateLimiter: rateLimit({
+    windowMs: 60 * 1000,
+    max: numEnv("UPLOADS_RATE_LIMIT_MAX", 600),
+    keyGenerator: userOrIpKey,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Too many file requests, please try again shortly." },
   }),
   // Tighter limit for auth endpoints to slow brute-force attacks. Only
   // FAILED requests count: this limiter covers the whole /api/auth router,

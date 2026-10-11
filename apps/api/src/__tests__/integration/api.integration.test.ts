@@ -44,6 +44,7 @@ suite("API integration (real Postgres)", () => {
     // the global limiter (100/min default), which the larger suite would now
     // cross in a one-minute window of fast tests.
     process.env.RATE_LIMIT_MAX = "5000";
+    process.env.USER_RATE_LIMIT_MAX = "5000";
     process.env.AUTH_RATE_LIMIT_MAX = "1000";
     // Same reasoning for the per-resource creation bucket — cumulative
     // location/article creates across tests would otherwise hit the 40/5min cap.

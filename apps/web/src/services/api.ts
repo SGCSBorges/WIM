@@ -399,7 +399,12 @@ export const authAPI = {
     currency?: string | null;
   }> {
     const response = await fetchWithTimeout(`${API_BASE_URL}/auth/me`);
-    if (!response.ok) throw new Error("Not authenticated");
+    // Carry the status: resolveSession retries a 429 or a gateway error
+    // instead of treating it as signed out.
+    if (!response.ok)
+      throw Object.assign(new Error("Not authenticated"), {
+        status: response.status,
+      });
     const user = await response.json();
     _cachedRole = user?.role ?? null;
     return user;

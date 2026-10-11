@@ -87,7 +87,9 @@ named feature is broken until the variable is set.
 | `STRIPE_POWER_USER_PRICE_YEARLY`  | `price_…` for yearly POWER_USER subscription |
 | `STRIPE_WEBHOOK_MAX_AGE_SEC` | Drop webhook events older than this (default `300`) — replay guard |
 | `RATE_LIMIT_WINDOW_MS` | Rate-limit window (default `60000`) |
-| `RATE_LIMIT_MAX` | Max requests per window, global bucket (default `100`) |
+| `RATE_LIMIT_MAX` | Max requests per window from one IP, anonymous traffic (default `100`); file downloads (`GET /uploads/*`) don't count |
+| `USER_RATE_LIMIT_MAX` | Max requests per window for one signed-in account, wherever it connects from (default `600`) |
+| `UPLOADS_RATE_LIMIT_MAX` | Max file downloads (`GET /uploads/*`) per minute per account, or per IP when signed out (default `600`) |
 | `AUTH_RATE_LIMIT_MAX` | Max auth attempts per window (default `20`) |
 | `CREATE_RATE_LIMIT_MAX` | Max resource-creation requests per window (default `40`) |
 | `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` (+ optional `S3_REGION`, default `auto`) | Object storage for uploads (Cloudflare R2 / S3 / MinIO). **Strongly recommended in production** — without it files live on the ephemeral disk and are lost on every deploy. The API keeps serving bytes itself through the ACL'd `/uploads/*` route (never presigned URLs). |
@@ -112,7 +114,9 @@ Script-only knobs (not read by the server): `SEED`, `SEED_DEMO_RESET`,
 | `STRIPE_POWER_USER_PRICE_MONTHLY` | `price_…` for monthly POWER_USER subscription |
 | `STRIPE_POWER_USER_PRICE_YEARLY`  | `price_…` for yearly POWER_USER subscription |
 | `RATE_LIMIT_WINDOW_MS` | Rate-limit window (default `60000`) |
-| `RATE_LIMIT_MAX` | Max requests per window (default `100`) |
+| `RATE_LIMIT_MAX` | Max anonymous requests per window per IP (default `100`) |
+| `USER_RATE_LIMIT_MAX` | Max requests per window per signed-in account (default `600`) |
+| `UPLOADS_RATE_LIMIT_MAX` | Max file downloads per minute per account (default `600`) |
 
 ---
 
@@ -645,7 +649,7 @@ The web service is provisioned from `render.yaml` at the repo root (SPA rewrite 
 - CORS is enforced via `CORS_ORIGIN`; production rejects all cross-origin requests if it's unset. In non-production environments (dev/test) an unset `CORS_ORIGIN` falls back to allow-all for convenience — so **production must set it explicitly**.
 - **CSRF**: because the auth cookie is `sameSite=none` in production, CORS alone isn't a CSRF defence (it gates the response, not the request). `csrfGuard` additionally requires the `Origin` (or `Referer` fallback) of every cookie-authenticated mutating request to be in the same allowlist. Bearer-token / cookie-less requests are exempt — an attacker page can't forge an `Authorization` header.
 - `JWT_SECRET` is required at boot; the API exits otherwise.
-- Rate limiting is applied globally (100 req/min by default) via `RATE_LIMIT_*`, with tighter buckets for auth, destructive, and resource-creation routes (see `config/security.ts`).
+- Rate limiting is applied globally (by default 100 req/min per IP when signed out, 600 req/min per signed-in account) via `RATE_LIMIT_*` and `USER_RATE_LIMIT_MAX`, with tighter buckets for auth, destructive, and resource-creation routes (see `config/security.ts`).
 - File uploads are size-capped (10 MB) and magic-byte validated before being kept on disk.
 - The Stripe webhook verifies signatures and uses a `ProcessedStripeEvent` table for idempotency.
 - **Dependency pins**: the root `package.json` `overrides` block forces transitive dependencies to patched versions (e.g. `qs` to `6.16.0`, `ip-address` to `^10.7.3`, `proxy-addr` to `2.0.8` — the last because Express 4.22.3 is the final 4.x release and still ships the vulnerable 2.0.7). `npm audit --omit=dev` is expected to report **0 vulnerabilities**; if it doesn't, add or bump an override rather than disabling the CI gate — or, where the patch only exists in a new major of the intermediate package, bump that package instead (see `docs/conventions.md`).
