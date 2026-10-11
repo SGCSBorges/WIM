@@ -108,3 +108,44 @@ export const ArticleUpdateSchema = ArticleCreateSchema.partial().extend({
 
 export type ArticleCreateInput = z.infer<typeof ArticleCreateSchema>;
 export type ArticleUpdateInput = z.infer<typeof ArticleUpdateSchema>;
+
+// Query schema for the list/search endpoint (GET /articles, and the CSV
+// export's filters). All filters optional. Exported so the demo seed's saved
+// views can be checked against it.
+export const ArticleListQuerySchema = z.object({
+  locationId: z.coerce.number().int().positive().optional(),
+  tag: z.coerce.number().int().positive().optional(),
+  q: z.string().trim().max(200).optional(),
+  warrantyStatus: z
+    .enum(["valid", "expiringSoon", "expired", "none"])
+    .optional(),
+  status: ArticleStatusSchema.optional(),
+  category: ArticleCategorySchema.optional(),
+  condition: ArticleConditionSchema.optional(),
+  // Free-text grouping label (exact match).
+  bundle: z.string().trim().max(80).optional(),
+  // Physical inventory check: "needed" = never verified or >12 months ago.
+  verification: z.enum(["needed", "verified"]).optional(),
+  // Restrict to owner-pinned favorites (only "1"/"true" enables it).
+  favorite: z.enum(["1", "true"]).optional(),
+  priceMin: z.coerce.number().nonnegative().optional(),
+  priceMax: z.coerce.number().nonnegative().optional(),
+  // Inclusive createdAt date range. Coerce from YYYY-MM-DD strings the web
+  // <input type="date"> emits — z.coerce.date() handles both ISO and date-only.
+  createdFrom: z.coerce.date().optional(),
+  createdTo: z.coerce.date().optional(),
+  // Sort dimension + direction. The default (articleId desc) matches
+  // existing behaviour so callers that don't opt in see no change.
+  sort: z
+    .enum([
+      "articleId",
+      "articleNom",
+      "purchasePrice",
+      "createdAt",
+      "warrantyEnd",
+    ])
+    .optional(),
+  dir: z.enum(["asc", "desc"]).optional(),
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(200).optional(),
+});

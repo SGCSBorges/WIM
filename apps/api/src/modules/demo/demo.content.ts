@@ -1828,7 +1828,7 @@ export const SAVED_VIEWS: { name: L<string>; query: string }[] = [
   },
   {
     name: { fr: "Objets de valeur", en: "Valuables" },
-    query: "priceMin=1000&sort=price&dir=desc",
+    query: "priceMin=1000&sort=purchasePrice&dir=desc",
   },
   { name: { fr: "High-tech", en: "Tech" }, query: "category=ELECTRONICS" },
   { name: { fr: "Atelier", en: "Workshop" }, query: "category=TOOL" },

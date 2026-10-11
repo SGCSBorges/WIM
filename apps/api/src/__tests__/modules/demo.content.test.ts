@@ -7,6 +7,7 @@
 import { describe, it, expect } from "vitest";
 import { CATALOG } from "../../modules/demo/demo.catalog";
 import * as C from "../../modules/demo/demo.content";
+import { ArticleListQuerySchema } from "../../modules/articles/article.schemas";
 
 describe("owner names", () => {
   it("elide 'de' before a vowel or a mute h, not before a consonant or Y", () => {
@@ -70,6 +71,21 @@ describe("agreement of French notes", () => {
       const said = C.agree(line, form);
       expect(said.replace("{n}", ""), line).not.toMatch(/[{}]/);
       expect(said, line).not.toMatch(MASCULINE);
+    }
+  });
+});
+
+describe("saved views", () => {
+  // "Objets de valeur" stored sort=price; the API knows purchasePrice, so
+  // the showcase's default view opened the Articles page on a 400 and an
+  // empty list.
+  it("only use filters and sorts the articles list accepts", () => {
+    for (const view of C.SAVED_VIEWS) {
+      const query = Object.fromEntries(new URLSearchParams(view.query));
+      expect(
+        ArticleListQuerySchema.safeParse(query).success,
+        view.query
+      ).toBe(true);
     }
   });
 });
