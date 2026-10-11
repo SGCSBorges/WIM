@@ -101,7 +101,12 @@ export type ArticleListFilters = {
   priceMax?: number;
   createdFrom?: Date;
   createdTo?: Date;
-  sort?: "articleId" | "articleNom" | "purchasePrice" | "createdAt";
+  sort?:
+    | "articleId"
+    | "articleNom"
+    | "purchasePrice"
+    | "createdAt"
+    | "warrantyEnd";
   dir?: "asc" | "desc";
   page?: number;
   limit?: number;
@@ -188,19 +193,28 @@ function buildArticleWhere(
   return where;
 }
 
+// Default ordering keeps existing behaviour (newest first). Sorting by a
+// nullable column (purchasePrice) puts nulls at the end of the result;
+// warrantyEnd sorts by the linked warranty's end date, which is how the
+// dashboard lists the warranties expiring soonest or most recently expired.
+function buildArticleOrderBy(
+  f: ArticleListFilters
+): Prisma.ArticleOrderByWithRelationInput {
+  const sortField = f.sort ?? "articleId";
+  const sortDir = f.dir ?? "desc";
+  if (sortField === "purchasePrice")
+    return { purchasePrice: { sort: sortDir, nulls: "last" } };
+  if (sortField === "warrantyEnd")
+    return { garantie: { garantieFin: sortDir } };
+  return { [sortField]: sortDir };
+}
+
 export const ArticleService = {
   list: async (ownerUserId: number, filters: ArticleListFilters = {}) => {
     const page = filters.page && filters.page > 0 ? filters.page : 1;
     const limit = filters.limit && filters.limit > 0 ? filters.limit : 50;
     const where = buildArticleWhere(ownerUserId, filters);
-    // Default ordering keeps existing behaviour (newest first). Sorting by a
-    // nullable column (purchasePrice) puts nulls at the end of the result.
-    const sortField = filters.sort ?? "articleId";
-    const sortDir = filters.dir ?? "desc";
-    const orderBy: Prisma.ArticleOrderByWithRelationInput =
-      sortField === "purchasePrice"
-        ? { purchasePrice: { sort: sortDir, nulls: "last" } }
-        : { [sortField]: sortDir };
+    const orderBy = buildArticleOrderBy(filters);
     const [items, total] = await prisma.$transaction([
       prisma.article.findMany({
         where,
@@ -220,12 +234,7 @@ export const ArticleService = {
   listAll: async (ownerUserId: number, filters: ArticleListFilters = {}) => {
     const MAX_EXPORT_ROWS = 10_000;
     const where = buildArticleWhere(ownerUserId, filters);
-    const sortField = filters.sort ?? "articleId";
-    const sortDir = filters.dir ?? "desc";
-    const orderBy: Prisma.ArticleOrderByWithRelationInput =
-      sortField === "purchasePrice"
-        ? { purchasePrice: { sort: sortDir, nulls: "last" } }
-        : { [sortField]: sortDir };
+    const orderBy = buildArticleOrderBy(filters);
     return prisma.article.findMany({
       where,
       take: MAX_EXPORT_ROWS,

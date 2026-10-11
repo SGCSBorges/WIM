@@ -294,6 +294,16 @@ describe("ArticleService.list — search", () => {
     });
   });
 
+  it("sorts by the linked warranty's end date when sort=warrantyEnd", async () => {
+    await ArticleService.list(7, {
+      warrantyStatus: "expired",
+      sort: "warrantyEnd",
+      dir: "desc",
+    });
+    const arg = mockPrisma.article.findMany.mock.calls[0][0];
+    expect(arg.orderBy).toEqual({ garantie: { garantieFin: "desc" } });
+  });
+
   it("translates createdFrom/createdTo to a createdAt range", async () => {
     const from = new Date("2026-01-01");
     const to = new Date("2026-02-01");

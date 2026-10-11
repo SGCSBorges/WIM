@@ -104,7 +104,13 @@ const ArticleListQuerySchema = z.object({
   // Sort dimension + direction. The default (articleId desc) matches
   // existing behaviour so callers that don't opt in see no change.
   sort: z
-    .enum(["articleId", "articleNom", "purchasePrice", "createdAt"])
+    .enum([
+      "articleId",
+      "articleNom",
+      "purchasePrice",
+      "createdAt",
+      "warrantyEnd",
+    ])
     .optional(),
   dir: z.enum(["asc", "desc"]).optional(),
   page: z.coerce.number().int().positive().optional(),

@@ -1,9 +1,14 @@
 /**
  * Actionable "Needs attention" panel above the Dashboard charts. Pulls the
- * caller's expired + expiring-soon articles via the existing articles list
- * endpoint (small limit, warrantyStatus filter), and renders each row with a
- * link to the article + a quick-snooze for any scheduled warranty alert
- * already linked to it.
+ * caller's expiring-soon + expired articles via the existing articles list
+ * endpoint (small limit, warrantyStatus filter, sorted by warranty end), and
+ * renders each row with a link to the article + a quick-snooze for any
+ * scheduled warranty alert already linked to it.
+ *
+ * Order: warranties about to end first (soonest first: there is still time
+ * to claim), then the most recently expired. A warranty that ended years ago
+ * is history, not something to act on, so it only shows once nothing more
+ * recent is left.
  *
  * Why this and not the dashboard time-series widget? Charts inform; this
  * panel acts — it's the single most important thing on the home screen for
@@ -57,20 +62,30 @@ export default function NeedsAttention() {
     let cancelled = false;
     (async () => {
       try {
-        const [expired, soon] = await Promise.all([
-          articlesAPI.getAll({ warrantyStatus: "expired", limit: 8 }),
-          articlesAPI.getAll({ warrantyStatus: "expiringSoon", limit: 8 }),
+        const [soon, expired] = await Promise.all([
+          articlesAPI.getAll({
+            warrantyStatus: "expiringSoon",
+            sort: "warrantyEnd",
+            dir: "asc",
+            limit: VISIBLE_LIMIT,
+          }),
+          articlesAPI.getAll({
+            warrantyStatus: "expired",
+            sort: "warrantyEnd",
+            dir: "desc",
+            limit: VISIBLE_LIMIT,
+          }),
         ]);
         if (cancelled) return;
         const merged: Row[] = [
-          ...expired.items.map((a) => ({
-            article: a,
-            tone: "danger" as const,
-            endDate: endDate(a),
-          })),
           ...soon.items.map((a) => ({
             article: a,
             tone: "warning" as const,
+            endDate: endDate(a),
+          })),
+          ...expired.items.map((a) => ({
+            article: a,
+            tone: "danger" as const,
             endDate: endDate(a),
           })),
         ];

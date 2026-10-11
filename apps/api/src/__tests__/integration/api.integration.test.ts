@@ -211,6 +211,46 @@ suite("API integration (real Postgres)", () => {
     ).toEqual(["Zeta", "Mu", "Alpha"]);
   });
 
+  it("sorts articles by their warranty's end date when sort=warrantyEnd", async () => {
+    const agent = await register("erin@example.com");
+    const me = await agent.get("/api/auth/me");
+    const ownerUserId = me.body.userId as number;
+    const DAY = 86400_000;
+    // Created in an order unrelated to the end dates, so articleId order
+    // cannot pass for warranty order.
+    for (const [nom, days] of [
+      ["Old", -400],
+      ["Recent", -5],
+      ["Soon", 10],
+      ["Middle", -60],
+    ] as const) {
+      const article = await prisma.article.create({
+        data: { ownerUserId, articleNom: nom, articleModele: "X" },
+      });
+      await prisma.garantie.create({
+        data: {
+          ownerUserId,
+          garantieArticleId: article.articleId,
+          garantieNom: `${nom} 2yr`,
+          garantieDateAchat: new Date(Date.now() - 700 * DAY),
+          garantieDuration: 24,
+          garantieFin: new Date(Date.now() + days * DAY),
+          garantieIsValide: days > 0,
+        },
+      });
+    }
+    const names = (res: { body: { items: { articleNom: string }[] } }) =>
+      res.body.items.map((a) => a.articleNom);
+
+    const expired = await agent.get(
+      "/api/articles?warrantyStatus=expired&sort=warrantyEnd&dir=desc"
+    );
+    expect(expired.status).toBe(200);
+    expect(names(expired)).toEqual(["Recent", "Middle", "Old"]);
+    const all = await agent.get("/api/articles?sort=warrantyEnd&dir=asc");
+    expect(names(all)).toEqual(["Old", "Middle", "Recent", "Soon"]);
+  });
+
   it("rejects unauthenticated access to a protected route", async () => {
     const res = await request(app).get("/api/articles");
     expect(res.status).toBe(401);

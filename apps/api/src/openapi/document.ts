@@ -340,7 +340,13 @@ export function buildOpenApiDocument() {
               required: false,
               schema: {
                 type: "string",
-                enum: ["articleId", "articleNom", "purchasePrice", "createdAt"],
+                enum: [
+                  "articleId",
+                  "articleNom",
+                  "purchasePrice",
+                  "createdAt",
+                  "warrantyEnd",
+                ],
               },
             },
             {

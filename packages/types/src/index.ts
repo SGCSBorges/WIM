@@ -201,7 +201,8 @@ export type ArticleSort =
   | "articleId"
   | "articleNom"
   | "purchasePrice"
-  | "createdAt";
+  | "createdAt"
+  | "warrantyEnd";
 
 /** Query parameters accepted by `GET /api/articles`. Every field is
  *  optional; omitting them returns the full owner-scoped list. `q` runs
