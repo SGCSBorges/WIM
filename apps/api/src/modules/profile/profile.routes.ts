@@ -3,6 +3,7 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
 import { asyncHandler } from "../common/http";
 import { auditAction } from "../common/audit";
+import { AuditService } from "../audit/audit.service";
 import { denyToken } from "../auth/token-denylist";
 import { cookieOptsFor } from "../auth/cookies";
 import { signTokenWithJti } from "../auth/auth.service";
@@ -564,17 +565,23 @@ router.delete(
      * - Returns 204 on success.
      *
      * NOTE:
-     * The service deletes dependent records owned by the user first to avoid FK issues.
+     * The service deletes dependent records owned by the user first to avoid
+     * FK issues, and keeps their audit-log rows anonymised.
      */
     const { currentPassword } = DeleteAccountSchema.parse(req.body);
     await ProfileService.deleteAccount(req.user!.sub, currentPassword);
 
-    // Audit before invalidating the session so the row is written under the
-    // (now-deleted) user's id for forensics. We tolerate audit failures here.
-    await auditAction(req, {
+    // The closing audit row is anonymised like the rows the service kept: no
+    // user id, IP or user-agent. AuditService.log is called directly because
+    // auditAction falls back to req.user.sub and fills in IP and user-agent
+    // from the request.
+    await AuditService.log({
+      userId: null,
       action: "DELETE",
       entity: "User",
       entityId: req.user!.sub,
+      ip: null,
+      ua: null,
     });
 
     // Revoke the JWT that authorised this request so the cookie can't be

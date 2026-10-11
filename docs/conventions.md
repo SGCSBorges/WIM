@@ -1017,6 +1017,15 @@ rows where the deleted user is the **invitee** (matched by email — there's
 no FK). Without that, someone re-registering with the same email could
 accept a stale token and gain access to a third party's inventory.
 
+Audit-log rows are the one thing account deletion keeps: both
+`deleteAccount` and the admin `DELETE /api/admin/users/:id` null `userId`,
+`ip` and `userAgent` on the account's rows before the user row goes, and
+the self-service route writes its closing `DELETE`/`User` row through
+`AuditService.log` with all three null — `auditAction` would put the
+caller's id, IP and user-agent back (and that id no longer satisfies the
+`AuditLog.userId` foreign key, which is what made the route answer 500).
+The admin's own row keeps `deletedRole`, never the deleted email.
+
 ## Household accounts
 
 A `Household` is a small group (max 6) of share-capable users whose

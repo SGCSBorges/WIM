@@ -11,7 +11,9 @@
  *      delete if the caller is the only remaining ADMIN.
  *   4. `chunkedDelete` walks every owned dependent table in capped batches —
  *      avoids a single statement that holds row-level locks across the
- *      whole inventory for minutes on a large account.
+ *      whole inventory for minutes on a large account. Audit-log rows are
+ *      the exception: they are kept, anonymised (no user id, IP or
+ *      user-agent), so the trail of what happened survives the account.
  */
 import { prisma } from "../../libs/prisma";
 import bcrypt from "bcrypt";
@@ -362,22 +364,12 @@ export const ProfileService = {
         }) as Promise<{ count: number }>,
       userId
     );
-    await chunkedDelete(
-      "auditLog",
-      () => prisma.auditLog.count({ where: { userId } }),
-      async () => {
-        const rows = await prisma.auditLog.findMany({
-          where: { userId },
-          select: { id: true },
-          take: DELETE_CHUNK_SIZE,
-        });
-        if (rows.length === 0) return { count: 0 };
-        return prisma.auditLog.deleteMany({
-          where: { id: { in: rows.map((r) => r.id) } },
-        });
-      },
-      userId
-    );
+    // Audit-log rows are kept, not deleted: the trail of what happened stays,
+    // without anything that points back to the person (id, IP, user-agent).
+    await prisma.auditLog.updateMany({
+      where: { userId },
+      data: { userId: null, ip: null, userAgent: null },
+    });
 
     await chunkedDelete(
       "attachment",

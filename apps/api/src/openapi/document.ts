@@ -1479,6 +1479,8 @@ export function buildOpenApiDocument() {
         delete: {
           tags: ["profile"],
           summary: "Delete the caller's account (requires currentPassword).",
+          description:
+            "The account's audit-log entries are kept, anonymised: no user id, IP or user-agent. The closing DELETE entry is written the same way.",
           security: [cookieAuth],
           responses: { "204": { description: "Deleted" } },
         },
@@ -2259,6 +2261,8 @@ export function buildOpenApiDocument() {
         delete: {
           tags: ["admin"],
           summary: "Delete a user (ADMIN only).",
+          description:
+            "The user's audit-log entries are kept, anonymised: no user id, IP or user-agent. The admin's DELETE entry records the deleted role, not the email.",
           security: [cookieAuth],
           responses: { "204": { description: "Deleted" } },
         },

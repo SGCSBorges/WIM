@@ -185,7 +185,9 @@ router.delete(
     // Wrap count-check and delete in a serializable transaction so two
     // concurrent admin-deletion requests cannot both bypass the last-admin guard.
     // The role is re-read inside the tx — the snapshot above is only for the
-    // audit metadata and could be stale by the time the tx runs.
+    // audit metadata and could be stale by the time the tx runs. The deleted
+    // user's audit rows are kept, anonymised as on self-deletion (no user id,
+    // IP or user-agent), in the same transaction as the delete.
     await prisma.$transaction(
       async (tx) => {
         const fresh = await tx.user.findUnique({
@@ -198,6 +200,10 @@ router.delete(
           if (adminCount <= 1)
             throw createHttpError(400, "Cannot delete the last admin user");
         }
+        await tx.auditLog.updateMany({
+          where: { userId },
+          data: { userId: null, ip: null, userAgent: null },
+        });
         await tx.user.delete({ where: { userId } });
       },
       { isolationLevel: "Serializable" }
@@ -208,7 +214,7 @@ router.delete(
       action: "DELETE",
       entity: "User",
       entityId: userId,
-      metadata: { deletedEmail: user.email, deletedRole: user.role },
+      metadata: { deletedRole: user.role },
     });
 
     res.status(204).send();

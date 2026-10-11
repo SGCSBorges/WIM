@@ -31,7 +31,12 @@ vi.mock("../../libs/prisma", () => ({
     alerte: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
     inventoryShare: { count: vi.fn(), deleteMany: vi.fn() },
     shareInvite: { count: vi.fn(), deleteMany: vi.fn() },
-    auditLog: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
+    auditLog: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      deleteMany: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+    },
     attachment: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
     garantie: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
     article: { count: vi.fn(), findMany: vi.fn(), deleteMany: vi.fn() },
@@ -318,5 +323,47 @@ describe("ProfileService.deleteAccount", () => {
     expect(mockPrisma.user.delete).toHaveBeenCalledWith({
       where: { userId: 7 },
     });
+  });
+
+  // The audit trail outlives the account: rows are kept with nothing that
+  // points back to the person, never deleted.
+  it("keeps the user's audit-log rows, anonymised", async () => {
+    const hash = await bcryptRef.realHash!("right-pw", 1);
+    mockPrisma.user.findUnique.mockResolvedValue({
+      userId: 7,
+      password: hash,
+      role: "USER",
+    });
+    for (const m of [
+      mockPrisma.alerte,
+      mockPrisma.inventoryShare,
+      mockPrisma.shareInvite,
+      mockPrisma.auditLog,
+      mockPrisma.attachment,
+      mockPrisma.garantie,
+      mockPrisma.article,
+    ])
+      m.count.mockResolvedValue(0);
+    // Rows to keep: a count-driven delete would find these.
+    mockPrisma.auditLog.count.mockResolvedValue(12);
+    mockPrisma.auditLog.updateMany.mockResolvedValue({ count: 12 });
+    mockPrisma.$transaction.mockImplementation(async (cb: unknown) => {
+      if (typeof cb === "function")
+        return (cb as (tx: unknown) => Promise<unknown>)(makeTx());
+    });
+    mockPrisma.user.delete.mockResolvedValue({});
+
+    await ProfileService.deleteAccount(7, "right-pw");
+
+    expect(mockPrisma.auditLog.updateMany).toHaveBeenCalledWith({
+      where: { userId: 7 },
+      data: { userId: null, ip: null, userAgent: null },
+    });
+    expect(mockPrisma.auditLog.deleteMany).not.toHaveBeenCalled();
+    // Anonymised before the user row goes (the FK would null userId anyway,
+    // but leave the IP and user-agent behind).
+    expect(
+      mockPrisma.auditLog.updateMany.mock.invocationCallOrder[0]
+    ).toBeLessThan(mockPrisma.user.delete.mock.invocationCallOrder[0]);
   });
 });

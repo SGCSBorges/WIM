@@ -620,10 +620,15 @@ if the stored value is a different host, fix the DB row.
 
 ### Delete-account returned 500 but the user is gone
 
-Historical issue. The current implementation runs the cascading deletes
-inside a transaction; if anything throws the row stays. The web client
-also treats a follow-up 404 from `/profile/me` as "account already gone"
-and disconnects cleanly (round-11 status-based redirect, B3).
+Fixed. `DELETE /api/profile/me` wrote its closing audit row under the
+just-deleted user's id after the user row was gone, which the
+`AuditLog.userId` foreign key rejects (Prisma P2003): the account was
+deleted but the request answered 500, before the session cookie was
+cleared. The closing row is now anonymised (no user id, IP or
+user-agent), like the account's earlier audit rows, and the request
+answers 204. The web client also treats a follow-up 404 from
+`/profile/me` as "account already gone" and disconnects cleanly
+(round-11 status-based redirect, B3).
 
 ### Webhook duplicate deliveries
 

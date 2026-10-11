@@ -602,12 +602,17 @@ Has `createdAt` only.
 ### AuditLog
 
 An append-only action log. `userId` is **`onDelete: SetNull`** (not cascade) —
-rows survive the actor's deletion as an anonymized trail.
+rows survive the actor's deletion as an anonymized trail. Account deletion
+(self-service `DELETE /api/profile/me` and admin `DELETE
+/api/admin/users/:id`) also clears `ip` and `userAgent` on the account's rows
+before the user row goes, and writes the closing `DELETE`/`User` row with no
+user id, IP or user-agent (the admin path records the actor and
+`deletedRole`, never the deleted email).
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
 | `id` | Int (PK) | auto | |
-| `userId` | Int? (FK→User) | null | **SetNull** on user delete. |
+| `userId` | Int? (FK→User) | null | **SetNull** on user delete; account deletion nulls it explicitly, with `ip` and `userAgent`. |
 | `action` | String VarChar(80) | — | e.g. `LOGIN`, `CREATE`, `BILLING_UPGRADE`, `WARRANTY_RENEW` (the `AUDIT_ACTIONS` union). |
 | `entity` | String VarChar(80) | — | e.g. `User`, `Article`. |
 | `entityId` | Int? | null | |

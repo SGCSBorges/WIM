@@ -618,12 +618,17 @@ A `createdAt` seulement.
 
 Un journal d'actions en ajout seul. `userId` est **`onDelete: SetNull`** (pas
 cascade) — les lignes survivent à la suppression de l'acteur comme trace
-anonymisée.
+anonymisée. La suppression d'un compte (par l'utilisateur, `DELETE
+/api/profile/me`, ou par un admin, `DELETE /api/admin/users/:id`) efface
+aussi `ip` et `userAgent` sur les lignes du compte avant de supprimer
+l'utilisateur, et écrit la ligne finale `DELETE`/`User` sans identifiant,
+IP ni user-agent (côté admin, la ligne garde l'auteur et `deletedRole`,
+jamais l'e-mail supprimé).
 
 | Champ | Type | Défaut | Notes |
 |---|---|---|---|
 | `id` | Int (PK) | auto | |
-| `userId` | Int? (FK→User) | null | **SetNull** à la suppression de l'utilisateur. |
+| `userId` | Int? (FK→User) | null | **SetNull** à la suppression de l'utilisateur ; la suppression du compte le met à null explicitement, avec `ip` et `userAgent`. |
 | `action` | String VarChar(80) | — | ex. `LOGIN`, `CREATE`, `BILLING_UPGRADE`, `WARRANTY_RENEW` (l'union `AUDIT_ACTIONS`). |
 | `entity` | String VarChar(80) | — | ex. `User`, `Article`. |
 | `entityId` | Int? | null | |

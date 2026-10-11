@@ -1908,4 +1908,96 @@ suite("API integration (real Postgres)", () => {
       for (const d of docs) expect(await readUploadBytes(d.fileUrl)).toBeNull();
     }, 120_000);
   });
+
+  // Account deletion keeps the account's audit trail with nothing that points
+  // back to the person — no user id, IP or user-agent — both on the rows
+  // written before and on the closing DELETE row.
+  it("keeps a self-deleted account's audit rows, anonymised", async () => {
+    const agent = await register("leaver@example.com");
+    const { userId } = await prisma.user.findUniqueOrThrow({
+      where: { email: "leaver@example.com" },
+      select: { userId: true },
+    });
+    const loc = await agent
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .set("User-Agent", "LeaverBrowser/1.0")
+      .send({ name: "Cave" });
+    expect(loc.status).toBe(201);
+    const before = await prisma.auditLog.findMany({ where: { userId } });
+    expect(before.length).toBeGreaterThan(0);
+    expect(before.some((r) => r.ip !== null && r.userAgent !== null)).toBe(
+      true
+    );
+
+    const del = await agent
+      .delete("/api/profile/me")
+      .set("Origin", ORIGIN)
+      .send({ currentPassword: "Passw0rd!" });
+    expect(del.status).toBe(204);
+
+    expect(await prisma.user.count({ where: { userId } })).toBe(0);
+    const rows = await prisma.auditLog.findMany({ orderBy: { id: "asc" } });
+    // Every earlier row is kept, plus the closing one.
+    expect(rows).toHaveLength(before.length + 1);
+    for (const r of rows)
+      expect([r.id, r.userId, r.ip, r.userAgent]).toEqual([
+        r.id,
+        null,
+        null,
+        null,
+      ]);
+    const closing = rows.at(-1)!;
+    expect([closing.action, closing.entity, closing.entityId]).toEqual([
+      "DELETE",
+      "User",
+      userId,
+    ]);
+  });
+
+  it("keeps an admin-deleted user's audit rows, anonymised, without their email", async () => {
+    const admin = await register("boss@example.com");
+    await prisma.user.update({
+      where: { email: "boss@example.com" },
+      data: { role: "ADMIN" },
+    });
+    const leaver = await register("gone@example.com");
+    const { userId } = await prisma.user.findUniqueOrThrow({
+      where: { email: "gone@example.com" },
+      select: { userId: true },
+    });
+    const loc = await leaver
+      .post("/api/locations")
+      .set("Origin", ORIGIN)
+      .send({ name: "Grenier" });
+    expect(loc.status).toBe(201);
+    const theirs = await prisma.auditLog.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    expect(theirs.length).toBeGreaterThan(0);
+
+    const del = await admin
+      .delete(`/api/admin/users/${userId}`)
+      .set("Origin", ORIGIN);
+    expect(del.status).toBe(204);
+
+    const kept = await prisma.auditLog.findMany({
+      where: { id: { in: theirs.map((r) => r.id) } },
+    });
+    expect(kept).toHaveLength(theirs.length);
+    for (const r of kept)
+      expect([r.id, r.userId, r.ip, r.userAgent]).toEqual([
+        r.id,
+        null,
+        null,
+        null,
+      ]);
+    // The admin's own row records the action, not who the account was.
+    const closing = await prisma.auditLog.findFirstOrThrow({
+      where: { action: "DELETE", entity: "User", entityId: userId },
+    });
+    expect(closing.metadata).toEqual({ deletedRole: "USER" });
+    expect(JSON.stringify(closing)).not.toContain("gone@example.com");
+  });
 });
