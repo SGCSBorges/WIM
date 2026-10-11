@@ -1321,8 +1321,8 @@ inherits everything via the role hierarchy (`roleAtLeast`).
 
 Every outbound email and push notification is written in the recipient's
 `User.language` (en/fr/pt/es/nl — validated on write by
-`profile.schemas.ts`), falling back to English for unset, legacy or
-unknown values. The copy lives in one place,
+`profile.schemas.ts`), falling back to French, the product default
+(`DEFAULT_LANGUAGE`), for unset, legacy or unknown values. The copy lives in one place,
 `apps/api/src/modules/email/email.i18n.ts`: a flat key map per language,
 `{placeholder}` interpolation (single pass — a value containing braces is
 never re-expanded), and a parity test that fails when a key or a
@@ -1354,11 +1354,24 @@ Senders that already hold the User row select `language` alongside
 invites, message notifications — the recipient may not be a user yet)
 resolve it with `recipientLanguage(email)` from
 `modules/email/recipient-language.ts`, which never throws (unknown
-address, DB error or a test double without `findFirst` all mean English)
+address, DB error or a test double without `findFirst` all mean French)
 and imports Prisma lazily so the email module carries no DB dependency.
 The reminder processor reads the recipient once and uses the same
 translator for push and email, so the two channels can't disagree. Never
 hardcode an English sentence at a call site again — add a key.
+
+The PDF exports (claim sheet, inventory manifest, QR labels, portfolio
+report) follow the same rules from their own dictionary,
+`apps/api/src/modules/common/pdf.i18n.ts`, with its own parity test. The
+route resolves `pdfLocale(userId)` — language, currency and `dateFormat`
+in one read — and hands it to the stream function; build every string with
+`pdfT`/`pdfCount` and every figure with `pdfMoney`/`pdfDate`, so the
+document shows the same money and dates as the screen (an explicit
+`dateFormat` wins; "system" means the language's short date). PDFKit's
+built-in fonts only draw WinAnsi (cp1252): the helpers turn Intl's French
+grouping space (U+202F) into a no-break space and print a currency by its
+ISO code when its symbol is outside WinAnsi, and the dictionary test
+rejects any string the fonts can't draw.
 
 ## Known gotchas
 

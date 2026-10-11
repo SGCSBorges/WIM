@@ -2,8 +2,8 @@
  * Reports surface — currently one endpoint, the insurance portfolio PDF.
  * Owner-scoped + auth-guarded; uses the destructiveRateLimiter so a hot
  * loop hitting it can't pull the whole inventory out repeatedly. Pulls the
- * caller's display currency from the User row so the PDF totals match
- * what the dashboard / claim PDF show.
+ * caller's language, currency and date format from the User row so the PDF
+ * reads like the screen and its totals match the dashboard / claim PDF.
  */
 import { Router } from "express";
 import { z } from "zod";
@@ -12,8 +12,8 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
 import { auditAction } from "../common/audit";
 import { security } from "../../config/security";
-import { prisma } from "../../libs/prisma";
-import { ARTICLE_STATUSES, DEFAULT_CURRENCY } from "@wim/types";
+import { ARTICLE_STATUSES } from "@wim/types";
+import { pdfLocale } from "../common/pdf.i18n";
 import { streamPortfolioReportPdf } from "./report.pdf";
 
 const PortfolioFiltersSchema = z.object({
@@ -34,22 +34,14 @@ router.get(
   security.destructiveRateLimiter,
   asyncHandler(async (req: AuthRequest, res) => {
     const filters = PortfolioFiltersSchema.parse(req.query);
-    const user = await prisma.user.findUnique({
-      where: { userId: req.user!.sub },
-      select: { currency: true },
-    });
+    const loc = await pdfLocale(req.user!.sub);
     await auditAction(req, {
       action: "DB_EXPORT",
       entity: "User",
       entityId: req.user!.sub,
       metadata: { report: "portfolio", filters },
     });
-    await streamPortfolioReportPdf(
-      res,
-      req.user!.sub,
-      user?.currency ?? DEFAULT_CURRENCY,
-      filters
-    );
+    await streamPortfolioReportPdf(res, req.user!.sub, loc, filters);
   })
 );
 

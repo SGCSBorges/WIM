@@ -12,7 +12,8 @@
  *
  * `currentValue` from `common/depreciation` is the single source of
  * truth — same helper the web uses, same MS_PER_YEAR, so totals here
- * match what the user sees on screen.
+ * match what the user sees on screen. Copy, money and dates are in the
+ * account's language and formats (`common/pdf.i18n`).
  */
 import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
@@ -21,17 +22,15 @@ import { prisma } from "../../libs/prisma";
 import { createHttpError } from "../../utils/http-error";
 import { currentValue } from "../common/depreciation";
 import { readUploadBytes } from "../attachments/attachment.fs";
-
-function money(amount: unknown, currency: string): string {
-  if (amount == null) return "—";
-  const n = Number(amount);
-  if (!Number.isFinite(n)) return "—";
-  return `${currency} ${n.toFixed(2)}`;
-}
-
-function fmtDate(d: Date | null | undefined): string {
-  return d ? new Date(d).toISOString().slice(0, 10) : "—";
-}
+import {
+  pdfCount,
+  pdfDate,
+  pdfMoney,
+  pdfNumber,
+  pdfT,
+  type PdfKey,
+  type PdfLocale,
+} from "../common/pdf.i18n";
 
 // Read an uploaded image's bytes for embedding — and ONLY our own uploads
 // (readUploadBytes rejects remote URLs and traversal: SSRF guard). Storage-
@@ -49,8 +48,10 @@ export async function streamArticleClaimPdf(
   res: Response,
   articleId: number,
   ownerUserId: number,
-  currency: string
+  loc: PdfLocale
 ) {
+  const t = (key: PdfKey, vars?: Record<string, string | number>) =>
+    pdfT(loc.lang, key, vars);
   const article = await prisma.article.findFirst({
     where: { articleId, ownerUserId, deletedAt: null },
     include: {
@@ -86,31 +87,34 @@ export async function streamArticleClaimPdf(
   );
   doc.pipe(res);
 
-  doc.fontSize(20).text("Article claim sheet", { underline: false });
+  doc.fontSize(20).text(t("claim.title"), { underline: false });
   doc.moveDown(0.5);
   doc.fontSize(14).text(article.articleNom);
   doc.fontSize(10).fillColor("#555").text(article.articleModele);
   doc.fillColor("#000").moveDown();
 
-  const row = (label: string, value: string) => {
-    doc.fontSize(10).fillColor("#555").text(label, { continued: true });
+  const row = (label: PdfKey, value: string) => {
+    doc
+      .fontSize(10)
+      .fillColor("#555")
+      .text(t(label) + t("colon"), { continued: true });
     doc.fillColor("#000").text(`  ${value}`);
   };
 
   if (article.articleDescription)
-    row("Description:", article.articleDescription);
-  if (article.brand) row("Brand:", article.brand);
-  if (article.serialNumber) row("Serial number:", article.serialNumber);
-  if (article.purchasedFrom) row("Purchased from:", article.purchasedFrom);
-  if (article.orderRef) row("Order / receipt no.:", article.orderRef);
+    row("field.description", article.articleDescription);
+  if (article.brand) row("field.brand", article.brand);
+  if (article.serialNumber) row("field.serialNumber", article.serialNumber);
+  if (article.purchasedFrom) row("field.purchasedFrom", article.purchasedFrom);
+  if (article.orderRef) row("field.orderRef", article.orderRef);
   const qty = Math.max(1, article.quantity ?? 1);
-  row("Purchase price:", money(article.purchasePrice, currency));
+  row("field.purchasePrice", pdfMoney(loc, article.purchasePrice));
   if (qty > 1) {
-    row("Quantity:", String(qty));
+    row("field.quantity", pdfNumber(loc, qty));
     if (article.purchasePrice != null)
       row(
-        "Total purchase value:",
-        money(Number(article.purchasePrice) * qty, currency)
+        "field.totalPurchase",
+        pdfMoney(loc, Number(article.purchasePrice) * qty)
       );
   }
   if (article.depreciationRate != null && article.purchasePrice != null) {
@@ -123,19 +127,21 @@ export async function streamArticleClaimPdf(
         basis
       ) * qty;
     row(
-      "Current value:",
-      `${money(current, currency)} (${Number(article.depreciationRate)}%/yr depreciation)`
+      "field.currentValue",
+      `${pdfMoney(loc, current)} ${t("field.depreciation", {
+        rate: pdfNumber(loc, Number(article.depreciationRate)),
+      })}`
     );
   }
   row(
-    "Locations:",
+    "field.locations",
     article.locations
       .map((l) => l.location?.name)
       .filter(Boolean)
       .join(", ") || "—"
   );
   row(
-    "Tags:",
+    "field.tags",
     article.tags
       .map((t) => t.tag?.name)
       .filter(Boolean)
@@ -143,17 +149,20 @@ export async function streamArticleClaimPdf(
   );
   if (article.garantie) {
     doc.moveDown(0.5);
-    doc.fontSize(12).text("Warranty");
-    row("Name:", article.garantie.garantieNom);
-    row("Purchased:", fmtDate(article.garantie.garantieDateAchat));
-    row("Ends:", fmtDate(article.garantie.garantieFin));
+    doc.fontSize(12).text(t("section.warranty"));
+    row("field.name", article.garantie.garantieNom);
+    row("field.purchased", pdfDate(loc, article.garantie.garantieDateAchat));
+    row("field.ends", pdfDate(loc, article.garantie.garantieFin));
     if (
       article.garantie.claimStatus &&
       article.garantie.claimStatus !== "NONE"
     ) {
-      row("Claim status:", article.garantie.claimStatus);
+      row(
+        "field.claimStatus",
+        t(`claimStatus.${article.garantie.claimStatus}`)
+      );
       if (article.garantie.claimNote)
-        row("Claim note:", article.garantie.claimNote);
+        row("field.claimNote", article.garantie.claimNote);
     }
 
     if (
@@ -162,13 +171,13 @@ export async function streamArticleClaimPdf(
       article.garantie.providerUrl
     ) {
       doc.moveDown(0.5);
-      doc.fontSize(12).text("Warranty provider");
+      doc.fontSize(12).text(t("section.provider"));
       if (article.garantie.providerName)
-        row("Name:", article.garantie.providerName);
+        row("field.name", article.garantie.providerName);
       if (article.garantie.providerPhone)
-        row("Phone:", article.garantie.providerPhone);
+        row("field.phone", article.garantie.providerPhone);
       if (article.garantie.providerUrl)
-        row("Web:", article.garantie.providerUrl);
+        row("field.web", article.garantie.providerUrl);
     }
 
     const proof = await uploadImageBytes(
@@ -177,7 +186,7 @@ export async function streamArticleClaimPdf(
     );
     if (proof) {
       doc.moveDown(0.5);
-      doc.fontSize(12).text("Warranty proof");
+      doc.fontSize(12).text(t("section.proof"));
       try {
         doc.image(proof, { fit: [400, 300] });
       } catch {
@@ -193,7 +202,7 @@ export async function streamArticleClaimPdf(
     }
     if (claimBuffers.length > 0) {
       doc.moveDown(0.5);
-      doc.fontSize(12).text("Claim evidence");
+      doc.fontSize(12).text(t("section.evidence"));
       doc.moveDown(0.25);
       const w = 240;
       const h = 180;
@@ -224,7 +233,7 @@ export async function streamArticleClaimPdf(
   }
   if (photoBuffers.length > 0) {
     doc.moveDown(0.5);
-    doc.fontSize(12).fillColor("#000").text("Photos");
+    doc.fontSize(12).fillColor("#000").text(t("section.photos"));
     doc.moveDown(0.25);
     const photoW = 240;
     const photoH = 180;
@@ -249,7 +258,7 @@ export async function streamArticleClaimPdf(
   doc
     .fontSize(8)
     .fillColor("#999")
-    .text(`Generated ${new Date().toISOString().slice(0, 10)} — WIM`, {
+    .text(t("generatedFooter", { date: pdfDate(loc, new Date()) }), {
       align: "right",
     });
 
@@ -260,7 +269,7 @@ export async function streamArticleClaimPdf(
 export async function streamInventoryPdf(
   res: Response,
   ownerUserId: number,
-  currency: string
+  loc: PdfLocale
 ) {
   const articles = await prisma.article.findMany({
     where: { ownerUserId, deletedAt: null },
@@ -290,27 +299,30 @@ export async function streamInventoryPdf(
   );
   doc.pipe(res);
 
-  doc.fontSize(20).text("Inventory manifest");
+  doc.fontSize(20).text(pdfT(loc.lang, "inventory.title"));
   doc
     .fontSize(10)
     .fillColor("#555")
     .text(
-      `${articles.length} article(s) — generated ${new Date()
-        .toISOString()
-        .slice(0, 10)}`
+      pdfT(loc.lang, "generatedSubtitle", {
+        count: pdfCount(loc.lang, "articles", articles.length),
+        date: pdfDate(loc, new Date()),
+      })
     );
   doc.fillColor("#000").moveDown();
 
-  doc.fontSize(11).text(`Total inventory value: ${money(total, currency)}`);
+  doc
+    .fontSize(11)
+    .text(pdfT(loc.lang, "inventory.total", { amount: pdfMoney(loc, total) }));
   doc.moveDown();
 
   doc.fontSize(10);
   for (const a of articles) {
     const qty = Math.max(1, a.quantity ?? 1);
     doc.text(
-      `• ${a.articleNom} (${a.articleModele})${qty > 1 ? ` ×${qty}` : ""} — ${money(
-        (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) * qty,
-        currency
+      `• ${a.articleNom} (${a.articleModele})${qty > 1 ? ` ×${qty}` : ""} — ${pdfMoney(
+        loc,
+        (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) * qty
       )}`
     );
   }
@@ -326,7 +338,8 @@ export async function streamInventoryPdf(
 export async function streamLabelsPdf(
   res: Response,
   ownerUserId: number,
-  appBaseUrl: string
+  appBaseUrl: string,
+  loc: PdfLocale
 ) {
   const articles = await prisma.article.findMany({
     where: { ownerUserId, deletedAt: null },
@@ -354,11 +367,15 @@ export async function streamLabelsPdf(
   );
   doc.pipe(res);
 
-  doc.fontSize(16).text("Article labels");
+  doc.fontSize(16).text(pdfT(loc.lang, "labels.title"));
   doc
     .fontSize(9)
     .fillColor("#555")
-    .text(`${labels.length} label(s) — scan to open in WIM`);
+    .text(
+      pdfT(loc.lang, "labels.subtitle", {
+        count: pdfCount(loc.lang, "labels", labels.length),
+      })
+    );
   doc.fillColor("#000").moveDown();
 
   // 3-column grid of fixed-height cells, positioned absolutely so the layout

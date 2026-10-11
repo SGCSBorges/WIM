@@ -26,7 +26,6 @@ import {
   streamInventoryPdf,
   streamLabelsPdf,
 } from "./article.pdf";
-import { prisma } from "../../libs/prisma";
 import {
   ArticleCreateSchema,
   ArticleUpdateSchema,
@@ -39,7 +38,7 @@ import { authGuard, AuthRequest } from "../auth/auth.middleware";
 import { requireFeature } from "../features/feature.service";
 import { idParam } from "../common/schemas";
 import { security } from "../../config/security";
-import { DEFAULT_CURRENCY } from "@wim/types";
+import { pdfLocale } from "../common/pdf.i18n";
 
 const router = Router();
 
@@ -588,14 +587,6 @@ router.post(
   })
 );
 
-async function userCurrency(userId: number): Promise<string> {
-  const u = await prisma.user.findUnique({
-    where: { userId },
-    select: { currency: true },
-  });
-  return u?.currency ?? DEFAULT_CURRENCY;
-}
-
 /** GET CSV export of all matching articles (same filter vocabulary as list).
  *  Path mirrors the existing inventory.pdf route. */
 router.get(
@@ -643,13 +634,13 @@ router.get(
   authGuard,
   security.destructiveRateLimiter,
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const currency = await userCurrency(req.user!.sub);
+    const loc = await pdfLocale(req.user!.sub);
     await auditAction(req, {
       action: "DB_EXPORT",
       entity: "Article",
       metadata: { report: "inventory.pdf" },
     });
-    await streamInventoryPdf(res, req.user!.sub, currency);
+    await streamInventoryPdf(res, req.user!.sub, loc);
   })
 );
 
@@ -667,7 +658,8 @@ router.get(
       entity: "Article",
       metadata: { report: "labels.pdf" },
     });
-    await streamLabelsPdf(res, req.user!.sub, appBaseUrl);
+    const loc = await pdfLocale(req.user!.sub);
+    await streamLabelsPdf(res, req.user!.sub, appBaseUrl, loc);
   })
 );
 
@@ -677,8 +669,8 @@ router.get(
   authGuard,
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const id = idParam.parse(req.params.id);
-    const currency = await userCurrency(req.user!.sub);
-    await streamArticleClaimPdf(res, id, req.user!.sub, currency);
+    const loc = await pdfLocale(req.user!.sub);
+    await streamArticleClaimPdf(res, id, req.user!.sub, loc);
   })
 );
 

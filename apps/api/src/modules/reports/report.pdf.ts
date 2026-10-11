@@ -18,24 +18,22 @@
  * (locationId/tagId/warrantyStatus) so a user can scope the report to one
  * room or one tag before downloading. Uses the same PDFKit + currentValue +
  * money helpers as `article.pdf.ts` to keep totals identical to the
- * dashboard and CSV export.
+ * dashboard and CSV export, in the account's language and formats
+ * (`common/pdf.i18n`).
  */
 import PDFDocument from "pdfkit";
 import type { Response } from "express";
 import { prisma } from "../../libs/prisma";
 import { NOT_OWNED_STATUSES, type ArticleStatus } from "@wim/types";
 import { currentValue } from "../common/depreciation";
-
-function money(amount: unknown, currency: string): string {
-  if (amount == null) return "—";
-  const n = Number(amount);
-  if (!Number.isFinite(n)) return "—";
-  return `${currency} ${n.toFixed(2)}`;
-}
-
-function fmtDate(d: Date | null | undefined): string {
-  return d ? new Date(d).toISOString().slice(0, 10) : "—";
-}
+import {
+  pdfCount,
+  pdfDate,
+  pdfMoney,
+  pdfT,
+  type PdfKey,
+  type PdfLocale,
+} from "../common/pdf.i18n";
 
 /**
  * Line value: per-unit purchase price × quantity. Every money figure in this
@@ -106,9 +104,12 @@ function filterByWarranty(
 export async function streamPortfolioReportPdf(
   res: Response,
   ownerUserId: number,
-  currency: string,
+  loc: PdfLocale,
   filters: ReportFilters
 ) {
+  const t = (key: PdfKey, vars?: Record<string, string | number>) =>
+    pdfT(loc.lang, key, vars);
+  const money = (amount: unknown) => pdfMoney(loc, amount);
   const articles = (await prisma.article.findMany({
     where: {
       ownerUserId,
@@ -208,71 +209,79 @@ export async function streamPortfolioReportPdf(
   doc.pipe(res);
 
   // Cover
-  doc.fontSize(22).text("Insurance portfolio report");
+  doc.fontSize(22).text(t("report.title"));
   doc
     .fontSize(10)
     .fillColor("#555")
     .text(
-      `${scoped.length} item(s) — generated ${new Date()
-        .toISOString()
-        .slice(0, 10)}`
+      t("generatedSubtitle", {
+        count: pdfCount(loc.lang, "items", scoped.length),
+        date: pdfDate(loc, new Date()),
+      })
     );
   doc.fillColor("#000").moveDown();
 
   doc.fontSize(11);
-  doc.text(`Total purchase value: ${money(totalPurchase, currency)}`);
-  doc.text(`Current depreciated value: ${money(totalCurrent, currency)}`);
-  doc.text(`Items with active warranty: ${covered}`);
-  doc.text(`Uninsured / expired-warranty exposure: ${money(atRisk, currency)}`);
-  doc.text(`Items with an insurance policy: ${insuredCount}`);
-  doc.text(`Items with no insurance policy: ${scoped.length - insuredCount}`);
+  doc.text(t("report.totalPurchase", { amount: money(totalPurchase) }));
+  doc.text(t("report.totalCurrent", { amount: money(totalCurrent) }));
+  doc.text(t("report.covered", { count: covered }));
+  doc.text(t("report.atRisk", { amount: money(atRisk) }));
+  doc.text(t("report.insured", { count: insuredCount }));
+  doc.text(t("report.notInsured", { count: scoped.length - insuredCount }));
   doc.moveDown();
 
   // Per-location manifest. Group articles by their first location name so the
   // listing reads like a walkthrough of the inventory.
   const byLocation = new Map<string, ArticleForReport[]>();
   for (const a of scoped) {
-    const loc = a.locations[0]?.location?.name ?? "(unassigned)";
-    const bucket = byLocation.get(loc) ?? [];
+    const place = a.locations[0]?.location?.name ?? t("report.unassigned");
+    const bucket = byLocation.get(place) ?? [];
     bucket.push(a);
-    byLocation.set(loc, bucket);
+    byLocation.set(place, bucket);
   }
 
   doc.addPage();
-  doc.fontSize(16).text("Per-location manifest");
+  doc.fontSize(16).text(t("report.manifest"));
   doc.moveDown();
 
-  for (const [loc, group] of [...byLocation.entries()].sort()) {
-    doc.fontSize(12).fillColor("#000").text(loc, { underline: true });
+  for (const [place, group] of [...byLocation.entries()].sort()) {
+    doc.fontSize(12).fillColor("#000").text(place, { underline: true });
     doc.fontSize(9).fillColor("#000");
     for (const a of group) {
       const qty = Math.max(1, a.quantity ?? 1);
       // Manifest line shows the line total (× quantity) so it agrees with the
       // cover totals; a "×N" marker keeps the unit count visible.
       const purchase = money(
-        (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) * qty,
-        currency
+        (a.purchasePrice == null ? 0 : Number(a.purchasePrice)) * qty
       );
       const current = money(
         currentValue(
           a.purchasePrice == null ? null : Number(a.purchasePrice),
           a.depreciationRate == null ? null : Number(a.depreciationRate),
           a.garantie?.garantieDateAchat ?? a.createdAt
-        ) * qty,
-        currency
+        ) * qty
       );
       const providers = providersByArticle.get(a.articleId);
       doc.text(
         `• ${a.articleNom} — ${a.brand ? a.brand + " " : ""}${a.articleModele}` +
           (qty > 1 ? ` · ×${qty}` : "") +
-          (a.serialNumber ? ` · S/N ${a.serialNumber}` : "") +
-          ` · purchase ${purchase} · now ${current}` +
-          ` · warranty ${
+          (a.serialNumber
+            ? ` · ${t("report.serial", { serial: a.serialNumber })}`
+            : "") +
+          ` · ${t("report.purchase", { amount: purchase })}` +
+          ` · ${t("report.now", { amount: current })}` +
+          ` · ${
             a.garantie?.garantieFin
-              ? `to ${fmtDate(a.garantie.garantieFin)}`
-              : "none"
+              ? t("report.warrantyTo", {
+                  date: pdfDate(loc, a.garantie.garantieFin),
+                })
+              : t("report.warrantyNone")
           }` +
-          ` · ${providers ? `insured: ${providers.join(", ")}` : "no policy"}`
+          ` · ${
+            providers
+              ? t("report.insuredBy", { providers: providers.join(", ") })
+              : t("report.noPolicy")
+          }`
       );
     }
     doc.moveDown();
@@ -291,18 +300,22 @@ export async function streamPortfolioReportPdf(
 
   if (risks.length > 0) {
     doc.addPage();
-    doc.fontSize(16).text("Uninsured / expired (highest value first)");
+    doc.fontSize(16).text(t("report.risks"));
     doc.moveDown();
     doc.fontSize(9);
     for (const a of risks) {
       const qty = Math.max(1, a.quantity ?? 1);
-      const purchase = money(lineValue(a), currency);
+      const purchase = money(lineValue(a));
       doc.text(
         `• ${a.articleNom} (${a.articleModele}) — ${purchase}` +
           (qty > 1 ? ` · ×${qty}` : "") +
-          (a.garantie?.garantieFin
-            ? ` · warranty expired ${fmtDate(a.garantie.garantieFin)}`
-            : " · no warranty on file")
+          ` · ${
+            a.garantie?.garantieFin
+              ? t("report.warrantyExpired", {
+                  date: pdfDate(loc, a.garantie.garantieFin),
+                })
+              : t("report.noWarranty")
+          }`
       );
     }
   }
@@ -317,15 +330,13 @@ export async function streamPortfolioReportPdf(
 
   if (uninsured.length > 0) {
     doc.addPage();
-    doc
-      .fontSize(16)
-      .text("Items with no insurance policy (highest value first)");
+    doc.fontSize(16).text(t("report.noPolicyList"));
     doc.moveDown();
     doc.fontSize(9);
     for (const a of uninsured) {
       const qty = Math.max(1, a.quantity ?? 1);
       doc.text(
-        `• ${a.articleNom} (${a.articleModele}) — ${money(lineValue(a), currency)}` +
+        `• ${a.articleNom} (${a.articleModele}) — ${money(lineValue(a))}` +
           (qty > 1 ? ` · ×${qty}` : "")
       );
     }

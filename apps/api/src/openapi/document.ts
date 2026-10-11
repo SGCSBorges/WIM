@@ -1230,6 +1230,8 @@ export function buildOpenApiDocument() {
         get: {
           tags: ["articles"],
           summary: "Stream the full-inventory manifest PDF.",
+          description:
+            "Written in the account's language (en/fr/pt/es/nl), with its currency and date format.",
           security: [cookieAuth],
           responses: { "200": { description: "PDF" } },
         },
@@ -1333,6 +1335,8 @@ export function buildOpenApiDocument() {
         get: {
           tags: ["articles"],
           summary: "Stream a printable QR-label sheet (one per article).",
+          description:
+            "Written in the account's language (en/fr/pt/es/nl), with its currency and date format.",
           security: [cookieAuth],
           responses: { "200": { description: "PDF" } },
         },
@@ -1349,6 +1353,8 @@ export function buildOpenApiDocument() {
         get: {
           tags: ["articles"],
           summary: "Stream the single-article insurance/claim PDF.",
+          description:
+            "Written in the account's language (en/fr/pt/es/nl), with its currency and date format.",
           security: [cookieAuth],
           responses: { "200": { description: "PDF" } },
         },
@@ -1639,6 +1645,8 @@ export function buildOpenApiDocument() {
           tags: ["reports"],
           summary:
             "Insurance-ready portfolio PDF (gated: reports feature). Honors the article-list filters; rate-limited; audited as DB_EXPORT.",
+          description:
+            "Written in the account's language (en/fr/pt/es/nl), with its currency and date format.",
           security: [cookieAuth],
           parameters: [
             {

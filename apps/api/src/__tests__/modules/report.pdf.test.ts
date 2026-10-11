@@ -71,7 +71,7 @@ describe("streamPortfolioReportPdf", () => {
     await streamPortfolioReportPdf(
       res as unknown as Parameters<typeof streamPortfolioReportPdf>[0],
       7,
-      "USD",
+      { lang: "en", currency: "USD", dateFormat: null },
       {}
     );
 
@@ -94,7 +94,7 @@ describe("streamPortfolioReportPdf", () => {
     await streamPortfolioReportPdf(
       res as unknown as Parameters<typeof streamPortfolioReportPdf>[0],
       7,
-      "USD",
+      { lang: "en", currency: "USD", dateFormat: null },
       { locationId: 5, tagId: 9, warrantyStatus: "expired" }
     );
 

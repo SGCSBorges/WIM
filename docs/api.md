@@ -195,7 +195,9 @@ saving re-arms every live warranty. Audit actions `WARRANTY_RENEW` /
 
 ## Reports
 
-- `GET /api/reports/portfolio.pdf` — insurance-ready portfolio PDF.
+- `GET /api/reports/portfolio.pdf` — insurance-ready portfolio PDF. Like the
+  claim, inventory and label PDFs, it is written in the account's language
+  with its currency and date format.
   Query params honor the article-list filters (`locationId`, `tagId`,
   `warrantyStatus`) so a user can scope the report to one room or one
   tag. Three sections: cover totals (purchase vs depreciated current
@@ -371,7 +373,8 @@ failure mode with the same 401.
   `type=CLAIM`, so photos/PDFs (receipts, correspondence, damage shots) attach
   to a warranty claim. They list via `GET /api/attachments?garantieId=` (each
   row carries its `type`), render on the article-detail claim block, and the
-  **claim PDF embeds up to four** of them under "Claim evidence".
+  **claim PDF embeds up to four** of them under "Claim evidence" (or that
+  heading in the account's language).
 - **Saved-view default + household sharing** — `PATCH /api/saved-views/:id`
   `{ isDefault?, sharedWithHousehold? }` sets at most one default per owner
   (auto-applied on the Articles page when the URL has no filters) and toggles

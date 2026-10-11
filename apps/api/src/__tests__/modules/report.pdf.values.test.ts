@@ -53,6 +53,8 @@ vi.mock("../../libs/prisma", () => ({
 import { prisma } from "../../libs/prisma";
 import { streamPortfolioReportPdf } from "../../modules/reports/report.pdf";
 
+const EN = { lang: "en", currency: "EUR", dateFormat: null } as const;
+
 const p = prisma as unknown as {
   article: { findMany: ReturnType<typeof vi.fn> };
   articleInsurance: { findMany: ReturnType<typeof vi.fn> };
@@ -98,7 +100,7 @@ describe("portfolio report value math", () => {
     p.article.findMany.mockResolvedValue([article(1, "Chairs", "100.00", 3)]);
     p.articleInsurance.findMany.mockResolvedValue([]);
 
-    await streamPortfolioReportPdf(res(), 1, "EUR", {});
+    await streamPortfolioReportPdf(res(), 1, EN, {});
 
     // Scope to the at-risk section. The per-location manifest emits a
     // "• Chairs" line first and that one was always correct, so an unscoped
@@ -109,12 +111,12 @@ describe("portfolio report value math", () => {
     expect(start).toBeGreaterThanOrEqual(0);
     const line = rendered.slice(start).find((t) => t.startsWith("• Chairs"));
     expect(line).toBeDefined();
-    expect(line).toContain("EUR 300.00");
+    expect(line).toContain("€300.00");
     expect(line).toContain("×3");
     // The cover figure this list is supposed to itemise.
     expect(
       rendered.some((t) =>
-        t.includes("Uninsured / expired-warranty exposure: EUR 300.00")
+        t.includes("Uninsured / expired-warranty exposure: €300.00")
       )
     ).toBe(true);
   });
@@ -127,7 +129,7 @@ describe("portfolio report value math", () => {
     ]);
     p.articleInsurance.findMany.mockResolvedValue([]);
 
-    await streamPortfolioReportPdf(res(), 1, "EUR", {});
+    await streamPortfolioReportPdf(res(), 1, EN, {});
 
     // Scope to the at-risk section: the per-location manifest above it also
     // emits "• " lines, in location order, which would mask the sort.
@@ -147,18 +149,99 @@ describe("portfolio report value math", () => {
     p.article.findMany.mockResolvedValue([article(1, "Desks", "250.00", 4)]);
     p.articleInsurance.findMany.mockResolvedValue([]);
 
-    await streamPortfolioReportPdf(res(), 1, "EUR", {});
+    await streamPortfolioReportPdf(res(), 1, EN, {});
 
     // That list repeats each item after the at-risk one; every rendered line
-    // for this article must show the 1000.00 line total, never the 250.00
+    // for this article must show the 1,000.00 line total, never the 250.00
     // unit price on its own.
     const lines = rendered.filter((t) => t.startsWith("• Desks"));
     expect(lines.length).toBeGreaterThan(0);
     // Covers the manifest line as well as both list entries — all three are
     // money figures for the same article and all three must be line totals.
     for (const l of lines) {
-      expect(l).toContain("EUR 1000.00");
-      expect(l).not.toMatch(/EUR 250\.00(?!\d)/);
+      expect(l).toContain("€1,000.00");
+      expect(l).not.toMatch(/€250\.00(?!\d)/);
     }
+  });
+});
+
+describe("portfolio report in the account's language", () => {
+  const FR = { lang: "fr", currency: "EUR", dateFormat: null } as const;
+  // Intl's French figures carry no-break spaces; compare on plain ones.
+  const plain = () => rendered.map((t) => t.replace(/\u00a0/g, " "));
+
+  function covered(id: number, name: string, price: string) {
+    return {
+      ...article(id, name, price, 1),
+      garantie: {
+        garantieDateAchat: new Date("2025-01-01T00:00:00Z"),
+        garantieFin: new Date("2027-01-31T00:00:00Z"),
+        garantieNom: "Garantie constructeur",
+      },
+      locations: [{ location: { locationId: 1, name: "Salon" } }],
+    };
+  }
+
+  it("writes the report in French, with French money and dates", async () => {
+    p.article.findMany.mockResolvedValue([
+      covered(1, "Téléviseur", "1299.99"),
+      article(2, "Chaises", "100.00", 3),
+    ]);
+    p.articleInsurance.findMany.mockResolvedValue([
+      { articleId: 1, policy: { provider: "MAIF" } },
+    ]);
+
+    await streamPortfolioReportPdf(res(), 1, FR, {});
+    const out = plain();
+
+    expect(out[0]).toBe("Rapport de portfolio d'assurance");
+    expect(out[1]).toMatch(/^2 articles — généré le \d{2}\/\d{2}\/\d{4}$/);
+    expect(out).toContain("Valeur d'achat totale : 1 599,99 €");
+    expect(out).toContain("Articles sous garantie : 1");
+    expect(out).toContain(
+      "Exposition sans garantie ou garantie expirée : 300,00 €"
+    );
+    expect(out).toContain("(non assigné)");
+    const tv = out.find((t) => t.startsWith("• Téléviseur"));
+    expect(tv).toContain("achat 1 299,99 €");
+    expect(tv).toContain("garantie jusqu'au 31/01/2027");
+    expect(tv).toContain("assuré : MAIF");
+    expect(out).toContain(
+      "Sans garantie ou garantie expirée (valeur décroissante)"
+    );
+    expect(out.some((t) => t.includes("aucune garantie enregistrée"))).toBe(
+      true
+    );
+    // Nothing English left over.
+    expect(out.join("\n")).not.toMatch(
+      /purchase|warranty|insured|no policy|item\(s\)|EUR/
+    );
+  });
+
+  it("keeps every figure on one line and inside PDFKit's WinAnsi fonts", async () => {
+    p.article.findMany.mockResolvedValue([covered(1, "Piano", "4890.00")]);
+    p.articleInsurance.findMany.mockResolvedValue([]);
+
+    await streamPortfolioReportPdf(res(), 1, FR, {});
+
+    const all = rendered.join("\n");
+    // U+202F (Intl's French grouping space) has no glyph in WinAnsi.
+    expect(all).not.toContain("\u202f");
+    expect(all).toContain("4\u00a0890,00\u00a0€");
+  });
+
+  it("follows the account's date pattern over the language's", async () => {
+    p.article.findMany.mockResolvedValue([covered(1, "Piano", "4890.00")]);
+    p.articleInsurance.findMany.mockResolvedValue([]);
+
+    await streamPortfolioReportPdf(
+      res(),
+      1,
+      { ...FR, dateFormat: "yyyy-MM-dd" },
+      {}
+    );
+
+    const piano = plain().find((t) => t.startsWith("• Piano"));
+    expect(piano).toContain("garantie jusqu'au 2027-01-31");
   });
 });
