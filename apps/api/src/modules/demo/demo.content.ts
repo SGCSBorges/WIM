@@ -452,7 +452,6 @@ export const RETAILERS: Record<Category, M<Retailer[]>> = {
       shop("Printemps"),
       web("Zalando", "##########"),
       shop("Boutique {brand}"),
-      shop("Decathlon"),
     ],
     ch: [
       shop("Manor"),
@@ -516,7 +515,7 @@ export const RETAILERS: Record<Category, M<Retailer[]>> = {
     ],
   },
   OTHER: {
-    fr: [AMAZON_FR, shop("Aubert"), shop("Leroy Merlin"), shop("Decathlon")],
+    fr: [AMAZON_FR],
     ch: [AMAZON_CH, shop("Manor"), shop("Jumbo")],
     uk: [AMAZON_UK, shop("John Lewis"), shop("Mamas & Papas")],
   },
@@ -667,6 +666,109 @@ export const SHOP_OVERRIDES: Record<string, M<Retailer[]>> = {
     [shop("Bijouterie Favre")],
     [shop("Hartley & Sons Jewellers")]
   ),
+  // "Collectibles" mixes instruments, a pen, a camera and a toy: each is
+  // sold where that kind of thing is sold.
+  "lego-falcon": one(
+    [
+      shop("Fnac"),
+      shop("LEGO Store"),
+      web("lego.com", "T#########"),
+      AMAZON_FR,
+    ],
+    [shop("Franz Carl Weber"), web("lego.com", "T#########")],
+    [shop("LEGO Store"), web("lego.com", "T#########")]
+  ),
+  strat: one(
+    [
+      web("Woodbrass", "########"),
+      shop("Le Comptoir Musical"),
+      web("Thomann", "#########"),
+    ],
+    [shop("Le Comptoir Musical"), web("Thomann", "#########")],
+    [web("Andertons", "########"), shop("Soundhouse Music")]
+  ),
+  taylor: one(
+    [
+      web("Woodbrass", "########"),
+      shop("Le Comptoir Musical"),
+      web("Thomann", "#########"),
+    ],
+    [shop("Le Comptoir Musical"), web("Thomann", "#########")],
+    [web("Andertons", "########"), shop("Soundhouse Music")]
+  ),
+  "yamaha-p125": one(
+    [
+      web("Woodbrass", "########"),
+      shop("Le Comptoir Musical"),
+      web("Thomann", "#########"),
+    ],
+    [shop("Le Comptoir Musical"), web("Thomann", "#########")],
+    [web("Andertons", "########"), shop("Soundhouse Music")]
+  ),
+  montblanc: one(
+    [shop("Boutique Montblanc"), shop("Galeries Lafayette"), shop("Printemps")],
+    [shop("Boutique Montblanc"), shop("Globus")],
+    [shop("Montblanc boutique"), shop("Selfridges")]
+  ),
+  "leica-m6": one(
+    [shop("Leica Store Paris")],
+    [shop("Leica Store Zürich")],
+    [shop("Leica Store London")]
+  ),
+  turntable: one(
+    [shop("Fnac"), web("Son-Vidéo.com", "#######")],
+    [shop("Fnac"), web("Galaxus", "#########")],
+    [shop("Richer Sounds"), web("Sevenoaks", "#######")]
+  ),
+  suitcase: one(
+    [shop("Galeries Lafayette"), shop("Boutique {brand}"), AMAZON_FR],
+    [shop("Globus"), shop("Boutique {brand}")],
+    [shop("John Lewis"), AMAZON_UK]
+  ),
+  anker: one(
+    [AMAZON_FR, shop("Fnac"), shop("Boulanger")],
+    [AMAZON_CH, web("Galaxus", "#########")],
+    [AMAZON_UK, shop("Currys")]
+  ),
+  weber: one(
+    [shop("Leroy Merlin"), shop("Castorama"), shop("Boulanger"), AMAZON_FR],
+    [shop("Jumbo"), shop("Hornbach")],
+    [shop("B&Q"), AMAZON_UK]
+  ),
+  babyzen: one(
+    [shop("Aubert"), shop("Galeries Lafayette"), AMAZON_FR],
+    [shop("Manor"), shop("Baby-Rose")],
+    [shop("Mamas & Papas"), shop("John Lewis")]
+  ),
+  "car-seat": one(
+    [shop("Aubert"), AMAZON_FR],
+    [shop("Manor"), AMAZON_CH],
+    [shop("Mamas & Papas"), AMAZON_UK]
+  ),
+  "pool-robot": one(
+    [shop("Leroy Merlin"), shop("Castorama"), AMAZON_FR],
+    [shop("Jumbo"), shop("Hornbach")],
+    [shop("B&Q"), AMAZON_UK]
+  ),
+  surfboard: one(
+    [shop("Surf Shop Côte Basque"), web("Glisshop", "#########")],
+    [web("Glisshop", "#########")],
+    [shop("Fistral Beach Surf Shop")]
+  ),
+  snowboard: one(
+    [
+      web("Glisshop", "#########"),
+      web("Ekosport", "#######"),
+      shop("Intersport"),
+    ],
+    [shop("Ochsner Sport"), web("Glisshop", "#########")],
+    [shop("Snow+Rock")]
+  ),
+  golf: one(
+    [shop("Golf Plus"), shop("Decathlon"), shop("Go Sport")],
+    [shop("Golf Plus"), shop("Decathlon")],
+    [shop("American Golf")]
+  ),
 };
 
 export interface SecondHandSource {
@@ -727,6 +829,8 @@ export interface Desc {
   fr: string;
   en: string;
   for?: string[];
+  /** Catalogue keys the line is untrue of, though `for` matches them. */
+  notFor?: string[];
 }
 
 const PHONE_LIKE = ["Phone", "Tablet", "E-reader"];
@@ -754,7 +858,7 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       for: PHONE_LIKE,
     },
     {
-      fr: "Utilisé pour le télétravail.",
+      fr: "Utilisé{e} pour le télétravail.",
       en: "Used for working from home.",
       for: ["Laptop", "MacBook", "Monitor", "Headphones", "Printer"],
     },
@@ -763,12 +867,13 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       en: "Original box is in the loft.",
     },
     {
-      fr: "Remplace l'ancien qui ne tenait plus la charge.",
+      fr: "{Remplace|Remplacent} {l'ancien/l'ancienne/les anciens/les anciennes} qui ne {tenait|tenaient} plus la charge.",
       en: "Replaced the old one, battery was dead.",
       for: BATTERY,
+      notFor: ["ps5", "ps5pro"], // mains-powered consoles
     },
     {
-      fr: "Configuré avec le compte familial.",
+      fr: "Configuré{e} avec le compte familial.",
       en: "Set up on the family account.",
       for: [
         "Phone",
@@ -784,25 +889,26 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       fr: "Chargeur d'origine dans le tiroir du bureau.",
       en: "Original charger is in the desk drawer.",
       for: BATTERY,
+      notFor: ["ps5", "ps5pro"],
     },
     {
       fr: "Petite rayure sur le côté, rien de grave.",
       en: "Small scuff on one side, works fine.",
     },
     {
-      fr: "Fixée au mur, support acheté à part.",
+      fr: "Fixé{e} au mur, support acheté à part.",
       en: "Wall-mounted, bracket bought separately.",
       for: ["TV"],
     },
     {
-      fr: "Toujours rangé dans sa housse.",
+      fr: "Toujours rangé{e} dans {sa|leur} housse.",
       en: "Always kept in its case.",
       for: ["Camera", "Lens", "Drone", "Headphones", "Action camera"],
     },
   ],
   APPLIANCE: [
     {
-      fr: "Installé par le magasin, ils ont repris l'ancien.",
+      fr: "Installé{e} par le magasin, ils ont repris {l'ancien/l'ancienne/les anciens/les anciennes}.",
       en: "Installed by the shop, they took the old one away.",
       for: [
         "Dishwasher",
@@ -824,10 +930,10 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       en: "Manual is in the appliance folder.",
     },
     {
-      fr: "Remplace l'ancien, tombé en panne juste après la garantie...",
+      fr: "{Remplace|Remplacent} {l'ancien/l'ancienne/les anciens/les anciennes}, tombé{e} en panne juste après la garantie...",
       en: "Replaced the old one, which died just out of warranty.",
     },
-    { fr: "Pris en promo, -20 %.", en: "Got it 20% off." },
+    { fr: "{Pris/Prise/Pris/Prises} en promo, -20 %.", en: "Got it 20% off." },
     {
       fr: "Filtre à changer tous les ans.",
       en: "Filter needs replacing every year.",
@@ -836,7 +942,7 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
   ],
   FURNITURE: [
     {
-      fr: "Monté nous-mêmes, la notice est dans le tiroir.",
+      fr: "Monté{e} nous-mêmes, la notice est dans le tiroir.",
       en: "Assembled it ourselves, instructions in the drawer.",
       for: ["malm", "pax", "kallax", "bunk-bed", "standing-desk"],
     },
@@ -877,12 +983,12 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       ],
     },
     {
-      fr: "Livré avec 2 batteries 5 Ah et le chargeur.",
+      fr: "Livré{e} avec 2 batteries 5 Ah et le chargeur.",
       en: "Came with two 5Ah batteries and the charger.",
       for: ["bosch-drill", "makita-impact", "dewalt-saw"],
     },
     {
-      fr: "Rangé dans la mallette d'origine.",
+      fr: "Rangé{e} dans la mallette d'origine.",
       en: "Kept in the original case.",
       for: [
         "bosch-drill",
@@ -893,7 +999,7 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       ],
     },
     {
-      fr: "Remisé l'hiver dans l'abri.",
+      fr: "Remisé{e} l'hiver dans l'abri.",
       en: "Stored in the shed over winter.",
       for: ["mower", "hedge-trimmer", "chainsaw", "karcher-k5"],
     },
@@ -917,7 +1023,7 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       ],
     },
     {
-      fr: "Gravé Bicycode.",
+      fr: "Gravé{e} Bicycode.",
       en: "Frame is security-marked.",
       for: [
         "Mountain bike",
@@ -958,12 +1064,12 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       for: ["suit", "wedding-dress", "goose-parka", "moncler"],
     },
     {
-      fr: "Acheté pour le ski.",
+      fr: "Acheté{e} pour le ski.",
       en: "Bought for the ski trip.",
       for: ["ski-jacket", "goose-parka", "moncler", "nano-puff"],
     },
     {
-      fr: "Porté au mariage de Julie.",
+      fr: "Porté{e} au mariage de Julie.",
       en: "Wore it to Sam's wedding.",
       for: ["suit"],
     },
@@ -1004,12 +1110,12 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
   ],
   SPORTS: [
     {
-      fr: "Fartés en début de saison.",
+      fr: "Farté{e} en début de saison.",
       en: "Waxed at the start of the season.",
       for: ["skis", "snowboard"],
     },
     {
-      fr: "Utilisé 2 fois par semaine.",
+      fr: "Utilisé{e} 2 fois par semaine.",
       en: "Used twice a week.",
       for: ["peloton", "concept2", "treadmill", "racket"],
     },
@@ -1019,12 +1125,12 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       for: ["skis", "snowboard", "golf", "racket", "surfboard"],
     },
     {
-      fr: "Acheté après avoir loué deux saisons.",
+      fr: "Acheté{e} après avoir loué deux saisons.",
       en: "Bought after renting for two seasons.",
       for: ["skis", "ski-boots", "snowboard"],
     },
     {
-      fr: "Toujours utilisée en camping l'été.",
+      fr: "Toujours utilisé{e} en camping l'été.",
       en: "Goes camping with us every summer.",
       for: ["quechua-tent", "kayak"],
     },
@@ -1036,17 +1142,17 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       for: ["lego-falcon", "leica-m6", "montblanc", "turntable"],
     },
     {
-      fr: "Accordé une fois par an.",
+      fr: "Accordé{e} une fois par an.",
       en: "Tuned once a year.",
       for: ["upright-piano"],
     },
     {
-      fr: "Encadré chez l'encadreur du quartier.",
+      fr: "Encadré{e} chez l'encadreur du quartier.",
       en: "Framed at the local framer's.",
       for: ["painting"],
     },
     {
-      fr: "Monté avec les enfants pendant les vacances.",
+      fr: "Monté{e} avec les enfants pendant les vacances.",
       en: "Built it with the kids over the holidays.",
       for: ["lego-falcon"],
     },
@@ -1063,7 +1169,7 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       for: ["weber", "garden-set", "trampoline"],
     },
     {
-      fr: "Prêté souvent, penser à le récupérer.",
+      fr: "Prêté{e} souvent, penser à {le/la/les/les} récupérer.",
       en: "Gets borrowed a lot, remember to get it back.",
       for: ["anker", "suitcase", "babyzen"],
     },
@@ -1072,16 +1178,16 @@ export const DESCRIPTIONS: Record<Category, Desc[]> = {
       en: "For holidays.",
       for: ["suitcase", "anker"],
     },
-    { fr: "Homologué i-Size.", en: "i-Size approved.", for: ["car-seat"] },
+    { fr: "Homologué{e} i-Size.", en: "i-Size approved.", for: ["car-seat"] },
   ],
 };
 
 export const GIFT_DESCRIPTIONS: L<string[]> = {
   fr: [
     "Cadeau de mes parents pour mon anniversaire.",
-    "Offert pour Noël.",
+    "Offert{e} pour Noël.",
     "Cadeau de mariage.",
-    "Offert par les collègues pour mon départ.",
+    "Offert{e} par les collègues pour mon départ.",
     "Cadeau de ma sœur.",
   ],
   en: [
@@ -1099,14 +1205,14 @@ export const SECOND_HAND_DESCRIPTIONS: L<{
 }> = {
   fr: {
     platform: [
-      (src) => `Acheté d'occasion sur ${src}, très bon état.`,
+      (src) => `Acheté{e} d'occasion sur ${src}, très bon état.`,
       () => "Occasion, le vendeur m'a donné la facture d'origine.",
       () => "Occasion, quelques traces d'usage.",
     ],
     person: [
-      "Racheté à un collègue.",
-      "Récupéré auprès de mon beau-frère.",
-      "Racheté à un ami qui changeait de modèle.",
+      "Racheté{e} à un collègue.",
+      "Récupéré{e} auprès de mon beau-frère.",
+      "Racheté{e} à un ami qui changeait de modèle.",
     ],
   },
   en: {
@@ -1128,16 +1234,17 @@ export const CASUAL_PURCHASE_NOTE: L<
   (retailer: string, online: boolean, months: number) => string
 > = {
   fr: (r, online, m) =>
-    `Acheté ${online ? "sur" : "chez"} ${r}, garantie ${m >= 12 && m % 12 === 0 ? `${m / 12} an${m >= 24 ? "s" : ""}` : `${m} mois`}.`,
+    `Acheté{e} ${online ? "sur" : "chez"} ${r}, garantie ${m >= 12 && m % 12 === 0 ? `${m / 12} an${m >= 24 ? "s" : ""}` : `${m} mois`}.`,
   en: (r, online, m) =>
     `Bought ${online ? "from" : "at"} ${r}, ${m >= 12 && m % 12 === 0 ? `${m / 12}-year` : `${m}-month`} warranty.`,
 };
 
 export const SOLD_NOTES: L<((price: string) => string)[]> = {
   fr: [
-    (p) => `Vendu sur Le Bon Coin ${p}.`,
-    (p) => `Revendu ${p} à un collègue.`,
-    (p) => `Repris ${p} par le magasin pour l'achat du nouveau.`,
+    (p) => `Vendu{e} sur Le Bon Coin ${p}.`,
+    (p) => `Revendu{e} ${p} à un collègue.`,
+    (p) =>
+      `{Repris/Reprise/Repris/Reprises} ${p} par le magasin pour l'achat {du nouveau/de la nouvelle/des nouveaux/des nouvelles}.`,
   ],
   en: [
     (p) => `Sold on eBay for ${p}.`,
@@ -1148,9 +1255,9 @@ export const SOLD_NOTES: L<((price: string) => string)[]> = {
 
 export const DISPOSED_NOTES: L<string[]> = {
   fr: [
-    "Tombé en panne, déposé à la déchetterie.",
-    "Plus réparable, recyclé en magasin.",
-    "Donné à Emmaüs.",
+    "Tombé{e} en panne, déposé{e} à la déchetterie.",
+    "Plus {réparable|réparables}, recyclé{e} en magasin.",
+    "Donné{e} à Emmaüs.",
   ],
   en: [
     "Broke down, taken to the tip.",
@@ -1159,11 +1266,34 @@ export const DISPOSED_NOTES: L<string[]> = {
   ],
 };
 
+/** What a finder types on a lost item's QR page (contact, message). */
+export const FOUND_REPORTS: L<{ contact: string; message: string }[]> = {
+  fr: [
+    {
+      contact: "marc.duval@example.com",
+      message:
+        "Bonjour, je {l'ai trouvé/l'ai trouvée/les ai trouvés/les ai trouvées} sur un banc près de la gare. Je {le/la/les/les} garde chez moi, écrivez-moi pour {le/la/les/les} récupérer.",
+    },
+    {
+      contact: "nadia.k@example.com",
+      message:
+        "Trouvé{e} dans le tram ce matin, j'ai scanné l'étiquette. Je peux {le/la/les/les} déposer où vous voulez dans la semaine.",
+    },
+  ],
+  en: [
+    {
+      contact: "mark.d@example.com",
+      message:
+        "Hi, found this on a bench by the station. I'm keeping it safe, email me to collect it.",
+    },
+  ],
+};
+
 export const LOST_NOTES: L<string[]> = {
   fr: [
-    "Perdu dans le train, déclaration faite.",
-    "Oublié à l'hôtel, jamais retrouvé.",
-    "Probablement volé au bureau.",
+    "Perdu{e} dans le train, déclaration faite.",
+    "Oublié{e} à l'hôtel, jamais retrouvé{e}.",
+    "Probablement volé{e} au bureau.",
   ],
   en: [
     "Lost on the train, reported it.",
@@ -1181,10 +1311,10 @@ export const NOTE_TEXTS: Record<
 > = {
   SERVICE: {
     fr: [
-      "Déposé au SAV, ticket n°{n}.",
+      "Déposé{e} au SAV, ticket n°{n}.",
       "Le technicien passe jeudi matin.",
       "Réparation acceptée, retour sous 10 jours.",
-      "Récupéré, fonctionne à nouveau.",
+      "Récupéré{e}, {fonctionne|fonctionnent} à nouveau.",
     ],
     en: [
       "Dropped at the service centre, ticket #{n}.",
@@ -1226,8 +1356,8 @@ export const NOTE_TEXTS: Record<
   OTHER: {
     fr: [
       "Photo du numéro de série prise.",
-      "Ajouté à l'assurance habitation.",
-      "Prêté à Julien pour le week-end.",
+      "Ajouté{e} à l'assurance habitation.",
+      "Prêté{e} à Julien pour le week-end.",
       "Penser à racheter un câble.",
     ],
     en: [
@@ -1242,27 +1372,31 @@ export const NOTE_TEXTS: Record<
 // ---------------------------------------------------------------------------
 // Warranties
 // ---------------------------------------------------------------------------
+/** `legal` is the two-year legal guarantee of conformity, which the SELLER
+ *  owes (Code de la consommation, art. L217-3 et seq.); `maker` is a
+ *  manufacturer's own warranty, for its own length. */
 export const WARRANTY_NAMES: L<{
-  legal: (brand: string, months: number) => string;
+  legal: string;
+  maker: (brand: string, months: number) => string;
   extended: (retailer: string, months: number) => string;
   brand: Record<string, string>;
 }> = {
   fr: {
-    legal: (b, m) =>
+    legal: "Garantie légale 2 ans",
+    maker: (b, m) =>
       m === 24
-        ? pick([
-            `Garantie ${b}`,
-            `Garantie légale 2 ans`,
-            `Garantie constructeur ${b}`,
-          ])
-        : `Garantie ${b} ${m >= 12 && m % 12 === 0 ? `${m / 12} ans` : `${m} mois`}`,
+        ? pick([`Garantie ${b}`, `Garantie constructeur ${b}`])
+        : m === 12
+          ? pick([`Garantie ${b}`, `Garantie constructeur ${b} 1 an`])
+          : `Garantie ${b} ${m >= 12 && m % 12 === 0 ? `${m / 12} ans` : `${m} mois`}`,
     extended: (r, m) => `Extension de garantie ${r} ${m / 12} ans`,
     brand: { Apple: "AppleCare+", Samsung: "Samsung Care+" },
   },
   en: {
-    legal: (b, m) =>
+    legal: "Statutory 2-year guarantee",
+    maker: (b, m) =>
       m === 24
-        ? pick([`${b} warranty`, `Manufacturer warranty`, `${b} guarantee`])
+        ? pick([`${b} warranty`, `${b} guarantee`])
         : `${b} ${m >= 12 && m % 12 === 0 ? `${m / 12}-year` : `${m}-month`} warranty`,
     extended: (r, m) => `${r} ${m / 12}-year extended warranty`,
     brand: { Apple: "AppleCare+", Samsung: "Samsung Care+" },
@@ -1292,16 +1426,16 @@ export const SUPPORT_URLS: Record<string, string> = {
 export const CLAIM_NOTES: L<{ open: string[]; resolved: string[] }> = {
   fr: {
     open: [
-      "Écran qui scintille, envoyé au SAV.",
+      "Écran qui scintille, envoyé{e} au SAV.",
       "Ne charge plus, dossier ouvert chez le fabricant.",
       "Bruit anormal à l'essorage, technicien prévu.",
       "Batterie qui gonfle, en attente de retour du SAV.",
     ],
     resolved: [
       "Carte mère remplacée sous garantie.",
-      "Échangé contre un neuf en magasin.",
+      "Échangé{e} contre {un neuf/une neuve/des neufs/des neuves} en magasin.",
       "Pompe de vidange changée, rien à payer.",
-      "Réparé sous garantie en 8 jours.",
+      "Réparé{e} sous garantie en 8 jours.",
     ],
   },
   en: {
@@ -1551,10 +1685,10 @@ export const BORROWERS: L<string[]> = {
 
 export const LOAN_RETURN_NOTES: L<string[]> = {
   fr: [
-    "Rendu en bon état.",
-    "Rendu propre, merci !",
-    "Rendu avec une batterie vide.",
-    "Rendu, mais il manque un embout.",
+    "Rendu{e} en bon état.",
+    "Rendu{e} {propre|propres}, merci !",
+    "Rendu{e} avec une batterie vide.",
+    "Rendu{e}, mais il manque un embout.",
   ],
   en: [
     "Returned in good condition.",
@@ -1910,8 +2044,94 @@ export const BUNDLE_LABELS: Record<BundleKey, L<string>> = {
 };
 
 /** How people mark whose it is when the household has several. */
+/** Gender and number of a catalogue noun, for the French notes that agree
+ *  with the thing they describe ("Offerte pour Noël" for a watch). */
+export type Form = "m" | "f" | "mp" | "fp";
+
+const FR_FORMS: Record<string, Form> = {
+  alliances: "fp",
+  ampoules: "fp",
+  armoire: "f",
+  bague: "f",
+  barre: "f",
+  batterie: "f",
+  boots: "fp",
+  bouilloire: "f",
+  caméra: "f",
+  chaises: "fp",
+  chaussures: "fp",
+  climatisation: "f",
+  clubs: "mp",
+  collection: "f",
+  console: "f",
+  doudoune: "f",
+  enceinte: "f",
+  friteuse: "f",
+  guitare: "f",
+  imprimante: "f",
+  liseuse: "f",
+  lits: "mp",
+  machine: "f",
+  montre: "f",
+  parka: "f",
+  "perceuse-visseuse": "f",
+  planche: "f",
+  plaque: "f",
+  platine: "f",
+  ponceuse: "f",
+  poussette: "f",
+  raquette: "f",
+  remorque: "f",
+  robe: "f",
+  scie: "f",
+  skis: "mp",
+  table: "f",
+  tablette: "f",
+  tente: "f",
+  tondeuse: "f",
+  tronçonneuse: "f",
+  trottinette: "f",
+  télé: "f",
+  valise: "f",
+  veste: "f",
+  visseuse: "f",
+  voiture: "f",
+  écouteurs: "mp",
+  étagère: "f",
+};
+
+/** "Montre connectée" → "f"; anything not listed is masculine singular. */
+export function frForm(nounFr: string): Form {
+  return FR_FORMS[nounFr.split(" ")[0].toLowerCase()] ?? "m";
+}
+
+const FORM_INDEX: Record<Form, number> = { m: 0, f: 1, mp: 2, fp: 3 };
+
+/** Make a French note agree with its noun. Tokens: `{e}` (the regular
+ *  ending: "", e, s, es), `{m/f/mp/fp}` (four spelled-out forms) and
+ *  `{singular|plural}`. Text without tokens (every English line) passes
+ *  through unchanged. */
+export function agree(text: string, form: Form): string {
+  const i = FORM_INDEX[form];
+  const plural = form === "mp" || form === "fp";
+  return text
+    .replace(/\{e\}/g, ["", "e", "s", "es"][i])
+    .replace(
+      /\{([^{}|/]*)\/([^{}|/]*)\/([^{}|/]*)\/([^{}|/]*)\}/g,
+      (...m) => m[1 + i]
+    )
+    .replace(/\{([^{}|/]*)\|([^{}|/]*)\}/g, (_, sg, pl) => (plural ? pl : sg));
+}
+
+/** "de Jules", but "d'Emma" and "d'Hugo": French elides "de" before a
+ *  vowel or a mute h (no first name here starts with an aspirated h; a "Y"
+ *  name like Yanis is consonantal). */
+export function deName(name: string): string {
+  return /^[AEIOUÉÈÊÂÎÔHaeiouéèêâîôh]/.test(name) ? `d'${name}` : `de ${name}`;
+}
+
 export const WITH_OWNER: L<(base: string, name: string) => string> = {
-  fr: (b, n) => `${b} de ${n}`,
+  fr: (b, n) => `${b} ${deName(n)}`,
   en: (b, n) => `${n}'s ${b}`,
 };
 

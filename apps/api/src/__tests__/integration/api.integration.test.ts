@@ -1710,7 +1710,89 @@ suite("API integration (real Postgres)", () => {
         "shop price a receipt would never show",
         `SELECT count(*) FROM "Article" WHERE "purchasePrice" IS NOT NULL AND ("purchasePrice"*100)::bigint % 100 NOT IN (0, 90, 95, 99)`,
       ],
+      [
+        // Code de la consommation, art. L217-3: the seller owes it.
+        "legal guarantee in someone other than the seller's name",
+        `SELECT count(*) FROM "Garantie" g JOIN "Article" a ON a."articleId"=g."garantieArticleId" WHERE g."garantieNom"='Garantie légale 2 ans' AND g."providerName" IS NOT NULL AND g."providerName" IS DISTINCT FROM a."purchasedFrom"`,
+      ],
+      [
+        "Apple's own warranty longer than a year",
+        `SELECT count(*) FROM "Garantie" g JOIN "Article" a ON a."articleId"=g."garantieArticleId" WHERE a.brand='Apple' AND g."garantieNom" ~ '^Garantie (constructeur )?Apple' AND g."garantieDuration" > 12`,
+      ],
+      [
+        "AppleCare+ for three years on anything but a Mac",
+        `SELECT count(*) FROM "Garantie" g JOIN "Article" a ON a."articleId"=g."garantieArticleId" WHERE g."garantieNom"='AppleCare+' AND g."garantieDuration" <> 24 AND a."articleNom" !~* 'macbook'`,
+      ],
+      [
+        "order number without a price",
+        `SELECT count(*) FROM "Article" WHERE "orderRef" IS NOT NULL AND "purchasePrice" IS NULL`,
+      ],
+      [
+        "one model at several prices in the maker's own store",
+        `SELECT count(*) FROM (SELECT 1 FROM "Article" WHERE "purchasedFrom" IN ('Apple Store','apple.com') AND "purchasePrice" IS NOT NULL GROUP BY "articleModele" HAVING count(DISTINCT "purchasePrice") > 1) x`,
+      ],
+      [
+        "'de' before a vowel in an owner's name",
+        `SELECT count(*) FROM "Article" WHERE "articleNom" ~ ' de [AEIOUÉÈÊÂÎH][a-zéèêëï]+$'`,
+      ],
+      [
+        "shop that doesn't sell that brand",
+        `SELECT count(*) FROM "Article" WHERE ("purchasedFrom" IN ('Woodbrass','Le Comptoir Musical') AND brand NOT IN ('Fender','Taylor','Yamaha'))
+            OR ("purchasedFrom" IN ('Decathlon','decathlon.fr') AND brand IN ('Hugo Boss','Longchamp','Dr. Martens','Barbour','Patagonia','Canada Goose','Moncler','Anker','Samsonite','Weber','Firewire','Burton','Dolphin'))
+            OR ("purchasedFrom"='Aubert' AND brand NOT IN ('Cybex','Stokke'))`,
+      ],
+      [
+        "furniture or a vehicle given as a present",
+        `SELECT count(*) FROM "Article" WHERE category IN ('FURNITURE','VEHICLE') AND "articleDescription" ~ '^(Cadeau|Offert)'`,
+      ],
+      [
+        // Reckoned as the dashboard's budget card does it.
+        "household already past its yearly budget",
+        `SELECT count(*) FROM "User" u WHERE u."annualBudget" IS NOT NULL AND u."annualBudget" < (
+           SELECT coalesce(sum(a."purchasePrice" * greatest(1, a.quantity)), 0) FROM "Article" a LEFT JOIN "Garantie" g ON g."garantieArticleId"=a."articleId"
+            WHERE a."ownerUserId"=u."userId" AND a."deletedAt" IS NULL AND a.status NOT IN ('SOLD','DISPOSED','LOST') AND a."purchasePrice" IS NOT NULL
+              AND coalesce(g."garantieDateAchat", a."createdAt") >= date_trunc('year', now() AT TIME ZONE 'UTC'))`,
+      ],
     ];
+
+    /** Bought new after it left sale: shops sell their last stock for three
+     *  months, the maker's own store not at all. */
+    async function boughtNewAfterEndOfSale(): Promise<string[]> {
+      const { CATALOG } = await import("../../modules/demo/demo.catalog");
+      const C = await import("../../modules/demo/demo.content");
+      const { monthStart, addMonths } =
+        await import("../../modules/demo/demo.random");
+      const used = new Set([
+        ...C.SECOND_HAND_PLATFORMS.fr.map((x) => x.name),
+        ...C.SECOND_HAND_PEOPLE.fr.map((x) => x.name),
+        C.REFURBISHED.fr,
+      ]);
+      const ended = new Map(
+        CATALOG.filter((i) => i.discontinued).map((i) => [
+          `${i.brand}|${i.model}`,
+          monthStart(i.discontinued!),
+        ])
+      );
+      const rows = await prisma.article.findMany({
+        where: { purchasedFrom: { not: null }, garantie: { renewedAt: null } },
+        select: {
+          articleNom: true,
+          brand: true,
+          articleModele: true,
+          purchasedFrom: true,
+          garantie: { select: { garantieDateAchat: true } },
+        },
+      });
+      return rows.flatMap((a) => {
+        const end = ended.get(`${a.brand}|${a.articleModele}`);
+        if (!end || !a.garantie || used.has(a.purchasedFrom!)) return [];
+        const bought = a.garantie.garantieDateAchat.getTime();
+        const ownStore = /apple/i.test(a.purchasedFrom!);
+        return bought > (ownStore ? end : addMonths(end, 3))
+          ? [`${a.articleNom} at ${a.purchasedFrom}`]
+          : [];
+      });
+    }
 
     it("violates none of the invariants a real account obeys, and stages every demo story", async () => {
       const { seedDemoData, resetDemoData, DEMO_SHOWCASE_EMAIL } =
@@ -1731,13 +1813,26 @@ suite("API integration (real Postgres)", () => {
         if (Number(row.count) > 0) broken.push(`${what}: ${row.count}`);
       }
       expect(broken).toEqual([]);
+      expect(await boughtNewAfterEndOfSale()).toEqual([]);
 
       // The account people present from: French, in euros, with every story.
+      // Its password is in this public repository, so it is not an admin.
       const show = await prisma.user.findUniqueOrThrow({
         where: { email: DEMO_SHOWCASE_EMAIL },
-        select: { userId: true, language: true, currency: true },
+        select: {
+          userId: true,
+          language: true,
+          currency: true,
+          role: true,
+          calendarToken: true,
+        },
       });
-      expect(show).toMatchObject({ language: "fr", currency: "EUR" });
+      expect(show).toMatchObject({
+        language: "fr",
+        currency: "EUR",
+        role: "POWER_USER",
+      });
+      expect(show.calendarToken).not.toBeNull();
       const soon = new Date(Date.now() + 30 * 86_400_000);
       const [
         articles,
@@ -1794,6 +1889,21 @@ suite("API integration (real Postgres)", () => {
       expect(threads).toBeGreaterThanOrEqual(1);
       expect(boughtWish).toBeGreaterThanOrEqual(1);
       expect(lostWithQr).toBeGreaterThanOrEqual(1);
+      await expectEveryExchange(show.userId);
+
+      // The children are young (bunk beds, a 20" bike): none of the adults'
+      // things carries their name.
+      expect(
+        await prisma.article.count({
+          where: {
+            ownerUserId: show.userId,
+            OR: [
+              { articleNom: { endsWith: " de Jules" } },
+              { articleNom: { endsWith: " de Rose" } },
+            ],
+          },
+        })
+      ).toBe(0);
 
       // Everyone is a French-speaking resident of France, paying in euros.
       expect(
@@ -1888,6 +1998,173 @@ suite("API integration (real Postgres)", () => {
         expect(await readUploadBytes(d.thumbUrl)).toBeNull();
       }
     }, 120_000);
+
+    /** Each side of every exchange, so each page has something to show. */
+    async function expectEveryExchange(userId: number) {
+      const [buyer, toAccept, sharesOut, sharesIn, invites, found] =
+        await Promise.all([
+          prisma.messageThread.count({ where: { requesterId: userId } }),
+          prisma.articleTransferRequest.count({
+            where: {
+              requesterId: userId,
+              direction: "PUSH",
+              status: "PENDING",
+            },
+          }),
+          prisma.inventoryShare.count({
+            where: { ownerUserId: userId, viaHouseholdId: null },
+          }),
+          prisma.inventoryShare.count({
+            where: { targetUserId: userId, viaHouseholdId: null },
+          }),
+          prisma.shareInvite.count({
+            where: { ownerUserId: userId, status: "PENDING" },
+          }),
+          prisma.alerte.count({
+            where: {
+              ownerUserId: userId,
+              alerteNom: { startsWith: "Objet retrouvé" },
+            },
+          }),
+        ]);
+      expect({ buyer, toAccept, sharesOut, sharesIn, invites, found }).toEqual({
+        buyer: expect.any(Number),
+        toAccept: 1,
+        sharesOut: expect.any(Number),
+        sharesIn: expect.any(Number),
+        invites: expect.any(Number),
+        found: 1,
+      });
+      expect(buyer).toBeGreaterThanOrEqual(1);
+      expect(sharesOut).toBeGreaterThanOrEqual(1);
+      expect(sharesIn).toBeGreaterThanOrEqual(1);
+      expect(invites).toBeGreaterThanOrEqual(1);
+    }
+
+    // admin@admin.com is the operator's real account: a reseed fills it with
+    // a showcase household and later empties it again, and never touches the
+    // account itself — password, role, preferences, sign-ins, audit trail.
+    it("fills the operator's own account and keeps the account itself", async () => {
+      const bcrypt = (await import("bcrypt")).default;
+      const { seedDemoData, resetDemoData, DEMO_OPERATOR_EMAIL } =
+        await import("../../modules/demo/demo.service");
+      const { readUploadBytes } =
+        await import("../../modules/attachments/attachment.fs");
+      const operator = await prisma.user.create({
+        data: {
+          email: DEMO_OPERATOR_EMAIL,
+          password: await bcrypt.hash("operator-only-secret", 4),
+          role: "ADMIN",
+          theme: "dark",
+        },
+      });
+      await prisma.userSession.create({
+        data: { userId: operator.userId, jti: "operator-real-session" },
+      });
+      await prisma.auditLog.create({
+        data: {
+          userId: operator.userId,
+          action: "LOGIN",
+          entity: "User",
+          entityId: operator.userId,
+        },
+      });
+      const opts = {
+        users: 8,
+        articlesPerUser: 10,
+        powerUserCount: 4,
+        makeAdmin: false,
+      };
+      const keptAsIs = async () => {
+        const u = await prisma.user.findUniqueOrThrow({
+          where: { email: DEMO_OPERATOR_EMAIL },
+        });
+        expect(u.userId).toBe(operator.userId);
+        expect(u.role).toBe("ADMIN");
+        expect(u.theme).toBe("dark");
+        expect(await bcrypt.compare("operator-only-secret", u.password)).toBe(
+          true
+        );
+        expect(
+          await prisma.userSession.findMany({
+            where: { userId: u.userId },
+            select: { jti: true },
+          })
+        ).toEqual([{ jti: "operator-real-session" }]);
+        expect(
+          await prisma.auditLog.count({ where: { userId: u.userId } })
+        ).toBe(1);
+      };
+
+      await seedDemoData(prisma, { ...opts, seed: 77 });
+      await keptAsIs();
+      const id = operator.userId;
+      const [articles, household, openClaim, lostWithQr] = await Promise.all([
+        prisma.article.count({ where: { ownerUserId: id } }),
+        prisma.householdMember.count({ where: { userId: id } }),
+        prisma.garantie.count({
+          where: { ownerUserId: id, claimStatus: "OPEN" },
+        }),
+        prisma.article.count({
+          where: {
+            ownerUserId: id,
+            status: "LOST",
+            publicToken: { not: null },
+          },
+        }),
+      ]);
+      expect(articles).toBeGreaterThanOrEqual(100);
+      expect(household).toBe(1);
+      expect(openClaim).toBeGreaterThanOrEqual(1);
+      expect(lostWithQr).toBeGreaterThanOrEqual(1);
+      await expectEveryExchange(id);
+      const broken: string[] = [];
+      for (const [what, sql] of INVARIANTS) {
+        const [row] = await prisma.$queryRawUnsafe<{ count: bigint }[]>(sql);
+        if (Number(row.count) > 0) broken.push(`${what}: ${row.count}`);
+      }
+      expect(broken).toEqual([]);
+      // The admin pages are shown from here; nothing else is an admin.
+      expect(
+        (
+          await prisma.user.findMany({
+            where: { role: "ADMIN" },
+            select: { email: true },
+          })
+        ).map((u) => u.email)
+      ).toEqual([DEMO_OPERATOR_EMAIL]);
+
+      const files = await prisma.attachment.findMany({
+        where: { ownerUserId: id },
+        select: { fileUrl: true },
+      });
+      expect(files.length).toBeGreaterThan(0);
+      await resetDemoData(prisma);
+      await keptAsIs();
+      expect(await prisma.user.count()).toBe(1);
+      expect(await prisma.household.count()).toBe(0);
+      for (const model of [
+        prisma.article,
+        prisma.garantie,
+        prisma.alerte,
+        prisma.attachment,
+        prisma.location,
+        prisma.tag,
+        prisma.loan,
+        prisma.insurancePolicy,
+        prisma.wishlistItem,
+      ] as unknown as { count: (a: object) => Promise<number> }[])
+        expect(await model.count({ where: { ownerUserId: id } })).toBe(0);
+      for (const f of files)
+        expect(await readUploadBytes(f.fileUrl)).toBeNull();
+
+      // The next reseed fills it again rather than skipping it.
+      await seedDemoData(prisma, { ...opts, seed: 78 });
+      await keptAsIs();
+      expect(
+        await prisma.article.count({ where: { ownerUserId: id } })
+      ).toBeGreaterThanOrEqual(100);
+    }, 240_000);
 
     it("wipes a throwaway database without leaving document files behind", async () => {
       const { seedDemoData, wipeAllData } = await import(

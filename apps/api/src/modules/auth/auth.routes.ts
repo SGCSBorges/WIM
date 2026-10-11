@@ -32,8 +32,6 @@ import {
   seedDemoData,
   resetDemoData,
   DEMO_PASSWORD,
-  DEMO_ADMIN_EMAIL,
-  DEMO_EMAIL_DOMAIN,
   DEMO_AVERAGE_ARTICLES,
 } from "../demo/demo.service";
 
@@ -301,18 +299,11 @@ router.post(
       return;
     }
 
-    // Mint a demo admin only when no REAL (non-demo) admin exists, so we never
-    // add a surprise admin to a database that already has a real operator. The
-    // demo admin from a prior run is about to be deleted by resetDemoData, so
-    // exclude `@demo.wim.app` admins from this check.
-    const realAdmin = await prisma.user.findFirst({
-      where: {
-        role: "ADMIN",
-        NOT: { email: { endsWith: `@${DEMO_EMAIL_DOMAIN}` } },
-      },
-      select: { userId: true },
-    });
-    const makeAdmin = !realAdmin;
+    // Never mint a demo ADMIN here: its password is public (it is in the
+    // repository), and any ADMIN at all would block bootstrap-admin, which
+    // only promotes admin@admin.com while no admin exists. The admin pages
+    // are presented from the operator's own account, which the reseed fills
+    // (DEMO_OPERATOR_EMAIL).
 
     const fileBaseUrl =
       process.env.APP_URL?.replace(/\/$/, "") ??
@@ -325,7 +316,7 @@ router.post(
         logger.info(`[demo-seed] cleared ${removed} prior demo account(s)`);
       return seedDemoData(prisma, {
         reservedUserIdMargin: 1000,
-        makeAdmin,
+        makeAdmin: false,
         // Seeded documents are stored like uploads, so their URLs use the
         // same base the upload route builds.
         fileBaseUrl,
@@ -350,7 +341,7 @@ router.post(
       // Mean per account; the spread is long-tailed (see demo.service).
       articlesPerUser: DEMO_AVERAGE_ARTICLES,
       password: DEMO_PASSWORD,
-      adminEmail: makeAdmin ? DEMO_ADMIN_EMAIL : null,
+      adminEmail: null,
     });
   })
 );

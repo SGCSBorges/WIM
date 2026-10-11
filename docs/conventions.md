@@ -96,7 +96,8 @@ npm --workspace apps/web run dev          # local dev server
 DATABASE_URL=... npm --workspace apps/api run promote:admin -- email@x   # promote
 
 # Demo data: 100 users, ~40 articles each on average (long-tailed; the
-# admin@wim.com showcase gets 110+) + every feature populated (warranties/
+# showcase households — admin@wim.com, and admin@admin.com when it exists —
+# get 100+) + every feature populated (warranties/
 # warranty-history/alerts/attachments/locations/tags/loans/insurance/
 # maintenance/budgets/public links/shares/threads/transfers/sessions/audit
 # log), generated to read as user-authored (see "Demo data must read as
@@ -1612,20 +1613,34 @@ rejects any string the fonts can't draw.
   and a second click picks up new fields/code (e.g. the product image URLs)
   instead of being refused — and re-running can't balloon the DB because the
   prior demo batch is removed first. Demo accounts still start after a reserved
-  user-id margin (1000) so they don't collide with real users, and a demo admin
-  (`admin@demo.wim.app`) is minted only when no **real** (non-demo) admin
-  exists. A `demoSeeding` guard prevents overlapping runs. Set
+  user-id margin (1000) so they don't collide with real users. The endpoint
+  never mints a demo admin (`admin@demo.wim.app` is for the CLI on throwaway
+  databases only): its password is public and any ADMIN would block
+  `bootstrap-admin`. A `demoSeeding` guard prevents overlapping runs. Set
   `DEMO_SEED_ENABLED=false` to disable. All demo accounts share the password
   `Demo1234!`. The demo module is excluded from coverage in `vitest.config.ts`.
   A dedicated **showcase account** for live demos rides slot #1 of every seed:
-  `admin@wim.com` / `Admin123+` (`DEMO_SHOWCASE_EMAIL/_PASSWORD`), ADMIN role,
-  110+ articles guaranteed (floor even when `articlesPerUser` is smaller),
+  `admin@wim.com` / `Admin123+` (`DEMO_SHOWCASE_EMAIL/_PASSWORD`),
+  POWER_USER (the password is in this public repository, so never ADMIN),
+  100+ articles guaranteed (floor even when `articlesPerUser` is smaller),
   stable stage-friendly prefs (fr/EUR/light, verified email, budgets set), in
   the household "Famille Martin", with every demo story staged by
   `ensureShowcaseStories` (see `docs/demo-runbook.md`). It deliberately lives
   OFF the demo domain so the address looks real on stage; `resetDemoData`
   compensates by also deleting it **by exact email**, so each reseed
   recreates it fresh — never hand these credentials to a real user.
+  The **operator's account** `admin@admin.com` (`DEMO_OPERATOR_EMAIL`, the
+  bootstrap admin) is a second showcase household, "Famille Lambert", when
+  it exists: `seedDemoData` fills it in place (it updates only the profile
+  fields its inventory depends on — language, currency, budgets, reminder
+  settings, calendar token, and `createdAt`, moved back so the history
+  precedes the data) and `resetDemoData` empties it via
+  `resetOperatorContent`, keeping the row, password, role, theme, date
+  format, 2FA, passkeys, push subscriptions, sessions and audit trail; its
+  sessions and audit rows are never seeded. `seedDemoData` alone skips it
+  while it still holds articles (the seeder is append-only). Showcase
+  households are two adults and two young children: the children never get
+  the adults' per-person things.
 - **Demo data must read as user-authored.** A jury reads the demo the way
   they would read a real account, so the generator (`modules/demo/`:
   `demo.catalog.ts` facts, `demo.content.ts` words, `demo.random.ts` numbers,

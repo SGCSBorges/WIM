@@ -55,7 +55,7 @@ worse on stage.
    waking from sleep (after ~15 idle minutes) the same way. The rows survive
    in Postgres, the files may not, and opening a lost one shows
    `File missing on disk`. Then keep the API busy until you present.
-3. Log in as the showcase account and leave the tab open. It opens in French
+3. Log in as `admin@admin.com` and leave the tab open. It opens in French
    (the account's stored language) whatever the browser's language. Open one
    document (an article's _Pièces jointes_) to prove the files are there.
 4. Re-check `/health` shows `db`, `redis` and `queue` all `ok`.
@@ -64,18 +64,30 @@ worse on stage.
 
 ## 3. Credentials
 
-| Account                      | Password    | Notes                                                                          |
-| ---------------------------- | ----------- | ------------------------------------------------------------------------------ |
-| `admin@wim.com`              | `Admin123+` | ADMIN, 110+ articles, French, EUR, light theme; "Famille Martin" household     |
-| `thomas.martin@demo.wim.app` | `Demo1234!` | POWER_USER, the showcase's partner in the same household                       |
-| `<name>@demo.wim.app`        | `Demo1234!` | generated users; roles vary (USER / POWER_USER); all French, in France, in EUR |
+| Account                       | Password    | Notes                                                                                     |
+| ----------------------------- | ----------- | ----------------------------------------------------------------------------------------- |
+| `admin@admin.com`             | your own    | **present from this one.** ADMIN, 100+ articles, French, EUR; "Famille Lambert" household |
+| `sophie.lambert@demo.wim.app` | `Demo1234!` | POWER_USER, its partner in the same household                                             |
+| `admin@wim.com`               | `Admin123+` | POWER_USER, 100+ articles, French, EUR, light theme; "Famille Martin" household           |
+| `thomas.martin@demo.wim.app`  | `Demo1234!` | POWER_USER, `admin@wim.com`'s partner in the same household                               |
+| `<name>@demo.wim.app`         | `Demo1234!` | generated users; roles vary (USER / POWER_USER); all French, in France, in EUR            |
+
+`admin@admin.com` is your real operator account (registered by you,
+promoted by TestAdmin / `bootstrap-admin`). The reseed **fills** it with a
+showcase household — it never creates it, and never changes its password,
+role, theme, date format, two-factor setup, passkeys, sessions or audit
+trail — so one private login shows every feature, the admin pages
+included. `admin@wim.com` is the spare showcase with a fixed password; that
+password is in this public repository, so it is a POWER_USER, not an
+admin, and the reseed never mints a demo admin either.
 
 Constants live in `apps/api/src/modules/demo/demo.service.ts`
-(`DEMO_SHOWCASE_EMAIL`, `DEMO_SHOWCASE_PASSWORD`, `DEMO_PASSWORD`).
+(`DEMO_OPERATOR_EMAIL`, `DEMO_SHOWCASE_EMAIL`, `DEMO_SHOWCASE_PASSWORD`,
+`DEMO_PASSWORD`).
 
-Keep `thomas.martin@demo.wim.app` open in a private window to demonstrate
-sharing: the two accounts are one household, so each sees the other's
-inventory with write access.
+Keep the partner (`sophie.lambert@demo.wim.app`) open in a private window to
+demonstrate sharing: the two accounts are one household, so each sees the
+other's inventory with write access.
 
 ---
 
@@ -92,9 +104,15 @@ curl -s -X POST https://wimapi.onrender.com/api/auth/seed-demo -i | head -1
 | `403`    | `DEMO_SEED_ENABLED=false` on this environment                          |
 
 It wipes and recreates every `@demo.wim.app` account **and** the
-`admin@wim.com` showcase account, then removes any household left with no
-members, and deletes the document files the previous seed wrote. It never
-touches other accounts. Run it the day before, not during the defence — it
+`admin@wim.com` showcase account, **empties `admin@admin.com` of everything
+the seed puts in an account** (articles and all that hangs off them, rooms,
+labels, lists, household, shares, conversations) and refills it, removes
+any household left with no members, and deletes the document files the
+previous seed wrote. It never touches other accounts, and it keeps
+`admin@admin.com` itself. Anything you entered by hand in `admin@admin.com`
+is replaced on every reseed. If that account doesn't exist yet (a fresh
+database), register it and run TestAdmin first, then reseed: the seed skips
+an account that doesn't exist. Run it the day before, not during the defence — it
 is unauthenticated and rate-limited, and a half-finished seed mid-demo is
 unrecoverable. The one exception is §2: without `S3_*`, run it again once
 the API is awake, so the documents exist on the disk you will present from.
@@ -103,24 +121,28 @@ the API is awake, so the documents exist on the disk you will present from.
 
 ## 5. What the showcase already has on screen
 
-Every reseed stages these on `admin@wim.com` (`ensureShowcaseStories`), so
-none depends on luck:
+Every reseed stages these on `admin@admin.com` and on `admin@wim.com`
+(`ensureShowcaseStories`, `ensureShowcaseExchanges`), so none depends on
+luck:
 
-| Story                                                                        | Where to look                                             |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------- |
-| A warranty ending in about three weeks                                       | Dashboard → expiring soon; Warranties                     |
-| A warranty ending within the week                                            | Alerts → `Rappel garantie J-1` scheduled this week        |
-| An item in repair under an open claim                                        | Articles filtered by status; its warranty shows the claim |
-| An overdue loan, and one due soon                                            | Loans; Alerts → `Retour de prêt : …`                      |
-| A routine service due within a month                                         | Maintenance; Alerts → `Entretien à prévoir : …`           |
-| A home-insurance renewal within ~5 weeks                                     | Insurance; Alerts → `Renouvellement d'assurance : …`      |
-| Sold, disposed and lost items                                                | Articles → status filter; the lost one has a QR page      |
-| Items listed to other members, each with a buyer's question (offers on some) | Shared / Messages                                         |
-| A recently deleted item                                                      | Trash                                                     |
-| A wishlist item later bought                                                 | Wishlist (struck through)                                 |
-| Budgets (500 € / month, 6 000 € / year)                                      | Dashboard → budget                                        |
-| Proofs of purchase: invoices, till receipts, warranty certificates (PDF)     | an article → _Pièces jointes_; or the Pièces jointes page |
-| Product photos on some articles (credited Commons images)                    | the article header and its _Photos_ section               |
+| Story                                                                           | Where to look                                             |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| A warranty ending in about three weeks                                          | Dashboard → expiring soon; Warranties                     |
+| A warranty ending within the week                                               | Alerts → `Rappel garantie J-1` scheduled this week        |
+| An item in repair under an open claim                                           | Articles filtered by status; its warranty shows the claim |
+| An overdue loan, and one due soon                                               | Loans; Alerts → `Retour de prêt : …`                      |
+| A routine service due within a month                                            | Maintenance; Alerts → `Entretien à prévoir : …`           |
+| A home-insurance renewal within ~5 weeks                                        | Insurance; Alerts → `Renouvellement d'assurance : …`      |
+| Sold, disposed and lost items                                                   | Articles → status filter; the lost one has a QR page      |
+| Items listed to other members, each with a buyer's question (offers on some)    | Shared / Messages                                         |
+| A recently deleted item                                                         | Trash                                                     |
+| A wishlist item later bought                                                    | Wishlist (struck through)                                 |
+| Budgets set from the household's own spending, on track for the year            | Dashboard → budget                                        |
+| A question on a friend's listing, an accepted offer, and the transfer to accept | Messages; Transfers                                       |
+| A friend it shares with, one sharing with it, an invitation pending             | Sharing                                                   |
+| Someone found the lost item and wrote from its QR page                          | Notification bell → `Objet retrouvé : …`                  |
+| Proofs of purchase: invoices, till receipts, warranty certificates (PDF)        | an article → _Pièces jointes_; or the Pièces jointes page |
+| Product photos on some articles (credited Commons images)                       | the article header and its _Photos_ section               |
 
 The rest of the inventory is ordinary household life: an onboarding evening
 a year ago where most things were entered a few minutes apart, then a

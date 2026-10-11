@@ -110,13 +110,24 @@ export const DEMO_EMAIL_DOMAIN = "demo.wim.app";
 export const DEMO_ADMIN_EMAIL = `admin@${DEMO_EMAIL_DOMAIN}`;
 
 // Dedicated showcase account for live app demos: fixed, memorable
-// credentials, ADMIN role, French, and a well-populated household inventory
-// with every demo story present (see ensureShowcaseStories). It lives OFF the
-// demo domain so the address looks real on stage; resetDemoData deletes it by
+// credentials, French, and a well-populated household inventory with every
+// demo story present (see ensureShowcaseStories). It lives OFF the demo
+// domain so the address looks real on stage; resetDemoData deletes it by
 // exact e-mail so every reseed recreates it. Do NOT hand these credentials to
-// a real user — the account is wiped on every demo reseed.
+// a real user — the account is wiped on every demo reseed. Its password is in
+// this public repository, so it is a POWER_USER, never an ADMIN: the admin
+// pages are presented from the operator's own account below.
 export const DEMO_SHOWCASE_EMAIL = "admin@wim.com";
 export const DEMO_SHOWCASE_PASSWORD = "Admin123+";
+
+// The operator's own account — the bootstrap admin (auth.routes
+// bootstrap-admin, prisma/seed.ts). It is a REAL account: its password, role,
+// two-factor setup, passkeys, sessions and audit trail are never touched, and
+// it is never created here. When it exists, every reseed replaces its
+// inventory (and everything hanging off it) with a second showcase
+// household, so one private login presents every feature, the admin pages
+// included.
+export const DEMO_OPERATOR_EMAIL = "admin@admin.com";
 
 /** Mean catalogued items per demo account. The spread around it is
  *  long-tailed; the showcase account always gets 110+. */
@@ -140,6 +151,9 @@ export interface SeedDemoOptions {
    *  upload route uses (APP_URL, else the request's origin). Defaults to
    *  APP_URL, else http://localhost:<PORT>. */
   fileBaseUrl?: string;
+  /** Fill the operator's account (DEMO_OPERATOR_EMAIL) when it exists and
+   *  is empty. Default true. */
+  operator?: boolean;
   onProgress?: (msg: string) => void;
 }
 
@@ -188,6 +202,8 @@ interface Persona {
   house: boolean;
   /** First names of the people living there; [0] is the account holder. */
   people: string[];
+  /** people[0..adults-1] are adults; the rest are the children. */
+  adults: number;
   kids: boolean;
   /** 0..1 — how thoroughly this person fills optional fields. */
   diligence: number;
@@ -197,6 +213,8 @@ interface Persona {
   lastActiveMs: number;
   role: Role;
   showcase: boolean;
+  /** Fill this existing account (the operator's) instead of creating one. */
+  existingUserId: number | null;
   admin: boolean;
   household: number | null;
   reminderDays: string | null;
@@ -523,20 +541,49 @@ function currencyFor(lang: Lang): {
   };
 }
 
+/** A household people present from: a family of two adults and two young
+ *  children in a house, French, in euros, with every story staged. */
+interface ShowcaseSpec {
+  email: string;
+  last: string;
+  /** Account holder, partner, then the children. */
+  people: string[];
+  adults: number;
+  joinedDaysAgo: number;
+  /** Fill this account instead of creating one; its role stays its own. */
+  existing: { userId: number; role: Role } | null;
+}
+
+const SHOWCASE_HOME: Omit<ShowcaseSpec, "existing"> = {
+  email: DEMO_SHOWCASE_EMAIL,
+  last: "Martin",
+  people: ["Claire", "Thomas", "Jules", "Rose"],
+  adults: 2,
+  joinedDaysAgo: 410,
+};
+const OPERATOR_HOME: Omit<ShowcaseSpec, "existing"> = {
+  email: DEMO_OPERATOR_EMAIL,
+  last: "Lambert",
+  people: ["Nicolas", "Sophie", "Léa", "Hugo"],
+  adults: 2,
+  joinedDaysAgo: 450,
+};
+
 function makePersonas(
   users: number,
   mean: number,
   powerUserCount: number,
   makeAdmin: boolean,
-  showcase: boolean
+  showcases: ShowcaseSpec[]
 ): Persona[] {
   const out: Persona[] = [];
   for (let i = 0; i < users; i++) {
     const isAdmin = makeAdmin && i === 0;
-    const isShowcase = showcase && i === 1;
+    const spec = i >= 1 ? (showcases[i - 1] ?? null) : null;
+    const isShowcase = spec !== null;
     const lang: Lang = isAdmin || isShowcase ? "fr" : weighted(LANGUAGE_MIX);
-    const first = isShowcase ? "Claire" : pick(C.FIRST_NAMES[lang]);
-    const last = isShowcase ? "Martin" : pick(C.LAST_NAMES[lang]);
+    const first = spec ? spec.people[0] : pick(C.FIRST_NAMES[lang]);
+    const last = spec ? spec.last : pick(C.LAST_NAMES[lang]);
     const { currency, fx, market } =
       isShowcase || isAdmin
         ? { currency: "EUR", fx: 1, market: "fr" as Market }
@@ -550,8 +597,8 @@ function makePersonas(
           [3, 15],
           [4, 15],
         ] as const);
-    const people = isShowcase
-      ? ["Claire", "Thomas", "Jules", "Rose"]
+    const people = spec
+      ? [...spec.people]
       : [
           first,
           ...pickN(
@@ -559,12 +606,18 @@ function makePersonas(
             headcount - 1
           ),
         ];
-    const kids = isShowcase ? true : headcount >= 3 && chance(0.85);
+    // Children are young (the catalogue's kids' things are a stroller, a
+    // car seat, bunk beds, a 20" bike): a family is two adults and the
+    // children; three or four adults are flatmates or grown-up children.
+    const kids = spec
+      ? spec.people.length > spec.adults
+      : headcount >= 3 && chance(0.85);
+    const adults = spec ? spec.adults : kids ? 2 : people.length;
 
     const ageDays = isAdmin
       ? MAX_ACCOUNT_AGE_DAYS
-      : isShowcase
-        ? 410
+      : spec
+        ? spec.joinedDaysAgo
         : 3 + (MAX_ACCOUNT_AGE_DAYS - 3) * Math.pow(rand(), 1.5);
     const joinedMs = wakingHours(now() - ageDays * DAY);
     const activity = isShowcase
@@ -604,22 +657,24 @@ function makePersonas(
     out.push({
       first,
       last,
-      email: "",
+      email: spec?.email ?? "",
       lang,
       market,
       currency,
       fx,
       house,
       people,
+      adults,
       kids,
       diligence,
       naming: isShowcase
         ? "noun"
-        : weighted([
+        : // Typing everything in lower case is a habit, but a rare one.
+          weighted([
             ["catalog", 35],
             ["brand", 25],
-            ["noun", 20],
-            ["casual", 20],
+            ["noun", 33],
+            ["casual", 7],
           ] as const),
       size,
       joinedMs: Math.max(
@@ -627,8 +682,13 @@ function makePersonas(
         Math.max(0, now() - MAX_ACCOUNT_AGE_DAYS * DAY)
       ),
       lastActiveMs: Math.max(lastActiveMs, joinedMs + HOUR),
-      role: isAdmin || isShowcase ? "ADMIN" : "USER",
+      role: isAdmin
+        ? "ADMIN"
+        : spec
+          ? (spec.existing?.role ?? "POWER_USER")
+          : "USER",
       showcase: isShowcase,
+      existingUserId: spec?.existing?.userId ?? null,
       admin: isAdmin,
       household: null,
       reminderDays:
@@ -659,10 +719,9 @@ function makePersonas(
   // dwelling and the people living in it.
   const paid = out.filter((p) => p.role !== "USER");
   const pool = paid.filter((p) => !p.showcase && !p.admin);
-  const heads: Persona[] = [];
-  const show = out.find((p) => p.showcase);
-  if (show) heads.push(show);
-  while (heads.length < 3 && pool.length > 0)
+  const heads: Persona[] = out.filter((p) => p.showcase && p.role !== "USER");
+  const homes = heads.length + 2;
+  while (heads.length < homes && pool.length > 0)
     heads.push(pool.splice(randInt(0, pool.length - 1), 1)[0]);
   heads.forEach((head, h) => {
     const want = head.showcase ? 1 : randInt(1, 2);
@@ -677,6 +736,7 @@ function makePersonas(
       member.fx = head.fx;
       member.house = head.house;
       member.kids = head.kids;
+      member.adults = head.adults;
       // Member m is housemate m+1; add a housemate if the home is too small.
       while (head.people.length < m + 2)
         head.people.push(
@@ -707,14 +767,16 @@ function assignEmails(
   used: Set<string>,
   makeAdmin: boolean
 ) {
-  // The showcase's partner is the second login a presenter needs, so it gets
+  // A showcase's partner is the second login a presenter needs, so it gets
   // the plain first.last address the runbook can name.
-  const showcaseHome = personas.find((p) => p.showcase)?.household ?? null;
+  const showcaseHomes = new Set(
+    personas
+      .filter((p) => p.showcase && p.household !== null)
+      .map((p) => p.household)
+  );
   for (const p of personas) {
-    if (p.showcase) {
-      p.email = DEMO_SHOWCASE_EMAIL;
-      continue;
-    }
+    if (p.showcase) continue; // set from its spec
+
     if (p.admin && makeAdmin) {
       let e = DEMO_ADMIN_EMAIL;
       let n = 1;
@@ -725,7 +787,7 @@ function assignEmails(
     }
     const f = C.emailSafe(p.first);
     const l = C.emailSafe(p.last);
-    const partner = showcaseHome !== null && p.household === showcaseHome;
+    const partner = p.household !== null && showcaseHomes.has(p.household);
     const base = partner
       ? `${f}.${l}`
       : weighted([
@@ -861,9 +923,10 @@ function chooseItems(
     if (limit !== undefined && has(holder, kind) >= limit) continue;
     chosen.push({ item, owner: null });
     give(holder, kind);
-    // Sometimes the rest of the household has the same model.
-    if (item.perPerson && p.people.length > 1) {
-      for (const person of p.people.slice(1)) {
+    // Sometimes another adult at home has the same model. Never the
+    // children: they are young, and these are adults' things.
+    if (item.perPerson && p.adults > 1) {
+      for (const person of p.people.slice(1, p.adults)) {
         if (chosen.length >= p.size) break;
         if (limit !== undefined && has(person, kind) >= 1) continue;
         if (chance(0.35)) {
@@ -876,6 +939,23 @@ function chooseItems(
   return chosen;
 }
 
+/** The maker's own shop (only Apple's is in the shop lists). */
+const isMakerStore = (retailer: string | null | undefined) =>
+  !!retailer && /apple/i.test(retailer);
+
+/** Could it still be bought new on that date? Shops clear their last stock
+ *  for about three months after the maker stops selling a model; the
+ *  maker's own store stops the day its successor arrives. */
+function soldNewAt(
+  item: CatalogItem,
+  ms: number,
+  retailer?: string | null
+): boolean {
+  if (!item.discontinued) return true;
+  const end = monthStart(item.discontinued);
+  return ms <= (isMakerStore(retailer) ? end : addMonths(end, 3));
+}
+
 function acquire(
   p: Persona,
   item: CatalogItem
@@ -883,8 +963,11 @@ function acquire(
   const releasedMs = item.released ? monthStart(item.released) : null;
   if (releasedMs !== null && releasedMs > now() - 7 * DAY) return null;
   const ageDays = (now() - p.joinedMs) / DAY;
+  // Most of a showcase household's things predate the account (entered on
+  // the first evening); a year of new purchases is a few dozen, not half
+  // the inventory, so its budget card reads like a family's.
   let since =
-    chance(clamp(ageDays / 900, 0.06, 0.55)) ||
+    chance(p.showcase ? 0.25 : clamp(ageDays / 900, 0.06, 0.55)) ||
     (releasedMs !== null && releasedMs > p.joinedMs);
 
   let acquiredMs: number;
@@ -918,7 +1001,9 @@ function acquire(
     if (releasedMs !== null && acquiredMs < releasedMs)
       acquiredMs = wakingHours(between(releasedMs, p.joinedMs));
     acquiredMs = Math.min(acquiredMs, p.joinedMs - HOUR);
-    if (chance(0.72) && p.onboarding.length > 0) {
+    // A showcase owner is thorough: nearly everything owned before signing up
+    // went in during the first evenings.
+    if (chance(p.showcase ? 0.92 : 0.72) && p.onboarding.length > 0) {
       createdMs = pick(p.onboarding); // spaced out later, per session
     } else {
       createdMs = clampToNow(
@@ -935,8 +1020,16 @@ function acquire(
         Record<Category, number>
       >
     )[item.category] ?? 0.06;
+  // Nobody gives a fitted air-conditioner, a sofa or a car.
+  const giftable =
+    !item.house &&
+    item.category !== "FURNITURE" &&
+    item.category !== "VEHICLE" &&
+    !(item.category === "APPLIANCE" && item.price > 400);
   let how: Acquisition = "new";
-  if (chance(giftOdds)) how = "gift";
+  // An heirloom was handed down, never bought.
+  if (item.brand === "Héritage familial" || (giftable && chance(giftOdds)))
+    how = "gift";
   else if (chance(item.secondHand ?? d.secondHand)) how = "secondHand";
   else if (
     d.shelfLifeMonths !== null &&
@@ -945,6 +1038,12 @@ function acquire(
   ) {
     how = chance(0.45) ? "refurbished" : chance(0.5) ? "secondHand" : "new";
   }
+  // Nobody sells it new any more: refurbished, or second-hand.
+  if (how === "new" && !soldNewAt(item, acquiredMs!))
+    how =
+      item.category === "ELECTRONICS" && chance(0.5)
+        ? "refurbished"
+        : "secondHand";
   return { acquiredMs: acquiredMs!, createdMs: createdMs!, how };
 }
 
@@ -998,7 +1097,8 @@ interface Source {
 function retailerFor(
   p: Persona,
   item: CatalogItem,
-  how: Acquisition
+  how: Acquisition,
+  acquiredMs: number
 ): Source | null {
   if (how === "gift") return null;
   if (how === "secondHand") {
@@ -1033,7 +1133,9 @@ function retailerFor(
     (r) =>
       (item.brand === "Apple" || !r.name.toLowerCase().includes("apple")) &&
       // A brand's own store only for a real brand.
-      !(r.name.includes("{brand}") && PSEUDO_BRANDS.has(item.brand))
+      !(r.name.includes("{brand}") && PSEUDO_BRANDS.has(item.brand)) &&
+      // Not from the maker's store once the maker stopped selling it.
+      soldNewAt(item, acquiredMs, r.name)
   );
   if (item.brand === "Apple" && chance(0.5)) {
     const apple = pool.filter((r) => r.name.toLowerCase().includes("apple"));
@@ -1183,8 +1285,22 @@ function warrantyFor(
 
   const names = C.WARRANTY_NAMES[p.lang];
   let months = force?.months ?? pick(options);
-  let name = names.legal(item.brand, months);
-  let providerName: string | null = item.brand;
+  // A two-year record is either the legal guarantee, which the seller owes
+  // (so the seller is who to call, when the shop was recorded), or the
+  // maker's own warranty. Apple's own is one year: its second year is the
+  // seller's legal guarantee.
+  // A maker that is really "a craftsman" or "a local gallery" has no
+  // warranty of its own: only the legal guarantee, or nothing.
+  const pseudo = PSEUDO_BRANDS.has(item.brand);
+  if (pseudo && (months !== 24 || plan.how === "gift")) return null;
+  const legal =
+    months === 24 &&
+    plan.how !== "gift" &&
+    (pseudo ||
+      (item.brand === "Apple" ? !!force || chance(0.5) : chance(0.35)));
+  if (!legal && !force && item.brand === "Apple" && months === 24) months = 12;
+  let name = legal ? names.legal : names.maker(item.brand, months);
+  let providerName: string | null = legal ? plan.retailer : item.brand;
   if (plan.how === "refurbished") {
     months = 12;
     name =
@@ -1193,8 +1309,10 @@ function warrantyFor(
         : "Back Market 12-month warranty";
     providerName = "Back Market";
   } else if (!force && item.brand === "Apple" && chance(0.3)) {
-    months = 36;
+    // AppleCare+ runs three years on a Mac, two on everything else.
+    months = item.noun.en === "MacBook" ? 36 : 24;
     name = names.brand.Apple;
+    providerName = "Apple";
   } else if (
     !force &&
     (item.category === "ELECTRONICS" || item.category === "APPLIANCE") &&
@@ -1235,14 +1353,18 @@ function warrantyFor(
   // Claims exist only on cover that was live when they were made.
   const claims = C.CLAIM_NOTES[p.lang];
   if (plan.status === "IN_REPAIR" && plan.statusMs && endMs > plan.statusMs) {
-    w.claim = { status: "OPEN", note: pick(claims.open), atMs: plan.statusMs };
+    w.claim = {
+      status: "OPEN",
+      note: saidOf(item, pick(claims.open)),
+      atMs: plan.statusMs,
+    };
   } else if (plan.status === "ACTIVE" && !force) {
     const lo = Math.max(startMs + 60 * DAY, w.createdMs + DAY);
     const hi = Math.min(endMs, now() - 7 * DAY);
     if (lo < hi && chance(0.035)) {
       w.claim = {
         status: "RESOLVED",
-        note: pick(claims.resolved),
+        note: saidOf(item, pick(claims.resolved)),
         atMs: clamp(wakingHours(between(lo, hi)), lo, hi),
       };
     } else if (lo < hi && chance(0.008)) {
@@ -1257,9 +1379,13 @@ function warrantyFor(
     }
   }
 
-  // Extended before it ran out: the live row is the new contract.
+  // Extended before it ran out: the live row is the new contract. The legal
+  // guarantee and Apple's own year can't be extended (AppleCare+ is bought
+  // up front, not renewed).
   if (
     !force &&
+    !legal &&
+    item.brand !== "Apple" &&
     !w.claim &&
     (item.category === "ELECTRONICS" || item.category === "APPLIANCE") &&
     plan.how === "new" &&
@@ -1291,6 +1417,7 @@ function descriptionFor(
   sourceKept: boolean,
   months: number | null
 ): string | null {
+  const said = (text: string) => saidOf(item, text);
   if (
     !sourceKept &&
     source &&
@@ -1298,25 +1425,30 @@ function descriptionFor(
     p.diligence < 0.35 &&
     chance(0.3)
   ) {
-    return C.CASUAL_PURCHASE_NOTE[p.lang](
-      source.name,
-      source.online,
-      months ?? 24
+    return said(
+      C.CASUAL_PURCHASE_NOTE[p.lang](source.name, source.online, months ?? 24)
     );
   }
   if (!chance(0.1 + 0.3 * p.diligence)) return null;
-  if (how === "gift") return pick(C.GIFT_DESCRIPTIONS[p.lang]);
+  if (how === "gift") return said(pick(C.GIFT_DESCRIPTIONS[p.lang]));
   if (how === "secondHand" && source) {
     const t = C.SECOND_HAND_DESCRIPTIONS[p.lang];
-    return source.person ? pick(t.person) : pick(t.platform)(source.name);
+    return said(source.person ? pick(t.person) : pick(t.platform)(source.name));
   }
   // Only lines that are true of this particular kind of thing.
   const fits = C.DESCRIPTIONS[item.category].filter(
-    (d) => !d.for || d.for.includes(item.key) || d.for.includes(item.noun.en)
+    (d) =>
+      (!d.for || d.for.includes(item.key) || d.for.includes(item.noun.en)) &&
+      !d.notFor?.includes(item.key)
   );
   if (fits.length === 0) return null;
   const line = pick(fits);
-  return line[p.lang];
+  return said(line[p.lang]);
+}
+
+/** A French note in agreement with the thing it is about. */
+function saidOf(item: CatalogItem, text: string): string {
+  return C.agree(text, C.frForm(item.noun.fr));
 }
 
 function fieldsFor(
@@ -1361,8 +1493,11 @@ function planArticle(
     photos.length && chance(p.showcase ? 0.75 : 0.08 + 0.4 * d01)
       ? pick(photos)
       : null;
-  const unitPrice = priceFor(p, item, a.how, a.acquiredMs);
-  const retailer = retailerFor(p, item, a.how);
+  let unitPrice = priceFor(p, item, a.how, a.acquiredMs);
+  const retailer = retailerFor(p, item, a.how, a.acquiredMs);
+  // The maker's own store sells at list price: no promotion, no ",90".
+  if (a.how === "new" && unitPrice !== null && isMakerStore(retailer?.name))
+    unitPrice = cents(item.price * p.fx);
   // A till receipt can only be dated when the shop was open.
   if (retailer && !retailer.online && !retailer.person) {
     const released = item.released ? monthStart(item.released) : 0;
@@ -1391,7 +1526,8 @@ function planArticle(
     unitPrice,
     retailer: keepRetailer ? retailer!.name : null,
     retailerOnline: keepRetailer ? retailer!.online : false,
-    orderRef: keepRetailer ? retailer!.ref : null,
+    // Someone who didn't type the price didn't copy the order number either.
+    orderRef: keepRetailer && unitPrice !== null ? retailer!.ref : null,
     room: null,
     status,
     statusMs,
@@ -1648,7 +1784,8 @@ function ensureShowcaseStories(p: Persona, plans: Plan[]) {
       (y) =>
         fn(y) &&
         !y.warranty?.claim &&
-        (y.item.warranty ?? categoryOf(y.item).warranty).includes(24)
+        (y.item.warranty ?? categoryOf(y.item).warranty).includes(24) &&
+        soldNewAt(y.item, addMonths(now() + days * DAY, -24), y.retailer)
     );
     if (!x) continue;
     let endMs = wakingHours(now() + days * DAY);
@@ -1678,7 +1815,7 @@ function ensureShowcaseStories(p: Persona, plans: Plan[]) {
     repair.statusMs = Math.max(repair.createdMs + DAY, now() - 6 * DAY);
     repair.warranty.claim = {
       status: "OPEN",
-      note: pick(C.CLAIM_NOTES.fr.open),
+      note: saidOf(repair.item, pick(C.CLAIM_NOTES.fr.open)),
       atMs: repair.statusMs,
     };
   }
@@ -1778,11 +1915,77 @@ async function reserveUserIdMargin(prisma: PrismaClient, margin: number) {
   );
 }
 
+/** Empty the operator's account of everything a reseed puts in it — its
+ *  inventory and all that hangs off it, its places and labels, lists,
+ *  household, shares and conversations — and keep the account itself: the
+ *  row (id, e-mail, password, role), two-factor setup, passkeys, push
+ *  subscriptions, sessions and audit trail. Returns the articles removed. */
+export async function resetOperatorContent(
+  prisma: PrismaClient
+): Promise<number> {
+  const operator = await prisma.user.findUnique({
+    where: { email: DEMO_OPERATOR_EMAIL },
+    select: { userId: true },
+  });
+  if (!operator) return 0;
+  const userId = operator.userId;
+
+  const files = await prisma.attachment.findMany({
+    where: { ownerUserId: userId },
+    select: { fileUrl: true, thumbUrl: true },
+  });
+  for (let i = 0; i < files.length; i += 25) {
+    await Promise.all(
+      files
+        .slice(i, i + 25)
+        .map((f) => unlinkAttachmentFiles(f).catch(() => {}))
+    );
+  }
+
+  const mine = { ownerUserId: userId };
+  // Articles first: their warranties, reminders, documents, notes, loans,
+  // services, policy links, room and label links, threads and transfers all
+  // cascade from them. Then what is the account's but not an article's.
+  const [, , , , , , articles] = await prisma.$transaction([
+    prisma.messageThread.deleteMany({
+      where: { OR: [mine, { requesterId: userId }] },
+    }),
+    prisma.message.deleteMany({ where: { senderUserId: userId } }),
+    prisma.articleTransferRequest.deleteMany({
+      where: { OR: [{ ownerId: userId }, { requesterId: userId }] },
+    }),
+    prisma.inventoryShare.deleteMany({
+      where: { OR: [mine, { targetUserId: userId }] },
+    }),
+    prisma.shareInvite.deleteMany({ where: mine }),
+    prisma.householdMember.deleteMany({ where: { userId } }),
+    prisma.article.deleteMany({ where: mine }),
+    prisma.garantie.deleteMany({ where: mine }),
+    prisma.alerte.deleteMany({ where: mine }),
+    prisma.attachment.deleteMany({ where: mine }),
+    prisma.loan.deleteMany({ where: mine }),
+    prisma.insurancePolicy.deleteMany({ where: mine }),
+    prisma.serviceRecord.deleteMany({ where: mine }),
+    prisma.articleNote.deleteMany({ where: mine }),
+    prisma.warrantyHistory.deleteMany({ where: mine }),
+    prisma.wishlistItem.deleteMany({ where: mine }),
+    prisma.savedView.deleteMany({ where: mine }),
+    prisma.articleTemplate.deleteMany({ where: mine }),
+    prisma.tag.deleteMany({ where: mine }),
+    prisma.location.deleteMany({ where: mine }),
+    prisma.household.deleteMany({ where: { members: { none: {} } } }),
+  ]);
+  return articles.count;
+}
+
 // Delete every demo account (and — via cascade — all its articles, warranties,
 // alerts, sessions, loans, insurance, services, shares, threads, etc.). Real
 // users are left untouched because demo accounts are the only ones on
-// DEMO_EMAIL_DOMAIN, plus the showcase account matched by exact e-mail.
+// DEMO_EMAIL_DOMAIN, plus the showcase account matched by exact e-mail —
+// except the operator's account, which keeps itself and loses its seeded
+// content (resetOperatorContent).
 export async function resetDemoData(prisma: PrismaClient): Promise<number> {
+  await resetOperatorContent(prisma);
   const demoUsers = await prisma.user.findMany({
     where: {
       OR: [
@@ -1888,12 +2091,45 @@ export async function seedDemoData(
   const existing = await prisma.user.findMany({ select: { email: true } });
   const used = new Set(existing.map((u) => u.email.toLowerCase()));
 
-  let showcase = users >= 2 && !used.has(DEMO_SHOWCASE_EMAIL);
-  if (users < 2) log(`showcase account skipped (users=${users} < 2)`);
-  else if (!showcase)
-    log(`showcase account skipped (${DEMO_SHOWCASE_EMAIL} already exists)`);
-  if (showcase) used.add(DEMO_SHOWCASE_EMAIL);
-  const showcaseHash = showcase
+  // The showcase households: the fixed-credential one, then the operator's
+  // own account when it exists (it is filled, never created).
+  const showcases: ShowcaseSpec[] = [];
+  if (users < 2) log(`showcase accounts skipped (users=${users} < 2)`);
+  else {
+    if (used.has(DEMO_SHOWCASE_EMAIL))
+      log(`showcase account skipped (${DEMO_SHOWCASE_EMAIL} already exists)`);
+    else {
+      showcases.push({ ...SHOWCASE_HOME, existing: null });
+      used.add(DEMO_SHOWCASE_EMAIL);
+    }
+    const operator =
+      opts.operator === false
+        ? null
+        : await prisma.user.findUnique({
+            where: { email: DEMO_OPERATOR_EMAIL },
+            select: {
+              userId: true,
+              role: true,
+              _count: { select: { articlesOwned: true } },
+            },
+          });
+    if (operator && operator._count.articlesOwned > 0)
+      log(
+        `${DEMO_OPERATOR_EMAIL} skipped: it still has articles (resetDemoData clears them first)`
+      );
+    else if (operator) {
+      if (showcases.length + 1 < users)
+        showcases.push({
+          ...OPERATOR_HOME,
+          existing: { userId: operator.userId, role: operator.role },
+        });
+      if (operator.role === "USER")
+        log(
+          `${DEMO_OPERATOR_EMAIL} is a USER: seeded without the paid stories; promote it and reseed for all of them`
+        );
+    }
+  }
+  const showcaseHash = showcases.some((x) => !x.existing)
     ? await bcrypt.hash(DEMO_SHOWCASE_PASSWORD, 10)
     : null;
 
@@ -1902,10 +2138,9 @@ export async function seedDemoData(
     mean,
     powerUserCount,
     makeAdmin,
-    showcase
+    showcases
   );
   assignEmails(personas, used, makeAdmin);
-  showcase = personas.some((p) => p.showcase);
 
   const seeded: {
     userId: number;
@@ -1960,7 +2195,9 @@ export async function seedDemoData(
 
   await seedCrossUser(prisma, seeded);
 
-  const firstPower = personas.find((p) => p.role === "POWER_USER");
+  const firstPower = personas.find(
+    (p) => p.role === "POWER_USER" && !p.showcase
+  );
   const firstUser = personas.find((p) => p.role === "USER");
   return {
     users: seeded.length,
@@ -1997,61 +2234,85 @@ async function writeAccount(
     d01 > 0.15 || p.showcase
       ? p.joinedMs + between(3 * MINUTE, 30 * HOUR)
       : null;
-  const monthly =
+  // Budgets are set from what the household actually spends: this year's
+  // purchases so far, at the year's pace, with some headroom. "This year"
+  // is reckoned as the dashboard's budget card does it — owned things, the
+  // warranty's purchase date or else the day it was added, × quantity — so
+  // the card shows a household on (or just over) its budget, not ten times
+  // past it.
+  const yearStart = Date.UTC(new Date(now()).getUTCFullYear(), 0, 1);
+  const spentThisYear = plans.reduce((sum, x) => {
+    if (x.deletedMs || NOT_OWNED.includes(x.status) || x.unitPrice === null)
+      return sum;
+    const acquired = x.warranty?.startMs ?? x.createdMs;
+    return acquired >= yearStart ? sum + x.unitPrice * x.units : sum;
+  }, 0);
+  const pace = spentThisYear / clamp((now() - yearStart) / YEAR, 0.25, 1);
+  const annual =
     paid && (p.showcase || (d01 > 0.5 && chance(0.5)))
-      ? p.showcase
-        ? 500
-        : tidy(pick([200, 300, 400, 500, 750, 1000, 1500]) * p.fx, 50)
+      ? tidy(Math.max(1500 * p.fx, pace * between(1.05, 1.3)), 500)
       : null;
-  const annual = monthly
-    ? chance(0.5) || p.showcase
-      ? tidy(monthly * 12, 500)
-      : tidy(pick([3000, 5000, 8000, 10000]) * p.fx, 500)
-    : null;
+  const monthly = annual ? tidy(annual / 12, 50) : null;
 
-  const user = await prisma.user.create({
-    data: {
-      email: p.email,
-      password: secrets.passwordHash,
-      role: p.role,
-      currency: p.currency,
-      language: p.lang,
-      theme: p.showcase
-        ? "light"
-        : weighted([
-            [null, 45],
-            ["light", 25],
-            ["dark", 25],
-            ["ocean", 2],
-            ["sunset", 2],
-            ["cyber", 1],
-          ] as const),
-      dateFormat: p.showcase
-        ? null
-        : weighted([
-            [null, 70],
-            ["dd/MM/yyyy", 20],
-            ["yyyy-MM-dd", 6],
-            [p.currency === "USD" ? "MM/dd/yyyy" : null, 4],
-          ] as const),
-      emailReminders: p.showcase || chance(0.88),
-      weeklyDigest: chance(0.1 + 0.3 * d01),
-      warrantyReminderDays: p.reminderDays,
-      emailVerifiedAt: verifiedMs
-        ? new Date(Math.min(verifiedMs, now() - MINUTE))
-        : null,
-      calendarToken: paid && chance(0.1 + 0.3 * d01) ? token() : null,
-      monthlyBudget: monthly,
-      annualBudget: annual,
-      alertsSeenAt: new Date(
-        Math.max(p.joinedMs, p.lastActiveMs - between(0, 2 * DAY))
-      ),
-      createdAt: new Date(p.joinedMs),
-      updatedAt: new Date(between(p.joinedMs, p.lastActiveMs)),
-    },
-    select: { userId: true },
-  });
-  const userId = user.userId;
+  // What the person set up in their profile. The operator's own account
+  // keeps its theme, date format and verification; it gets the household's
+  // language, currency, budgets and history, so its inventory is coherent.
+  const profile = {
+    currency: p.currency,
+    language: p.lang,
+    emailReminders: p.showcase || chance(0.88),
+    weeklyDigest: chance(0.1 + 0.3 * d01),
+    warrantyReminderDays: p.reminderDays,
+    calendarToken:
+      paid && (p.showcase || chance(0.1 + 0.3 * d01)) ? token() : null,
+    monthlyBudget: monthly,
+    annualBudget: annual,
+    alertsSeenAt: new Date(
+      Math.max(p.joinedMs, p.lastActiveMs - between(0, 2 * DAY))
+    ),
+    createdAt: new Date(p.joinedMs),
+  };
+  const userId = p.existingUserId
+    ? (
+        await prisma.user.update({
+          where: { userId: p.existingUserId },
+          data: profile,
+          select: { userId: true },
+        })
+      ).userId
+    : (
+        await prisma.user.create({
+          data: {
+            ...profile,
+            email: p.email,
+            password: secrets.passwordHash,
+            role: p.role,
+            theme: p.showcase
+              ? "light"
+              : weighted([
+                  [null, 45],
+                  ["light", 25],
+                  ["dark", 25],
+                  ["ocean", 2],
+                  ["sunset", 2],
+                  ["cyber", 1],
+                ] as const),
+            dateFormat: p.showcase
+              ? null
+              : weighted([
+                  [null, 70],
+                  ["dd/MM/yyyy", 20],
+                  ["yyyy-MM-dd", 6],
+                  [p.currency === "USD" ? "MM/dd/yyyy" : null, 4],
+                ] as const),
+            emailVerifiedAt: verifiedMs
+              ? new Date(Math.min(verifiedMs, now() - MINUTE))
+              : null,
+            updatedAt: new Date(between(p.joinedMs, p.lastActiveMs)),
+          },
+          select: { userId: true },
+        })
+      ).userId;
 
   // Rooms in use, plus one or two the person set up and never filled.
   const usedRooms = new Set(
@@ -2326,7 +2587,10 @@ async function writeAccount(
         articleId,
         ownerUserId: userId,
         kind: "OTHER",
-        content: pick(C.SOLD_NOTES[p.lang])(price).replace(/\s+\./, "."),
+        content: saidOf(
+          x.item,
+          pick(C.SOLD_NOTES[p.lang])(price).replace(/\s+\./, ".")
+        ),
         createdAt: noteAt(x, x.statusMs),
       });
     }
@@ -2335,7 +2599,7 @@ async function writeAccount(
         articleId,
         ownerUserId: userId,
         kind: "OTHER",
-        content: pick(C.DISPOSED_NOTES[p.lang]),
+        content: saidOf(x.item, pick(C.DISPOSED_NOTES[p.lang])),
         createdAt: noteAt(x, x.statusMs),
       });
     if (x.status === "LOST" && x.statusMs && chance(0.5 + 0.4 * d01))
@@ -2343,7 +2607,7 @@ async function writeAccount(
         articleId,
         ownerUserId: userId,
         kind: "OTHER",
-        content: pick(C.LOST_NOTES[p.lang]),
+        content: saidOf(x.item, pick(C.LOST_NOTES[p.lang])),
         createdAt: noteAt(x, x.statusMs),
       });
     const claim = x.warranty?.claim;
@@ -2352,7 +2616,7 @@ async function writeAccount(
         articleId,
         ownerUserId: userId,
         kind: "WARRANTY_CLAIM",
-        content: fill(pick(T.WARRANTY_CLAIM[p.lang])),
+        content: saidOf(x.item, fill(pick(T.WARRANTY_CLAIM[p.lang]))),
         createdAt: noteAt(x, claim.atMs - between(HOUR, 3 * DAY)),
       });
       if (claim.status === "OPEN")
@@ -2360,7 +2624,7 @@ async function writeAccount(
           articleId,
           ownerUserId: userId,
           kind: "SERVICE",
-          content: fill(pick(T.SERVICE[p.lang].slice(0, 3))),
+          content: saidOf(x.item, fill(pick(T.SERVICE[p.lang].slice(0, 3)))),
           createdAt: noteAt(x, claim.atMs + between(HOUR, 2 * DAY)),
         });
     }
@@ -2373,7 +2637,7 @@ async function writeAccount(
         articleId,
         ownerUserId: userId,
         kind: "MAINTENANCE",
-        content: pick(T.MAINTENANCE[p.lang]),
+        content: saidOf(x.item, pick(T.MAINTENANCE[p.lang])),
         createdAt: noteAt(x, between(x.createdMs, now() - HOUR)),
       });
     }
@@ -2382,7 +2646,7 @@ async function writeAccount(
         articleId,
         ownerUserId: userId,
         kind: "OTHER",
-        content: pick(T.OTHER[p.lang]),
+        content: saidOf(x.item, pick(T.OTHER[p.lang])),
         createdAt: noteAt(x, between(x.createdMs, now() - HOUR)),
       });
   });
@@ -2464,6 +2728,40 @@ async function writeAccount(
     });
   }
 
+  // Someone found the lost item and wrote from its QR page: the report sits
+  // in the bell exactly as the public found-report route records it.
+  if (p.showcase) {
+    const k = plans.findIndex(
+      (x) => x.status === "LOST" && x.publicToken && !x.deletedMs
+    );
+    if (k >= 0 && plans[k].statusMs) {
+      const report = pick(C.FOUND_REPORTS[p.lang]);
+      const atMs = clampToNow(
+        Math.max(
+          plans[k].statusMs! + HOUR,
+          now() - between(2 * HOUR, 20 * HOUR)
+        )
+      );
+      alerts.push({
+        ownerUserId: userId,
+        alerteNom: emailT(p.lang, "found.alertName", {
+          name: plans[k].name,
+        }).slice(0, 100),
+        alerteDescription:
+          `${report.contact} — ${saidOf(plans[k].item, report.message)}`.slice(
+            0,
+            255
+          ),
+        alerteDate: new Date(atMs),
+        alerteArticleId: articleIds[k],
+        kind: "CUSTOM",
+        status: "SCHEDULED",
+        createdAt: new Date(atMs),
+        updatedAt: new Date(atMs),
+      });
+    }
+  }
+
   if (alerts.length)
     await prisma.alerte.createMany({ data: alerts, skipDuplicates: true });
 
@@ -2521,7 +2819,10 @@ async function writeAccount(
     });
   }
 
-  await seedAccountActivity(prisma, userId, p, plans, articleIds);
+  // Sign-ins and the audit trail are the operator's real ones, left as they
+  // are; every other account gets the history its use would have written.
+  if (!p.existingUserId)
+    await seedAccountActivity(prisma, userId, p, plans, articleIds);
   let extraAlerts = 0;
   if (paid)
     extraAlerts = await seedPaidAddOns(
@@ -2688,6 +2989,8 @@ async function seedDocuments(
     if (!w || rows.length >= budget) continue;
     const contract = /^(Extension|AppleCare)/.test(w.name);
     if (!(contract || PAPER_WARRANTY.has(x.item.category))) continue;
+    // The legal guarantee has no certificate: the invoice is its proof.
+    if (w.name === C.WARRANTY_NAMES[p.lang].legal) continue;
     if (!chance(p.showcase ? 0.6 : 0.05 + 0.35 * d01)) continue;
     const brand = w.providerName ?? x.item.brand;
     const bytes = await warrantyCertificatePdf({
@@ -2981,7 +3284,13 @@ async function seedPaidAddOns(
   const loaned = pickN(lendable, loanCount);
   for (let n = 0; n < loaned.length; n++) {
     const { x, k } = loaned[n];
-    const borrower = pick(C.BORROWERS[p.lang]);
+    const borrower = pick(
+      C.BORROWERS[p.lang].filter(
+        (b) =>
+          !p.people.includes(b.split(/[ ,]/)[0]) &&
+          !(p.house && /du \d/.test(b))
+      )
+    );
     const outstanding = p.showcase ? n < 2 : chance(0.4);
     if (outstanding) {
       const overdue = p.showcase ? n === 0 : chance(0.5);
@@ -3057,7 +3366,9 @@ async function seedPaidAddOns(
           loanedAt: new Date(loanedAt),
           dueAt: chance(0.6) ? new Date(loanedAt + randInt(7, 30) * DAY) : null,
           returnedAt: new Date(returnedAt),
-          note: chance(0.35) ? pick(C.LOAN_RETURN_NOTES[p.lang]) : null,
+          note: chance(0.35)
+            ? saidOf(x.item, pick(C.LOAN_RETURN_NOTES[p.lang]))
+            : null,
           createdAt: new Date(loanedAt),
           updatedAt: new Date(returnedAt),
         },
@@ -3532,5 +3843,183 @@ async function seedCrossUser(
         // Skip on any conflict.
       }
     }
+  }
+
+  // Every showcase has each side of every exchange to show.
+  for (const show of paid.filter((x) => x.persona.showcase))
+    await ensureShowcaseExchanges(prisma, show, paid, pairs);
+}
+
+type Seeded = {
+  userId: number;
+  persona: Persona;
+  plans: Plan[];
+  articleIds: number[];
+};
+
+/** A friend the showcase shares with and one who shares with it, an
+ *  invitation still pending, and a purchase in progress as the buyer: a
+ *  question on a friend's listing, an accepted offer, and the seller's
+ *  transfer waiting in the showcase's Transfers page. */
+async function ensureShowcaseExchanges(
+  prisma: PrismaClient,
+  show: Seeded,
+  paid: Seeded[],
+  pairs: Set<string>
+) {
+  const sp = show.persona;
+  const friends = shuffle(
+    paid.filter(
+      (x) =>
+        x !== show &&
+        !x.persona.showcase &&
+        (x.persona.household === null || x.persona.household !== sp.household)
+    )
+  );
+  if (friends.length === 0) return;
+  const since = (x: Seeded) => Math.max(sp.joinedMs, x.persona.joinedMs) + DAY;
+
+  const shares: Prisma.InventoryShareCreateManyInput[] = [];
+  const share = (from: Seeded, to: Seeded) => {
+    const key = `${from.userId}:${to.userId}`;
+    if (pairs.has(key)) return;
+    pairs.add(key);
+    const at = clampToNow(
+      wakingHours(between(since(from === show ? to : from), now() - HOUR))
+    );
+    shares.push({
+      ownerUserId: from.userId,
+      targetUserId: to.userId,
+      permission: "READ",
+      createdAt: new Date(at),
+      updatedAt: new Date(at),
+    });
+  };
+  // Direct shares, outside the household's own (pairs skips any that exist).
+  share(show, friends[0]);
+  share(friends[friends.length > 1 ? 1 : 0], show);
+  if (shares.length)
+    await prisma.inventoryShare.createMany({
+      data: shares,
+      skipDuplicates: true,
+    });
+
+  if (
+    (await prisma.shareInvite.count({
+      where: { ownerUserId: show.userId, status: "PENDING" },
+    })) === 0
+  ) {
+    const at = clampToNow(wakingHours(now() - between(HOUR, 5 * DAY)));
+    await prisma.shareInvite.create({
+      data: {
+        ownerUserId: show.userId,
+        email: `${C.emailSafe(pick(C.FIRST_NAMES[sp.lang]))}.${C.emailSafe(pick(C.LAST_NAMES[sp.lang]))}@example.com`,
+        token: token(),
+        status: "PENDING",
+        permission: "READ",
+        expiresAt: new Date(at + 7 * DAY),
+        createdAt: new Date(at),
+        updatedAt: new Date(at),
+      },
+    });
+  }
+
+  // The purchase, on something a friend has had for a while.
+  for (const seller of friends) {
+    const k = seller.plans.findIndex(
+      (x) =>
+        x.status === "ACTIVE" &&
+        !x.deletedMs &&
+        !!x.unitPrice &&
+        ["ELECTRONICS", "SPORTS", "COLLECTIBLE"].includes(x.item.category) &&
+        x.createdMs < now() - 20 * DAY
+    );
+    if (k < 0) continue;
+    const x = seller.plans[k];
+    const articleId = seller.articleIds[k];
+    const op = seller.persona;
+    if (!x.listed) {
+      await prisma.article.update({
+        where: { articleId },
+        data: { sharedWithPowerUsers: true },
+      });
+      x.listed = true;
+    }
+    let t = clampToNow(
+      wakingHours(
+        Math.max(
+          x.createdMs + DAY,
+          since(seller),
+          now() - between(6 * DAY, 10 * DAY)
+        )
+      )
+    );
+    const step = () =>
+      (t = Math.min(t + between(40 * MINUTE, 20 * HOUR), now() - MINUTE));
+    const opener = pick(
+      C.THREAD_OPENERS[sp.lang].filter((o) => o.topic === "available")
+    );
+    const value =
+      (x.unitPrice ?? x.item.price) *
+      Math.max(0.3, 1 - (x.item.dep / 100) * ((now() - x.acquiredMs) / YEAR));
+    const amount = negotiatedPrice(value * 0.85);
+    const msgs: Prisma.MessageUncheckedCreateWithoutThreadInput[] = [
+      {
+        senderUserId: show.userId,
+        body: opener.text(x.name),
+        createdAt: new Date(t),
+      },
+      {
+        senderUserId: seller.userId,
+        body: pick(C.OWNER_REPLIES[op.lang].available),
+        createdAt: new Date(step()),
+      },
+      {
+        senderUserId: show.userId,
+        body: C.OFFER_TEXT[sp.lang](moneyText(sp.lang, sp.currency, amount)),
+        kind: "OFFER",
+        offerAmount: amount,
+        offerStatus: "ACCEPTED",
+        createdAt: new Date(step()),
+      },
+      {
+        senderUserId: seller.userId,
+        body: C.OFFER_REPLIES[op.lang].ACCEPTED,
+        createdAt: new Date(step()),
+      },
+    ];
+    try {
+      await prisma.messageThread.create({
+        data: {
+          articleId,
+          ownerUserId: seller.userId,
+          requesterId: show.userId,
+          lastMessageAt: new Date(t),
+          ownerUnread: false,
+          requesterUnread: true,
+          createdAt: msgs[0].createdAt as Date,
+          updatedAt: new Date(t),
+          messages: { create: msgs },
+        },
+      });
+    } catch {
+      continue; // already asked about this one
+    }
+    const at = clampToNow(t + between(10 * MINUTE, 3 * HOUR));
+    await prisma.articleTransferRequest.create({
+      data: {
+        articleId,
+        requesterId: show.userId,
+        ownerId: seller.userId,
+        direction: "PUSH",
+        token: token(),
+        status: "PENDING",
+        message: C.TRANSFER_MESSAGES[op.lang].PUSH,
+        expiresAt: new Date(Math.max(at + 7 * DAY, now() + DAY)),
+        createdAt: new Date(at),
+        updatedAt: new Date(at),
+      },
+    });
+    return;
   }
 }
