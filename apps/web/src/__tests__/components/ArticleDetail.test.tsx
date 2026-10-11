@@ -14,6 +14,7 @@ vi.mock("../../services/api", () => ({
 
 import ArticleDetail from "../../components/articles/ArticleDetail";
 import {
+  alertsAPI,
   articlesAPI,
   attachmentsAPI,
   notesAPI,
@@ -87,6 +88,22 @@ describe("<ArticleDetail />", () => {
     renderAt();
     expect(await screen.findByText("Invoice")).toBeInTheDocument();
     expect(screen.queryByText("INVOICE")).not.toBeInTheDocument();
+  });
+
+  it("shows a reminder's status in the reader's language in the history", async () => {
+    vi.mocked(alertsAPI.getAll).mockResolvedValueOnce([
+      {
+        alerteId: 3,
+        alerteNom: "Warranty J-30",
+        alerteDate: new Date(Date.now() + 86_400_000).toISOString(),
+        status: "SCHEDULED",
+        kind: "WARRANTY",
+      },
+    ] as never);
+    renderAt();
+    expect(await screen.findByText("Warranty J-30")).toBeInTheDocument();
+    expect(screen.getByText("Scheduled")).toBeInTheDocument();
+    expect(screen.queryByText("SCHEDULED")).not.toBeInTheDocument();
   });
 
   it("adds a maintenance note", async () => {

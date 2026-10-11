@@ -106,6 +106,14 @@ type TimelineEntry = {
   body?: string;
 };
 
+// The API sends the AlerteStatus enum; the reader sees its translation.
+const ALERT_STATUS_KEY = {
+  SCHEDULED: "alerts.status.scheduled",
+  SENT: "alerts.status.sent",
+  CANCELLED: "alerts.status.cancelled",
+  FAILED: "alerts.status.failed",
+} as const;
+
 const TIMELINE_TONE: Record<TimelineEntry["kind"], BadgeTone> = {
   note: "neutral",
   attachment: "info",
@@ -1271,7 +1279,12 @@ export default function ArticleDetail() {
             date: al.alerteDate,
             kind: "alert" as const,
             title: al.alerteNom,
-            body: al.status,
+            body:
+              al.status in ALERT_STATUS_KEY
+                ? t(
+                    ALERT_STATUS_KEY[al.status as keyof typeof ALERT_STATUS_KEY]
+                  )
+                : al.status,
           })),
         ].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
