@@ -4,7 +4,7 @@
  * editable when the per-user share grants WRITE (`<EditDraft>` POSTs back
  * via `sharedAPI.updateArticle`).
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Inbox,
@@ -29,6 +29,11 @@ import MessageComposeDialog from "../messages/MessageComposeDialog";
 import SharedArticleHeroDialog from "./SharedArticleHeroDialog";
 import { useToast } from "../common/Toast";
 import { useLatestRequest } from "../../hooks/useLatestRequest";
+import { useClientPage } from "../../hooks/useClientPage";
+import { ClientPagination } from "../common/ClientPagination";
+
+// A household's "shared with me" runs past a hundred rows: show twenty.
+const PER_PAGE = 20;
 
 type EditDraft = {
   articleNom: string;
@@ -47,7 +52,7 @@ function draftFrom(row: SharedArticleRow): EditDraft {
 }
 
 export default function SharedArticlesView() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const toast = useToast();
   const navigate = useNavigate();
   const canMessage = useFeature("messaging");
@@ -63,6 +68,8 @@ export default function SharedArticlesView() {
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [savingArticleId, setSavingArticleId] = useState<number | null>(null);
+  const paged = useClientPage(rows, PER_PAGE);
+  const listTop = useRef<HTMLUListElement>(null);
 
   const request = useLatestRequest();
   const fetchRows = useCallback(async () => {
@@ -157,8 +164,8 @@ export default function SharedArticlesView() {
           title={t("shared.none")}
         />
       ) : (
-        <ul className="divide-y ui-divider">
-          {rows.map((r) => {
+        <ul ref={listTop} className="scroll-mt-24 divide-y ui-divider">
+          {paged.pageItems.map((r) => {
             const isEditing = editingArticleId === r.article.articleId;
             const canEdit = r.permission === "WRITE";
             return (
@@ -211,7 +218,7 @@ export default function SharedArticlesView() {
                           </Badge>
                         </div>
                         <div className="mt-1 break-words text-xs ui-text-muted">
-                          {t("shared.owner")}: {r.owner.email}
+                          {tLabel("shared.owner")} {r.owner.email}
                         </div>
                         {r.article.articleDescription && (
                           <div className="mt-2 break-words text-sm ui-text-muted">
@@ -341,6 +348,7 @@ export default function SharedArticlesView() {
           })}
         </ul>
       )}
+      {!loading && <ClientPagination paged={paged} listTop={listTop} />}
 
       {pullTransferRow && (
         <TransferDialog

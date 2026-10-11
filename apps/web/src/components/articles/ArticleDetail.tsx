@@ -234,7 +234,7 @@ function ValueOverTime({
 }
 
 export default function ArticleDetail() {
-  const { t, language } = useI18n();
+  const { t, tLabel, language } = useI18n();
   const { formatDate, formatDateTime, currency } = usePreferences();
   const safeDate = (iso: string | null | undefined) => formatDate(iso) || "—";
   const safeDateTime = (iso: string | null | undefined) =>
@@ -754,14 +754,14 @@ export default function ArticleDetail() {
           </div>
           {article.serialNumber && (
             <p className="select-all font-mono text-xs ui-text-muted">
-              {t("articleDetail.serialNumber")}: {article.serialNumber}
+              {tLabel("articleDetail.serialNumber")} {article.serialNumber}
             </p>
           )}
           {(article.purchasedFrom || article.orderRef) && (
             <p className="text-xs ui-text-muted">
               {article.purchasedFrom && (
                 <>
-                  {t("articleDetail.purchasedFrom")}:{" "}
+                  {tLabel("articleDetail.purchasedFrom")}{" "}
                   <span title={article.purchasedFrom}>
                     {article.purchasedFrom}
                   </span>
@@ -770,7 +770,7 @@ export default function ArticleDetail() {
               {article.purchasedFrom && article.orderRef && " · "}
               {article.orderRef && (
                 <>
-                  {t("articleDetail.orderRef")}:{" "}
+                  {tLabel("articleDetail.orderRef")}{" "}
                   <span className="select-all font-mono">
                     {article.orderRef}
                   </span>
@@ -789,12 +789,12 @@ export default function ArticleDetail() {
                 className="ui-action-primary hover:underline"
                 title={bundleLabel}
               >
-                {t("articleDetail.bundle")}: {bundleLabel}
+                {tLabel("articleDetail.bundle")} {bundleLabel}
               </Link>
               {bundleSiblings.length > 0 && (
                 <>
                   {" · "}
-                  {t("articleDetail.bundledWith")}:{" "}
+                  {tLabel("articleDetail.bundledWith")}{" "}
                   {bundleSiblings.map((s, i) => (
                     <span key={s.articleId}>
                       {i > 0 && ", "}
@@ -990,9 +990,9 @@ export default function ArticleDetail() {
               {article.garantie.garantieNom}
             </p>
             <p className="text-sm ui-text-muted">
-              {t("articleDetail.warrantyPurchased")}:{" "}
+              {tLabel("articleDetail.warrantyPurchased")}{" "}
               {safeDate(article.garantie.garantieDateAchat)} —{" "}
-              {t("articleDetail.warrantyEnds")}:{" "}
+              {tLabel("articleDetail.warrantyEnds")}{" "}
               {safeDate(article.garantie.garantieFin)}
               {article.garantie.renewedAt && (
                 <>
@@ -1269,7 +1269,7 @@ export default function ArticleDetail() {
                   key: `claim-${article.garantie.garantieId}-${article.garantie.claimStatus}`,
                   date: article.garantie.claimUpdatedAt,
                   kind: "claim" as const,
-                  title: `${t("timeline.claimUpdated")}: ${t(`claim.status.${article.garantie.claimStatus}`)}`,
+                  title: `${tLabel("timeline.claimUpdated")} ${t(`claim.status.${article.garantie.claimStatus}`)}`,
                   body: article.garantie.claimNote ?? undefined,
                 },
               ]

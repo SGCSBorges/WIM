@@ -40,7 +40,7 @@ function roleBadgeTone(role: RoleName): "neutral" | "warning" | "danger" {
 }
 
 export default function AdminFeaturesTab() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const roleOptions = ROLE_OPTION_VALUES.map((o) => ({
     value: o.value,
     label: t(o.labelKey),
@@ -214,7 +214,7 @@ export default function AdminFeaturesTab() {
                   )}
                 </div>
                 <p className="text-xs ui-text-muted">
-                  {t("admin.features.defaultLabel")}:{" "}
+                  {tLabel("admin.features.defaultLabel")}{" "}
                   <Badge tone={roleBadgeTone(flag.defaultRole)}>
                     {flag.defaultRole}
                   </Badge>
@@ -382,7 +382,7 @@ export default function AdminFeaturesTab() {
                     </span>
                   </div>
                   <p className="text-xs ui-text-muted">
-                    {t("admin.features.grants.expiresAt")}:{" "}
+                    {tLabel("admin.features.grants.expiresAt")}{" "}
                     {new Date(grant.expiresAt).toLocaleString()}
                     {grant.note && (
                       <span className="ml-2 italic">— {grant.note}</span>

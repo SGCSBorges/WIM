@@ -43,7 +43,7 @@ const COUNT_FIELDS = [
 ] as const;
 
 export default function JobsTab() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDateTime } = usePreferences();
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +152,7 @@ export default function JobsTab() {
       {renderQueue(t("admin.jobs.maintenanceQueue"), snap?.maintenance ?? null)}
 
       <p className="text-xs ui-text-muted">
-        {t("admin.jobs.nextRun")}:{" "}
+        {tLabel("admin.jobs.nextRun")}{" "}
         {snap?.auditPruneNextRun ? formatDateTime(snap.auditPruneNextRun) : "—"}
       </p>
 

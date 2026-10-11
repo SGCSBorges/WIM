@@ -1308,6 +1308,10 @@ const extras: LocaleDict["extras"] = {
   "articles.results.count": "{total} artikel(en)",
   "common.prev": "Vorige",
   "common.next": "Volgende",
+  "common.pageRange": "{from}–{to} van {total}",
+  "agenda.bucket.today": "Vandaag",
+  "analytics.dateNote":
+    "Gebruikte datum: de aankoopdatum van de garantie, of anders de dag waarop het artikel is toegevoegd.",
   "articleDetail.back": "Terug naar artikelen",
   "articleDetail.value": "Waarde",
   "articleDetail.currentValue": "Huidige waarde",

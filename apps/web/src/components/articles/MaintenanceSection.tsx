@@ -26,7 +26,7 @@ export default function MaintenanceSection({
 }: {
   articleId: number;
 }) {
-  const { t, language } = useI18n();
+  const { t, tLabel, language } = useI18n();
   const { formatDate, currency } = usePreferences();
   const toast = useToast();
   const allowed = useFeature("maintenance");
@@ -139,7 +139,7 @@ export default function MaintenanceSection({
         <div className="flex items-center gap-2">
           {upcoming && (
             <Badge tone="info" icon={<CalendarClock className="h-3 w-3" />}>
-              {t("service.nextDue")}: {formatDate(upcoming)}
+              {tLabel("service.nextDue")} {formatDate(upcoming)}
             </Badge>
           )}
           {!showForm && (
@@ -272,7 +272,7 @@ export default function MaintenanceSection({
                 {r.nextDueAt && (
                   <p className="mt-0.5 inline-flex items-center gap-1 text-xs ui-text-muted">
                     <CalendarClock className="h-3 w-3" aria-hidden="true" />
-                    {t("service.nextDue")}: {formatDate(r.nextDueAt)}
+                    {tLabel("service.nextDue")} {formatDate(r.nextDueAt)}
                   </p>
                 )}
               </div>
@@ -297,7 +297,7 @@ export default function MaintenanceSection({
         );
         return total > 0 ? (
           <p className="mt-3 border-t ui-divider pt-2 text-right text-sm ui-text-muted">
-            {t("service.totalSpent")}:{" "}
+            {tLabel("service.totalSpent")}{" "}
             <span className="font-semibold tabular-nums ui-title">
               {formatMoney(total, currency, language)}
             </span>

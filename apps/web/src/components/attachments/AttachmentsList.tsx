@@ -64,7 +64,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
   onView,
   isLoading = false,
 }) => {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDate } = usePreferences();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -500,7 +500,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                           className="truncate"
                           title={attachment.article.articleNom}
                         >
-                          {t("attachments.linked.article")}:{" "}
+                          {tLabel("attachments.linked.article")}{" "}
                           {attachment.article.articleNom}
                         </p>
                       )}
@@ -509,7 +509,7 @@ const AttachmentsList: React.FC<AttachmentsListProps> = ({
                           className="truncate"
                           title={attachment.garantie.garantieNom}
                         >
-                          {t("attachments.linked.warranty")}:{" "}
+                          {tLabel("attachments.linked.warranty")}{" "}
                           {attachment.garantie.garantieNom}
                         </p>
                       )}

@@ -93,4 +93,12 @@ describe("isActivePath", () => {
     expect(isActivePath("/articles", "/articles/123")).toBe(true);
     expect(isActivePath("/articles", "/articlesfoo")).toBe(false);
   });
+
+  // Both "Lieux" and "Valeur par emplacement" lit up on /locations/value.
+  it("leaves a parent section plain when a nested entry of its own matches", () => {
+    expect(isActivePath("/locations/value", "/locations/value")).toBe(true);
+    expect(isActivePath("/locations", "/locations/value")).toBe(false);
+    expect(isActivePath("/locations", "/locations")).toBe(true);
+    expect(isActivePath("/locations", "/locations/12")).toBe(true);
+  });
 });

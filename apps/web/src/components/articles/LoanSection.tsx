@@ -31,7 +31,7 @@ export default function LoanSection({
   articleId: number;
   onChanged?: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDate } = usePreferences();
   const toast = useToast();
   const allowed = useFeature("loans");
@@ -179,7 +179,7 @@ export default function LoanSection({
               )}
             </div>
             <div className="mt-0.5 text-xs ui-text-muted">
-              {t("loan.lentOn")}: {formatDate(active.loanedAt)}
+              {tLabel("loan.lentOn")} {formatDate(active.loanedAt)}
               {active.dueAt && (
                 <>
                   {" · "}
@@ -187,7 +187,7 @@ export default function LoanSection({
                     className="inline h-3 w-3"
                     aria-hidden="true"
                   />{" "}
-                  {t("loan.due")}: {formatDate(active.dueAt)}
+                  {tLabel("loan.due")} {formatDate(active.dueAt)}
                 </>
               )}
             </div>

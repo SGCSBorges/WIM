@@ -25,7 +25,7 @@ type PasskeyRow = {
 };
 
 export default function PasskeysPanel() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDate } = usePreferences();
   const toast = useToast();
   const [items, setItems] = useState<PasskeyRow[]>([]);
@@ -124,9 +124,10 @@ export default function PasskeysPanel() {
                   {p.deviceLabel || t("passkeys.unnamed")}
                 </p>
                 <p className="text-xs ui-text-muted">
-                  {t("passkeys.created")}: {formatDate(new Date(p.createdAt))}
+                  {tLabel("passkeys.created")}{" "}
+                  {formatDate(new Date(p.createdAt))}
                   {p.lastUsedAt &&
-                    ` · ${t("passkeys.lastUsed")}: ${formatDate(
+                    ` · ${tLabel("passkeys.lastUsed")} ${formatDate(
                       new Date(p.lastUsedAt)
                     )}`}
                 </p>

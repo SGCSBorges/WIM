@@ -1329,6 +1329,10 @@ const extras: LocaleDict["extras"] = {
   "articles.results.count": "{total} artículo(s)",
   "common.prev": "Anterior",
   "common.next": "Siguiente",
+  "common.pageRange": "{from}–{to} de {total}",
+  "agenda.bucket.today": "Hoy",
+  "analytics.dateNote":
+    "Fecha usada: la de compra de la garantía o, si no la hay, el día en que se añadió el artículo.",
   "articleDetail.back": "Volver a los artículos",
   "articleDetail.value": "Valor",
   "articleDetail.currentValue": "Valor actual",

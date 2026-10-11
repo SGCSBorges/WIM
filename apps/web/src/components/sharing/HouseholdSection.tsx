@@ -35,7 +35,7 @@ import { Section, Button, Field, Input, Badge, ConfirmDialog } from "../ui";
 import { useLatestRequest } from "../../hooks/useLatestRequest";
 
 export default function HouseholdSection() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const toast = useToast();
   const allowed = useFeature("household");
   const { loaded: featuresLoaded } = useFeatures();
@@ -309,7 +309,7 @@ export default function HouseholdSection() {
                         className="truncate ui-text-muted"
                         title={inv.email}
                       >
-                        {t("household.invitePending")}: {inv.email}
+                        {tLabel("household.invitePending")} {inv.email}
                       </span>
                       <Button
                         variant="ghost"

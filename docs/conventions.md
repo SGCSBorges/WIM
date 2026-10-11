@@ -862,8 +862,8 @@ Smaller features added in one batch; each follows the existing patterns.
   365d; warranties/alerts use a 30-day past window, loans/maintenance/insurance
   include any overdue; sorted ascending, capped 200. `AgendaEvent` in
   `@wim/types`. Web: lazy `/agenda` route + nav item (`CalendarClock`),
-  `components/agenda/AgendaView.tsx` groups into Overdue / This week / This
-  month / Later, each event linking to its article.
+  `components/agenda/AgendaView.tsx` groups into Overdue (before today) /
+  Today / This week / This month / Later, each event linking to its article.
 - **Favorites**: `Article.isFavorite` (`Boolean`, default false) + migration.
   `POST /articles/:id/favorite {favorite}` (atomic `updateMany`, precondition
   in WHERE); list filter `?favorite=1` (only "1"/"true" enables it). Web:

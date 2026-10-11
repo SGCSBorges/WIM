@@ -124,7 +124,7 @@ function disconnectAndRedirect() {
 }
 
 export default function ProfileView() {
-  const { t, language } = useI18n();
+  const { t, tLabel, language } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     density,
@@ -1080,7 +1080,7 @@ export default function ProfileView() {
                 <div className="rounded-lg border ui-divider p-3 text-sm">
                   <p>
                     <span className="ui-text-muted">
-                      {t("profile.billing.plan")}:
+                      {tLabel("profile.billing.plan")}
                     </span>{" "}
                     <strong>
                       {subscription.plan === "yearly"
@@ -1092,7 +1092,7 @@ export default function ProfileView() {
                   </p>
                   <p className="mt-1">
                     <span className="ui-text-muted">
-                      {t("profile.billing.nextBilling")}:
+                      {tLabel("profile.billing.nextBilling")}
                     </span>{" "}
                     <strong>
                       {formatBillingDate(subscription.currentPeriodEnd)}

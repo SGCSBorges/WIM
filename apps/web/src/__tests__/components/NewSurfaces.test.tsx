@@ -102,6 +102,27 @@ describe("<AnalyticsView />", () => {
     ).toBeInTheDocument();
   });
 
+  // An item with no warranty is dated by the day it was added: entered at
+  // onboarding, it shows as a spike that month. The charts say so.
+  it("says what the monthly figures are dated by", async () => {
+    getAnalytics.mockResolvedValue({
+      totalSpend: 1200,
+      currentValue: 1000,
+      itemsPriced: 1,
+      spendByMonth: [{ month: "2026-05", amount: 1200, cumulative: 1200 }],
+      byLocation: [],
+      byTag: [],
+      byCategory: [],
+      topItems: [{ articleId: 1, name: "TV", value: 1000 }],
+    });
+    wrap(<AnalyticsView />);
+    expect(
+      await screen.findAllByText(
+        /purchase date, or else the day the item was added/i
+      )
+    ).toHaveLength(2);
+  });
+
   it("surfaces an error banner when the analytics fetch fails", async () => {
     getAnalytics.mockRejectedValue(new Error("boom"));
     wrap(<AnalyticsView />);

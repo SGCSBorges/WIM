@@ -820,6 +820,10 @@ export const extras = {
     "articles.results.count": "{total} article(s)",
     "common.prev": "Prev",
     "common.next": "Next",
+    "common.pageRange": "{from}–{to} of {total}",
+    "agenda.bucket.today": "Today",
+    "analytics.dateNote":
+      "Date used: the warranty's purchase date, or else the day the item was added.",
     "articleDetail.back": "Back to articles",
     "articleDetail.value": "Value",
     "articleDetail.currentValue": "Current value",

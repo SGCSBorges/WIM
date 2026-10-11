@@ -28,6 +28,7 @@ import type { PortfolioAnalytics, ArticleCategory } from "../../types";
 import { useI18n } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { formatMoney } from "../../utils/money";
+import { formatCompact, shortLabel } from "../../utils/number";
 import { getErrorMessage } from "../../utils/error";
 import { PageHeader, Section, Stat } from "../ui";
 import { EmptyState, ErrorBanner } from "../common/States";
@@ -54,11 +55,14 @@ function ChartCard({
   title,
   empty,
   emptyLabel,
+  note,
   children,
 }: {
   title: string;
   empty: boolean;
   emptyLabel: string;
+  /** What the figures rest on, under the chart. */
+  note?: string;
   children: React.ReactElement;
 }) {
   return (
@@ -74,6 +78,7 @@ function ChartCard({
           </ResponsiveContainer>
         </div>
       )}
+      {note && !empty && <p className="mt-2 text-xs ui-text-muted">{note}</p>}
     </Section>
   );
 }
@@ -106,6 +111,7 @@ export default function AnalyticsView() {
   }, [t]);
 
   const money = (n: number) => formatMoney(n, currency, language);
+  const compact = (n: number) => formatCompact(Number(n), language);
   // Trim the YYYY-MM key to a compact MM/YY for the crowded 24-month axis.
   const shortMonth = (m: string) => `${m.slice(5)}/${m.slice(2, 4)}`;
 
@@ -174,6 +180,7 @@ export default function AnalyticsView() {
           title={t("analytics.valueTrend")}
           empty={false}
           emptyLabel={t("analytics.noData")}
+          note={t("analytics.dateNote")}
         >
           <AreaChart data={data.spendByMonth}>
             <defs>
@@ -192,7 +199,7 @@ export default function AnalyticsView() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
             <XAxis dataKey="month" tickFormatter={shortMonth} {...AXIS} />
-            <YAxis {...AXIS} width={40} />
+            <YAxis {...AXIS} width={44} tickFormatter={compact} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelFormatter={(m) => String(m)}
@@ -219,11 +226,12 @@ export default function AnalyticsView() {
           title={t("analytics.spendByMonth")}
           empty={data.spendByMonth.every((b) => b.amount === 0)}
           emptyLabel={t("analytics.noData")}
+          note={t("analytics.dateNote")}
         >
           <BarChart data={data.spendByMonth}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
             <XAxis dataKey="month" tickFormatter={shortMonth} {...AXIS} />
-            <YAxis {...AXIS} width={40} />
+            <YAxis {...AXIS} width={44} tickFormatter={compact} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               formatter={(value) =>
@@ -241,12 +249,26 @@ export default function AnalyticsView() {
         >
           <BarChart data={data.topItems} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-            <XAxis type="number" {...AXIS} />
+            <XAxis type="number" {...AXIS} tickFormatter={compact} />
             <YAxis
               type="category"
               dataKey="name"
-              width={110}
-              tick={{ ...AXIS, width: 100 }}
+              width={130}
+              interval={0}
+              // Drawn here, not by Recharts: its default tick wraps text to
+              // the axis width, and the wrapped names ran into each other.
+              tick={({ x, y, payload }) => (
+                <text
+                  x={x}
+                  y={y}
+                  dy={4}
+                  textAnchor="end"
+                  fill={AXIS.stroke}
+                  fontSize={AXIS.fontSize}
+                >
+                  {shortLabel(String(payload.value))}
+                </text>
+              )}
             />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
@@ -273,7 +295,7 @@ export default function AnalyticsView() {
           <BarChart data={data.byLocation}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
             <XAxis dataKey="name" {...AXIS} />
-            <YAxis {...AXIS} width={40} />
+            <YAxis {...AXIS} width={44} tickFormatter={compact} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               formatter={(value) =>
@@ -292,7 +314,7 @@ export default function AnalyticsView() {
           <BarChart data={data.byTag}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
             <XAxis dataKey="name" {...AXIS} />
-            <YAxis {...AXIS} width={40} />
+            <YAxis {...AXIS} width={44} tickFormatter={compact} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               formatter={(value) =>
@@ -323,7 +345,7 @@ export default function AnalyticsView() {
           >
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
             <XAxis dataKey="name" {...AXIS} />
-            <YAxis {...AXIS} width={40} />
+            <YAxis {...AXIS} width={44} tickFormatter={compact} />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               formatter={(value) =>

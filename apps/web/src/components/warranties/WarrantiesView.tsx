@@ -45,7 +45,7 @@ type Warranty = {
 type StatusFilter = WarrantyStatus | "all";
 
 export default function WarrantiesView() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDate } = usePreferences();
   // Pref-aware date with a defensive em-dash fallback — a malformed value
   // from the API must not crash the whole list.
@@ -197,11 +197,11 @@ export default function WarrantiesView() {
                           className="h-3.5 w-3.5"
                           aria-hidden="true"
                         />
-                        {t("warranties.purchase")}:{" "}
+                        {tLabel("warranties.purchase")}{" "}
                         {safeFormat(w.garantieDateAchat)}
                       </span>
                       <span>
-                        {t("warranties.duration")}: {w.garantieDuration}{" "}
+                        {tLabel("warranties.duration")} {w.garantieDuration}{" "}
                         {t("warranties.months")}
                       </span>
                       {(w.garantieFin ?? w.garantieEndDate) && (

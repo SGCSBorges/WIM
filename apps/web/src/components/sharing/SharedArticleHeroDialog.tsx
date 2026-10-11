@@ -45,7 +45,7 @@ export default function SharedArticleHeroDialog({
   row: SharedArticleRow;
   onClose: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDate } = usePreferences();
   const a = row.article;
   const warranty = warrantyStatusFor(a.garantie?.garantieFin);
@@ -106,7 +106,7 @@ export default function SharedArticleHeroDialog({
                 )}
               </span>
               <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-medium text-white">
-                {t("articleDetail.warranty")}: {t(warranty.labelKey)}
+                {tLabel("articleDetail.warranty")} {t(warranty.labelKey)}
               </span>
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function SharedArticleHeroDialog({
               {a.garantie && (
                 <span className="ui-text-muted">
                   {a.garantie.garantieNom && `${a.garantie.garantieNom} · `}
-                  {t("articleDetail.warrantyEnds")}:{" "}
+                  {tLabel("articleDetail.warrantyEnds")}{" "}
                   {formatDate(a.garantie.garantieFin)}
                 </span>
               )}

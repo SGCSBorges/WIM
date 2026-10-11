@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 
 vi.mock("../../services/api", () => ({
@@ -73,6 +73,40 @@ describe("<AgendaView />", () => {
     // …while the policy renewal (no article) is not a link.
     const policyRow = screen.getByText("Acme — policy renewal");
     expect(policyRow.closest("a")).toBeNull();
+  });
+
+  // A report a finder sent this morning sat under "Overdue".
+  it("files what is dated earlier today under Today, not Overdue", async () => {
+    const midnight = new Date();
+    midnight.setHours(0, 0, 0, 0);
+    const at = (ms: number) => new Date(midnight.getTime() + ms).toISOString();
+    agenda.mockResolvedValue({
+      events: [
+        {
+          kind: "alert",
+          date: at(60_000),
+          title: "Found: Watch",
+          articleId: null,
+        },
+        {
+          kind: "loan",
+          date: at(-3_600_000),
+          title: "Drill — back",
+          articleId: null,
+        },
+      ],
+    });
+    wrap();
+
+    const today = await screen.findByRole("heading", { name: "Today" });
+    const overdue = screen.getByRole("heading", { name: "Overdue" });
+    const rowsUnder = (h: HTMLElement) =>
+      within(h.closest("section")!)
+        .getAllByRole("listitem")
+        .map((li) => li.textContent);
+    expect(rowsUnder(today).join()).toContain("Found: Watch");
+    expect(rowsUnder(overdue).join()).toContain("Drill — back");
+    expect(rowsUnder(overdue).join()).not.toContain("Found: Watch");
   });
 
   it("shows an empty state when there is nothing scheduled", async () => {

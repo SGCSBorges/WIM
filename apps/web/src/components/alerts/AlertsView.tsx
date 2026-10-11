@@ -20,6 +20,8 @@ import { useI18n, type TranslationKey } from "../../i18n/i18n";
 import { usePreferences } from "../../preferences/preferences";
 import { alertsAPI, articlesAPI } from "../../services/api";
 import { fetchAllPages } from "../../services/pagination";
+import { useClientPage } from "../../hooks/useClientPage";
+import { ClientPagination } from "../common/ClientPagination";
 import { getErrorMessage } from "../../utils/error";
 import { ErrorBanner, EmptyState } from "../common/States";
 import { Skeleton } from "../common/Skeleton";
@@ -40,6 +42,9 @@ import {
 import type { AlertItem as Alert, AlertStatus } from "@wim/types";
 import { useLatestRequest } from "../../hooks/useLatestRequest";
 
+// Rows per page: a showcase account holds a few hundred reminders.
+const PER_PAGE = 25;
+
 function statusTone(status: AlertStatus): BadgeTone {
   switch (status) {
     case "SCHEDULED":
@@ -54,14 +59,19 @@ function statusTone(status: AlertStatus): BadgeTone {
 }
 
 export default function AlertsView() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDateTime } = usePreferences();
   const toast = useToast();
   const undoableDelete = useUndoableDelete();
   const [items, setItems] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | AlertStatus>("ALL");
+  // Opens on what is still to come, soonest first: with every status, the
+  // page led with reminders sent a year ago and the upcoming ones sat
+  // halfway down. The history is one filter away.
+  const [statusFilter, setStatusFilter] = useState<"ALL" | AlertStatus>(
+    "SCHEDULED"
+  );
   const [kindFilter, setKindFilter] = useState<"ALL" | "WARRANTY" | "CUSTOM">(
     "ALL"
   );
@@ -152,6 +162,12 @@ export default function AlertsView() {
     });
     return arr;
   }, [items, sortBy, sortDir]);
+  const paged = useClientPage(
+    sorted,
+    PER_PAGE,
+    `${statusFilter}|${kindFilter}|${sortBy}|${sortDir}`
+  );
+  const listTop = useRef<HTMLUListElement>(null);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -416,14 +432,14 @@ export default function AlertsView() {
               title={t("alerts.none")}
             />
           ) : (
-            <ul className="divide-y ui-divider">
-              {sorted.map((a) => (
+            <ul ref={listTop} className="scroll-mt-24 divide-y ui-divider">
+              {paged.pageItems.map((a) => (
                 <li key={a.alerteId} className="py-3 first:pt-0 last:pb-0">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="font-medium ui-title">{a.alerteNom}</div>
                       <div className="text-xs ui-text-muted">
-                        {t("alerts.date")}: {formatDateTime(a.alerteDate)}
+                        {tLabel("alerts.date")} {formatDateTime(a.alerteDate)}
                       </div>
 
                       {(a.garantie ||
@@ -444,7 +460,7 @@ export default function AlertsView() {
                               className="underline hover:opacity-90"
                               title={t("alerts.copyId")}
                             >
-                              {t("alerts.warranty")}:{" "}
+                              {tLabel("alerts.warranty")}{" "}
                               {a.garantie?.garantieNom ??
                                 `#${a.alerteGarantieId}`}
                             </button>
@@ -463,7 +479,7 @@ export default function AlertsView() {
                               className="underline hover:opacity-90"
                               title={t("alerts.copyId")}
                             >
-                              {t("alerts.article")}:{" "}
+                              {tLabel("alerts.article")}{" "}
                               {a.article
                                 ? `${a.article.articleNom} (${a.article.articleModele})`
                                 : `#${a.alerteArticleId}`}
@@ -487,7 +503,7 @@ export default function AlertsView() {
                           role="alert"
                           className="mt-2 text-xs ui-text-error"
                         >
-                          {t("alerts.error")}: {a.errorMessage}
+                          {tLabel("alerts.error")} {a.errorMessage}
                         </div>
                       )}
                     </div>
@@ -517,6 +533,7 @@ export default function AlertsView() {
               ))}
             </ul>
           )}
+          {!loading && <ClientPagination paged={paged} listTop={listTop} />}
         </Section>
       </div>
 

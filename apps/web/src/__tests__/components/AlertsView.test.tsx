@@ -53,6 +53,14 @@ describe("<AlertsView />", () => {
     expect(await screen.findByText("Filter change")).toBeInTheDocument();
   });
 
+  // With every status, the page led with reminders sent a year ago.
+  it("opens on what is still scheduled", async () => {
+    mocked.getAll.mockResolvedValueOnce([]);
+    renderView();
+    await waitFor(() => expect(mocked.getAll).toHaveBeenCalled());
+    expect(mocked.getAll.mock.calls[0][0]).toBe("SCHEDULED");
+  });
+
   it("snoozes a scheduled alert", async () => {
     mocked.getAll
       .mockResolvedValueOnce([
@@ -134,9 +142,8 @@ describe("<AlertsView />", () => {
       },
     ]);
     renderView();
-    expect(
-      await screen.findByText("The five-hundred-and-first")
-    ).toBeInTheDocument();
+    // All 501 are in hand (the list itself shows them 25 at a time).
+    expect(await screen.findByText("1–25 of 501")).toBeInTheDocument();
     expect(mocked.getAll).toHaveBeenCalledTimes(2);
     // page 1 then page 2, both at the API's 500-row ceiling
     expect(mocked.getAll.mock.calls[0].slice(1, 3)).toEqual([1, 500]);

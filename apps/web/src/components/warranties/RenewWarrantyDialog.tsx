@@ -54,7 +54,7 @@ export default function RenewWarrantyDialog({
   mode: initialMode = "renew",
   onUpdated,
 }: RenewWarrantyDialogProps) {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDate } = usePreferences();
   const toast = useToast();
 
@@ -222,7 +222,7 @@ export default function RenewWarrantyDialog({
       {previewFin && (
         <p className="rounded-lg bg-surface-muted p-2 text-sm">
           <span className="ui-text-muted">
-            {t("articleForm.warranty.endsOn")}:{" "}
+            {tLabel("articleForm.warranty.endsOn")}{" "}
           </span>
           <span className="font-medium ui-title">{formatDate(previewFin)}</span>
         </p>

@@ -31,7 +31,7 @@ const ACTIONS = ["", ...AUDIT_ACTIONS];
 const ENTITIES = ["", ...AUDIT_ENTITIES];
 
 export default function AuditLogTab() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const { formatDateTime } = usePreferences();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
@@ -254,7 +254,7 @@ export default function AuditLogTab() {
         </div>
         <div className="flex items-center justify-between border-t ui-divider p-3">
           <span className="text-xs ui-text-muted">
-            {t("admin.auditLog.shown")}: {entries.length}
+            {tLabel("admin.auditLog.shown")} {entries.length}
           </span>
           <Button
             variant="outline"

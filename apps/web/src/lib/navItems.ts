@@ -202,8 +202,14 @@ export function navItemFeatureKey(item: NavItem): string | undefined {
 
 /** True when `path` is the active section for the current location. The home
  *  route matches exactly; section roots also match their nested routes
- *  (e.g. /articles is active on /articles/123). */
+ *  (e.g. /articles is active on /articles/123), unless that nested route has
+ *  an entry of its own: /locations/value lights "Valeur par emplacement",
+ *  not "Lieux" as well. */
 export function isActivePath(path: string, pathname: string): boolean {
   if (path === "/") return pathname === "/";
-  return pathname === path || pathname.startsWith(path + "/");
+  const within = (p: string) => pathname === p || pathname.startsWith(p + "/");
+  if (!within(path)) return false;
+  return !NAV_ITEMS.some(
+    (item) => item.path.startsWith(path + "/") && within(item.path)
+  );
 }

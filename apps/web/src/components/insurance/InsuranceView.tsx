@@ -66,7 +66,7 @@ function renewalBadge(renewalAt: string | null): RenewalBadge | null {
 }
 
 export default function InsuranceView() {
-  const { t, language } = useI18n();
+  const { t, tLabel, language } = useI18n();
   const { formatDate, currency } = usePreferences();
   const toast = useToast();
 
@@ -329,7 +329,7 @@ export default function InsuranceView() {
                       {p.premium != null && (
                         <span>
                           <span className="ui-text-muted">
-                            {t("insurance.premium")}:{" "}
+                            {tLabel("insurance.premium")}{" "}
                           </span>
                           {formatMoney(Number(p.premium), currency, language)}
                         </span>
@@ -337,7 +337,7 @@ export default function InsuranceView() {
                       {p.coverageAmount != null && (
                         <span>
                           <span className="ui-text-muted">
-                            {t("insurance.coverage")}:{" "}
+                            {tLabel("insurance.coverage")}{" "}
                           </span>
                           {formatMoney(
                             Number(p.coverageAmount),
@@ -349,7 +349,7 @@ export default function InsuranceView() {
                       {p.renewalAt && (
                         <span>
                           <span className="ui-text-muted">
-                            {t("insurance.renewalDate")}:{" "}
+                            {tLabel("insurance.renewalDate")}{" "}
                           </span>
                           {formatDate(p.renewalAt)}
                         </span>
@@ -362,7 +362,7 @@ export default function InsuranceView() {
                     )}
                     <p className="mt-2 inline-flex items-center gap-1 text-xs ui-text-muted">
                       <Package className="h-3 w-3" aria-hidden="true" />
-                      {t("insurance.itemsCovered")}: {p.articles.length}
+                      {tLabel("insurance.itemsCovered")} {p.articles.length}
                     </p>
                     {p.articles.length > 0 && (
                       <div className="mt-1 flex flex-wrap gap-1">

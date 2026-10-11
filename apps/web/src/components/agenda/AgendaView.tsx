@@ -2,7 +2,7 @@
  * In-app agenda — a single chronological list of what needs attention:
  * warranty expirations, maintenance due, loan returns, insurance renewals,
  * and scheduled custom alerts, aggregated server-side (GET /calendar/agenda).
- * Rows are grouped into Overdue / This week / This month / Later buckets, and
+ * Rows are grouped into Overdue / Today / This week / This month / Later buckets, and
  * each event that hangs off an article links straight to it.
  */
 import { useEffect, useState } from "react";
@@ -33,20 +33,29 @@ const KIND_ICON: Record<AgendaEvent["kind"], React.ReactNode> = {
   alert: <Bell className="h-4 w-4" aria-hidden="true" />,
 };
 
-type Bucket = "overdue" | "week" | "month" | "later";
+type Bucket = "overdue" | "today" | "week" | "month" | "later";
 
+// Overdue means before today. Something dated earlier today (a J-1 reminder
+// this morning, the report a finder sent an hour ago) is today's business,
+// not late.
 function bucketFor(dateIso: string, now: number): Bucket {
   const t = new Date(dateIso).getTime();
-  if (t < now) return "overdue";
+  const midnight = new Date(now);
+  midnight.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(midnight);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (t < midnight.getTime()) return "overdue";
+  if (t < tomorrow.getTime()) return "today";
   const days = (t - now) / 86_400_000;
   if (days <= 7) return "week";
   if (days <= 31) return "month";
   return "later";
 }
 
-const BUCKET_ORDER: Bucket[] = ["overdue", "week", "month", "later"];
+const BUCKET_ORDER: Bucket[] = ["overdue", "today", "week", "month", "later"];
 const BUCKET_TONE: Record<Bucket, BadgeTone> = {
   overdue: "danger",
+  today: "warning",
   week: "warning",
   month: "info",
   later: "neutral",
@@ -76,6 +85,7 @@ export default function AgendaView() {
   const now = Date.now();
   const grouped: Record<Bucket, AgendaEvent[]> = {
     overdue: [],
+    today: [],
     week: [],
     month: [],
     later: [],

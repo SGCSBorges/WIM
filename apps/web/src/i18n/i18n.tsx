@@ -68,6 +68,10 @@ type I18nContextValue = {
    *  live session. */
   adoptServerLanguage: (lang: string | null | undefined) => void;
   t: (key: AnyKey) => string;
+  /** A label followed by its colon, as the language writes it: "Achat :"
+   *  in French (non-breaking space before the colon), "Purchase:" in the
+   *  others. */
+  tLabel: (key: AnyKey) => string;
   plural: (count: number, forms: PluralForms) => string;
 };
 
@@ -188,23 +192,26 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       nl: "nl-NL",
     };
     const pluralRules = new Intl.PluralRules(localeMap[language]);
+    const t = (key: AnyKey) => {
+      const dict = loaded[language];
+      const eDict = (dict?.extras ?? {}) as Record<string, string>;
+      const mDict = (dict?.main ?? {}) as Record<string, string>;
+      return (
+        eDict[key] ??
+        mDict[key] ??
+        (extras.en as Record<string, string>)[key] ??
+        (translations.en as Record<string, string>)[key] ??
+        key
+      );
+    };
+    const colon = language === "fr" ? "\u00a0:" : ":";
 
     return {
       language,
       setLanguage,
       adoptServerLanguage,
-      t: (key: AnyKey) => {
-        const dict = loaded[language];
-        const eDict = (dict?.extras ?? {}) as Record<string, string>;
-        const mDict = (dict?.main ?? {}) as Record<string, string>;
-        return (
-          eDict[key] ??
-          mDict[key] ??
-          (extras.en as Record<string, string>)[key] ??
-          (translations.en as Record<string, string>)[key] ??
-          key
-        );
-      },
+      t,
+      tLabel: (key: AnyKey) => t(key) + colon,
       plural: (count: number, forms: PluralForms) => {
         const cat = pluralRules.select(count) as PluralCategory;
         return forms[cat] ?? forms.other ?? "";

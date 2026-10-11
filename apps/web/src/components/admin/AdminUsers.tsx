@@ -114,7 +114,7 @@ type AdminStatistics = {
 };
 
 export default function AdminUsers() {
-  const { t } = useI18n();
+  const { t, tLabel } = useI18n();
   const toast = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
@@ -714,7 +714,7 @@ export default function AdminUsers() {
                             </div>
                             {a.garantie && (
                               <div className="mt-1 text-xs ui-text-muted">
-                                {t("admin.warrantyLabel")}:{" "}
+                                {tLabel("admin.warrantyLabel")}{" "}
                                 {a.garantie.garantieNom} (
                                 {a.garantie.garantieIsValide
                                   ? t("admin.status.valid")
@@ -793,14 +793,14 @@ export default function AdminUsers() {
                           {w.garantieNom}
                         </div>
                         <div className="text-xs ui-text-muted">
-                          {t("admin.statusLabel")}:{" "}
+                          {tLabel("admin.statusLabel")}{" "}
                           {w.garantieIsValide
                             ? t("admin.status.valid")
                             : t("admin.status.expired")}
                         </div>
                         {w.article && (
                           <div className="mt-1 text-xs ui-text-muted">
-                            {t("articles.title")}: {w.article.articleNom} —{" "}
+                            {tLabel("articles.title")} {w.article.articleNom} —{" "}
                             {w.article.articleModele}
                           </div>
                         )}
