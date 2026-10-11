@@ -125,24 +125,27 @@ Every reseed stages these on `admin@admin.com` and on `admin@wim.com`
 (`ensureShowcaseStories`, `ensureShowcaseExchanges`), so none depends on
 luck:
 
-| Story                                                                           | Where to look                                             |
-| ------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| A warranty ending in about three weeks                                          | Dashboard → expiring soon; Warranties                     |
-| A warranty ending within the week                                               | Alerts → `Rappel garantie J-1` scheduled this week        |
-| An item in repair under an open claim                                           | Articles filtered by status; its warranty shows the claim |
-| An overdue loan, and one due soon                                               | Loans; Alerts → `Retour de prêt : …`                      |
-| A routine service due within a month                                            | Maintenance; Alerts → `Entretien à prévoir : …`           |
-| A home-insurance renewal within ~5 weeks                                        | Insurance; Alerts → `Renouvellement d'assurance : …`      |
-| Sold, disposed and lost items                                                   | Articles → status filter; the lost one has a QR page      |
-| Items listed to other members, each with a buyer's question (offers on some)    | Shared / Messages                                         |
-| A recently deleted item                                                         | Trash                                                     |
-| A wishlist item later bought                                                    | Wishlist (struck through)                                 |
-| Budgets set from the household's own spending, on track for the year            | Dashboard → budget                                        |
-| A question on a friend's listing, an accepted offer, and the transfer to accept | Messages; Transfers                                       |
-| A friend it shares with, one sharing with it, an invitation pending             | Sharing                                                   |
-| Someone found the lost item and wrote from its QR page                          | Notification bell → `Objet retrouvé : …`                  |
-| Proofs of purchase: invoices, till receipts, warranty certificates (PDF)        | an article → _Pièces jointes_; or the Pièces jointes page |
-| Product photos on some articles (credited Commons images)                       | the article header and its _Photos_ section               |
+| Story                                                                                 | Where to look                                             |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| A warranty ending in about three weeks                                                | Dashboard → expiring soon; Warranties                     |
+| A warranty ending within the week                                                     | Alerts → `Rappel garantie J-1` scheduled this week        |
+| An item in repair under an open claim                                                 | Articles filtered by status; its warranty shows the claim |
+| An overdue loan, and one due soon                                                     | Loans; Alerts → `Retour de prêt : …`                      |
+| A routine service due within a month                                                  | Maintenance; Alerts → `Entretien à prévoir : …`           |
+| A home-insurance renewal within ~5 weeks                                              | Insurance; Alerts → `Renouvellement d'assurance : …`      |
+| Sold, disposed and lost items                                                         | Articles → status filter; the lost one has a QR page      |
+| Items listed to other members, each with a buyer's question (offers on some)          | Shared / Messages                                         |
+| A recently deleted item                                                               | Trash                                                     |
+| A wishlist item later bought                                                          | Wishlist (struck through)                                 |
+| Budgets set from the household's own spending, on track for the year                  | Dashboard → budget                                        |
+| A purchase from a friend: question, accepted offer, transfer to accept (5+ days left) | Messages; Transfers                                       |
+| A friend it shares with, one sharing with it, an invitation pending (5+ days left)    | Sharing                                                   |
+| Someone found the lost item and wrote from its QR page                                | Notification bell → `Objet retrouvé : …`                  |
+| Invoices, till receipts, warranty certificates (PDF), each its warranty's proof       | an article → _Pièces jointes_; Articles → _Preuve_        |
+| Product photos on some articles (credited Commons images)                             | the article header and its _Photos_ section               |
+
+The two showcase accounts are different families: neither shares with,
+writes to or transfers anything to the other.
 
 The rest of the inventory is ordinary household life: an onboarding evening
 a year ago where most things were entered a few minutes apart, then a

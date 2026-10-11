@@ -2686,10 +2686,52 @@ async function writeAccount(
       updatedAt: new Date(atMs),
     });
   }
-  if (documents.length || photoRows.length)
-    await prisma.attachment.createMany({
-      data: [...photoRows, ...documents],
-    });
+  const stored =
+    documents.length || photoRows.length
+      ? await prisma.attachment.createManyAndReturn({
+          data: [...photoRows, ...documents],
+          select: {
+            attachmentId: true,
+            articleId: true,
+            type: true,
+            createdAt: true,
+          },
+        })
+      : [];
+
+  // A warranty's proof is its own paper (certificate or contract) when the
+  // owner scanned one, else the invoice or till receipt, which is what a
+  // shop asks for under the legal guarantee. The app keeps one per warranty
+  // (the "Preuve" column and the dashboard's "with attachment" count).
+  const proofOf = new Map<number, (typeof stored)[number]>();
+  for (const a of stored) {
+    if (a.articleId === null || a.type === "OTHER") continue;
+    const had = proofOf.get(a.articleId);
+    if (!had || (a.type === "WARRANTY" && had.type !== "WARRANTY"))
+      proofOf.set(a.articleId, a);
+  }
+  const proofLinks = plans.flatMap((x, k) => {
+    const garantieId = garantieByArticle.get(articleIds[k]);
+    const proof = proofOf.get(articleIds[k]);
+    if (!x.warranty || !garantieId || !proof) return [];
+    const w = x.warranty;
+    const updatedMs = Math.max(
+      w.createdMs,
+      w.renewal?.atMs ?? 0,
+      w.claim?.atMs ?? 0,
+      proof.createdAt.getTime()
+    );
+    return [
+      prisma.garantie.update({
+        where: { garantieId },
+        data: {
+          garantieImageAttachmentId: proof.attachmentId,
+          updatedAt: new Date(clampToNow(updatedMs)),
+        },
+      }),
+    ];
+  });
+  if (proofLinks.length) await prisma.$transaction(proofLinks);
 
   // Self-made reminders.
   const owned = (x: Plan) => !NOT_OWNED.includes(x.status) && !x.deletedMs;
@@ -3256,6 +3298,16 @@ function planPolicies(p: Persona, plans: Plan[]): PolicyPlan[] {
   return out;
 }
 
+/** Bought once for an occasion, inherited, or one of a kind: owned, but
+ *  never on a shopping list. */
+const NEVER_WISHED = new Set([
+  "wedding-bands",
+  "engagement-ring",
+  "wedding-dress",
+  "pearl-necklace",
+  "painting",
+]);
+
 async function seedPaidAddOns(
   prisma: PrismaClient,
   userId: number,
@@ -3504,13 +3556,25 @@ async function seedPaidAddOns(
   }
 
   // --- Wishlist: things wanted, and things wanted then bought --------------
+  // A wish still open is for a model on sale today (no one lists a phone
+  // that is no longer made), noted after the model came out, and for a
+  // product one shops for.
   const ownedKeys = new Set(plans.map((x) => x.item.key));
+  const wantedFrom = (it: CatalogItem) =>
+    Math.max(p.joinedMs + DAY, it.released ? monthStart(it.released) : 0);
   const wants = pickN(
-    CATALOG.filter((it) => !ownedKeys.has(it.key) && eligible(p, it)),
+    CATALOG.filter(
+      (it) =>
+        !ownedKeys.has(it.key) &&
+        !NEVER_WISHED.has(it.key) &&
+        eligible(p, it) &&
+        (!it.discontinued || monthStart(it.discontinued) > now()) &&
+        wantedFrom(it) < now() - 2 * HOUR
+    ),
     randInt(1, Math.round(2 + 4 * d01))
   );
   const rows: Prisma.WishlistItemCreateManyInput[] = wants.map((it) => {
-    const at = clampToNow(wakingHours(between(p.joinedMs + DAY, now() - HOUR)));
+    const at = clampToNow(wakingHours(between(wantedFrom(it), now() - HOUR)));
     return {
       ownerUserId: userId,
       name: `${it.brand} ${productName(it, p.lang)}`.slice(0, 120),
@@ -3637,6 +3701,9 @@ async function seedCrossUser(
     const a = pick(paid);
     const b = pick(paid);
     if (a === b || pairs.has(`${a.userId}:${b.userId}`)) continue;
+    // The showcase accounts are different families: neither appears in the
+    // other's inventory, conversations or transfers.
+    if (a.persona.showcase && b.persona.showcase) continue;
     pairs.add(`${a.userId}:${b.userId}`);
     const at = clampToNow(
       wakingHours(
@@ -3660,10 +3727,13 @@ async function seedCrossUser(
       skipDuplicates: true,
     });
 
-  // Pending invitations — sent within the last week, so still valid.
+  // Pending invitations — sent within the last week, so still valid. The
+  // showcases' own are staged by ensureShowcaseExchanges, fresh enough to
+  // still be pending on the day of a presentation.
   const invites: Prisma.ShareInviteCreateManyInput[] = [];
-  for (let k = 0; k < 6; k++) {
-    const owner = pick(paid);
+  const inviters = paid.filter((s) => !s.persona.showcase);
+  for (let k = 0; k < 6 && inviters.length; k++) {
+    const owner = pick(inviters);
     const lang = owner.persona.lang;
     const at = clampToNow(wakingHours(now() - between(HOUR, 6 * DAY)));
     invites.push({
@@ -3696,11 +3766,13 @@ async function seedCrossUser(
   for (const { owner, k } of threadsFor) {
     const x = owner.plans[k];
     const articleId = owner.articleIds[k];
-    // Not someone from the seller's own home; usually someone who writes in
-    // the same language (a mixed-language thread now and then is real).
+    // Not someone from the seller's own home, nor one showcase buying from
+    // the other; usually someone who writes in the same language (a
+    // mixed-language thread now and then is real).
     const candidates = paid.filter(
       (s) =>
         s !== owner &&
+        !(s.persona.showcase && owner.persona.showcase) &&
         (s.persona.household === null ||
           s.persona.household !== owner.persona.household)
     );
@@ -3814,6 +3886,10 @@ async function seedCrossUser(
       const roll = accepted ? 0 : rand();
       const status =
         roll < 0.6 ? "PENDING" : roll < 0.8 ? "REJECTED" : "REVOKED";
+      // A transfer still pending in a showcase's Transfers page is the one
+      // ensureShowcaseExchanges stages in the last day: one started weeks
+      // ago would lapse a day after a reseed, mid-presentation.
+      if (status === "PENDING" && (op.showcase || rp.showcase)) continue;
       const usedAt =
         status === "PENDING" ? null : clampToNow(at + between(HOUR, 3 * DAY));
       try {
@@ -3909,7 +3985,9 @@ async function ensureShowcaseExchanges(
       where: { ownerUserId: show.userId, status: "PENDING" },
     })) === 0
   ) {
-    const at = clampToNow(wakingHours(now() - between(HOUR, 5 * DAY)));
+    // Sent within the last day: still pending for most of the week after
+    // a reseed (invitations last seven days).
+    const at = clampToNow(wakingHours(now() - between(2 * HOUR, 20 * HOUR)));
     await prisma.shareInvite.create({
       data: {
         ownerUserId: show.userId,
@@ -3945,17 +4023,16 @@ async function ensureShowcaseExchanges(
       });
       x.listed = true;
     }
-    let t = clampToNow(
-      wakingHours(
-        Math.max(
-          x.createdMs + DAY,
-          since(seller),
-          now() - between(6 * DAY, 10 * DAY)
-        )
-      )
+    // Asked, agreed and pushed in waking hours between 40 and 8 hours ago:
+    // the transfer (valid seven days) then has at least five days left, so
+    // it still waits in the showcase's Transfers page days after a reseed.
+    let t = wakingHours(
+      Math.max(x.createdMs + DAY, since(seller), now() - between(20, 30) * HOUR)
     );
+    if (t > now() - 8 * HOUR) t -= DAY;
+    if (t < now() - 40 * HOUR) t += DAY;
     const step = () =>
-      (t = Math.min(t + between(40 * MINUTE, 20 * HOUR), now() - MINUTE));
+      (t = Math.min(t + between(20 * MINUTE, 2 * HOUR), now() - MINUTE));
     const opener = pick(
       C.THREAD_OPENERS[sp.lang].filter((o) => o.topic === "available")
     );

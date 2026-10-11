@@ -1795,7 +1795,64 @@ suite("API integration (real Postgres)", () => {
             WHERE a."ownerUserId"=u."userId" AND a."deletedAt" IS NULL AND a.status NOT IN ('SOLD','DISPOSED','LOST') AND a."purchasePrice" IS NOT NULL
               AND coalesce(g."garantieDateAchat", a."createdAt") >= date_trunc('year', now() AT TIME ZONE 'UTC'))`,
       ],
+      [
+        // The "Preuve" column and the dashboard's "with attachment" count.
+        "warranty without its proof, though the article's invoice or certificate is on file",
+        `SELECT count(*) FROM "Garantie" g WHERE g."garantieImageAttachmentId" IS NULL
+            AND EXISTS (SELECT 1 FROM "Attachment" a WHERE a."articleId"=g."garantieArticleId" AND a.type IN ('INVOICE','WARRANTY'))`,
+      ],
+      [
+        "warranty proof that is a photo, or another article's paper",
+        `SELECT count(*) FROM "Garantie" g JOIN "Attachment" a ON a."attachmentId"=g."garantieImageAttachmentId"
+          WHERE a.type='OTHER' OR a."articleId" IS DISTINCT FROM g."garantieArticleId"`,
+      ],
+      [
+        "warranty proof uploaded after the warranty was last saved",
+        `SELECT count(*) FROM "Garantie" g JOIN "Attachment" a ON a."attachmentId"=g."garantieImageAttachmentId"
+          WHERE a."createdAt" > g."updatedAt"`,
+      ],
+      [
+        // admin@wim.com and admin@admin.com are two different families.
+        "one showcase account sharing with, writing to or transferring to the other",
+        `WITH s AS (SELECT "userId" FROM "User" WHERE email IN ('admin@wim.com','admin@admin.com'))
+         SELECT (SELECT count(*) FROM "InventoryShare" WHERE "ownerUserId" IN (SELECT * FROM s) AND "targetUserId" IN (SELECT * FROM s))
+              + (SELECT count(*) FROM "MessageThread" WHERE "ownerUserId" IN (SELECT * FROM s) AND "requesterId" IN (SELECT * FROM s))
+              + (SELECT count(*) FROM "ArticleTransferRequest" WHERE "ownerId" IN (SELECT * FROM s) AND "requesterId" IN (SELECT * FROM s)) AS count`,
+      ],
     ];
+
+    /** An open wish is for a model on sale today, noted after it came out,
+     *  and for something one shops for: not wedding rings, an heirloom or a
+     *  one-off painting. */
+    async function wishedOutOfSale(): Promise<string[]> {
+      const ONE_OFF = [
+        "wedding-bands",
+        "engagement-ring",
+        "wedding-dress",
+        "pearl-necklace",
+        "painting",
+      ];
+      const { CATALOG } = await import("../../modules/demo/demo.catalog");
+      const { monthStart } = await import("../../modules/demo/demo.random");
+      const byName = new Map(
+        CATALOG.map((i) => [`${i.brand} ${i.name}`.slice(0, 120), i])
+      );
+      const wishes = await prisma.wishlistItem.findMany({
+        where: { purchasedAt: null },
+        select: { name: true, createdAt: true },
+      });
+      expect(wishes.length).toBeGreaterThan(0);
+      return wishes.flatMap((w) => {
+        const item = byName.get(w.name);
+        if (!item) return [`${w.name}: not a catalogue model`];
+        if (ONE_OFF.includes(item.key)) return [`${w.name}: not shopped for`];
+        if (item.discontinued && monthStart(item.discontinued) <= Date.now())
+          return [`${w.name}: no longer sold`];
+        if (item.released && w.createdAt.getTime() < monthStart(item.released))
+          return [`${w.name}: wished before it came out`];
+        return [];
+      });
+    }
 
     /** Bought new after it left sale: shops sell their last stock for three
      *  months, the maker's own store not at all. */
@@ -1856,6 +1913,7 @@ suite("API integration (real Postgres)", () => {
       }
       expect(broken).toEqual([]);
       expect(await boughtNewAfterEndOfSale()).toEqual([]);
+      expect(await wishedOutOfSale()).toEqual([]);
 
       // The account people present from: French, in euros, with every story.
       // Its password is in this public repository, so it is not an admin.
@@ -2081,6 +2139,30 @@ suite("API integration (real Postgres)", () => {
       expect(sharesOut).toBeGreaterThanOrEqual(1);
       expect(sharesIn).toBeGreaterThanOrEqual(1);
       expect(invites).toBeGreaterThanOrEqual(1);
+
+      // A presentation is days after the reseed: whatever waits on the
+      // showcase still waits then.
+      const inFiveDays = new Date(Date.now() + 5 * 86_400_000);
+      const [lapsingTransfers, lapsingInvites] = await Promise.all([
+        prisma.articleTransferRequest.count({
+          where: {
+            status: "PENDING",
+            OR: [{ ownerId: userId }, { requesterId: userId }],
+            expiresAt: { lt: inFiveDays },
+          },
+        }),
+        prisma.shareInvite.count({
+          where: {
+            ownerUserId: userId,
+            status: "PENDING",
+            expiresAt: { lt: inFiveDays },
+          },
+        }),
+      ]);
+      expect({ lapsingTransfers, lapsingInvites }).toEqual({
+        lapsingTransfers: 0,
+        lapsingInvites: 0,
+      });
     }
 
     // admin@admin.com is the operator's real account: a reseed fills it with
@@ -2166,6 +2248,7 @@ suite("API integration (real Postgres)", () => {
         if (Number(row.count) > 0) broken.push(`${what}: ${row.count}`);
       }
       expect(broken).toEqual([]);
+      expect(await wishedOutOfSale()).toEqual([]);
       // The admin pages are shown from here; nothing else is an admin.
       expect(
         (
