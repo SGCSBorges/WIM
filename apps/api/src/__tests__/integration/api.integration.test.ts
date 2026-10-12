@@ -1751,6 +1751,16 @@ suite("API integration (real Postgres)", () => {
           WHERE u.email IN ('admin@wim.com','admin@admin.com') AND a."productImageUrl" IS NULL`,
       ],
       [
+        // Whoever shares an inventory photographed it: nothing in another
+        // account's "Partagé avec moi" (a sharer's inventory, or an article
+        // listed for every power user) is without its picture.
+        "article in a sharing view without a product photo",
+        `SELECT count(*) FROM "Article" a JOIN "User" u ON u."userId"=a."ownerUserId"
+          WHERE a."deletedAt" IS NULL AND a."productImageUrl" IS NULL
+            AND (u.email LIKE '%@demo.wim.app' OR u.email IN ('admin@wim.com','admin@admin.com'))
+            AND (a."sharedWithPowerUsers" OR EXISTS (SELECT 1 FROM "InventoryShare" s WHERE s."ownerUserId"=a."ownerUserId" AND s.active))`,
+      ],
+      [
         "document filed by someone other than the article's owner",
         `SELECT count(*) FROM "Attachment" t JOIN "Article" a USING ("articleId") WHERE t."ownerUserId" <> a."ownerUserId"`,
       ],

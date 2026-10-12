@@ -2204,6 +2204,7 @@ export async function seedDemoData(
   }
 
   await seedCrossUser(prisma, seeded);
+  await photographShared(prisma, seeded, fileBaseUrl);
 
   const firstPower = personas.find(
     (p) => p.role === "POWER_USER" && !p.showcase
@@ -2674,28 +2675,9 @@ async function writeAccount(
     articleIds,
     secrets.fileBaseUrl
   );
-  const photoRows: Prisma.AttachmentCreateManyInput[] = [];
-  for (const [k, f] of photoFiles) {
-    const x = plans[k];
-    const atMs = clampToNow(x.createdMs + between(5 * 1000, 3 * MINUTE));
-    photoRows.push({
-      ownerUserId: userId,
-      articleId: articleIds[k],
-      type: "OTHER",
-      // Credit travels with the picture (Commons licences require it).
-      fileName:
-        `${shopDesignation(x.item)} – photo ${x.photo!.author} (${x.photo!.licence}).jpg`.slice(
-          0,
-          255
-        ),
-      mimeType: "image/jpeg",
-      fileSize: f.fileSize,
-      fileUrl: f.fileUrl,
-      thumbUrl: f.thumbUrl,
-      createdAt: new Date(atMs),
-      updatedAt: new Date(atMs),
-    });
-  }
+  const photoRows = [...photoFiles].map(([k, f]) =>
+    photoAttachment(userId, articleIds[k], plans[k], f)
+  );
   const stored =
     documents.length || photoRows.length
       ? await prisma.attachment.createManyAndReturn({
@@ -2922,16 +2904,100 @@ async function storePhotos(
   baseUrl: string
 ): Promise<Map<number, StoredFile>> {
   const stored = new Map<number, StoredFile>();
-  for (const [k, x] of plans.entries()) {
-    if (!x.photo) continue;
-    let bytes = photoBytes.get(x.photo.file);
-    if (!bytes) {
-      bytes = await fs.promises.readFile(path.join(PHOTO_DIR, x.photo.file));
-      photoBytes.set(x.photo.file, bytes);
-    }
-    stored.set(k, await storeDemoFile(bytes, "jpg", "image/jpeg", baseUrl));
-  }
+  for (const [k, x] of plans.entries())
+    if (x.photo) stored.set(k, await storePhoto(x.photo, baseUrl));
   return stored;
+}
+
+async function storePhoto(
+  photo: DemoPhoto,
+  baseUrl: string
+): Promise<StoredFile> {
+  let bytes = photoBytes.get(photo.file);
+  if (!bytes) {
+    bytes = await fs.promises.readFile(path.join(PHOTO_DIR, photo.file));
+    photoBytes.set(photo.file, bytes);
+  }
+  return storeDemoFile(bytes, "jpg", "image/jpeg", baseUrl);
+}
+
+/** The photo's attachment, added moments after the article was entered. */
+function photoAttachment(
+  userId: number,
+  articleId: number,
+  x: Plan,
+  f: StoredFile
+): Prisma.AttachmentCreateManyInput {
+  const atMs = clampToNow(x.createdMs + between(5 * 1000, 3 * MINUTE));
+  return {
+    ownerUserId: userId,
+    articleId,
+    type: "OTHER",
+    // Credit travels with the picture (Commons licences require it).
+    fileName:
+      `${shopDesignation(x.item)} – photo ${x.photo!.author} (${x.photo!.licence}).jpg`.slice(
+        0,
+        255
+      ),
+    mimeType: "image/jpeg",
+    fileSize: f.fileSize,
+    fileUrl: f.fileUrl,
+    thumbUrl: f.thumbUrl,
+    createdAt: new Date(atMs),
+    updatedAt: new Date(atMs),
+  };
+}
+
+/**
+ * Whoever shares an inventory photographed what is in it: once the shares
+ * and listings are settled, every live article that shows in another
+ * account's "Partagé avec moi" (its owner shares with someone, or it is
+ * listed for every power user) gets its product photo, added when it was
+ * entered like the ones planned with the article. A colour already
+ * recorded gives way to the one the photo shows.
+ */
+async function photographShared(
+  prisma: PrismaClient,
+  seeded: Seeded[],
+  baseUrl: string
+): Promise<void> {
+  const sharers = new Set(
+    (
+      await prisma.inventoryShare.findMany({
+        where: { active: true },
+        select: { ownerUserId: true },
+      })
+    ).map((s) => s.ownerUserId)
+  );
+  const colourKeys = new Set(Object.values(C.FIELD_LABELS.colour));
+  for (const s of seeded) {
+    const rows: Prisma.AttachmentCreateManyInput[] = [];
+    const updates: Prisma.PrismaPromise<number>[] = [];
+    for (const [k, x] of s.plans.entries()) {
+      if (x.photo || x.deletedMs) continue;
+      if (!x.listed && !sharers.has(s.userId)) continue;
+      const photos = DEMO_PHOTOS[x.item.key] ?? [];
+      if (!photos.length) continue;
+      x.photo = pick(photos);
+      const shown = x.photo.colour?.[s.persona.lang];
+      if (shown && x.fields)
+        x.fields = x.fields.map((f) =>
+          colourKeys.has(f.key) ? { ...f, value: shown } : f
+        );
+      const f = await storePhoto(x.photo, baseUrl);
+      rows.push(photoAttachment(s.userId, s.articleIds[k], x, f));
+      // Raw, so the row keeps the updatedAt its own history gave it.
+      updates.push(
+        prisma.$executeRaw`UPDATE "Article"
+          SET "productImageUrl" = ${f.fileUrl},
+              "customFields" = ${x.fields ? JSON.stringify(x.fields) : null}::jsonb
+          WHERE "articleId" = ${s.articleIds[k]}`
+      );
+    }
+    if (!rows.length) continue;
+    await prisma.$transaction(updates);
+    await prisma.attachment.createMany({ data: rows });
+  }
 }
 
 async function seedDocuments(

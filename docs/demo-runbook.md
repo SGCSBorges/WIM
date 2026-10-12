@@ -161,7 +161,10 @@ Sunday or public holiday). Each carries a `DÉMONSTRATION` watermark and a
 
 Every article in the showcase accounts has a product photo, added the way a
 user adds one (it shows in the article header and under _Photos_, marked
-_Principale_); the other households photographed some of theirs. The photos
+_Principale_). So does every article the showcase sees under _Partagé avec
+moi_ (what friends and the household share, and what is listed for every
+power user); the other households photographed only some of what they keep
+to themselves. The photos
 are Wikimedia Commons images, each checked by eye: the catalogue's exact
 model where Commons has a free photo of it, otherwise a similar product of
 the same kind (the same brand where one exists), so most pictures show a

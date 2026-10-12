@@ -1674,10 +1674,13 @@ rejects any string the fonts can't draw.
   exact model where Commons has a free photo of it, otherwise a similar
   product of the same kind (same brand where possible) marked `similar`.
   The showcase accounts photograph every article, other households as
-  their diligence goes. An article showing a photo that names a colour
-  records that colour, always one of the model's real `colours`; a
-  `similar` photo of another colourway names none, and the article's
-  colour is then picked from the model's own. The
+  their diligence goes, except that whoever shares an inventory has
+  photographed it: once shares and listings are settled,
+  `photographShared` gives every live article that shows in another
+  account's "Partagé avec moi" its photo. An article showing a photo that
+  names a colour records that colour, always one of the model's real
+  `colours`; a `similar` photo of another colourway names none, and the
+  article's colour is then picked from the model's own. The
   integration suite seeds a small batch and asserts the invariants against
   real Postgres ("demo seed — reads as user-authored"); a new seeded feature
   adds its own invariant there.
