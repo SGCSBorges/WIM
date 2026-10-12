@@ -1745,6 +1745,12 @@ suite("API integration (real Postgres)", () => {
         `SELECT count(*) FROM "Article" a WHERE a."productImageUrl" IS NOT NULL AND NOT EXISTS (SELECT 1 FROM "Attachment" t WHERE t."articleId"=a."articleId" AND t."fileUrl"=a."productImageUrl" AND t."mimeType" LIKE 'image/%' AND t."thumbUrl" IS NOT NULL)`,
       ],
       [
+        // The showcase households photographed everything they entered.
+        "showcase article without a product photo",
+        `SELECT count(*) FROM "Article" a JOIN "User" u ON u."userId"=a."ownerUserId"
+          WHERE u.email IN ('admin@wim.com','admin@admin.com') AND a."productImageUrl" IS NULL`,
+      ],
+      [
         "document filed by someone other than the article's owner",
         `SELECT count(*) FROM "Attachment" t JOIN "Article" a USING ("articleId") WHERE t."ownerUserId" <> a."ownerUserId"`,
       ],

@@ -24,6 +24,13 @@ describe("demo product photos", () => {
     }
   });
 
+  // A demo where most articles have no picture reads as unfinished: where
+  // Commons has no free photo of the model, a similar product stands in.
+  it("cover every catalogue product", () => {
+    const missing = CATALOG.filter((i) => !DEMO_PHOTOS[i.key]?.length);
+    expect(missing.map((i) => i.key)).toEqual([]);
+  });
+
   it("are committed, resized JPEGs, and nothing else sits beside them", async () => {
     const referenced = new Set(entries.map((e) => e.photo.file));
     for (const file of referenced) {

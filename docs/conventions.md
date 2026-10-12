@@ -1668,12 +1668,16 @@ rejects any string the fonts can't draw.
   certificate), stamped `DÉMONSTRATION`, written through the same upload
   store as real files (disk, or S3 when `S3_*` is set) and unlinked by
   `resetDemoData`. Product photos (`demo.photos.ts`) are Wikimedia Commons
-  images checked by eye to show the exact model, committed under
-  `apps/api/assets/demo-photos/` with `CREDITS.md`, and stored like an
-  upload (JPEG + the upload route's WebP thumbnail) — never hot-linked; a
-  product without a verified photo gets none, and an article showing one
-  records the photo's colour, which must be one of the model's real
-  `colours`. The
+  images checked by eye, committed under `apps/api/assets/demo-photos/`
+  with `CREDITS.md`, and stored like an upload (JPEG + the upload route's
+  WebP thumbnail) — never hot-linked. Every catalogue product has one: the
+  exact model where Commons has a free photo of it, otherwise a similar
+  product of the same kind (same brand where possible) marked `similar`.
+  The showcase accounts photograph every article, other households as
+  their diligence goes. An article showing a photo that names a colour
+  records that colour, always one of the model's real `colours`; a
+  `similar` photo of another colourway names none, and the article's
+  colour is then picked from the model's own. The
   integration suite seeds a small batch and asserts the invariants against
   real Postgres ("demo seed — reads as user-authored"); a new seeded feature
   adds its own invariant there.

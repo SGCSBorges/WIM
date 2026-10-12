@@ -142,7 +142,7 @@ luck:
 | A friend it shares with, one sharing with it, an invitation pending (5+ days left)    | Sharing                                                   |
 | Someone found the lost item and wrote from its QR page                                | Notification bell → `Objet retrouvé : …`                  |
 | Invoices, till receipts, warranty certificates (PDF), each its warranty's proof       | an article → _Pièces jointes_; Articles → _Preuve_        |
-| Product photos on some articles (credited Commons images)                             | the article header and its _Photos_ section               |
+| A product photo on every article (credited Commons images)                            | the article header and its _Photos_ section               |
 
 The two showcase accounts are different families: neither shares with,
 writes to or transfers anything to the other.
@@ -159,14 +159,17 @@ purchase an 80 mm till receipt timed inside French opening hours (never a
 Sunday or public holiday). Each carries a `DÉMONSTRATION` watermark and a
 "fictitious document" footer.
 
-Some articles also have a product photo, added the way a user adds one (it
-shows in the article header and under _Photos_, marked _Principale_). The
-photos are Wikimedia Commons images, each checked by eye to show the
-catalogue's exact model and colour, resized and committed under
-`apps/api/assets/demo-photos/`; nothing is hot-linked. The file name carries
-the author and licence, and `CREDITS.md` beside the photos lists every
-source. A product without a verified photo has none, and an article that
-shows one records the colour it shows.
+Every article in the showcase accounts has a product photo, added the way a
+user adds one (it shows in the article header and under _Photos_, marked
+_Principale_); the other households photographed some of theirs. The photos
+are Wikimedia Commons images, each checked by eye: the catalogue's exact
+model where Commons has a free photo of it, otherwise a similar product of
+the same kind (the same brand where one exists), so most pictures show a
+neighbouring model rather than the one on the invoice. They are resized and
+committed under `apps/api/assets/demo-photos/`; nothing is hot-linked. The
+file name carries the author and licence, and `CREDITS.md` beside the
+photos lists every source and marks the similar ones. An article whose
+photo shows a colour records that colour.
 
 ---
 
