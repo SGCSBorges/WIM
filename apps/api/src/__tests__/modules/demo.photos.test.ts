@@ -50,10 +50,13 @@ describe("demo product photos", () => {
     }
   });
 
+  // A similar product's photo may show a colour the model never came in;
+  // it then names none, and the article's colour comes from the model.
   it("show a colour the model was actually sold in", () => {
     for (const { key, photo } of entries) {
       const item = byKey.get(key)!;
       if (!item.fields?.includes("colour")) continue;
+      if (photo.similar && !photo.colour) continue;
       expect(photo.colour, key).toBeDefined();
       const k = item.colours!.fr.indexOf(photo.colour!.fr);
       expect(k, `${key}: ${photo.colour!.fr}`).toBeGreaterThanOrEqual(0);

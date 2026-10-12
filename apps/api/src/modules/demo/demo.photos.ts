@@ -1,14 +1,17 @@
 /**
  * Product photos for seeded articles: Wikimedia Commons images, each checked
- * by eye to show the catalogue's exact model, resized and committed under
- * `apps/api/assets/demo-photos/` so the seed never hot-links. They are stored
- * through the upload path like any photo a user adds, so they list, open and
- * delete like real attachments.
+ * by eye, resized and committed under `apps/api/assets/demo-photos/` so the
+ * seed never hot-links. They are stored through the upload path like any
+ * photo a user adds, so they list, open and delete like real attachments.
+ *
+ * Where Commons has a free photo of the catalogue's exact model, that is the
+ * entry. Otherwise the entry shows a similar product of the same kind (the
+ * same brand where one could be found) and is marked `similar`: a demo where
+ * most articles have no picture reads worse than one with a close match.
  *
  * Commons licences require credit: every entry names its author, licence
  * and source page, the attachment's file name carries author and licence
  * next to the picture, and `assets/demo-photos/CREDITS.md` lists them all.
- * A product without an entry gets no photo — never a near miss.
  */
 import path from "path";
 
@@ -23,6 +26,10 @@ export interface DemoPhoto {
   author: string;
   licence: string;
   licenceUrl: string | null;
+  /** Not the exact model but the same kind of product. Its `colour`, when
+   *  set, is still one the model was sold in; without one, the article's
+   *  recorded colour is picked from the model's own. */
+  similar?: true;
 }
 
 export const PHOTO_DIR = path.resolve(__dirname, "../../../assets/demo-photos");

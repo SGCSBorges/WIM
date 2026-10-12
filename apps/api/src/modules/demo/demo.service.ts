@@ -1496,9 +1496,11 @@ function planArticle(
   if (!a) return null;
   const d = categoryOf(item);
   const d01 = p.diligence;
+  // The showcase households photographed everything they entered; others
+  // as their diligence goes.
   const photos = DEMO_PHOTOS[item.key] ?? [];
   const photo =
-    photos.length && chance(p.showcase ? 0.75 : 0.08 + 0.4 * d01)
+    photos.length && (p.showcase || chance(0.3 + 0.5 * d01))
       ? pick(photos)
       : null;
   let unitPrice = priceFor(p, item, a.how, a.acquiredMs);
