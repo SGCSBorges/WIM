@@ -111,9 +111,11 @@ any household left with no members, and deletes the document files the
 previous seed wrote. It never touches other accounts, and it keeps
 `admin@admin.com` itself. Anything you entered by hand in `admin@admin.com`
 is replaced on every reseed. If that account doesn't exist yet (a fresh
-database), register it and run TestAdmin first, then reseed: the seed skips
-an account that doesn't exist. Run it the day before, not during the defence — it
-is unauthenticated and rate-limited, and a half-finished seed mid-demo is
+database), register it and run TestAdmin first (the login page shows it,
+and the demo-data button, only when opened at `/?demo-tools`), then
+reseed: the seed skips an account that doesn't exist. Run it the day
+before, not during the defence — it is unauthenticated and rate-limited,
+and a half-finished seed mid-demo is
 unrecoverable. The one exception is §2: without `S3_*`, run it again once
 the API is awake, so the documents exist on the disk you will present from.
 

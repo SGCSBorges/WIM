@@ -3,10 +3,11 @@
  * brand panel (gradient, value props) on large screens + the credential form.
  * Uses react-hook-form + Zod for validation matching the API's password rules.
  * Includes "Forgot password" + the temporary "TestAdmin" bootstrap entry
- * point (see docs/conventions.md "Open items").
+ * point (see docs/conventions.md "Open items") and the demo-data button,
+ * both hidden unless the page is opened with `?demo-tools`.
  */
 import { useCallback, useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -40,6 +41,8 @@ type CredentialsInput = z.infer<typeof credentialsSchema>;
 export default function LoginForm({ onLogin }: LoginFormProps) {
   const { t } = useI18n();
   const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const showDemoTools = searchParams.has("demo-tools");
 
   const {
     register,
@@ -448,33 +451,36 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               <ShareSiteButton />
             </div>
             <LanguageThemeSelector />
-            {/* TEMPORARY: bootstrap admin@admin.com + load demo data. */}
-            <div className="flex w-full flex-col items-center gap-2">
-              <div className="flex flex-wrap justify-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={runTestAdmin}
-                  loading={testAdminBusy}
-                  className="border ui-divider"
-                >
-                  TestAdmin
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={runSeedDemo}
-                  loading={seedBusy}
-                  className="border ui-divider"
-                >
-                  {t("auth.demo.button")}
-                </Button>
+            {/* TEMPORARY: bootstrap admin@admin.com + load demo data. Operator
+                tools, so out of sight unless the URL carries ?demo-tools. */}
+            {showDemoTools && (
+              <div className="flex w-full flex-col items-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={runTestAdmin}
+                    loading={testAdminBusy}
+                    className="border ui-divider"
+                  >
+                    TestAdmin
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={runSeedDemo}
+                    loading={seedBusy}
+                    className="border ui-divider"
+                  >
+                    {t("auth.demo.button")}
+                  </Button>
+                </div>
+                {testAdminMsg && (
+                  <p className="text-xs ui-text-muted">{testAdminMsg}</p>
+                )}
+                {seedMsg && <p className="text-xs ui-text-muted">{seedMsg}</p>}
               </div>
-              {testAdminMsg && (
-                <p className="text-xs ui-text-muted">{testAdminMsg}</p>
-              )}
-              {seedMsg && <p className="text-xs ui-text-muted">{seedMsg}</p>}
-            </div>
+            )}
           </div>
         </div>
       </main>

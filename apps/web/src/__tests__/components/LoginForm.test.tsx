@@ -22,9 +22,9 @@ const mockedVerifyTotp = authAPI.verifyTotp as unknown as ReturnType<
   typeof vi.fn
 >;
 
-function renderForm(onLogin = vi.fn()) {
+function renderForm(onLogin = vi.fn(), url = "/") {
   const result = render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[url]}>
       <I18nProvider>
         <ThemeProvider>
           <LoginForm onLogin={onLogin} />
@@ -241,5 +241,18 @@ describe("<LoginForm />", () => {
       );
       expect(mockedLogin).toHaveBeenCalledWith("bob@example.com", "hunter222");
     });
+  });
+
+  // The bootstrap and reseed buttons are operator tools, not part of the
+  // product a visitor sees: they show only on the ?demo-tools address.
+  it("hides TestAdmin and the demo-data button unless asked for", () => {
+    const { unmount } = renderForm();
+    expect(screen.queryByRole("button", { name: "TestAdmin" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /demo data/i })).toBeNull();
+    unmount();
+
+    renderForm(vi.fn(), "/?demo-tools");
+    expect(screen.getByRole("button", { name: "TestAdmin" })).toBeVisible();
+    expect(screen.getByRole("button", { name: /demo data/i })).toBeVisible();
   });
 });

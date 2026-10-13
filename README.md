@@ -138,7 +138,7 @@ npm --workspace apps/api run promote:admin -- you@example.com
 node dist/scripts/promote-to-admin.js you@example.com
 ```
 
-For convenience on free-tier Render (Postgres expires monthly), there's also a temporary `POST /api/auth/bootstrap-admin` endpoint + `TestAdmin` button on the login screen — it one-shot promotes `admin@admin.com` only when no ADMIN exists, so it's idempotent. Remove once you replace it with a proper seeding flow.
+For convenience on free-tier Render (Postgres expires monthly), there's also a temporary `POST /api/auth/bootstrap-admin` endpoint + `TestAdmin` button on the login screen (shown only at `/?demo-tools`, like the demo-data button) — it one-shot promotes `admin@admin.com` only when no ADMIN exists, so it's idempotent. Remove once you replace it with a proper seeding flow.
 
 ---
 
@@ -634,7 +634,7 @@ API env vars (Render dashboard, **not in repo**): every Required var above, plus
 Web env var: leave `VITE_API_BASE_URL` **empty / unset** in the dashboard. The `render.yaml` `/api/*` rewrite proxies browser requests through `wim-web.onrender.com` to the API, so the web app calls same-origin `/api` (the production fallback in `apps/web/src/services/api.ts`). Do **not** set this to the absolute `wimapi` URL — that bypasses the proxy and breaks Safari/iOS login (ITP blocks cross-site `Set-Cookie` from fetch/XHR).
 
 > **Free-tier quirks:**
-> - Postgres expires after ~30 days. Re-seed admin with the `TestAdmin` button on the login screen (uses `/api/auth/bootstrap-admin`).
+> - Postgres expires after ~30 days. Re-seed admin with the `TestAdmin` button on the login screen, opened at `/?demo-tools` (uses `/api/auth/bootstrap-admin`).
 > - The API container cold-starts in ~30 s. The web fetch timeout is 45 s to absorb this.
 > - File uploads use ephemeral disk. For real production, move them to S3/R2.
 

@@ -80,7 +80,7 @@ them.
   cold-starts in ~30 s. The fetch timeout in `apps/web/src/services/api.ts`
   is 45 s for that reason. After a DB reset, re-seed admin via the
   temporary `/api/auth/bootstrap-admin` + `TestAdmin` button on the login
-  screen (see Open items).
+  screen, shown only at `/?demo-tools` (see Open items).
 
 ## Common commands
 
@@ -1594,7 +1594,8 @@ rejects any string the fonts can't draw.
 ## Open items / temporary stuff
 
 - **`/api/auth/bootstrap-admin`** + the `TestAdmin` button on the login
-  screen are temporary. They one-shot promote `admin@admin.com` if and
+  screen are temporary. The button, like the demo-data one beside it, is
+  hidden unless the login page is opened at `/?demo-tools`. They one-shot promote `admin@admin.com` if and
   only if there's no ADMIN yet (so they're idempotent and not a
   backdoor). User wants to keep them around for now since Render's free
   Postgres expires monthly and they'd otherwise have to re-promote
